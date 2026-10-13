@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Front Desk</title><meta name="robots" content="noindex,nofollow">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Front Desk</title><meta name="robots" content="noindex,nofollow"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FFFDF8" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#171B1E" media="(prefers-color-scheme: dark)"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Front Desk"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><link rel="apple-touch-icon" href="icon-180.png">
 <style>:root{--bg:#FFFDF8;--card:#fff;--ink:#2A2F34;--muted:#6B7280;--line:#E8E2D4;--teal:#0F766E}
 @media (prefers-color-scheme:dark){:root{--bg:#161616;--card:#222;--ink:#EEE;--muted:#A3A9AE;--line:#333;--teal:#1FA598}}
 body{margin:0;font-family:-apple-system,Helvetica,Arial;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box}
@@ -12,13 +12,15 @@ p{margin:0;color:var(--muted);text-align:center;font-size:14px}</style></head><b
 const sb = supabase.createClient("https://cndzteukojzzjpmzmdxr.supabase.co", "sb_publishable_S6pzTaqMtZCSQoE_2Pkmew_QnzmBUM3");
 const app = document.getElementById("app");
 function login(msg){ app.innerHTML = '<h1>Front Desk</h1><input id="em" type="email" placeholder="Email" autocomplete="username"><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button id="go">Sign in</button><button class="alt" id="ml">Email me a sign-in link</button><p id="m">' + (msg || "") + '</p>';
-  document.getElementById("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value }); if (error) m.textContent = "That didn't work. Try again."; else show(); };
+  document.getElementById("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value }); if (error) m.textContent = "That didn't work. Try again."; else location.replace("app.html"); };
   document.getElementById("ml").onclick = async () => { const { error } = await sb.auth.signInWithOtp({ email: em.value.trim(), options: { shouldCreateUser: false, emailRedirectTo: location.origin } }); m.textContent = error ? "That email can't sign in here." : "Check your email for the sign-in link."; }; }
 async function show(){ const { data } = await sb.auth.getSession(); if (!data.session) return login();
+  if (!/account/.test(location.search)) return location.replace("app.html");
   const { count } = await sb.from("docs").select("id", { count: "exact", head: true });
   app.innerHTML = '<h1>Front Desk</h1><p>Signed in as ' + data.session.user.email + '.<br><b id="n">' + (count || 0) + '</b> items in your new desk.</p>' +
     '<label class="alt" style="display:block;text-align:center;font-weight:700;padding:12px;border-radius:10px;border:1px solid var(--line);color:var(--teal);cursor:pointer">Import my desk<input id="file" type="file" accept=".json" style="display:none"></label>' +
-    '<p id="m"></p><button class="alt" id="out">Sign out</button>';
+    '<p id="m"></p><button id="desk">Open my desk</button><button class="alt" id="out">Sign out</button>';
+  document.getElementById("desk").onclick = () => location.replace("app.html");
   document.getElementById("out").onclick = async () => { await sb.auth.signOut(); login(); };
   document.getElementById("file").onchange = async e => { const f = e.target.files[0]; if (!f) return; const rows = JSON.parse(await f.text()); let done = 0;
     for (let i = 0; i < rows.length; i += 100){ const part = rows.slice(i, i + 100).map(r => ({ collection: r.collection, id: r.id, data: r.data }));
