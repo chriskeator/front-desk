@@ -1638,7 +1638,8 @@ function homeAutomations(){ if (!autoJobs.length) return "";
   const bad = autoJobs.filter(j => alerts.some(a => a.id === "job-" + j.id)).length;
   const row = j => { const r = autoRuns.find(x => x.id === j.id) || {}, off = j.enabled === false, red = alerts.some(a => a.id === "job-" + j.id) || r.last_status === "failed";
     const dot = off || j.paused || !j.heartbeat ? "#B9BEC5" : red ? "#D9534F" : r.last_status === "running" ? "#E8B53A" : r.last_status === "ok" ? "#6AA84F" : "#B9BEC5";
-    return `<div class="chc" style="display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;flex:none;background:${dot}"></span><span style="flex:1;min-width:0"><b>${esc(j.name || j.id)}</b><span>${esc(j.trigger || "")} · ${esc(when(r.last_start))}</span></span><button type="button" class="sortbtn" style="margin:0" data-autotoggle="${esc(j.id)}">${off ? "Off" : "On"}</button></div>`; };
+    /* row like Cadence tasks: name on the left, dot + trigger + last run on the right; one tap turns it On/Off (tap again to undo) */
+    return `<button type="button" class="chc" data-autotoggle="${esc(j.id)}"><b>${esc(j.name || j.id)}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${dot};margin-right:6px;vertical-align:middle"></i>${off ? "Off · " : ""}${esc(j.trigger || "")} · ${esc(when(r.last_start))}</span></button>`; };
   return `<div class="msec" style="--cc:#6AA84F"><h4>Automations${bad ? `<span class="n">${bad}</span>` : ""} <span class="hr"><i>${autoJobs.length}</i></span></h4><div class="chgrid">${autoJobs.map(row).join("")}</div></div>`; }
 function homeCadence(){
   const L0 = tasks.filter(t => !t.done && !t.removed && t.cost && t.cadence !== false);
