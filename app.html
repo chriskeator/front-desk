@@ -984,7 +984,9 @@ const srtBy = (L, imp, mins) => L.map((x, i) => [x, i]).sort(([a, i], [b, j]) =>
 // (Oct 7) Chris: the button just says "Sort"; tapping it opens a pick list (Gmail style) with the ways to sort
 let sortPick = false;
 const SORTS = [["az", "A to Z"], ["due", "Due date"], ["imp", "Most important"], ["time", "Quickest first"]];   // (Oct 7) By date added
-const sortCtl = () => `<button type="button" class="sortbtn" data-sortpick="1">Sort</button>`;
+// (Oct 13) Chris: the button shows what it's sorted by, without tapping it
+const SORTSHORT = {az: "A to Z", due: "Due date", imp: "Important", time: "Quickest"};
+const sortCtl = () => `<button type="button" class="sortbtn" data-sortpick="1">${SORTSHORT[sortBy] || "Sort"} ▾</button>`;
 // (Oct 7) Chris: no pop-up; the three choices drop down right under the Sort button
 function sortMenuOff(){ document.querySelectorAll(".sortmenu").forEach(m => m.remove()); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-sortpick]"); const had = document.querySelector(".sortmenu");
