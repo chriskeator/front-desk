@@ -15,7 +15,15 @@ function login(msg){ app.innerHTML = '<h1>Front Desk</h1><input id="em" type="em
   document.getElementById("go").onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: em.value.trim(), password: pw.value }); if (error) m.textContent = "That didn't work. Try again."; else show(); };
   document.getElementById("ml").onclick = async () => { const { error } = await sb.auth.signInWithOtp({ email: em.value.trim(), options: { shouldCreateUser: false, emailRedirectTo: location.origin } }); m.textContent = error ? "That email can't sign in here." : "Check your email for the sign-in link."; }; }
 async function show(){ const { data } = await sb.auth.getSession(); if (!data.session) return login();
-  app.innerHTML = '<h1>Front Desk</h1><p>Signed in as ' + data.session.user.email + '.<br>Your desk moves in here next.</p><button class="alt" id="out">Sign out</button>';
-  document.getElementById("out").onclick = async () => { await sb.auth.signOut(); login(); }; }
+  const { count } = await sb.from("docs").select("id", { count: "exact", head: true });
+  app.innerHTML = '<h1>Front Desk</h1><p>Signed in as ' + data.session.user.email + '.<br><b id="n">' + (count || 0) + '</b> items in your new desk.</p>' +
+    '<label class="alt" style="display:block;text-align:center;font-weight:700;padding:12px;border-radius:10px;border:1px solid var(--line);color:var(--teal);cursor:pointer">Import my desk<input id="file" type="file" accept=".json" style="display:none"></label>' +
+    '<p id="m"></p><button class="alt" id="out">Sign out</button>';
+  document.getElementById("out").onclick = async () => { await sb.auth.signOut(); login(); };
+  document.getElementById("file").onchange = async e => { const f = e.target.files[0]; if (!f) return; const rows = JSON.parse(await f.text()); let done = 0;
+    for (let i = 0; i < rows.length; i += 100){ const part = rows.slice(i, i + 100).map(r => ({ collection: r.collection, id: r.id, data: r.data }));
+      const { error } = await sb.from("docs").upsert(part, { onConflict: "collection,id" }); if (error){ m.textContent = "Stopped: " + error.message; return; }
+      done += part.length; m.textContent = "Imported " + done + " of " + rows.length + "…"; }
+    const { count: c2 } = await sb.from("docs").select("id", { count: "exact", head: true }); n.textContent = c2; m.textContent = "Done: " + c2 + " items are in your new desk."; }; }
 show();
 </script></body></html>
