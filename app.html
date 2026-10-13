@@ -1054,6 +1054,7 @@ function ideaPop(){
 let songs = [], songSteps = [], requests = [];   // requests (Oct 9): viewer song/tutorial requests {title, asks, who, platform, last, note}   // (Oct 8) Chris: Projects > Worship Piano Lab > Songs, each song moves through steps
 let skills = [], restOpen = false, restPick = null, perPick = null, icatPick = false;   // (Oct 4) Projects: the 'Not working on now' pop-up
 const tLinks = t => (Array.isArray(t.links) ? t.links : []).filter(l => l && safeUrl(l.url));
+let autoJobs = [], autoRuns = [], alerts = [], openAlert = null, autoOpen = false;   /* (Oct 13) safety net: new desk only (Supabase docs) */
 let reviews = [], openRev = null, revFix = false, popCap = null, popPg = 0;
 const revItems = t => t && t.review ? reviews.filter(r => r.group === t.review).sort((a, b) => (a.order ?? 99) - (b.order ?? 99)) : [];
 const RS = {unchecked: "none", none: "none", fix: "fix", good: "good", fixed: "fixed"};
@@ -1595,13 +1596,14 @@ function morningScreen(seg){
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}<button type="button" class="tpill folbtn" data-goto="money" data-msub2="fol">Followers</button>${labTestPill()}</span></div>
-    <div class="mgrid"><div class="mleft">${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today${(() => { const n = tasks.filter(t=>!t.done && !withCad(t) && t.date && t.date<=plus(0)).length; return n ? `<span class="n">${n}</span>` : ""; })()} <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
+    <div class="mgrid"><div class="mleft">${healthLine()}${alertCards()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today${(() => { const n = tasks.filter(t=>!t.done && !withCad(t) && t.date && t.date<=plus(0)).length; return n ? `<span class="n">${n}</span>` : ""; })()} <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
     ${homeLater()}
     ${homeProjects()}
     ${homeCadence()}
+    ${homeAutomations()}
     </div></div>
   </div>`;
 }
@@ -1625,6 +1627,19 @@ function cadStatus(t){ if (reviews.some(r => r.group === t.id && r.status === "f
   if (t.handoff === "review") return ["Ready to check", "#1FA598"];
   if (t.handoff === "cadence" || t.handoff === "teach") return ["In progress", "#E8B53A"];
   return ["Not started", "#B9BEC5"]; }
+/* (Oct 13) Chris: automations report themselves. Red/gold cards on top of Home = a job missed, failed or to-dos look stale; tap = details in place */
+function healthLine(){ const h = stats.find(x => x.id === "health") || {}; if (!h.checkedAt) return "";
+  const t = new Date(h.checkedAt), old = Date.now() - t > 45 * 60e3;
+  return `<div class="tn" style="margin:0 0 8px;color:${old ? "#D9534F" : "var(--muted,#8A9099)"}">Last checked ${t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"})} · ${esc(h.line || "")}</div>`; }
+function alertCards(){ return alerts.map(a => { const open = openAlert === a.id, items = a.items || [];
+  return `<div class="msec" style="--cc:${a.level === "red" ? "#D9534F" : "#E8B53A"};border-left:6px solid var(--cc)"><h4><button type="button" data-alert="${esc(a.id)}" style="all:unset;cursor:pointer;flex:1">${esc(a.title || a.id)}</button></h4>${open ? `<div class="chgrid">${a.detail ? `<span class="tn">${esc(a.detail)}</span>` : ""}${items.map(x => `<button type="button" class="chc" data-tlinks="${esc(x.id)}"><b>${esc(x.title || x.id)}</b><span>${esc(x.why || "")}</span></button>`).join("")}</div>` : ""}</div>`; }).join(""); }
+function homeAutomations(){ if (!autoJobs.length) return "";
+  const when = s => { if (!s) return "never"; const d = new Date(s); return (d.toDateString() === new Date().toDateString() ? "Today " : d.toLocaleDateString([], {weekday: "short"}) + " ") + d.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}); };
+  const bad = autoJobs.filter(j => alerts.some(a => a.id === "job-" + j.id)).length;
+  const row = j => { const r = autoRuns.find(x => x.id === j.id) || {}, off = j.enabled === false, red = alerts.some(a => a.id === "job-" + j.id) || r.last_status === "failed";
+    const dot = off || j.paused || !j.heartbeat ? "#B9BEC5" : red ? "#D9534F" : r.last_status === "running" ? "#E8B53A" : r.last_status === "ok" ? "#6AA84F" : "#B9BEC5";
+    return `<div class="chc" style="display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;flex:none;background:${dot}"></span><span style="flex:1;min-width:0"><b>${esc(j.name || j.id)}</b><span>${esc(j.trigger || "")} · ${esc(when(r.last_start))}</span></span><button type="button" class="sortbtn" style="margin:0" data-autotoggle="${esc(j.id)}">${off ? "Off" : "On"}</button></div>`; };
+  return `<div class="msec" style="--cc:#6AA84F"><h4><button type="button" data-autofold="1" style="all:unset;cursor:pointer">Automations</button>${bad ? `<span class="n">${bad}</span>` : ""} <span class="hr"><i>${autoJobs.length}</i></span></h4>${autoOpen ? `<div class="chgrid">${autoJobs.map(row).join("")}</div>` : ""}</div>`; }
 function homeCadence(){
   const L0 = tasks.filter(t => !t.done && !t.removed && t.cost && t.cadence !== false);
   const L1 = sortBy === "time" ? L0.slice().sort((a, b) => (+a.cmins || 9999) - (+b.cmins || 9999) || byImp(a, b)) : sortL(L0);
@@ -3678,6 +3693,9 @@ document.addEventListener("click", async e => {
   if (d.talkfocus){ const b = $(d.talkfocus); if (b){ b.focus(); b.click(); } return; }
   if (d.popclose){ closePop(); render(); return; }
   if (d.poppg){ popPg += +d.poppg; render(); return; }
+  if (d.alert){ openAlert = openAlert === d.alert ? null : d.alert; render(); return; }
+  if (d.autofold){ autoOpen = !autoOpen; render(); return; }
+  if (d.autotoggle && db){ const j = autoJobs.find(x => x.id === d.autotoggle); try { await db.collection("jobsexpected").doc(d.autotoggle).update({enabled: !!(j && j.enabled === false)}); } catch {} return; }
   if (d.ready){ closePop(); readyOpen = true; render(); return; }
   if (d.prest){ closePop(); restOpen = true; render(); return; }
   if (d.fper){ fPer = d.fper; fOff = 0; fExp = null; render(); return; }
@@ -3905,6 +3923,7 @@ function fdFolders(){ const L = $("list"); if (!L) return; const scr = typeof on
   live("goals", ["added","asc"], v => goals = v);
   live("stats", ["updated","desc"], v => { stats = v; labFresh(); });
   live("pins", ["added","desc"], v => pins = v);
+  live("jobsexpected", ["order","asc"], v => autoJobs = v); live("jobruns", ["order","asc"], v => autoRuns = v); live("alerts", ["order","asc"], v => alerts = v);
   live("reviews", ["order","asc"], v => reviews = v.filter(r => r.status !== "retired" && !/lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//.test(r.url || "")));   /* (Oct 13) Chris: Lab checks live in Lab Test, never on the Front Desk */
   live("inbox", ["added","desc"], v => inbox = v);
   live("summaries", ["date","desc"], v => summaries = v);
