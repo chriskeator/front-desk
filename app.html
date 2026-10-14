@@ -804,7 +804,8 @@ a.tb.rs-fixed{flex-direction:column}
 #list :is(.rowon,.subon) + :is(.tdetail,.sublist,.mbody,.replist){box-shadow:inset 2px 0 0 var(--gold),inset -2px 0 0 var(--gold),inset 0 -2px 0 var(--gold)!important;border-radius:0 0 10px 10px!important}
 #list .rowon > .chc,#list .subon > .pc3t{box-shadow:none!important}
 /* (Oct 11, Chris: 'gold bar isn't showing' on the phone) the outer shadow was clipped by #list at the sides; an inside outline is never clipped */
-#list .msec:not(.collapsed):not(.fdcheer):not(:has(.rowon,.subon)):has(> h4[data-ck]){box-shadow:none!important;outline:2px solid var(--gold)!important;outline-offset:-2px}
+#list .msec:not(.collapsed):not(.fdcheer):not(:has(.rowon,.subon)):has(> h4[data-ck]){box-shadow:none!important;outline:0!important;position:relative}
+#list .msec:not(.collapsed):not(.fdcheer):not(:has(.rowon,.subon)):has(> h4[data-ck])::after{content:"";position:absolute;inset:0;border:2px solid var(--gold);border-radius:inherit;pointer-events:none;z-index:6}   /* (Oct 14) gold frame drawn on top, even all the way round (the header used to cover the outline) */
 /* (Oct 11) empty folders hide; Lab-style celebrations (overlays never catch taps) */
 #list .msec.fdempty{display:none!important}
 #list .msec.fdcheer > :not(h4):not(.fdcheer-msg){display:none!important}
@@ -3314,9 +3315,9 @@ function songsHTML(){ const ST = SSTEPS(), n = ST.length;
 function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice().sort((a, b) => (b.step || 0) - (a.step || 0) || String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title));
   if (!L.length) return "";
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
-  const head = `<div class="tn" style="${RS};border-top:0"><b style="flex:1;min-width:0"></b><span style="display:flex;gap:4px">${ST.map(t => `<i title="${esc(t)}" style="width:22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted,#8A9099)">${esc(t.slice(0, 2))}</i>`).join("")}</span></div>`;
+  const head = `<div class="tn" style="${RS};border-top:0"><b style="flex:1;min-width:0"></b><span style="display:flex;gap:4px">${ST.map(t => `<i title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted,#8A9099)">${esc(t.slice(0, 2))}</i>`).join("")}</span></div>`;
   const row = x => { const k = Math.min(x.step || 0, n);
-    return `<div class="srow" style="${RS}"><b style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}</b><span style="display:flex;gap:4px">${ST.map((t, i) => `<i title="${esc(t)}" style="width:22px;height:14px;border-radius:4px;display:inline-block;background:${i < k ? "#1FA598" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}"></i>`).join("")}</span></div>`; };
+    return `<div class="srow" style="${RS}"><b style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}</b><span style="display:flex;gap:4px">${ST.map((t, i) => `<i title="${esc(t)}" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-block;background:${i < k ? "#1FA598" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}"></i>`).join("")}</span></div>`; };
   return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${L.length}</i></span></h4><div class="chgrid">${head}${L.map(row).join("")}</div></div>`; }
 function songsRefresh(){ document.querySelectorAll("#list .sublist").forEach(x => x.remove()); applySubOpen(); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
