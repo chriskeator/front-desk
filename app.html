@@ -3007,7 +3007,7 @@ function renderMain(){
   if (!fitting){ deskPer = null; sRowsCap = null; labCap = null; sProdCap = null; }
   const nRep = pendingReplies().length, nNeeds = openInbox().length + openQs().filter(q => q.kind !== "big").length + needJobs().length + items.filter(i=>!i.done).length;
   const nTodo = tasks.filter(inToday).length, nWeek = tasks.filter(t=>!t.done && t.date>plus(0) && t.date<=plus(7)).length, nToday = nTodo + (nRep ? 1 : 0), nLater = tasks.filter(t=>!t.done && !t.date).length;
-  $("tToday").innerHTML = "Home" + (nToday ? `<span class="n">${nToday}</span>` : "");
+  $("tToday").innerHTML = "Home" + (nToday && tab !== "today" ? `<span class="n">${nToday}</span>` : "");   /* (Oct 13) Chris: no badge while Home is open (Today already shows it) */
   const nSort = toSort().length;
   $("tMoney").innerHTML = "Money Map" + (nSort ? `<span class="n">${nSort}</span>` : "");
   for (const [id,t] of [["tToday","today"],["tProjects","projects"],["tMoney","money"]]) $(id).setAttribute("aria-pressed", tab===t || (t==="money" && tab==="sort") || (t==="today" && tab==="replies"));
