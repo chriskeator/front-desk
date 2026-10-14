@@ -1643,8 +1643,11 @@ function homeLabTest(){ const lab = stats.find(x => x.id === "lab"); if (!lab ||
   const ST = {fix: ["Fix sent", "#E8B53A"], fixed: ["Fixed, check again", "#1FA598"]};
   const rows = []; lab.chapters.forEach((c, ci) => (c.lessons || []).filter(L => L.s !== "good").forEach(L => rows.push([ci, c, L])));
   if (!rows.length) return "";
+  const LAB_NOW = ["chords", "speed", "songs"];   /* chapters being tested now, in ship order; update after each ship */
+  const rk = c => { const i = LAB_NOW.indexOf(c.id); return i < 0 ? 99 : i; };
+  rows.sort((x, y) => rk(x[1]) - rk(y[1]) || x[0] - y[0] || (x[2].n || 0) - (y[2].n || 0));
   const row = ([ci, c, L]) => { const st = ST[L.s] || ["Not checked", "#B9BEC5"];
-    return `<a class="chc" href="${esc(L.u || "")}" target="_blank" rel="noopener"><b>Ch ${ci + 1} · ${esc(L.t || "")}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${st[1]};margin-right:6px;vertical-align:middle"></i>${esc(c.short || c.name || "")} · ${st[0]}</span></a>`; };
+    return `<a class="chc" style="text-decoration:none;color:inherit" href="${esc(L.u || "")}" target="_blank" rel="noopener"><b>Ch ${ci + 1} · L${L.n || ""} ${esc(L.t || "")}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${st[1]};margin-right:6px;vertical-align:middle"></i>${esc(c.short || c.name || "")} · ${st[0]}</span></a>`; };
   return `<div class="msec" style="--cc:#1FA598"><h4>Lab testing <span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(row).join("")}</div></div>`; }
 function homeAutomations(){ if (!autoJobs.length) return "";
   const when = s => { if (!s) return "never"; const d = new Date(s); return (d.toDateString() === new Date().toDateString() ? "Today " : d.toLocaleDateString([], {weekday: "short"}) + " ") + d.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}); };
