@@ -1600,7 +1600,6 @@ function morningScreen(seg){
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
-    ${homeLabTest()}
     ${homeLater()}
     ${homeProjects()}
     ${homeCadence()}
