@@ -961,6 +961,9 @@ function dayLabel(s){const [y,m,dd]=s.split("-").map(Number);const d=new Date(y,
   if (s===plus(0)) return "Today"; if (s===plus(1)) return "Tomorrow";
   return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});}
 // (Oct 10) Chris: a to-do handed to Cadence leaves his Today / This week / This month; it lives in the Cadence tasks folder until it comes back to check
+/* (Oct 13) ONE rule for "in Today" so the Home badge and the Today folder always match: due today or earlier, or shipping this week and needs his test */
+const wkEndNow = () => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); };
+const inToday = t => !t.done && !t.removed && !withCad(t) && ((t.date && t.date <= plus(0)) || (t.test && t.ships && t.ships <= wkEndNow()));
 const withCad = t => t.handoff === "cadence" || t.handoff === "teach" || t.cando === true;   /* (Oct 13) Chris: 100%-Cadence to-dos live ONLY in Cadence tasks */
 const byOrder = (a,b)=>(a.order??99)-(b.order??99) || String(a.added).localeCompare(String(b.added));
 // (Oct 7) Chris: sort any list by MOST IMPORTANT (soonest timeline first: day, then Cadence's imp 1-5) or QUICKEST (mins)
@@ -1588,7 +1591,7 @@ function morningScreen(seg){
   // Chris (Oct 4): done = gone; finished to-dos never show here
   /* (Oct 13) Chris: anything SHIPPING this week that needs his test (task.test) sits in Today until done */
   const wkEnd0 = (() => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); })();
-  const wk = tasks.filter(t => t !== flagged0 && !t.done && !t.removed && !withCad(t) && ((t.date && t.date <= plus(0)) || (t.test && t.ships && t.ships <= wkEnd0))).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
+  const wk = tasks.filter(t => t !== flagged0 && inToday(t)).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
   const dn = wk.filter(t => t.done).length, left = minsOf(wk.filter(t => !t.done));
   const chc = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>${t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
   const fp = focusProj(), ft = tasks.filter(t => !t.done && t.project === fp).sort((a, b) => String(a.date || "9").localeCompare(String(b.date || "9")) || byOrder(a, b));
@@ -1598,7 +1601,7 @@ function morningScreen(seg){
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}<button type="button" class="tpill folbtn" data-goto="money" data-msub2="fol">Followers</button>${labTestPill()}</span></div>
-    <div class="mgrid"><div class="mleft">${healthLine()}${alertCards()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today${(() => { const n = wk.length; return n ? `<span class="n">${n}</span>` : ""; })()} <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
+    <div class="mgrid"><div class="mleft">${healthLine()}${alertCards()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
@@ -3003,7 +3006,7 @@ function renderMain(){
   if (drag) { drag.pending = true; return; }
   if (!fitting){ deskPer = null; sRowsCap = null; labCap = null; sProdCap = null; }
   const nRep = pendingReplies().length, nNeeds = openInbox().length + openQs().filter(q => q.kind !== "big").length + needJobs().length + items.filter(i=>!i.done).length;
-  const nTodo = tasks.filter(t=>!t.done && !withCad(t) && t.date && t.date<=plus(0)).length, nWeek = tasks.filter(t=>!t.done && t.date>plus(0) && t.date<=plus(7)).length, nToday = nTodo + (nRep ? 1 : 0), nLater = tasks.filter(t=>!t.done && !t.date).length;
+  const nTodo = tasks.filter(inToday).length, nWeek = tasks.filter(t=>!t.done && t.date>plus(0) && t.date<=plus(7)).length, nToday = nTodo + (nRep ? 1 : 0), nLater = tasks.filter(t=>!t.done && !t.date).length;
   $("tToday").innerHTML = "Home" + (nToday ? `<span class="n">${nToday}</span>` : "");
   const nSort = toSort().length;
   $("tMoney").innerHTML = "Money Map" + (nSort ? `<span class="n">${nSort}</span>` : "");
