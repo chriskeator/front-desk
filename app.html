@@ -1220,7 +1220,7 @@ const readyCount = () => readyGroups().reduce((a, g) => a + g.items.length, 0);
 // Chris (Oct 4): no side buttons up top; "Ready to check" is a to-do pill in To do, like Replies.
 const readyPill = () => { const n = readyCount(); return n ? `<button type="button" class="tpill" data-ready="1">Ready to check<span class="n">${n}</span></button>` : ""; };
 /* (Oct 13) Chris: Lab checks happen in Lab Test. A Lab check to-do = a Worship Piano Lab to-do waiting for his review or pointing at Lab Test */
-const isLabCheck = t => t.project === "Worship Piano Lab" && (t.handoff === "review" || !!t.review || (t.links || []).some(l => /lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//.test(l.url || "")));
+const isLabCheck = t => !t.test && t.project === "Worship Piano Lab" && (t.handoff === "review" || !!t.review || (t.links || []).some(l => /lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//.test(l.url || "")));
 /* (Oct 13) ONE pill: lessons on Test not yet approved (stats/lab, s !== "good"); opens Lab Test in a new tab; hidden at 0 */
 const labToTest = () => { const lab = stats.find(x => x.id === "lab"); return ((lab && lab.chapters) || []).reduce((a, c) => a + (c.lessons || []).filter(L => L.s !== "good").length, 0); };
 const labTestPill = () => { const n = labToTest(); return n ? `<a class="tpill" href="${deskLabTestUrl()}" target="_blank" rel="noopener">Lab: ${n} to test</a>` : ""; };
