@@ -1632,7 +1632,7 @@ function healthLine(){ const h = stats.find(x => x.id === "health") || {}; if (!
   const t = new Date(h.checkedAt), old = Date.now() - t > 45 * 60e3;
   if (!old && !(+h.failed) && !(+h.missed)) return "";   /* (Oct 13) Chris: the line made Home shift when a folder opened; show it only when something is wrong */
   /* (Oct 13) shown as a red folder card like the alert cards, so opening a folder never shifts Home */
-  return `<div class="msec" style="--cc:#D9534F;border-left:6px solid var(--cc)"><h4>${old ? "Checks stopped at " + t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : esc(h.line || "")}<span class="hr"><i>!</i></span></h4></div>`; }
+  return `<div class="msec" style="--cc:#D9534F;border-left:6px solid var(--cc)"><h4>${old ? "Checks stopped at " + t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : esc(h.line || "")}<span class="hr"><i>1</i></span></h4></div>`; }
 function alertCards(){ return alerts.map(a => { const open = openAlert === a.id, items = a.items || [];
   return `<div class="msec" style="--cc:${a.level === "red" ? "#D9534F" : "#E8B53A"};border-left:6px solid var(--cc)"><h4><button type="button" data-alert="${esc(a.id)}" style="all:unset;cursor:pointer;flex:1">${esc(a.title || a.id)}</button><span class="hr"><i>${items.length || 1}</i></span></h4>${open ? `<div class="chgrid">${a.detail ? `<span class="tn">${esc(a.detail)}</span>` : ""}${items.map(x => `<button type="button" class="chc" data-tlinks="${esc(x.id)}"><b>${esc(x.title || x.id)}</b><span>${esc(x.why || "")}</span></button>`).join("")}</div>` : ""}</div>`; }).join(""); }
 function homeAutomations(){ if (!autoJobs.length) return "";
