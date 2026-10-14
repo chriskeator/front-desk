@@ -1659,7 +1659,7 @@ function homeAutomations(){ if (!autoJobs.length) return "";
     return `<button type="button" class="chc" data-autotoggle="${esc(j.id)}"><b>${esc(j.name || j.id)}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${dot};margin-right:6px;vertical-align:middle"></i>${off ? "Off · " : ""}${esc(j.trigger || "")} · ${esc(when(r.last_start))}</span></button>`; };
   return `<div class="msec" style="--cc:#6AA84F"><h4>Automations${bad ? `<span class="n">${bad}</span>` : ""} <span class="hr"><i>${autoJobs.length}</i></span></h4><div class="chgrid">${autoJobs.map(row).join("")}</div></div>`; }
 function homeCadence(){
-  const L0 = tasks.filter(t => !t.done && !t.removed && t.cost && t.cadence !== false);
+  const L0 = tasks.filter(t => !t.done && !t.removed && t.cost && t.cadence !== false && !t.test);
   const L1 = sortBy === "time" ? L0.slice().sort((a, b) => (+a.cmins || 9999) - (+b.cmins || 9999) || byImp(a, b)) : sortL(L0);
   /* (Oct 13, Chris) group by status: needs him first, then not started, in progress at the bottom; the chosen sort stays inside each group */
   const rank = t => ({"Ready to check": 0, "Fix sent": 1, "Not started": 2, "In progress": 3})[cadStatus(t)[0]] ?? 2;
@@ -3455,7 +3455,7 @@ function goBtn(t){
 function kidsHTML(t){ const K = sortL(allTasks.filter(x => x.parent === t.id && !x.done && !x.removed)); if (!K.length) return "";
   return `<div class="kids"><b>To-dos inside (${K.length})</b>${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`; }
 // (Oct 10) the open to-do has the Give to Cadence button too (only on to-dos Cadence can really do = has a cost)
-function cadBtn(t){ if (t.done || t.cadence === false || !(t.cost || t.teach)) return "";
+function cadBtn(t){ if (t.done || t.cadence === false || t.test || !(t.cost || t.teach)) return "";   /* (Oct 13) test = only Chris can do it */
   if (t.handoff === "cadence") return `<span class="tn cadwith">With Cadence</span>`;
   if (t.handoff === "teach") return `<span class="tn cadwith">Cadence will ask you to show it</span>`;
   if (t.handoff === "review") return "";
