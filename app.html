@@ -3455,7 +3455,8 @@ function goBtn(t){
 function kidsHTML(t){ const K = sortL(allTasks.filter(x => x.parent === t.id && !x.done && !x.removed)); if (!K.length) return "";
   return `<div class="kids"><b>To-dos inside (${K.length})</b>${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`; }
 // (Oct 10) the open to-do has the Give to Cadence button too (only on to-dos Cadence can really do = has a cost)
-function cadBtn(t){ if (t.done || t.cadence === false || t.test || !(t.cost || t.teach)) return "";   /* (Oct 13) test = only Chris can do it */
+function cadBtn(t){ if (t.done || t.cadence === false || t.test || !(t.cost || t.teach)) return "";
+  if (t.cost && t.cando !== true) return "";   /* (Oct 13) Chris: Give to Cadence ONLY when Cadence can do 100% of it (task.cando) */   /* (Oct 13) test = only Chris can do it */
   if (t.handoff === "cadence") return `<span class="tn cadwith">With Cadence</span>`;
   if (t.handoff === "teach") return `<span class="tn cadwith">Cadence will ask you to show it</span>`;
   if (t.handoff === "review") return "";
