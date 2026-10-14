@@ -1624,7 +1624,7 @@ function homeLater(){
   // (Oct 8, 2nd) Chris: not "due" (tasks are due every day): the BIG things that SHIP this week (video posts, Lab chapter, Shorts start, song release) = task.ships
   const D = tasks.filter(t => !t.done && !t.removed && t.ships && t.ships <= wkEnd && !t.labKey)   /* (Oct 13) Chris: per-lesson/per-song test rows are for Today only, never in Ships this week */.sort((a, b) => a.ships.localeCompare(b.ships) || (a.order ?? 99) - (b.order ?? 99));
   const due = `<div class="msec" style="--cc:#B4582F"><h4>Ships this week <span class="hr"><i>${D.length || ""}</i></span></h4><div class="chgrid">${D.map(t => { const inner = `<b>${esc(t.short || t.title)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>'}</div></div>`;
-  return due + f("This week", "#6AA84F", W, "Nothing else this week.") + f("This month", "#97710F", M, "Nothing else this month.");
+  return due;   /* (Oct 13) Chris: Home = Today + Ships this week only; This week / This month folders removed */
 }
 // (Oct 10) Chris: a Home folder "Cadence tasks" = every open to-do Cadence can do (has a cost), with Cadence's own time (cmins) so he can sort and hand them over
 // (Oct 10) Chris: each Cadence task shows where it stands, in words AND a colour (edge + dot)
