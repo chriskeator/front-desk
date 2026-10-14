@@ -1601,7 +1601,7 @@ function morningScreen(seg){
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}<button type="button" class="tpill folbtn" data-goto="money" data-msub2="fol">Followers</button>${labTestPill()}</span></div>
-    <div class="mgrid"><div class="mleft">${healthLine()}${alertCards()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
+    <div class="mgrid"><div class="mleft">${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
