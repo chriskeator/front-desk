@@ -1636,7 +1636,7 @@ function healthLine(){ const h = stats.find(x => x.id === "health") || {}; if (!
   /* (Oct 13) shown as a red folder card like the alert cards, so opening a folder never shifts Home */
   return `<div class="msec" style="--cc:#D9534F;border-left:6px solid var(--cc)"><h4>${old ? "Checks stopped at " + t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : esc(h.line || "")}<span class="hr"><i>1</i></span></h4></div>`; }
 /* (Oct 13) alert cards are normal folders: tap opens the list (the folder system opens/closes them) */
-function alertCards(){ return alerts.map(a => { const items = a.items || [];
+function alertCards(){ return alerts.filter(a => a.kind !== "stale").map(a => {   /* (Oct 13) stale to-dos are Cadence's morning job, never a card on Chris's Home */ const items = a.items || [];
   return `<div class="msec" style="--cc:${a.level === "red" ? "#D9534F" : "#E8B53A"};border-left:6px solid var(--cc)"><h4>${esc(a.title || a.id)} <span class="hr"><i>${items.length || 1}</i></span></h4><div class="chgrid">${a.detail ? `<span class="tn">${esc(a.detail)}</span>` : ""}${items.map(x => `<button type="button" class="chc" data-tlinks="${esc(x.id)}"><b>${esc(x.title || x.id)}</b><span>${esc(x.why || "")}</span></button>`).join("")}</div></div>`; }).join(""); }
 /* (Oct 13) Chris: chapter testing lives on the Front Desk too. One folder = every Lab lesson on Test not approved yet, by chapter;
    tap a lesson = it opens in Lab Test, where he leaves Fix notes and approves at the end of the lesson */
