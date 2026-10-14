@@ -1606,6 +1606,7 @@ function morningScreen(seg){
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
     ${homeLater()}
+    ${homeSongs()}
     ${homeProjects()}
     ${homeCadence()}
     </div></div>
@@ -3308,6 +3309,14 @@ function songsHTML(){ const ST = SSTEPS(), n = ST.length;
       ${k < n ? `<b>To move to ${esc(ST[k])}</b><p>${esc(x.need || "Tell Cadence what this needs.")}</p>` : `<b>All ${n} steps done</b><p>Ready to release.</p>`}${x.release ? `<p class="tn">Releases ${esc(dayLabel(x.release))}</p>` : ""}</div>`; };
   return `<div class="songsort">${sb("almost", "Almost done")}${sb("rel", "Release date")}${sb("az", "A to Z")}</div>` + (L.map(x => { const k = Math.min(x.step || 0, n);
     return `<button type="button" class="chc songrow${songOpen === x.id ? " rowon" : ""}" data-songopen="${esc(x.id)}"><b>${esc(x.title)}</b><span>${k < n ? "next: " + esc(ST[k]) : "ready"}${x.release ? " · " + esc(dayLabel(x.release).replace(/^[A-Z][a-z]{2}, /, "")) : ""}${(x.versions || []).length > 1 ? " · " + x.versions.length + " versions" : ""}</span><em class="sstep">${k} of ${n}</em></button>` + (songOpen === x.id ? det(x) : ""); }).join("") || '<span class="tn">No songs yet.</span>'); }
+/* (Oct 13) Chris asked: the song checklist on Home, so he can see at a glance which songs have which steps done.
+   One row per song: name on the left, one small box per step (filled = done, gold = next). Tap = the song's details in Projects. */
+function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice().sort((a, b) => (b.step || 0) - (a.step || 0) || String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title));
+  if (!L.length) return "";
+  const head = `<div class="chc" style="display:flex;align-items:center;gap:8px;pointer-events:none"><b style="flex:1;min-width:0"></b><span style="display:flex;gap:4px">${ST.map(t => `<i title="${esc(t)}" style="width:22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted,#8A9099)">${esc(t.slice(0, 2))}</i>`).join("")}</span></div>`;
+  const row = x => { const k = Math.min(x.step || 0, n);
+    return `<button type="button" class="chc" data-goto="projects" style="display:flex;align-items:center;gap:8px"><b style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.title)}</b><span style="display:flex;gap:4px">${ST.map((t, i) => `<i title="${esc(t)}" style="width:22px;height:14px;border-radius:4px;display:inline-block;background:${i < k ? "#1FA598" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}"></i>`).join("")}</span></button>`; };
+  return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${L.length}</i></span></h4><div class="chgrid">${head}${L.map(row).join("")}</div></div>`; }
 function songsRefresh(){ document.querySelectorAll("#list .sublist").forEach(x => x.remove()); applySubOpen(); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
