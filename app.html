@@ -1586,7 +1586,9 @@ function morningScreen(seg){
   // (Oct 4) Chris: Today shows only today: everything due today (chores first) plus anything late; This week is its own tab
   const flagged0 = tasks.find(t => t.one && !t.done && !t.chore);
   // Chris (Oct 4): done = gone; finished to-dos never show here
-  const wk = tasks.filter(t => t.date && t !== flagged0 && !t.done && !withCad(t) && t.date <= plus(0)).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
+  /* (Oct 13) Chris: anything SHIPPING this week that needs his test (task.test) sits in Today until done */
+  const wkEnd0 = (() => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); })();
+  const wk = tasks.filter(t => t !== flagged0 && !t.done && !t.removed && !withCad(t) && ((t.date && t.date <= plus(0)) || (t.test && t.ships && t.ships <= wkEnd0))).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
   const dn = wk.filter(t => t.done).length, left = minsOf(wk.filter(t => !t.done));
   const chc = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>${t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
   const fp = focusProj(), ft = tasks.filter(t => !t.done && t.project === fp).sort((a, b) => String(a.date || "9").localeCompare(String(b.date || "9")) || byOrder(a, b));
