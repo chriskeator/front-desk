@@ -1312,7 +1312,7 @@ let popProj = null;
 function projPop(){
   const p = projects.find(x => x.name === popProj) || {name: popProj}, L = projTasks(popProj);
   // (Oct 7) Chris: a project opens to its to-dos; tap one for Open / Today / Pick a day / Later list / Remove (one at a time)
-  const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>${t.date ? esc(dayLabel(t.date)) : "no day yet"}</span>${tmR(t.mins)}</button>`;
+  const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${t.date ? esc(dayLabel(t.date)) : "no day yet"}</span>${tmR(t.mins)}</button>`;
   return popTop(esc(p.name), `<button type="button" class="tb" data-proj="${esc(p.name)}">Details</button>`) + (p.about ? `<p class="note popnote">${esc(p.about)}</p>` : "")
     + (L.length ? `<p class="tn">${esc(projLine(popProj))} left. Tap a to-do to move it.</p><div class="chgrid plist">${L.map(row).join("")}</div>` : `<p class="note">No tasks yet. Tell Cadence what this project needs and it will break it into tasks with times.</p>`);
 }
@@ -1579,7 +1579,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-mpta
 // (Oct 7) Chris: This week looks EXACTLY like To do today (same switch, same gold card, header, tiles); days are labels inside
 function weekScreen(seg){
   const L = listFor(sub), left = minsOf(L);
-  const tile = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${t.runFrom ? "▶ " : ""}${esc(t.short || t.title)}</b><span>${[t.chore ? "chore" : ""].filter(Boolean).join(" · ") || dayLabel(t.date)}</span>${tmR(t.mins)}</button>`;
+  const tile = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${t.runFrom ? "▶ " : ""}${esc(t.short || t.title)}${labTag(t)}</b><span>${[t.chore ? "chore" : ""].filter(Boolean).join(" · ") || dayLabel(t.date)}</span>${tmR(t.mins)}</button>`;
   let last = "", tiles = "";
   for (const t of L){ if (sortBy === "imp" && t.date !== last){ tiles += `<span class="day pday">${esc(dayLabel(t.date))}</span>`; last = t.date; } tiles += tile(t); }
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}</span></div>
@@ -1599,7 +1599,7 @@ function morningScreen(seg){
   const wkEnd0 = (() => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); })();
   const wk = tasks.filter(t => t !== flagged0 && inToday(t)).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
   const dn = wk.filter(t => t.done).length, left = minsOf(wk.filter(t => !t.done));
-  const chc = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>${t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
+  const chc = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
   const fp = focusProj(), ft = tasks.filter(t => !t.done && t.project === fp).sort((a, b) => String(a.date || "9").localeCompare(String(b.date || "9")) || byOrder(a, b));
   const flagged = tasks.find(t => t.one && !t.done && !t.chore);
   // (Oct 7) Chris: ONE thing per day, only the flagged one due today. Done or moved = gone; nothing refills it.
@@ -1624,12 +1624,12 @@ function homeLater(){
   const td = plus(0), dow = new Date(td + "T12:00:00").getDay(), wkEnd = plus(dow === 0 ? 0 : 7 - dow), mo = td.slice(0, 7);
   const open = tasks.filter(t => !t.done && !t.removed && !withCad(t) && t.date && t.date > td);
   const W = sortL(open.filter(t => t.date <= wkEnd)), M = sortL(open.filter(t => t.date > wkEnd && t.date.slice(0, 7) === mo));
-  const tile = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>${esc([dayLabel(t.date), t.chore ? "chore" : ""].filter(Boolean).join(" · "))}</span>${tmR(t.mins)}</button>`;
+  const tile = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${esc([dayLabel(t.date), t.chore ? "chore" : ""].filter(Boolean).join(" · "))}</span>${tmR(t.mins)}</button>`;
   const f = (title, color, L, empty) => `<div class="msec" style="--cc:${color}"><h4>${title} <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(tile).join("") || `<span class="tn">${empty}</span>`}</div></div>`;
   // (Oct 8) Chris: "I need to see everything that's DUE this week" = deadlines (task.due) up to Sunday + this week's chores, soonest first, late ones on top
   // (Oct 8, 2nd) Chris: not "due" (tasks are due every day): the BIG things that SHIP this week (video posts, Lab chapter, Shorts start, song release) = task.ships
   const D = tasks.filter(t => !t.done && !t.removed && t.ships && t.ships <= wkEnd && !t.labKey)   /* (Oct 13) Chris: per-lesson/per-song test rows are for Today only, never in Ships this week */.sort((a, b) => a.ships.localeCompare(b.ships) || (a.order ?? 99) - (b.order ?? 99));
-  const due = `<div class="msec" style="--cc:#B4582F"><h4>Ships this week <span class="hr"><i>${D.length || ""}</i></span></h4><div class="chgrid">${D.map(t => { const inner = `<b>${esc(t.short || t.title)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>'}</div></div>`;
+  const due = `<div class="msec" style="--cc:#B4582F"><h4>Ships this week <span class="hr"><i>${D.length || ""}</i></span></h4><div class="chgrid">${D.map(t => { const inner = `<b>${esc(t.short || t.title)}${labTag(t)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>'}</div></div>`;
   return due;   /* (Oct 13) Chris: Home = Today + Ships this week only; This week / This month folders removed */
 }
 // (Oct 10) Chris: a Home folder "Cadence tasks" = every open to-do Cadence can do (has a cost), with Cadence's own time (cmins) so he can sort and hand them over
@@ -1673,7 +1673,7 @@ function homeCadence(){
   /* (Oct 13, Chris) group by status: needs him first, then not started, in progress at the bottom; the chosen sort stays inside each group */
   const rank = t => ({"Ready to check": 0, "Fix sent": 1, "Not started": 2, "In progress": 3})[cadStatus(t)[0]] ?? 2;
   const L = L1.map((t, i) => [t, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
-  const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}" data-cad="1"><b>${esc(t.short || t.title)}</b><span></span></button>`;
+  const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}" data-cad="1"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
   return `<div class="msec" style="--cc:#0F766E"><h4>Cadence tasks <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("") || '<span class="tn">Nothing for Cadence right now.</span>'}</div></div>`;
 }
 function homeProjects(){
@@ -1708,7 +1708,7 @@ const repSorted = () => pendingReplies().slice().sort((a, b) => pRank(a) - pRank
 function homeReplies(){ const P = repSorted(); if (!P.length) return ""; setTimeout(() => loadThumbs(P), 0);
   return `<div class="msec repfold" style="--cc:#D19A12"><h4>Replies <span class="hr"><i><span class="n" style="margin:0">${P.length}</span></i></span></h4><div class="repf">${P.map(replyCard).join("")}</div></div>`; }
 const repList = () => `<div class="sublist replist">${repSorted().map(replyCard).join("") || '<span class="tn">No replies waiting.</span>'}</div>`;
-const alsoRow = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span></span></button>`;
+const alsoRow = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
 // (Oct 9) Chris: if it can't be sent from here, don't show it: messages past Meta's 24 h window drop off
 const pastWindow = r => r.kind === "message" && (/too late/i.test(r.error || "") || (r.posted && Date.now() - Date.parse(r.posted) > 864e5));
 const pendingReplies = () => replies.filter(r => (r.status === "draft" || r.status === "flagged" || r.status === "failed") && !pastWindow(r));
@@ -3197,7 +3197,7 @@ function renderMain(){
     const sizeOf = c => { const m = minsOf(tasks.filter(t => !t.done && t.project === c.n)); if (m) return m <= 120 ? "quick" : "long"; return (projects.find(p => p.name === c.n) || {}).size === "quick" ? "quick" : "long"; };
     const pid = c => (projects.find(p => p.name === c.n) || {}).id;
     const pc = (c, notNow) => `<div class="pc3${c.need ? " need" : ""}${c.w === "weekly" ? " wk" : ""}"${notNow ? ` draggable="true" data-dragproj="${esc(pid(c))}"` : ""}><button type="button" class="pc3t" data-popproj="${esc(c.n)}"><b>${esc(c.n)}</b><span>${esc(projLine(c.n) || c.next || c.about)}</span></button>${notNow ? `<button type="button" class="tb" data-pwhen="next:${esc(pid(c))}">Not now</button>` : ""}</div>`;
-    const tc = t => `<div class="pc3 td" draggable="true" data-dragtask="${esc(t.id)}"><button type="button" class="pc3t" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>To-do</span></button></div>`;
+    const tc = t => `<div class="pc3 td" draggable="true" data-dragtask="${esc(t.id)}"><button type="button" class="pc3t" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>To-do</span></button></div>`;
     const loose = tasks.filter(t => !t.done && !t.date && !projects.some(p => p.name === t.project)).sort(byOrder);
     // (Oct 7) Chris: on the phone the project folders look exactly like To do today: coloured card, title, count (#), sort, collapsible
     const colH = (title, sub2, html, size, m) => phone() ? `<div class="msec" style="--cc:${size === "quick" ? "#6AA84F" : size === "long" ? "#B42318" : size === "rest" ? "#5B6470" : "#D19A12"}"${size === "quick" || size === "long" ? ` data-dropsize="${size}"` : ""}><h4>${title}<span class="hr"><i>${(html.match(/class="pc3[ "]/g) || []).length}</i>${size ? sortCtl() : ""}</span></h4><div class="chgrid">${html || '<span class="tn">Nothing here.</span>'}</div></div>` : `<div class="pcol ${size === "quick" ? "cq" : size === "long" ? "cl" : "cw"}"${size ? ` data-dropsize="${size}"` : ""}><h4>${title}<i>${sub2}</i>${size ? sortCtl() : ""}</h4>${html || '<span class="tn">Nothing here.</span>'}</div>`;
@@ -3320,6 +3320,9 @@ function songsHTML(){ const ST = SSTEPS(), n = ST.length;
 /* (Oct 14, Chris picked D) Songs column labels = 3 letters */
 const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/)[0], k = w.toLowerCase();
   return ({lyrics: "Lyr", melody: "Mel", chords: "Chd", band: "Bnd", cards: "Crd", lesson: "Lsn", check: "Chk"})[k] || (w.charAt(0).toUpperCase() + w.slice(1, 3)); };
+/* (Oct 14, Chris) Lab test rows: V1/V2/V3 = how many times a fix came back, and whether it's ready to check (lab-signoff function writes labRound/labStatus) */
+function labTag(t){ if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing";
+  return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice().sort((a, b) => (b.step || 0) - (a.step || 0) || String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title));
   if (!L.length) return "";
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
@@ -3419,7 +3422,7 @@ function subSpecial(name){
 }
 function subHTML(name){ const sp = name.startsWith("@@") ? subSpecial(name) : null; if (sp != null) return `<div class="sublist" data-subof="${esc(name)}">${sp}</div>`;
   const L = sortL(projTasks(name));
-  return `<div class="sublist" data-subof="${esc(name)}">${L.map(t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}</b><span>${t.date ? esc(dayLabel(t.date)) : "no day yet"}</span>${tmR(t.mins)}</button>`).join("") || '<span class="tn">No to-dos yet. Tell Cadence what this needs.</span>'}</div>`; }
+  return `<div class="sublist" data-subof="${esc(name)}">${L.map(t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${t.date ? esc(dayLabel(t.date)) : "no day yet"}</span>${tmR(t.mins)}</button>`).join("") || '<span class="tn">No to-dos yet. Tell Cadence what this needs.</span>'}</div>`; }
 // (Oct 7) Chris: every to-do / idea row has ONE button on its right: "Today" (not shown when it's already today)
 // (Oct 7) Chris: every to-do row shows its automation % (Training colour) without opening it
 // (Oct 8) Chris picked B (Home row picker): short title, ONE grey line (chore · time · open N days · X of Y checked),
