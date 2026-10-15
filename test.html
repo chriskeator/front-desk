@@ -1221,7 +1221,7 @@ function shDraw(){
     h = head(N + " of " + N) + `<div class="shdone">All checked: ${a} approved, ${d} dropped</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
   else h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${r.status ? `<span class="shst ${r.status === "approved" ? "ok" : "no"}">${r.status === "approved" ? "Approved" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.fileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
     + `<div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.fileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div>`
-    + `<div class="shstep">Step 1 of 5: the cut<span>Not now: crop, lyrics, chords</span></div>`
+    + `<div class="shstep">Step 1 of 5: Start + end<span>Not now: zoom on hands, words</span></div>`
     + `<div class="shchks">${SH_CHKS.map((c, i) => `<button type="button" class="shchk${(r.fixes || []).includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${(r.fixes || []).includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`
     + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc(r.note || "")}">`
     + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${r.status === "dropped" && !(r.fixes || []).length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`;
@@ -1257,7 +1257,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const f = new Set(r.fixes || []); f.has(i) ? f.delete(i) : f.add(i); r.fixes = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v83</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v84</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
