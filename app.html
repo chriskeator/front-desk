@@ -934,8 +934,9 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scrow.two .scn{top:36px}
 #songchk .scn.x{background:var(--red-soft);border-color:var(--red)}
 #songchk .scn.sel{box-shadow:0 0 0 2px var(--gold)}
-#songchk .scsel{display:flex;align-items:center;gap:8px;grid-column:span 2}
-#songchk .scsel input{font:inherit;font-size:15px;width:140px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+#songchk .scsel{display:flex;align-items:center;gap:8px;grid-column:span 2;min-width:0}
+#songchk .scbtns .scsel .tb{width:auto;flex:none;padding-left:14px;padding-right:14px}
+#songchk .scbtns .scsel input{height:46px;box-sizing:border-box;font:inherit;font-size:15px;flex:1;min-width:0;width:auto;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 #songchk .scn.d{z-index:3;opacity:.85;cursor:grabbing}
 #songchk .scn b{font-size:15px;color:var(--teal);pointer-events:none}
 #songchk .scn span{font-size:15px;pointer-events:none;white-space:nowrap}
