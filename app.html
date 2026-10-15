@@ -942,6 +942,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scw.d{opacity:.85;cursor:grabbing;z-index:3}
 #songchk .scw span{pointer-events:none}
 #songchk .scw .scwin{width:100%;text-align:left}
+#songchk .scn .scnin{width:56px;font-size:17px;font-weight:700;color:var(--teal);text-align:center}
 #songchk .scn.x{background:var(--red-soft);border-color:var(--red)}
 #songchk .scn.sel{box-shadow:0 0 0 2px var(--gold)}
 #songchk .scn .scwin{width:86%;font:inherit;font-size:15px;text-align:center;padding:1px 4px;border:1px solid var(--gold);border-radius:4px;background:var(--card);color:var(--ink);box-sizing:border-box}
@@ -1018,6 +1019,15 @@ function scTrack(i){
   ws.forEach((w, k) => { const e = k + 1 < ws.length ? ws[k + 1].g : a + span; h += `<div class="scw${scWSel === i + ":" + k ? " sel" : ""}" data-scw="${i}:${k}" style="left:${(w.g - a) * W + 1}px;width:${Math.max(W / 2, (e - w.g) * W - 4)}px"><span>${esc(w.w)}</span></div>`; });
   t.innerHTML = h; scSelBar(); }
 function scSelAll(){ scLines.forEach((l, i) => scTrack(i)); }
+/* (Oct 15) Chris: numbers edit like words: tap a number, tap again, type 1-7 (b3, #4, b7 too), Enter. Same octave, nearest pitch */
+function scNEdit(i, j){ const e = scQ(`[data-scn="${i}:${j}"]`), n = scLines[i][j]; if (!e || !n) return; e.classList.remove("d");
+  const b = e.querySelector("b"), inp = document.createElement("input"); inp.className = "scwin scnin"; inp.value = SCDEG[n.m % 12]; inp.setAttribute("aria-label", "Number");
+  if (b) b.replaceWith(inp); else e.appendChild(inp); inp.focus(); inp.select(); let gone = false;
+  inp.addEventListener("blur", () => { if (gone) return; gone = true; const v = inp.value.trim().replace(/^♭/, "b").replace(/^♯/, "#");
+    const pc = Object.keys(SCDEG).find(k => SCDEG[k] === v);
+    if (!inp.dataset.cancel && pc != null){ const o = n.m; let best = o; for (let x = o - 12; x <= o + 12; x++) if (x % 12 === +pc && (best % 12 !== +pc || Math.abs(x - o) < Math.abs(best - o))) best = x;
+      if (best !== o){ n.m = best; scSaveSoon(); scBeep(best); } }
+    scTrack(i); }); }
 /* tap a word = pick it; tap again = type; tap empty space under a beat = new word there; Delete key removes a picked word */
 function scWEdit(i, k){ const e = scQ(`[data-scw="${i}:${k}"]`), w = scWords[i][k]; if (!e || !w) return;
   const inp = document.createElement("input"); inp.className = "scwin"; inp.value = w.w; inp.setAttribute("aria-label", "Word"); e.innerHTML = ""; e.appendChild(inp); inp.focus(); inp.select(); let gone = false;
@@ -1061,7 +1071,7 @@ document.addEventListener("pointerdown", ev => {
     else { n.g = Math.max(a, Math.min(end - .5, g0 + d)); n.L = end - n.g; }
     e.style.left = ((n.g - a) * W + 1) + "px"; e.style.width = (n.L * W - 2) + "px"; };
   const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
-    if (moved){ scSaveSoon(); scTrack(i); } else { scSel = scSel === i + ":" + j ? null : i + ":" + j; scWSel = null; scSelAll(); } };
+    if (moved){ scSaveSoon(); scTrack(i); } else if (scSel === i + ":" + j && scStep() === 1){ scNEdit(i, j); } else { scSel = i + ":" + j; scWSel = null; scSelAll(); } };
   e.addEventListener("pointermove", mv); e.addEventListener("pointerup", up); });
 function scPitch(d){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j];
   const up = [0,2,4,5,7,9,11], k = n.m % 12, o = n.m - k; let idx = up.indexOf(k); if (idx < 0) idx = up.findIndex(x => x > k) - (d > 0 ? 1 : 0);
@@ -1143,7 +1153,7 @@ document.addEventListener("click", e => {
 window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => scTrack(i)); });
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v73</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v74</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
