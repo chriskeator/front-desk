@@ -934,6 +934,8 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scrow.two .scn{top:36px}
 #songchk .scn.x{background:var(--red-soft);border-color:var(--red)}
 #songchk .scn.sel{box-shadow:0 0 0 2px var(--gold)}
+#songchk .scsel{display:flex;align-items:center;gap:8px;grid-column:span 2}
+#songchk .scsel input{font:inherit;font-size:15px;width:140px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 #songchk .scn.d{z-index:3;opacity:.85;cursor:grabbing}
 #songchk .scn b{font-size:15px;color:var(--teal);pointer-events:none}
 #songchk .scn span{font-size:15px;pointer-events:none;white-space:nowrap}
@@ -970,7 +972,7 @@ function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows();
   document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard" role="dialog" aria-modal="true"><div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill${st === 1 ? "" : " off"}">Step 1: melody</span><span class="scpill${st === 2 ? "" : " off"}">Step 2: chords</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
-    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button>${st === 1 ? `` : `<button type="button" class="tb" data-scx="back">Back to melody</button><span></span>`}<button type="button" class="tb" data-scx="reset">Reset</button><button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button></div></div>`;
+    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button>${st === 1 ? `<div class="scsel" id="scsel"></div>` : `<button type="button" class="tb" data-scx="back">Back to melody</button><span></span>`}<button type="button" class="tb" data-scx="reset">Reset</button><button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button></div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); }
 /* (Oct 15) Chris: a line glides left to right across each bar while it plays */
 function scHead(){ if (!scCtx || !scPH) return; const el0 = (scCtx.currentTime - scPH.T) / scPH.B, S = scPH.segs;
@@ -995,7 +997,16 @@ function scTrack(i){
     if (st === 2) h += `<div class="scc${c ? "" : " no"}" data-scc="${i}:${j}" style="left:${x}px;width:${w}px">${c ? esc(c) : "&middot;"}</div>`;
     const over = l.some((q, k) => k !== j && q.g < n.g + n.L - 1e-9 && n.g < q.g + q.L - 1e-9);
     h += `<div class="scn${over ? " x" : ""}${scSel === i + ":" + j ? " sel" : ""}" data-scn="${i}:${j}" style="left:${x}px;width:${w}px"><b>${SCDEG[n.m % 12]}</b><span>${esc(n.w || "~")}</span><div class="sce" data-sce="l"></div><div class="sce" data-sce="r"></div></div>`; });
-  t.innerHTML = h; }
+  t.innerHTML = h; scSelBar(); }
+/* (Oct 15) Chris: change a note's word and delete a note. Tap a note: its word box and Delete show next to Play */
+function scSelBar(){ const b = document.getElementById("scsel"); if (!b) return; const k = scSel || "";
+  if (b.dataset.k === k) return; b.dataset.k = k; if (!k){ b.innerHTML = ""; return; }
+  const [i, j] = k.split(":").map(Number), n = (scLines[i] || [])[j]; if (!n){ b.innerHTML = ""; return; }
+  b.innerHTML = `<span class="tn">Word</span><input type="text" id="scword" value="${esc(n.w || "")}" aria-label="Word for this note"><button type="button" class="tb" data-scx="del">Delete note</button>`; }
+function scDel(){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), l = scLines[i]; if (!l || !l[j] || l.length < 2) return;
+  l.splice(j, 1); scSel = null; scTrack(i); scSaveSoon(); }
+document.addEventListener("input", e => { if (e.target.id !== "scword" || !scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j]; if (!n) return;
+  n.w = e.target.value.trim(); scTrack(i); scSaveSoon(); });
 document.addEventListener("pointerdown", ev => {
   const e = ev.target.closest("#songchk [data-scn]"); if (!e) return; ev.preventDefault();
   const [i, j] = e.dataset.scn.split(":").map(Number), n = scLines[i][j], t = e.parentNode, [a] = scRange(scLines[i]);
@@ -1008,7 +1019,7 @@ document.addEventListener("pointerdown", ev => {
     else { n.g = Math.max(a, Math.min(end - .5, g0 + d)); n.L = end - n.g; }
     e.style.left = ((n.g - a) * W + 1) + "px"; e.style.width = (n.L * W - 2) + "px"; };
   const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
-    if (moved) scSaveSoon(); else scSel = scSel === i + ":" + j ? null : i + ":" + j; scTrack(i); };
+    if (moved){ scSaveSoon(); scTrack(i); } else { const was = scSel ? +scSel.split(":")[0] : -1; scSel = scSel === i + ":" + j ? null : i + ":" + j; if (was >= 0 && was !== i) scTrack(was); scTrack(i); } };
   e.addEventListener("pointermove", mv); e.addEventListener("pointerup", up); });
 function scPitch(d){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j];
   const up = [0,2,4,5,7,9,11], k = n.m % 12, o = n.m - k; let idx = up.indexOf(k); if (idx < 0) idx = up.findIndex(x => x > k) - (d > 0 ? 1 : 0);
@@ -1058,7 +1069,8 @@ async function scApprove(){
     for (const o of others){ const d = await db.collection("songcheck").doc(o).get(); if (!d.exists || d.data().status !== "approved") left.push(o); }
     if (!left.length) await db.collection("tasks").doc(t.id).update({done: true, doneAt: now}); }
   scClose(); }
-document.addEventListener("keydown", e => { if (!scId) return; if (e.key === "Escape") scClose(); else if (scStep() === 1 && (e.key === "ArrowUp" || e.key === "ArrowDown")){ e.preventDefault(); scPitch(e.key === "ArrowUp" ? 1 : -1); } });
+document.addEventListener("keydown", e => { if (!scId) return; if (e.target.id === "scword"){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); e.target.blur(); } return; }
+  if (e.key === "Escape") scClose(); else if (scStep() === 1 && (e.key === "Delete" || e.key === "Backspace") && scSel){ e.preventDefault(); scDel(); } else if (scStep() === 1 && (e.key === "ArrowUp" || e.key === "ArrowDown")){ e.preventDefault(); scPitch(e.key === "ArrowUp" ? 1 : -1); } });
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-songchk]"); if (go){ e.preventDefault(); e.stopPropagation(); scOpen(go.dataset.songchk); return; }
   if (!scId || !e.target.closest("#songchk")) return;
@@ -1073,6 +1085,7 @@ document.addEventListener("click", e => {
   else if (a === "click"){ try { localStorage.setItem("scClick", scClickOn() ? "0" : "1"); } catch {} x.textContent = scClickOn() ? "Click on" : "Click off"; x.classList.toggle("on", scClickOn()); if (scCtx){ scPlay(); } }
   else if (a === "play"){ if (scCtx){ scStop(); scDraw(); } else { scPlay(); x.textContent = "Stop"; } }
   else if (a === "up" || a === "down") scPitch(a === "up" ? 1 : -1);
+  else if (a === "del") scDel();
   else if (a === "reset"){ if (scStep() === 1) scLines = scClone(scDoc.orig); else scLines.forEach((l, i) => l.forEach((n, j) => { n.c = scClone(((scDoc.orig[i] || [])[j] || {}).c || []); })); scSel = null; scDraw(); scSaveSoon(); }
   else if (a === "back"){ scDoc.step = 1; db.collection("songcheck").doc(scId).update({step: 1, status: "melody"}).catch(() => {}); scDraw(); }
   else if (a === "ok") scApprove(); }, true);
