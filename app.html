@@ -915,6 +915,9 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .sch{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 #songchk .sch .t{font:600 19px var(--display)}
 #songchk .scpill{font-size:12px;padding:4px 12px;border-radius:8px;background:var(--soft);color:var(--teal);font-weight:600;white-space:nowrap}
+#songchk .sctsig{font-size:13px;color:var(--muted);white-space:nowrap}
+#songchk .sctsig b{font-size:16px;color:var(--ink);margin-left:4px}
+#songchk .scclk.on{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
 #songchk .scpill.off{background:transparent;color:var(--muted);border:1px solid var(--line)}
 #songchk .scrow{display:flex;align-items:stretch;margin:0 0 26px}
 #songchk .scrows{max-height:510px;overflow-y:auto;overflow-x:hidden;padding-top:18px;margin-bottom:6px}   /* (Oct 15) Chris: card is 5 rows tall; more rows scroll inside */
@@ -947,6 +950,8 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scbtns .tb{height:46px;width:100%}
 </style>
 <script>
+/* (Oct 15) Chris: a click (metronome) button next to the time signature; remembered per browser */
+function scClickOn(){ try { return localStorage.getItem("scClick") === "1"; } catch { return false; } }
 let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null;
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
 const SCCH = ["1","4","5","6m","2m","3m",""], SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
@@ -961,7 +966,7 @@ const scRows = () => ((scDoc.rows || {})[scStep()] || []);
 function scSaveSoon(){ clearTimeout(scTimer); const id = scId, L = scClone(scLines); scTimer = setTimeout(() => { db.collection("songcheck").doc(id).update({lines: L, updated: new Date().toISOString()}).catch(() => {}); }, 500); }
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows();
-  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard" role="dialog" aria-modal="true"><div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill${st === 1 ? "" : " off"}">Step 1: melody</span><span class="scpill${st === 2 ? "" : " off"}">Step 2: chords</span><b>${M}/4</b><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
+  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard" role="dialog" aria-modal="true"><div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill${st === 1 ? "" : " off"}">Step 1: melody</span><span class="scpill${st === 2 ? "" : " off"}">Step 2: chords</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button>${st === 1 ? `` : `<button type="button" class="tb" data-scx="back">Back to melody</button><span></span>`}<button type="button" class="tb" data-scx="reset">Reset</button><button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button></div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); }
@@ -1025,6 +1030,8 @@ function scPlay(){
     l.forEach(n => scEP(c, at(n.g), n.L * B * .95, n.m, .3));
     if (scStep() === 2){ const ch = []; l.forEach(n => (n.c || []).forEach(([k, x]) => ch.push([n.g + x, k]))); ch.sort((p, q) => p[0] - q[0]);
       ch.forEach(([g, k], x) => { const e = x + 1 < ch.length ? ch[x + 1][0] : e0; if (SCBASS[k]) tone(at(g), (e - g) * B * .95, SCBASS[k], .3, "sine"); }); }
+    if (scClickOn()) for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++){ const o = c.createOscillator(), g = c.createGain(), s = at(b), acc = ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0;
+      o.frequency.value = acc ? 1500 : 1000; g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(acc ? .35 : .22, s + .002); g.gain.exponentialRampToValueAtTime(.001, s + .06); o.connect(g).connect(c.destination); o.start(s); o.stop(s + .08); }
     t += e0 - s0; });
   scPH = {T, B, segs}; requestAnimationFrame(scHead);
   scPlayEnd = setTimeout(() => { scStop(); if (scId) scDraw(); }, (t * B + 1) * 1000); }
@@ -1049,6 +1056,7 @@ document.addEventListener("click", e => {
     n.c = nx ? [[nx, 0]] : []; scTrack(i); scSaveSoon(); return; }
   const x = e.target.closest("[data-scx]"); if (!x) return; const a = x.dataset.scx;
   if (a === "close") scClose();
+  else if (a === "click"){ try { localStorage.setItem("scClick", scClickOn() ? "0" : "1"); } catch {} x.textContent = scClickOn() ? "Click on" : "Click off"; x.classList.toggle("on", scClickOn()); if (scCtx){ scPlay(); } }
   else if (a === "play"){ if (scCtx){ scStop(); scDraw(); } else { scPlay(); x.textContent = "Stop"; } }
   else if (a === "up" || a === "down") scPitch(a === "up" ? 1 : -1);
   else if (a === "reset"){ if (scStep() === 1) scLines = scClone(scDoc.orig); else scLines.forEach((l, i) => l.forEach((n, j) => { n.c = scClone(((scDoc.orig[i] || [])[j] || {}).c || []); })); scSel = null; scDraw(); scSaveSoon(); }
