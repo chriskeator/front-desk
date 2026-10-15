@@ -49,6 +49,7 @@ h1{font-family:var(--display);font-weight:600;font-size:26px;margin:0}
 .pager button,.small{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;border-radius:8px;padding:4px 10px;cursor:pointer}
 .pager button[disabled]{opacity:.35;cursor:default}
 .list{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.list{scrollbar-gutter:stable}   /* (Oct 15) Chris: page shook on load: the scrollbar flicked on/off and changed the width; space is now always kept */
 .list > *{flex-shrink:0}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px;text-align:left;font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:5px;min-height:74px}
