@@ -1106,7 +1106,6 @@ function moveList(t){
   const rows = []; for (let i = 0; i < 14; i++){ const k = plus(i), n = tasks.filter(x => !x.done && x.date === k).length;
     rows.push(lrow(`data-moveto="${k}"`, i < 2 ? dayLabel(k) : dayLabel(k), k === t.date, n ? n + (n === 1 ? " to-do" : " to-dos") : "")); }
   rows.push(lrow('data-movecal="1"', "Pick a date…", false, ""));
-  rows.push(lrow(`data-moveto="later"`, "Later list (no day)", !t.date, ""));
   return `<div class="llist">${rows.join("")}</div>` + lfoot('data-movecancel="1"');
 }
 // (Oct 7) Project = a list of every open project
@@ -1128,7 +1127,7 @@ function moveCal(t){
   const thisM = today.slice(0, 7);
   return `<div class="mcal"><div class="mcnav"><button type="button" class="tb" data-movem="-1" ${moveMonth <= thisM ? "disabled" : ""}>‹ Month</button><b>${new Date(Y, M - 1, 1).toLocaleDateString(undefined, {month: "long", year: "numeric"})}</b><button type="button" class="tb" data-movem="1">Month ›</button></div>
     <div class="mcg">${["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(w => `<span class="calw">${w}</span>`).join("")}${cells.join("")}</div>
-    <div class="row" style="justify-content:space-between"><button type="button" class="tb go" data-moveto="later" ${t.date ? "" : "disabled"}>${t.date ? "Later list (no day)" : "On the Later list"}</button><button type="button" class="tb" data-movecancel="1">Cancel</button></div></div>`;
+    <div class="row" style="justify-content:space-between"><span></span><button type="button" class="tb" data-movecancel="1">Cancel</button></div></div>`;
 }
 function taskPop(t){
   // (Oct 7) Chris: Start / Pause add up his REAL working time across days (worked mins), for the archive and estimates
@@ -1140,7 +1139,7 @@ function taskPop(t){
   else if (moving === t.id && moveCalOn) acts = moveCal(t);
   else if (moving === t.id) return popTop("Move to") + `<p class="tn">${esc(t.short || t.title)}</p>` + moveList(t);
   else if (pickingProj === t.id) return popTop(t.project ? "Move to which project?" : "Put in which project?") + `<p class="tn">${esc(t.short || t.title)}${t.project ? " · now in " + esc(t.project) : ""}</p>` + projList(t);   // (Oct 7) Chris didn't understand "Project"
-  else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(t.url)}" target="_blank" rel="noopener">Open link</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Pick a day</button>`}${t.done ? "" : `<button type="button" class="tb" data-pickproj="${esc(t.id)}">${"Move"}</button>`}<button type="button" class="tb" data-del="${esc(t.id)}">Remove</button>${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
+  else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(t.url)}" target="_blank" rel="noopener">Open link</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}${t.done ? "" : `<button type="button" class="tb" data-delyes="${esc(t.id)}">Remove</button>`}${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
   let list = "";
   if (t.review){ const items = revItems(t); list = `<p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>` + popPaged(revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`))); }
   else if (tLinks(t).length) list = popPaged(tLinks(t).map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labRef(l.url, l.label || "Link"), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }));
@@ -3560,7 +3559,7 @@ function taskDetail(t){
   const bt = (attr, l, go) => `<button type="button" class="tb${go ? " go" : ""}" ${attr}>${l}</button>`;
   const [cd, ca] = checkCount(t), isToday = t.date && t.date <= plus(0);
   return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.note ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
-    ${t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Pick a day", moving === t.id)}${bt(`data-tdproj="${esc(t.id)}"`, "Move", pickingProj === t.id)}${bt(`data-del="${esc(t.id)}"`, "Remove")}</div>${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
+    ${t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
@@ -3574,12 +3573,12 @@ function rowMenuFor(b){ return null;   // (Oct 7) Chris: no drop-down; tap a row
 function rowMenuForOld(b){
   const mb = (attr, l) => `<button type="button" ${attr}>${l}</button>`;
   if (b.dataset.tlinks){ const id = esc(b.dataset.tlinks);
-    return [mb(`data-tlinks="${id}"`, "Open"), mb(`data-today="${id}"`, "Today"), mb(`data-move="${id}"`, "Pick a day"), mb(`data-rowlater="task:${id}"`, "Later list"), mb(`data-del="${id}"`, "Remove")]; }
+    return [mb(`data-tlinks="${id}"`, "Open"), mb(`data-today="${id}"`, "Today"), mb(`data-move="${id}"`, "Move"), mb(`data-delyes="${id}"`, "Remove")]; }
   if (b.dataset.ideaopen){ const id = esc(b.dataset.ideaopen);
-    return [mb(`data-ideaopen="${id}"`, "Open"), mb(`data-ideatoday="${id}"`, "Today"), mb(`data-ideaadd="${id}"`, "Pick a day"), mb(`data-rowlater="idea:${id}"`, "Later list"), mb(`data-rowdel="idea:${id}"`, "Remove")]; }
+    return [mb(`data-ideaopen="${id}"`, "Open"), mb(`data-ideatoday="${id}"`, "Today"), mb(`data-ideaadd="${id}"`, "Move"), mb(`data-rowdel="idea:${id}"`, "Remove")]; }
   if (b.dataset.popproj) return null;   // (Oct 7) Chris: a project just opens (to its to-dos); he moves one to-do at a time
   if (false){ const p = {}, nt = null;
-    return [mb(`data-popproj="${esc(b.dataset.popproj)}"`, "Open"), nt ? mb(`data-today="${esc(nt.id)}"`, "Today") : "", nt ? mb(`data-move="${esc(nt.id)}"`, "Pick a day") : "", p.id ? mb(`data-pwhen="next:${esc(p.id)}"`, "Later list") : ""].filter(Boolean); }   // a project has no Remove (Later list = not working on it now)
+    return [mb(`data-popproj="${esc(b.dataset.popproj)}"`, "Open"), nt ? mb(`data-today="${esc(nt.id)}"`, "Today") : "", nt ? mb(`data-move="${esc(nt.id)}"`, "Move") : "", p.id ? mb(`data-pwhen="next:${esc(p.id)}"`, "Later list") : ""].filter(Boolean); }   // a project has no Remove (Later list = not working on it now)
   return null;
 }
 document.addEventListener("click", e => {
@@ -3632,7 +3631,7 @@ document.addEventListener("click", async e => {
   const t = e.target.closest("button"); if (!t) return;
   const d = t.dataset;
   // (Oct 7) pick lists: open / close, and a pick closes its list
-  if (d.rowlater && db){ const [k, id] = d.rowlater.split(":"); t.disabled = true; rowMenuOff();
+  if (d.rowlater && db){ const [k, id] = d.rowlater.split(":"); t.disabled = true; rowMenuOff(); closePop(); openLinks = null; taskOpen = null;   // (Oct 15) Chris: Later = "get it out of here", one button (replaces Remove + folder Move)
     try { if (k === "task") await db.collection("tasks").doc(id).update({date: "", order: 99});
       else { const i = ideas.find(x => x.id === id); if (i && !tasks.some(x => x.fromIdea === id && !x.done)) await db.collection("tasks").doc("t-idea-" + Date.now().toString(36)).set({title: i.title, note: /^https:/.test(i.note || "") ? "" : (i.note || ""), date: "", done: false, added: new Date().toISOString(), order: 99, fromIdea: i.id, ...(i.mins ? {mins: i.mins} : {})}); }
       render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
@@ -3811,7 +3810,7 @@ document.addEventListener("click", async e => {
   if (d.moveto && db && moving){ const id = moving; t.disabled = true;
     try { await db.collection("tasks").doc(id).update({date: d.moveto === "later" ? "" : d.moveto, order: 99}); moving = null; openLinks = null; render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
   if (d.delno){ confirmDel = null; render(); return; }
-  if (d.delyes && db){ t.disabled = true; try { await db.collection("tasks").doc(d.delyes).update({done: true, removed: true, doneAt: new Date().toISOString()});   /* (Oct 7) kept for the archive, just hidden */ confirmDel = null; openLinks = null; render(); } catch { t.disabled = false; } return; }
+  if (d.delyes && db){ t.disabled = true; try { await db.collection("tasks").doc(d.delyes).update({done: true, removed: true, doneAt: new Date().toISOString()});   /* (Oct 7) kept for the archive, just hidden; (Oct 15) Chris: Remove = the one "get it out of here" button, no Later list */ confirmDel = null; openLinks = null; taskOpen = null; rowMenuOff(); closePop(); render(); } catch { t.disabled = false; } return; }
   if (d.job && db){ t.disabled = true; try { await db.collection("jobs").doc(d.job).update({status:"done", updated:new Date().toISOString()}); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
   if (d.catblock !== undefined){ openCat = openCat === d.catblock ? null : d.catblock; render(); return; }
   if (d.proj){ closePop(); proj = d.proj; page = 0; showDone = false; render(); return; }
