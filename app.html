@@ -912,11 +912,13 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scbg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60}
 #songchk .sccard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1180px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:auto;background:var(--card);color:var(--ink);border-radius:14px;padding:16px 18px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25)}
 @media (min-width:1000px){#songchk .sccard{width:calc(80vw - 20px)}}
-#songchk .sch{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:28px}
+#songchk .sch{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 #songchk .sch .t{font:600 19px var(--display)}
 #songchk .scpill{font-size:12px;padding:4px 12px;border-radius:8px;background:var(--soft);color:var(--teal);font-weight:600;white-space:nowrap}
 #songchk .scpill.off{background:transparent;color:var(--muted);border:1px solid var(--line)}
 #songchk .scrow{display:flex;align-items:stretch;margin:0 0 26px}
+#songchk .scrows{max-height:510px;overflow-y:auto;overflow-x:hidden;padding-top:18px;margin-bottom:6px}   /* (Oct 15) Chris: card is 5 rows tall; more rows scroll inside */
+#songchk .scrows.two{max-height:650px}
 #songchk .sctrk{position:relative;flex:1;height:72px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);border-left:2px solid var(--muted)}
 #songchk .scrow.two .sctrk{height:100px}
 #songchk .scbl{position:absolute;top:0;bottom:0;border-left:2px solid var(--muted)}
@@ -957,7 +959,7 @@ function scSaveSoon(){ clearTimeout(scTimer); const id = scId, L = scClone(scLin
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows();
   document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard" role="dialog" aria-modal="true"><div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill${st === 1 ? "" : " off"}">Step 1: melody</span><span class="scpill${st === 2 ? "" : " off"}">Step 2: chords</span><b>${M}/4</b><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
-    + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("")
+    + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button>${st === 1 ? `` : `<button type="button" class="tb" data-scx="back">Back to melody</button><span></span>`}<button type="button" class="tb" data-scx="reset">Reset</button><button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button></div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); }
 /* (Oct 15) Chris: a line glides left to right across each bar while it plays */
