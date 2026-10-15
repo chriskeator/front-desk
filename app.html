@@ -1143,7 +1143,7 @@ document.addEventListener("click", e => {
 window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => scTrack(i)); });
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v72</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v73</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4221,6 +4221,13 @@ function deskSaveHome(){ try { if (deskReady && tab === "today") localStorage.se
 { const _r = render; render = function(){ if (!deskReady) return; const v = _r.apply(this, arguments); deskSaveHome(); return v; }; }
 try { const h = localStorage.getItem("fd-home-cache"), L = $("list"); if (h && L){ L.innerHTML = h; L.classList.add("roomy", "fdcache"); } } catch {}
 setTimeout(deskGo, 5000);
+/* (Oct 15) Chris: the host caches the page ~10 min, so a refresh can show an old version. On open (and when he comes back to the tab)
+   ask for the newest copy; if its v number is higher, load it. Never while a song check is open. */
+function deskVerCheck(){ const cur = +((document.querySelector("header .deskver") || {}).textContent || "").replace(/\D/g, "") || 0; if (!cur || scId) return;
+  fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
+    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + location.hash); }).catch(() => {}); }
+setTimeout(deskVerCheck, 1500);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") deskVerCheck(); });
 (async () => {
   db = await window.claude?.use?.("db") ?? null;
   if (!db){ $("list").innerHTML = '<div class="empty"><b>Sign in to see your desk</b><span>Taking you to sign in.</span></div>'; return; }
