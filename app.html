@@ -935,6 +935,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scn.x{background:var(--red-soft);border-color:var(--red)}
 #songchk .scn.sel{box-shadow:0 0 0 2px var(--gold)}
 #songchk .scn .schold{display:block;width:70%;height:18px;box-sizing:border-box;border-bottom:2px solid var(--teal);pointer-events:none}
+#songchk .scn .scwin{width:86%;font:inherit;font-size:15px;text-align:center;padding:1px 4px;border:1px solid var(--gold);border-radius:4px;background:var(--card);color:var(--ink);box-sizing:border-box}
 #songchk .scsel{display:flex;align-items:center;gap:8px;grid-column:span 2;min-width:0}
 #songchk .scbtns .scsel .tb{width:auto;flex:none;padding-left:14px;padding-right:14px}
 #songchk .scbtns .scsel input{height:46px;box-sizing:border-box;font:inherit;font-size:15px;flex:1;min-width:0;width:auto;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
@@ -1004,16 +1005,20 @@ function scTrack(i){
 function scSelBar(){ const b = document.getElementById("scsel"); if (!b) return; const k = scSel || "";
   if (b.dataset.k === k) return; b.dataset.k = k; if (!k){ b.innerHTML = ""; return; }
   const [i, j] = k.split(":").map(Number), n = (scLines[i] || [])[j]; if (!n){ b.innerHTML = ""; return; }
-  b.innerHTML = `<span class="tn">Word</span><input type="text" id="scword" value="${esc(n.w || "")}" placeholder="empty = held" aria-label="Word for this note"><button type="button" class="tb" data-scx="split">Split note</button><button type="button" class="tb" data-scx="del">Delete note</button>`; }
+  b.innerHTML = `<button type="button" class="tb" data-scx="split">Split note</button><button type="button" class="tb" data-scx="del">Delete note</button>`; }
 /* (Oct 15) Chris: one word over two notes (3 and 2 under 'sky'). Split = two notes of the same pitch; the second has no word (held line) */
 function scSplit(){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), l = scLines[i], n = l && l[j]; if (!n || n.L < 1) return;
   const h = Math.max(.5, Math.floor(n.L) / 2);
   const b = {g: n.g + h, L: n.L - h, m: n.m, w: ""}; n.L = h; l.splice(j + 1, 0, b); scTrack(i); scSaveSoon(); }
 function scDel(){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), l = scLines[i]; if (!l || !l[j] || l.length < 2) return;
   l.splice(j, 1); scSel = null; scTrack(i); scSaveSoon(); }
-document.addEventListener("input", e => { if (e.target.id !== "scword" || !scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j]; if (!n) return;
-  n.w = e.target.value.trim(); scTrack(i); scSaveSoon(); });
+/* (Oct 15) Chris: edit the word right in the note: tap a note, tap it again, type, Enter (empty = held line) */
+function scEditWord(i, j){ const e = scQ(`[data-scn="${i}:${j}"]`), n = scLines[i][j]; if (!e || !n) return;  e.classList.remove("d");
+  const old = e.querySelector("span, .schold"); const inp = document.createElement("input"); inp.className = "scwin"; inp.value = n.w || ""; inp.setAttribute("aria-label", "Word for this note");
+  if (old) old.replaceWith(inp); else e.appendChild(inp); inp.focus(); inp.select(); let gone = false;
+  inp.addEventListener("blur", () => { if (gone) return; gone = true; if (!inp.dataset.cancel){ n.w = inp.value.trim(); scSaveSoon(); } scTrack(i); }); }
 document.addEventListener("pointerdown", ev => {
+  if (ev.target.classList && ev.target.classList.contains("scwin")) return;
   const e = ev.target.closest("#songchk [data-scn]"); if (!e) return; ev.preventDefault();
   const [i, j] = e.dataset.scn.split(":").map(Number), n = scLines[i][j], t = e.parentNode, [a] = scRange(scLines[i]);
   const span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
@@ -1025,7 +1030,7 @@ document.addEventListener("pointerdown", ev => {
     else { n.g = Math.max(a, Math.min(end - .5, g0 + d)); n.L = end - n.g; }
     e.style.left = ((n.g - a) * W + 1) + "px"; e.style.width = (n.L * W - 2) + "px"; };
   const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
-    if (moved){ scSaveSoon(); scTrack(i); } else { const was = scSel ? +scSel.split(":")[0] : -1; scSel = scSel === i + ":" + j ? null : i + ":" + j; if (was >= 0 && was !== i) scTrack(was); scTrack(i); } };
+    if (moved){ scSaveSoon(); scTrack(i); } else if (scSel === i + ":" + j && scStep() === 1){ scEditWord(i, j); return; } else { const was = scSel ? +scSel.split(":")[0] : -1; scSel = i + ":" + j; if (was >= 0 && was !== i) scTrack(was); scTrack(i); } };
   e.addEventListener("pointermove", mv); e.addEventListener("pointerup", up); });
 function scPitch(d){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j];
   const up = [0,2,4,5,7,9,11], k = n.m % 12, o = n.m - k; let idx = up.indexOf(k); if (idx < 0) idx = up.findIndex(x => x > k) - (d > 0 ? 1 : 0);
@@ -1075,7 +1080,7 @@ async function scApprove(){
     for (const o of others){ const d = await db.collection("songcheck").doc(o).get(); if (!d.exists || d.data().status !== "approved") left.push(o); }
     if (!left.length) await db.collection("tasks").doc(t.id).update({done: true, doneAt: now}); }
   scClose(); }
-document.addEventListener("keydown", e => { if (!scId) return; if (e.target.id === "scword"){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); e.target.blur(); } return; }
+document.addEventListener("keydown", e => { if (!scId) return; if (e.target.classList && e.target.classList.contains("scwin")){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); if (e.key === "Escape") e.target.dataset.cancel = "1"; e.target.blur(); } return; }
   if (e.key === "Escape") scClose(); else if (scStep() === 1 && (e.key === "Delete" || e.key === "Backspace") && scSel){ e.preventDefault(); scDel(); } else if (scStep() === 1 && (e.key === "ArrowUp" || e.key === "ArrowDown")){ e.preventDefault(); scPitch(e.key === "ArrowUp" ? 1 : -1); } });
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-songchk]"); if (go){ e.preventDefault(); e.stopPropagation(); scOpen(go.dataset.songchk); return; }
