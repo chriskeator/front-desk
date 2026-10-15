@@ -1172,6 +1172,13 @@ window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => sc
 #shortchk .shnote{height:44px;box-sizing:border-box;font:inherit;font-size:15px;width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 #shortchk .shcuts{font-size:13px;color:var(--ink);line-height:1.35;max-height:2.7em;overflow:hidden}
 #shortchk .shcuts b{color:var(--teal)}
+/* (Oct 15, Chris) the Hands video is TALL (9:16): show it as big as the screen allows, checks beside it, never scroll */
+#shortchk .shbody{display:flex;gap:12px;min-height:0;align-items:stretch}
+#shortchk .shbody .shv{flex:0 0 auto;width:min(52%, calc((100vh - 290px) * 0.5625));aspect-ratio:9/16;max-height:none;margin:0}
+#shortchk .shside{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+#shortchk .shbody .shchks{grid-template-columns:1fr}
+#shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
+@media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
 #shortchk .shwhat{font-size:13.5px;line-height:1.35;color:var(--ink)}
 #shortchk .shstep{font-size:14px;font-weight:700;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #shortchk .shstep span{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
@@ -1211,10 +1218,10 @@ function shDraw(){
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
   else { const st = shShow(r), H = st === "hands", CK = H ? SH_CHKS_H : SH_CHKS, fx = shFx(r, st), ans = H ? r.hands : r.status;
     h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
-    + `<div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div>`
+    + `<div class="shbody"><div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div><div class="shside">`
     + (H ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<b>${esc(String(c.at).replace(/\.\d+$/, ""))}</b> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
     + `<div class="shstep">${H ? "Step 1 of 5: Hands" : "Step 2 of 5: Start + end"}</div><div class="shwhat">${H ? "Just look: are both hands and wrists inside the tall frame the whole time, with the lettered keys on top and no lyrics? Ignore the sound." : "Just listen: does it start right on the action and end cleanly, with no ums or pauses in the middle? The cuts are listed above."}</div>`
-    + `<div class="shchks">${CK.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`
+    + `<div class="shchks">${CK.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div></div></div>`
     + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc((H ? r.handsNote : r.note) || "")}">`
     + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${!H && r.status === "dropped" && !fx.length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`; }
   document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
@@ -1256,7 +1263,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v90</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v91</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
