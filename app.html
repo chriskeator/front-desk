@@ -932,7 +932,10 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scn.d{z-index:3;opacity:.85;cursor:grabbing}
 #songchk .scn b{font-size:15px;color:var(--teal);pointer-events:none}
 #songchk .scn span{font-size:15px;pointer-events:none;white-space:nowrap}
-#songchk .sce{position:absolute;top:0;bottom:0;width:8px;cursor:ew-resize}
+#songchk .sce{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:2}   /* (Oct 15) Chris: stretch arrow on both edges, hand in the middle */
+#songchk .sce[data-sce="l"]{left:0}
+#songchk .sce[data-sce="r"]{right:0}
+#songchk .scn.d .sce{cursor:ew-resize}
 #songchk .scc{position:absolute;top:6px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--pick);cursor:pointer;border-radius:6px;user-select:none}
 #songchk .scc:hover{background:var(--hover)}
 #songchk .scc.no{color:var(--line)}
