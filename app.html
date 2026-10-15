@@ -968,7 +968,7 @@ function scHead(){ if (!scCtx || !scPH) return; const el0 = (scCtx.currentTime -
   const i = sg.i, beat = sg.s0 + Math.max(0, el0 - sg.t);
   const t = scQ(`[data-sct="${i}"]`);
   if (t){ const span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), [a] = scRange(scLines[i]), W = t.clientWidth / span;
-    let el = document.getElementById("scph"); if (!el || el.parentNode !== t){ if (el) el.remove(); el = document.createElement("div"); el.id = "scph"; el.className = "scph"; t.appendChild(el); }
+    let el = document.getElementById("scph"); if (!el || el.parentNode !== t){ if (el) el.remove(); el = document.createElement("div"); el.id = "scph"; el.className = "scph"; t.appendChild(el); t.parentNode.scrollIntoView({block: "nearest", behavior: "smooth"}); }
     el.style.left = Math.max(0, Math.min(t.clientWidth - 3, (beat - a) * W)) + "px"; }
   requestAnimationFrame(scHead); }
 function scCount(){ const c = document.getElementById("sccnt"); if (c) c.textContent = scRows().length + " of " + scLines.length + " rows done"; }
