@@ -922,6 +922,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scbl{position:absolute;top:0;bottom:0;border-left:2px solid var(--muted)}
 #songchk .scbt{position:absolute;top:0;bottom:0;border-left:1px dashed var(--line)}
 #songchk .scpk{position:absolute;top:0;bottom:0;background:var(--hover)}
+#songchk .scph{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1px;background:var(--gold);border-radius:2px;z-index:4;pointer-events:none}
 #songchk .scn{position:absolute;top:7px;height:56px;background:var(--soft);border:1px solid var(--teal);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;user-select:none;touch-action:none;box-sizing:border-box;z-index:1;overflow:hidden}
 #songchk .scrow.two .scn{top:36px}
 #songchk .scn.x{background:var(--red-soft);border-color:var(--red)}
@@ -941,7 +942,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scbtns .tb{height:46px;width:100%}
 </style>
 <script>
-let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTimer = null, scPlayEnd = null;
+let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null;
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
 const SCCH = ["1","4","5","6m","2m","3m",""], SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
 const scClone = x => JSON.parse(JSON.stringify(x));
@@ -959,6 +960,14 @@ function scDraw(){
     + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("")
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button>${st === 1 ? `<button type="button" class="tb" data-scx="up">Note up</button><button type="button" class="tb" data-scx="down">Note down</button>` : `<button type="button" class="tb" data-scx="back">Back to melody</button><span></span>`}<button type="button" class="tb" data-scx="reset">Reset</button><button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button></div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); }
+/* (Oct 15) Chris: a line glides left to right across each bar while it plays */
+function scHead(){ if (!scCtx || !scPH) return; const beat = (scCtx.currentTime - scPH.T) / scPH.B + scPH.g0;
+  let i = scLines.length - 1; for (let k = 0; k < scLines.length - 1; k++) if (beat < Math.min(...scLines[k + 1].map(n => n.g))){ i = k; break; }
+  const t = scQ(`[data-sct="${i}"]`);
+  if (t){ const span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), [a] = scRange(scLines[i]), W = t.clientWidth / span;
+    let el = document.getElementById("scph"); if (!el || el.parentNode !== t){ if (el) el.remove(); el = document.createElement("div"); el.id = "scph"; el.className = "scph"; t.appendChild(el); }
+    el.style.left = Math.max(0, Math.min(t.clientWidth - 3, (beat - a) * W)) + "px"; }
+  requestAnimationFrame(scHead); }
 function scCount(){ const c = document.getElementById("sccnt"); if (c) c.textContent = scRows().length + " of " + scLines.length + " rows done"; }
 function scRange(l){ const M = scDoc.meter, a = Math.floor(Math.min(...l.map(n => n.g)) / M + 1e-9) * M, b = Math.ceil(Math.max(...l.map(n => n.g + n.L)) / M - 1e-9) * M; return [a, Math.max(b, a + M)]; }
 function scTrack(i){
@@ -991,13 +1000,19 @@ document.addEventListener("pointerdown", ev => {
 function scPitch(d){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j];
   const up = [0,2,4,5,7,9,11], k = n.m % 12, o = n.m - k; let idx = up.indexOf(k); if (idx < 0) idx = up.findIndex(x => x > k) - (d > 0 ? 1 : 0);
   idx += d; n.m = o + 12 * Math.floor(idx / 7) + up[((idx % 7) + 7) % 7]; scTrack(i); scSaveSoon(); scBeep(n.m); }
-function scBeep(m){ try { const c = new AudioContext(), o = c.createOscillator(), g = c.createGain(); o.type = "triangle"; o.frequency.value = 440 * 2 ** ((m - 69) / 12); g.gain.setValueAtTime(.25, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .5); o.connect(g).connect(c.destination); o.start(); o.stop(c.currentTime + .5); setTimeout(() => c.close(), 700); } catch {} }
-function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } }
+/* (Oct 15) Chris: melody plays on the Rhodes (the Lab band's electric piano), not the old triangle beep */
+function scEP(c, s, d, m, v){ const h = [1, .45, .06, .16, .03], re = new Float32Array(h.length + 1), im = new Float32Array(h.length + 1); h.forEach((a, i) => { im[i + 1] = a; });
+  const o = c.createOscillator(), g = c.createGain(); o.setPeriodicWave(c.createPeriodicWave(re, im)); o.frequency.value = 440 * 2 ** ((m - 69) / 12);
+  g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .006); g.gain.setTargetAtTime(.0001, s + .006, 1 / 1.4); g.gain.linearRampToValueAtTime(0, s + d + .25);
+  o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .3); }
+function scBeep(m){ try { const c = new AudioContext(); scEP(c, c.currentTime, .5, m, .3); setTimeout(() => c.close(), 1000); } catch {} }
+function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } scPH = null; const h = document.getElementById("scph"); if (h) h.remove(); }
 function scPlay(){
   scStop(); const c = scCtx = new AudioContext(), B = 60 / scDoc.bpm, all = scLines.flat(), g0 = Math.min(...all.map(n => n.g)), T = c.currentTime + .3;
   const tone = (s, d, m, v, type) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = 440 * 2 ** ((m - 69) / 12);
     g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .02); g.gain.setValueAtTime(v, s + Math.max(.03, d - .08)); g.gain.linearRampToValueAtTime(0, s + d); o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .05); };
-  all.forEach(n => tone(T + (n.g - g0) * B, n.L * B * .95, n.m, .22, "triangle"));
+  all.forEach(n => scEP(c, T + (n.g - g0) * B, n.L * B * .95, n.m, .3));
+  scPH = {T, B, g0}; requestAnimationFrame(scHead);
   let last = 0;
   if (scStep() === 2){ const ch = []; all.forEach(n => (n.c || []).forEach(([k, at]) => ch.push([n.g + at, k]))); ch.sort((p, q) => p[0] - q[0]);
     const endG = Math.max(...all.map(n => n.g + n.L)); ch.forEach(([g, k], x) => { const e = x + 1 < ch.length ? ch[x + 1][0] : endG; if (SCBASS[k]) tone(T + (g - g0) * B, (e - g) * B * .95, SCBASS[k], .3, "sine"); }); }
