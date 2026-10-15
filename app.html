@@ -928,11 +928,12 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .sctrk{position:relative;flex:1;height:90px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);border-left:2px solid var(--muted)}
 #songchk .scrow.two .sctrk{height:118px}
 #songchk .scbl{position:absolute;top:0;bottom:0;border-left:2px solid var(--muted)}
-#songchk .scbt{position:absolute;top:0;bottom:0;border-left:1px dashed var(--line)}
+#songchk .scbt{position:absolute;top:0;bottom:0;border-left:1px dashed var(--muted)}   /* (Oct 15) Chris: beat lines darker */
 #songchk .scpk{position:absolute;top:0;bottom:0;background:var(--hover)}
 #songchk .scph{position:absolute;top:-6px;bottom:-6px;width:3px;margin-left:-1px;background:var(--gold);border-radius:2px;z-index:4;pointer-events:none}
 #songchk .scn{position:absolute;top:6px;height:40px;background:var(--soft);border:1px solid var(--teal);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;user-select:none;touch-action:none;box-sizing:border-box;z-index:1;overflow:hidden}
 #songchk .scrow.two .scn{top:34px}
+#songchk .scn{align-items:flex-start;padding-left:5px}   /* (Oct 15) Chris: number sits left, right over its word */
 #songchk .scn b{font-size:17px}
 #songchk .scwl{position:absolute;left:0;right:0;top:52px;height:32px;cursor:text}
 #songchk .scrow.two .scwl{top:80px}
@@ -1153,7 +1154,7 @@ document.addEventListener("click", e => {
 window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => scTrack(i)); });
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v74</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v75</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
