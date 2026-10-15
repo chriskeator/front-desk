@@ -1224,8 +1224,13 @@ function shDraw(){
     + `<div class="shstep">Step 1 of 5: the cut<span>Not now: crop, lyrics, chords</span></div>`
     + `<div class="shchks">${SH_CHKS.map((c, i) => `<button type="button" class="shchk${(r.fixes || []).includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${(r.fixes || []).includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`
     + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc(r.note || "")}">`
-    + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${r.status === "dropped" && !(r.fixes || []).length ? " on" : ""}" data-shx="drop">Drop</button>${(r.fixes || []).length ? `<button type="button" class="tb drop on" data-shx="fix">Send fixes</button>` : `<button type="button" class="tb go${r.status === "approved" ? " on" : ""}" data-shx="ok">Approve</button>`}</div>`;
-  document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard" role="dialog" aria-modal="true">${h}</div>`; }
+    + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${r.status === "dropped" && !(r.fixes || []).length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`;
+  document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
+/* (Oct 15) Chris: a red check OR any note text turns Approve into a red Send fixes */
+function shMain(){ const r = shRows && shRows[shI], b = document.getElementById("shmain"), el = document.getElementById("shnote"); if (!r || !b) return;
+  const fix = (r.fixes || []).length || (el && el.value.trim());
+  b.className = "tb " + (fix ? "drop on" : "go" + (r.status === "approved" ? " on" : "")); b.dataset.shx = fix ? "fix" : "ok"; b.textContent = fix ? "Send fixes" : "Approve"; }
+document.addEventListener("input", e => { if (shRows && e.target.id === "shnote") shMain(); });
 function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(); if (v === (r.note || "")) return;
   r.note = v; db.collection("shortcheck").doc(r.id).update({note: v, updated: new Date().toISOString()}).catch(() => {}); }
 async function shAnswer(st){
@@ -1252,7 +1257,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const f = new Set(r.fixes || []); f.has(i) ? f.delete(i) : f.add(i); r.fixes = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v82</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v83</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
