@@ -1206,46 +1206,60 @@ window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => sc
 <script>
 /* (Oct 15) Chris: db 'shortcheck' rows (one per cut: title, fileId, secs, source, order). Answers: status approved/dropped + note.
    Cadence's Mac script later moves Approved to "1 Approved" and Dropped to "2 Redo" and sets moved:true. */
-let shRows = null, shI = 0, shTask = null;
-/* (Oct 15) Chris: say exactly what to check. Step 1 = the cut only; tap a check that is wrong, then Send fixes */
+let shRows = null, shI = 0, shTask = null, shWait = 0;
+/* (Oct 15) Chris: say exactly what to check; tap a check that is wrong (or type a note) = Send fixes.
+   (Oct 15, Chris) HANDS FIRST, then Start + end, both on the Hands (cropped) video: fields hands/handsNote/handsFixes, then status/note/fixes */
 const SH_CHKS = ["Starts on the action", "Ends clean, note rings", "No ums, smacks, pauses", "One idea on its own"];
+const SH_CHKS_H = ["Both hands in view", "Wrists not cut off", "Lettered keys on top", "No lyrics or extras"];
 const shQ = s => document.querySelector("#shortchk " + s);
 const shLen = s => { s = Math.round(+s || 0); return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + " s"; };
+const shStep = r => !r.handsFileId ? null : !r.hands ? "hands" : r.hands === "approved" && !r.status ? "start" : null;
+const shShow = r => shStep(r) || (r.hands === "approved" ? "start" : "hands");
+const shFx = (r, st) => (st === "hands" ? r.handsFixes : r.fixes) || [];
 async function shOpen(tid){
-  const s = await db.collection("shortcheck").get();
-  shRows = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
-  shTask = tid || null; const k = shRows.findIndex(r => !r.status); shI = k < 0 ? shRows.length : k; shDraw(); }
+  const s = await db.collection("shortcheck").get(), all = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved);
+  shWait = all.filter(r => !r.handsFileId && !r.handsFail && !r.status).length;
+  shRows = all.filter(r => r.handsFileId).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
+  shTask = tid || null; const k = shRows.findIndex(shStep); shI = k < 0 ? shRows.length : k; shDraw(); }
 function shClose(){ shRows = null; document.getElementById("shortchk").innerHTML = ""; }
 function shDraw(){
   const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh"><span class="scpill">${c}</span><button type="button" class="tb" data-shx="close">Close</button></div>`;
   let h;
-  if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped").length;
-    h = head(N + " of " + N) + `<div class="shdone">All checked: ${a} approved, ${d} dropped</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
-  else h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${r.status ? `<span class="shst ${r.status === "approved" ? "ok" : "no"}">${r.status === "approved" ? "Approved" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.fileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
-    + `<div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.fileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div>`
-    + `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<b>${esc(String(c.at).replace(/\.\d+$/, ""))}</b> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`
-    + `<div class="shstep">Step 1 of 5: Start + end<span>Not now: hands, words</span></div>`
-    + `<div class="shchks">${SH_CHKS.map((c, i) => `<button type="button" class="shchk${(r.fixes || []).includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${(r.fixes || []).includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`
-    + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc(r.note || "")}">`
-    + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${r.status === "dropped" && !(r.fixes || []).length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`;
+  if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.hands === "fix").length;
+    h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
+  else { const st = shShow(r), H = st === "hands", CK = H ? SH_CHKS_H : SH_CHKS, fx = shFx(r, st), ans = H ? r.hands : r.status;
+    h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
+    + `<div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div>`
+    + (H ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<b>${esc(String(c.at).replace(/\.\d+$/, ""))}</b> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
+    + `<div class="shstep">${H ? "Step 1 of 5: Hands<span>Just look. Not now: start, end, sound</span>" : "Step 2 of 5: Start + end<span>Just listen. Not now: words</span>"}</div>`
+    + `<div class="shchks">${CK.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`
+    + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc((H ? r.handsNote : r.note) || "")}">`
+    + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${!H && r.status === "dropped" && !fx.length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`; }
   document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
 /* (Oct 15) Chris: a red check OR any note text turns Approve into a red Send fixes */
 function shMain(){ const r = shRows && shRows[shI], b = document.getElementById("shmain"), el = document.getElementById("shnote"); if (!r || !b) return;
-  const fix = (r.fixes || []).length || (el && el.value.trim());
-  b.className = "tb " + (fix ? "drop on" : "go" + (r.status === "approved" ? " on" : "")); b.dataset.shx = fix ? "fix" : "ok"; b.textContent = fix ? "Send fixes" : "Approve"; }
+  const st = shShow(r), fix = shFx(r, st).length || (el && el.value.trim()), ok = (st === "hands" ? r.hands : r.status) === "approved";
+  b.className = "tb " + (fix ? "drop on" : "go" + (ok ? " on" : "")); b.dataset.shx = fix ? "fix" : "ok"; b.textContent = fix ? "Send fixes" : "Approve"; }
 document.addEventListener("input", e => { if (shRows && e.target.id === "shnote") shMain(); });
-function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(); if (v === (r.note || "")) return;
-  r.note = v; db.collection("shortcheck").doc(r.id).update({note: v, updated: new Date().toISOString()}).catch(() => {}); }
+function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(), k = shShow(r) === "hands" ? "handsNote" : "note"; if (v === (r[k] || "")) return;
+  r[k] = v; db.collection("shortcheck").doc(r.id).update({[k]: v, updated: new Date().toISOString()}).catch(() => {}); }
 async function shAnswer(st){
-  const r = shRows[shI]; if (!r) return; const el = document.getElementById("shnote"), now = new Date().toISOString();
-  r.status = st; r.note = el ? el.value.trim() : (r.note || ""); const fx = st === "approved" ? [] : (r.fixes || []);
-  if (st === "dropped" && !fx.length && !r.note) r.note = "Drop, don't redo";
-  const fixText = fx.map(i => "Fix: " + SH_CHKS[i]).join("; ");
-  db.collection("shortcheck").doc(r.id).update({status: st, note: [fixText, r.note].filter(Boolean).join("; "), fixes: fx, answeredAt: now, updated: now}).catch(() => {});
-  shI++; while (shI < shRows.length && shRows[shI].status) shI++;
-  if (shI >= shRows.length){ const k = shRows.findIndex(x => !x.status); if (k >= 0) shI = k; }
+  const r = shRows[shI]; if (!r) return; const el = document.getElementById("shnote"), now = new Date().toISOString(), step = shShow(r);
+  if (step === "hands"){
+    if (st === "dropped" && !shFx(r, "hands").length && !(el && el.value.trim())){ r.hands = "dropped"; r.status = "dropped"; r.note = "Drop, don't redo";
+      db.collection("shortcheck").doc(r.id).update({hands: "dropped", status: "dropped", note: r.note, answeredAt: now, updated: now}).catch(() => {}); }
+    else { r.hands = st === "approved" ? "approved" : "fix"; r.handsNote = el ? el.value.trim() : (r.handsNote || ""); const fx = r.hands === "approved" ? [] : shFx(r, "hands"); r.handsFixes = fx;
+      db.collection("shortcheck").doc(r.id).update({hands: r.hands, handsNote: [fx.map(i => "Fix: " + SH_CHKS_H[i]).join("; "), r.handsNote].filter(Boolean).join("; "), handsFixes: fx, handsAt: now, updated: now}).catch(() => {}); } }
+  else {
+    r.status = st; r.note = el ? el.value.trim() : (r.note || ""); const fx = st === "approved" ? [] : (r.fixes || []);
+    if (st === "dropped" && !fx.length && !r.note) r.note = "Drop, don't redo";
+    const fixText = fx.map(i => "Fix: " + SH_CHKS[i]).join("; ");
+    db.collection("shortcheck").doc(r.id).update({status: st, note: [fixText, r.note].filter(Boolean).join("; "), fixes: fx, answeredAt: now, updated: now}).catch(() => {}); }
+  if (step === "hands" && r.hands === "approved"){ shDraw(); return; }   /* same Short goes straight on to Start + end */
+  shI++; while (shI < shRows.length && !shStep(shRows[shI])) shI++;
+  if (shI >= shRows.length){ const k = shRows.findIndex(shStep); if (k >= 0) shI = k; }
   shDraw();
-  if (shRows.every(x => x.status)){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
+  if (!shWait && shRows.every(x => x.status)){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
 document.addEventListener("keydown", e => { if (!shRows) return; if (e.target.id === "shnote"){ if (e.key === "Enter"){ e.preventDefault(); e.target.blur(); } return; } if (e.key === "Escape") shClose(); });
 document.addEventListener("focusout", e => { if (shRows && e.target.id === "shnote") shNoteSave(); });
 document.addEventListener("click", e => {
@@ -1255,12 +1269,12 @@ document.addEventListener("click", e => {
   if (a === "close"){ shNoteSave(); shClose(); }
   else if (a === "back"){ shNoteSave(); if (shI > 0){ shI--; shDraw(); } }
   else if (a === "ok") shAnswer("approved");
-  else if (a === "drop"){ const r = shRows[shI]; if (r) r.fixes = []; shAnswer("dropped"); }
+  else if (a === "drop"){ const r = shRows[shI]; if (r){ if (shShow(r) === "hands") r.handsFixes = []; else r.fixes = []; } shAnswer("dropped"); }
   else if (a === "fix") shAnswer("dropped");
-  else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const f = new Set(r.fixes || []); f.has(i) ? f.delete(i) : f.add(i); r.fixes = [...f].sort(); shDraw(); } }, true);
+  else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v86</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v87</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
