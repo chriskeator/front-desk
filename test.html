@@ -1172,8 +1172,73 @@ document.addEventListener("click", e => {
   else if (a === "ok") scApprove(); }, true);
 window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => scTrack(i)); });
 </script>
+<div id="shortchk"></div>
+<style>
+/* (Oct 15) Chris: one Shorts check session. Watch a cut, Approve or Drop (or a note), straight to the next */
+#shortchk .shbg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60}
+#shortchk .shcard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:calc(100vw - 20px);max-height:calc(100vh - 24px);overflow:hidden;background:var(--card);color:var(--ink);border-radius:14px;padding:12px 14px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px}
+@media (min-width:1000px){#shortchk .shcard{width:calc(80vw - 20px);padding:16px 18px}}
+#shortchk .shh{display:flex;align-items:center;gap:10px}
+#shortchk .shh .scpill{font-size:12px;padding:4px 12px;border-radius:8px;background:var(--soft);color:var(--teal);font-weight:600;white-space:nowrap}
+#shortchk .shh .tb{margin-left:auto;height:36px}
+#shortchk .shsrc{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+#shortchk .sht{font:600 18px var(--display);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#shortchk .shv{position:relative;width:100%;aspect-ratio:16/9;max-height:calc(100vh - 290px);margin:0 auto;background:#000;border-radius:10px;overflow:hidden}
+@media (min-width:1000px){#shortchk .shv{max-height:calc(100vh - 300px)}}
+#shortchk .shv iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+#shortchk .shst{font-size:13px;font-weight:700;white-space:nowrap}
+#shortchk .shst.ok{color:#1F9D55}#shortchk .shst.no{color:var(--red)}
+#shortchk .shnote{height:44px;box-sizing:border-box;font:inherit;font-size:15px;width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+#shortchk .shbtns{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px}
+#shortchk .shbtns .tb{height:50px;width:100%;font-size:15px}
+#shortchk .shbtns .tb.drop{background:var(--red-soft);color:var(--red);border-color:var(--red)}
+#shortchk .shbtns .tb.on{box-shadow:0 0 0 3px var(--gold)}
+#shortchk .shdone{text-align:center;padding:20px 0;font:600 18px var(--display)}
+</style>
+<script>
+/* (Oct 15) Chris: db 'shortcheck' rows (one per cut: title, fileId, secs, source, order). Answers: status approved/dropped + note.
+   Cadence's Mac script later moves Approved to "1 Approved" and Dropped to "2 Redo" and sets moved:true. */
+let shRows = null, shI = 0, shTask = null;
+const shQ = s => document.querySelector("#shortchk " + s);
+const shLen = s => { s = Math.round(+s || 0); return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + " s"; };
+async function shOpen(tid){
+  const s = await db.collection("shortcheck").get();
+  shRows = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
+  shTask = tid || null; const k = shRows.findIndex(r => !r.status); shI = k < 0 ? shRows.length : k; shDraw(); }
+function shClose(){ shRows = null; document.getElementById("shortchk").innerHTML = ""; }
+function shDraw(){
+  const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh"><span class="scpill">${c}</span><button type="button" class="tb" data-shx="close">Close</button></div>`;
+  let h;
+  if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped").length;
+    h = head(N + " of " + N) + `<div class="shdone">All checked: ${a} approved, ${d} dropped</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
+  else h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${esc(r.source || "")} &middot; ${shLen(r.secs)}</span>${r.status ? `<span class="shst ${r.status === "approved" ? "ok" : "no"}">${r.status === "approved" ? "Approved" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.fileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
+    + `<div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.fileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div>`
+    + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc(r.note || "")}">`
+    + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${r.status === "dropped" ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb go${r.status === "approved" ? " on" : ""}" data-shx="ok">Approve</button></div>`;
+  document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard" role="dialog" aria-modal="true">${h}</div>`; }
+function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(); if (v === (r.note || "")) return;
+  r.note = v; db.collection("shortcheck").doc(r.id).update({note: v, updated: new Date().toISOString()}).catch(() => {}); }
+async function shAnswer(st){
+  const r = shRows[shI]; if (!r) return; const el = document.getElementById("shnote"), now = new Date().toISOString();
+  r.status = st; r.note = el ? el.value.trim() : (r.note || "");
+  db.collection("shortcheck").doc(r.id).update({status: st, note: r.note, answeredAt: now, updated: now}).catch(() => {});
+  shI++; while (shI < shRows.length && shRows[shI].status) shI++;
+  if (shI >= shRows.length){ const k = shRows.findIndex(x => !x.status); if (k >= 0) shI = k; }
+  shDraw();
+  if (shRows.every(x => x.status)){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
+document.addEventListener("keydown", e => { if (!shRows) return; if (e.target.id === "shnote"){ if (e.key === "Enter"){ e.preventDefault(); e.target.blur(); } return; } if (e.key === "Escape") shClose(); });
+document.addEventListener("focusout", e => { if (shRows && e.target.id === "shnote") shNoteSave(); });
+document.addEventListener("click", e => {
+  const go = e.target.closest("[data-shortchk]"); if (go){ e.preventDefault(); e.stopPropagation(); shOpen(go.dataset.shortchk); return; }
+  if (!shRows || !e.target.closest("#shortchk")) return;
+  const x = e.target.closest("[data-shx]"); if (!x) return; const a = x.dataset.shx;
+  if (a === "close"){ shNoteSave(); shClose(); }
+  else if (a === "back"){ shNoteSave(); if (shI > 0){ shI--; shDraw(); } }
+  else if (a === "ok") shAnswer("approved");
+  else if (a === "drop") shAnswer("dropped"); }, true);
+</script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v76</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v77</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3761,6 +3826,7 @@ function lvBar(t){ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
   return `<div class="lvbar">${TLV.map(([kk, h, c]) => `<span class="${kk === k ? "on" : ""}" style="--lc:${LVL[kk] || c}">${TLVP[kk]}%</span>`).join("")}</div>`; }
 // (Oct 7) Chris: every to-do has a Go button that opens where the work happens; the Front Desk stays on this to-do
 function goBtn(t){
+  if (t.shortcheck) return `<div class="revlist"><button type="button" class="tb go gobtn" data-shortchk="${esc(t.id)}">Start checking</button></div>`;   /* (Oct 15) Chris: one Shorts check session */
   if (Array.isArray(t.songcheck) && t.songcheck.length) return `<div class="revlist">${t.songcheck.map(([id, nm]) => `<button type="button" class="tb go gobtn" data-songchk="${esc(id)}">${esc(nm)}</button>`).join("")}</div>`;   /* (Oct 15) Chris: song check page */
   // (Oct 7) Chris: things to check (review items / lesson links) sit right inside the open to-do, all the same size
   if (t.review){ const items = revItems(t); return `<div class="revlist"><p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }
