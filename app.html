@@ -1175,7 +1175,7 @@ window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => sc
 #shortchk .shchks{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media (min-width:1000px){#shortchk .shchks{grid-template-columns:repeat(4,1fr)}#shortchk .shchk{font-size:13px}}
 #shortchk .shchk{height:36px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:4px 4px;border:1px solid var(--line);border-radius:8px;background:var(--soft);color:var(--ink);cursor:pointer;font-family:inherit}
-#shortchk .shchk.bad{background:var(--red-soft);color:var(--red);border-color:var(--red);font-weight:700}
+#shortchk .shchk.bad{background:var(--red-soft);color:var(--red);border-color:var(--red)}
 #shortchk .shbtns{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px}
 #shortchk .shbtns .tb{height:50px;width:100%;font-size:15px}
 #shortchk .shbtns .tb.drop{background:var(--red-soft);color:var(--red);border-color:var(--red)}
@@ -1233,7 +1233,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const f = new Set(r.fixes || []); f.has(i) ? f.delete(i) : f.add(i); r.fixes = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v81</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v82</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
