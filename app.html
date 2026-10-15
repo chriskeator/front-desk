@@ -900,6 +900,8 @@ a.tb.rs-fixed{flex-direction:column}
 @media (prefers-reduced-motion: reduce){.item.repout-r,.item.repout-l{animation:repFade .15s forwards}@keyframes repFade{to{opacity:0}}}
 /* (Oct 14) Songs checklist on a computer: wide blocks + full one-word labels (phone keeps 22 px + 3 letters) */
 .sfw{display:none}
+/* (Oct 14, Chris) phone: the Songs column labels show the whole word at 45 degrees (computer keeps full words flat) */
+@media (max-width:999px){ #list .tn .sblk{height:46px!important;position:relative;overflow:visible}#list .tn .sblk .sab{display:none}#list .tn .sblk .sfw{display:block;position:absolute;left:5px;bottom:2px;transform-origin:0 100%;transform:rotate(-45deg);white-space:nowrap;font-size:11px;letter-spacing:0} }
 @media (min-width:1000px){ #list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
 </style>
 
