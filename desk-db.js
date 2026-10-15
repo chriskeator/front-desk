@@ -154,8 +154,26 @@
     };
   }
 
+  /* (Oct 15) TEST copy (test.html sets window.DESK_TESTCOPY): the page's names map to test_<name>; any other name is refused,
+     so test.html can never read or write a live collection. Realtime events from live rows are ignored. */
+  const TESTP = "test_";
+  function testOnly(name) { if (typeof name !== "string" || name.indexOf(TESTP) !== 0) throw err("permission_denied", "Test copy: refused live collection " + name); return name; }
+  function testBackend(inner) {
+    const m = n => testOnly(TESTP + n);
+    return {
+      load: n => inner.load(m(n)), getOne: (n, id) => inner.getOne(m(n), id), upsert: (n, id, d) => inner.upsert(m(n), id, d),
+      updateIf: (n, id, d, v) => inner.updateIf(m(n), id, d, v), remove: (n, id) => inner.remove(m(n), id),
+      subscribe: (onEvt, onResync) => inner.subscribe(e => { if (e.collection && e.collection.indexOf(TESTP) === 0) onEvt(Object.assign({}, e, { collection: e.collection.slice(TESTP.length) })); }, onResync)
+    };
+  }
+
   function supabaseBackend(sb) {
-    const T = () => sb.from("docs");
+    const T0 = () => sb.from("docs");
+    const T = () => { const q = T0(); if (!window.DESK_TESTCOPY) return q;
+      return { select: (...a) => { const r = q.select(...a); const eq0 = r.eq.bind(r); r.eq = (c, v) => { if (c === "collection") testOnly(v); return eq0(c, v); }; return r; },
+        upsert: (row, o) => { testOnly(row && row.collection); return q.upsert(row, o); },
+        update: (d) => { const r = q.update(d); const eq0 = r.eq.bind(r); r.eq = (c, v) => { if (c === "collection") testOnly(v); return eq0(c, v); }; return r; },
+        delete: () => { const r = q.delete(); const eq0 = r.eq.bind(r); r.eq = (c, v) => { if (c === "collection") testOnly(v); return eq0(c, v); }; return r; } }; };
     const chk = ({ data, error }) => { if (error) throw error; return data; };
     return {
       async load(name) {
@@ -190,14 +208,14 @@
     }
   };
 
-  window.DeskDB = { make, merge, supabaseBackend };
+  window.DeskDB = { make, merge, supabaseBackend, testBackend, testOnly };
   if (window.DESK_TEST) return;   /* the test page sets window.claude itself */
 
   const CFG = window.DESK_CFG;
   let dbP = null;
   async function openDb() {
     const sb = window.supabase.createClient(CFG.url, CFG.key);
-    window.deskSb = sb;
+    if (!window.DESK_TESTCOPY) window.deskSb = sb;
     const { data } = await sb.auth.getSession();
     if (!data.session) { location.replace("./"); return null; }
     try { sb.realtime.setAuth(data.session.access_token); } catch (e) {}
@@ -205,7 +223,7 @@
       if (s && s.access_token) try { sb.realtime.setAuth(s.access_token); } catch (e) {}
       if (ev === "SIGNED_OUT") location.replace("./");
     });
-    return make(supabaseBackend(sb));
+    return make(window.DESK_TESTCOPY ? testBackend(supabaseBackend(sb)) : supabaseBackend(sb));
   }
   window.claude = { use: async name => name === "db" ? (dbP || (dbP = openDb())) : name === "downloads" ? downloads : null };
 })();
