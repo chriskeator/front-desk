@@ -960,7 +960,7 @@ const scClone = x => JSON.parse(JSON.stringify(x));
 const scQ = s => document.querySelector("#songchk " + s);
 async function scOpen(id){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  scId = id; scDoc = s.data(); scLines = scClone(scDoc.lines); scSel = null; scDraw(); }
+  scId = id; scDoc = s.data(); scLines = scClone(scDoc.lines); scSel = null; scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ scStop(); scId = null; scDoc = null; document.getElementById("songchk").innerHTML = ""; }
 const scStep = () => scDoc.step || 1;
 const scRows = () => ((scDoc.rows || {})[scStep()] || []);
@@ -1012,23 +1012,35 @@ document.addEventListener("pointerdown", ev => {
 function scPitch(d){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j];
   const up = [0,2,4,5,7,9,11], k = n.m % 12, o = n.m - k; let idx = up.indexOf(k); if (idx < 0) idx = up.findIndex(x => x > k) - (d > 0 ? 1 : 0);
   idx += d; n.m = o + 12 * Math.floor(idx / 7) + up[((idx % 7) + 7) % 7]; scTrack(i); scSaveSoon(); scBeep(n.m); }
-/* (Oct 15) Chris: melody plays on the Rhodes (the Lab band's electric piano), not the old triangle beep */
+/* (Oct 15) Chris: the Rhodes sounded bad; melody plays on the real piano (the Lab's Salamander samples), old synth only if a sample won't load */
 function scEP(c, s, d, m, v){ const h = [1, .45, .06, .16, .03], re = new Float32Array(h.length + 1), im = new Float32Array(h.length + 1); h.forEach((a, i) => { im[i + 1] = a; });
   const o = c.createOscillator(), g = c.createGain(); o.setPeriodicWave(c.createPeriodicWave(re, im)); o.frequency.value = 440 * 2 ** ((m - 69) / 12);
   g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .006); g.gain.setTargetAtTime(.0001, s + .006, 1 / 1.4); g.gain.linearRampToValueAtTime(0, s + d + .25);
   o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .3); }
-function scBeep(m){ try { const c = new AudioContext(); scEP(c, c.currentTime, .5, m, .3); setTimeout(() => c.close(), 1000); } catch {} }
+const SCPS = "https://tonejs.github.io/audio/salamander/", SCPM = [];
+for (let m = 21; m <= 108; m += 3) SCPM.push(m);
+const scPB = {}, scPQ = {};
+const scPName = m => ["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"][m % 12] + (Math.floor(m / 12) - 1);
+const scPNear = m => SCPM.reduce((b, x) => Math.abs(x - m) < Math.abs(b - m) ? x : b, SCPM[0]);
+function scPLoad(ms){ let dc = null; return Promise.all([...new Set(ms.map(scPNear))].map(x => scPQ[x] = scPQ[x] || fetch(SCPS + scPName(x) + ".mp3").then(r => r.arrayBuffer())
+  .then(b => (dc = dc || new AudioContext()).decodeAudioData(b)).then(buf => { scPB[x] = buf; }).catch(() => { delete scPQ[x]; }))).then(() => { if (dc) dc.close().catch(() => {}); }); }
+function scPiano(c, s, d, m, v){ const x = scPNear(m), buf = scPB[x]; if (!buf) return scEP(c, s, d, m, v * .3);
+  const src = c.createBufferSource(), g = c.createGain(); src.buffer = buf; src.playbackRate.value = 2 ** ((m - x) / 12);
+  g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .01); g.gain.setValueAtTime(v, s + d); g.gain.setTargetAtTime(0, s + d, .08);
+  src.connect(g).connect(c.destination); src.start(s); src.stop(s + d + .6); }
+function scBeep(m){ scPLoad([m]).then(() => { try { const c = new AudioContext(); scPiano(c, c.currentTime + .02, .5, m, 1.3); setTimeout(() => c.close(), 1500); } catch {} }); }
 function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } scPH = null; const h = document.getElementById("scph"); if (h) h.remove(); }
 /* (Oct 15) Chris: Play starts at the top row that isn't checked; checked rows are skipped */
-function scPlay(){
-  scStop(); const c = scCtx = new AudioContext(), B = 60 / scDoc.bpm, T = c.currentTime + .3, done = scRows();
+async function scPlay(){
+  scStop(); const c = scCtx = new AudioContext(); await scPLoad(scLines.flat().map(n => n.m)); if (scCtx !== c) return;
+  const B = 60 / scDoc.bpm, T = c.currentTime + .3, done = scRows();
   const tone = (s, d, m, v, type) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = 440 * 2 ** ((m - 69) / 12);
     g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .02); g.gain.setValueAtTime(v, s + Math.max(.03, d - .08)); g.gain.linearRampToValueAtTime(0, s + d); o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .05); };
   let order = scLines.map((l, i) => i).filter(i => !done.includes(i)); if (!order.length) order = scLines.map((l, i) => i);
   const segs = []; let t = 0;
   order.forEach(i => { const l = scLines[i], s0 = Math.min(...l.map(n => n.g)), e0 = i + 1 < scLines.length ? Math.min(...scLines[i + 1].map(n => n.g)) : Math.max(...l.map(n => n.g + n.L));
     segs.push({i, s0, e0, t}); const at = g => T + (t + g - s0) * B;
-    l.forEach(n => scEP(c, at(n.g), n.L * B * .95, n.m, .3));
+    l.forEach(n => scPiano(c, at(n.g), n.L * B * .95, n.m, 1.3));
     if (scStep() === 2){ const ch = []; l.forEach(n => (n.c || []).forEach(([k, x]) => ch.push([n.g + x, k]))); ch.sort((p, q) => p[0] - q[0]);
       ch.forEach(([g, k], x) => { const e = x + 1 < ch.length ? ch[x + 1][0] : e0; if (SCBASS[k]) tone(at(g), (e - g) * B * .95, SCBASS[k], .3, "sine"); }); }
     if (scClickOn()) for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++){ const o = c.createOscillator(), g = c.createGain(), s = at(b), acc = ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0;
