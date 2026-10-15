@@ -1077,11 +1077,18 @@ const scPName = m => ["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"][m % 
 const scPNear = m => SCPM.reduce((b, x) => Math.abs(x - m) < Math.abs(b - m) ? x : b, SCPM[0]);
 function scPLoad(ms){ let dc = null; return Promise.all([...new Set(ms.map(scPNear))].map(x => scPQ[x] = scPQ[x] || fetch(SCPS + scPName(x) + ".mp3").then(r => r.arrayBuffer())
   .then(b => (dc = dc || new AudioContext()).decodeAudioData(b)).then(buf => { scPB[x] = buf; }).catch(() => { delete scPQ[x]; }))).then(() => { if (dc) dc.close().catch(() => {}); }); }
-function scPiano(c, s, d, m, v){ const x = scPNear(m), buf = scPB[x]; if (!buf) return scEP(c, s, d, m, v * .3);
-  const src = c.createBufferSource(), g = c.createGain(); src.buffer = buf; src.playbackRate.value = 2 ** ((m - x) / 12);
-  g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .01); g.gain.setValueAtTime(v, s + d); g.gain.setTargetAtTime(0, s + d, .08);
-  src.connect(g).connect(c.destination); src.start(s); src.stop(s + d + .6); }
-function scBeep(m){ scPLoad([m]).then(() => { try { const c = new AudioContext(); scPiano(c, c.currentTime + .02, .5, m, 1.3); setTimeout(() => c.close(), 1500); } catch {} }); }
+/* (Oct 15) Chris: approve-sound = Lab song-card sound. Same as piano-engine.js playHandAt: peak 0.68, 12ms rise, "long" ring
+   (full 0.25s, fade tc 1.1s, silent by 4.5s), the next melody note cuts it (tc 0.03, gone 0.14s later) */
+function scPiano(c, s, d, m, v, cut){ const x = scPNear(m), buf = scPB[x]; if (!buf) return scEP(c, s, d, m, .3);
+  const src = c.createBufferSource(), g = c.createGain(), P = .68; src.buffer = buf; src.playbackRate.value = 2 ** ((m - x) / 12);
+  g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(P, s + .012); g.gain.setTargetAtTime(.0001, s + .25, 1.1); g.gain.linearRampToValueAtTime(0, s + 4.5);
+  let end = s + 4.5; if (cut != null && cut < end){ g.gain.cancelScheduledValues(cut); g.gain.setTargetAtTime(.0001, cut, .03); end = cut + .14; }
+  src.connect(g).connect(c.destination); src.start(s); src.stop(end); }
+/* the Lab click: square tick 1400 (bar) / 1000, nudged 18ms late to meet the piano sample's attack (piano-engine.js CLICK_DELAY) */
+function scClick(c, s, acc){ s += .018; const o = c.createOscillator(), g = c.createGain(); o.type = "square"; o.frequency.value = acc ? 1400 : 1000;
+  g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(acc ? .18 : .12, s + .002); g.gain.exponentialRampToValueAtTime(.0001, s + .045);
+  o.connect(g).connect(c.destination); o.start(s); o.stop(s + .06); }
+function scBeep(m){ scPLoad([m]).then(() => { try { const c = new AudioContext(); scPiano(c, c.currentTime + .02, .5, m, 1, c.currentTime + .9); setTimeout(() => c.close(), 1500); } catch {} }); }
 function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } scPH = null; const h = document.getElementById("scph"); if (h) h.remove(); }
 /* (Oct 15) Chris: Play starts at the top row that isn't checked; checked rows are skipped */
 async function scPlay(){
@@ -1090,15 +1097,15 @@ async function scPlay(){
   const tone = (s, d, m, v, type) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = 440 * 2 ** ((m - 69) / 12);
     g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .02); g.gain.setValueAtTime(v, s + Math.max(.03, d - .08)); g.gain.linearRampToValueAtTime(0, s + d); o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .05); };
   let order = scLines.map((l, i) => i).filter(i => !done.includes(i)); if (!order.length) order = scLines.map((l, i) => i);
-  const segs = []; let t = 0;
+  const segs = [], mel = []; let t = 0;
   order.forEach(i => { const l = scLines[i], s0 = Math.min(...l.map(n => n.g)), e0 = i + 1 < scLines.length ? Math.min(...scLines[i + 1].map(n => n.g)) : Math.max(...l.map(n => n.g + n.L));
     segs.push({i, s0, e0, t}); const at = g => T + (t + g - s0) * B;
-    l.forEach(n => scPiano(c, at(n.g), n.L * B * .95, n.m, 1.3));
+    l.forEach(n => mel.push([at(n.g), n.m]));
     if (scStep() === 2){ const ch = []; l.forEach(n => (n.c || []).forEach(([k, x]) => ch.push([n.g + x, k]))); ch.sort((p, q) => p[0] - q[0]);
       ch.forEach(([g, k], x) => { const e = x + 1 < ch.length ? ch[x + 1][0] : e0; if (SCBASS[k]) tone(at(g), (e - g) * B * .95, SCBASS[k], .3, "sine"); }); }
-    if (scClickOn()) for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++){ const o = c.createOscillator(), g = c.createGain(), s = at(b), acc = ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0;
-      o.frequency.value = acc ? 1500 : 1000; g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(acc ? .35 : .22, s + .002); g.gain.exponentialRampToValueAtTime(.001, s + .06); o.connect(g).connect(c.destination); o.start(s); o.stop(s + .08); }
+    if (scClickOn()) for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++) scClick(c, at(b), ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0);
     t += e0 - s0; });
+  mel.sort((p, q) => p[0] - q[0]).forEach(([s, m], k) => scPiano(c, s, 0, m, 1, k + 1 < mel.length ? mel[k + 1][0] : null));
   scPH = {T, B, segs}; requestAnimationFrame(scHead);
   scPlayEnd = setTimeout(() => { scStop(); if (scId) scDraw(); }, (t * B + 1) * 1000); }
 async function scApprove(){
