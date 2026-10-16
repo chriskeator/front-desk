@@ -947,7 +947,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scn.x{background:var(--red-soft);border-color:var(--red)}
 #songchk .scn.sel{box-shadow:0 0 0 2px var(--gold)}
 #songchk .sccl{position:absolute;left:0;right:0;top:6px;height:24px;cursor:copy}   /* (Oct 16) Chris: double-click the chord lane = new chord */
-#songchk .scc{z-index:1;justify-content:flex-start;padding-left:5px;box-sizing:border-box}
+#songchk .scc{z-index:1;justify-content:flex-start!important;padding-left:5px;box-sizing:border-box;border-left:2px solid var(--pick)}   /* (Oct 16, Chris) the number sits where the chord STARTS (it was centred, so bar 1 chords looked like pickups) */
 #songchk .scc.sel{box-shadow:0 0 0 2px var(--gold)}
 /* (Oct 16, Chris) an approved step looks different: green frame + green bar, main button = Approved (closes) */
 .okbar{background:#1F9D55;color:#fff;font-weight:700;font-size:16px;border-radius:10px;padding:10px 14px;text-align:center;margin:4px 0 8px}
@@ -977,7 +977,7 @@ a.tb.rs-fixed{flex-direction:column}
 <script>
 /* (Oct 15) Chris: a click (metronome) button next to the time signature; remembered per browser */
 function scClickOn(){ try { return localStorage.getItem("scClick") === "1"; } catch { return false; } }
-let scWords = null, scWSel = null, scCSel = null, scCT = null;   /* scCSel = picked chord 'row:note:k' (Oct 16) */   /* (Oct 15) Chris: words are their own pieces under the numbers, dragged apart, snapped to the beat */
+let scWords = null, scWSel = null, scCSel = null, scCT = null, scCDelAt = 0;   /* scCSel = picked chord 'row:note:k' (Oct 16) */   /* (Oct 15) Chris: words are their own pieces under the numbers, dragged apart, snapped to the beat */
 let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null;
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
 const SCCH = ["1","4","5","6m","2m","3m",""], SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
@@ -1174,7 +1174,7 @@ document.addEventListener("click", e => {
   if (ck){ const i = +ck.dataset.scck, st = scStep(), R = scDoc.rows = scDoc.rows || {}; const r = R[st] = R[st] || []; const k = r.indexOf(i); if (k < 0) r.push(i); else r.splice(k, 1);
     ck.parentNode.classList.toggle("done", k < 0); scCount(); db.collection("songcheck").doc(scId).update({rows: R}).catch(() => {}); return; }
   const cc = e.target.closest("[data-scc]");
-  if (cc){ const id = cc.dataset.scc; clearTimeout(scCT); if (e.detail >= 2) return;
+  if (cc){ const id = cc.dataset.scc; clearTimeout(scCT); if (e.detail >= 2){ scCDelAt = Date.now(); scCDel(id); return; }   /* (Oct 16, Chris) the 1st click redraws the row, so dblclick lost its chord: delete on the 2nd click */
     if (scCSel !== id){ scCSel = id; scSel = null; scSelAll(); return; } scCT = setTimeout(() => scCNext(id, 1), 260); return; }
   const x = e.target.closest("[data-scx]"); if (!x) return; const a = x.dataset.scx;
   if (a === "close") scClose();
@@ -1191,6 +1191,7 @@ document.addEventListener("click", e => {
 window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => scTrack(i)); });
 /* (Oct 16, Chris) double-click: on a note or chord = delete it; on empty space = add one there (melody: same pitch as the note before, 1 beat; chords: a 1 chord) */
 document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#songchk")) return; if (e.target.classList && e.target.classList.contains("scwin")) return;
+  if (Date.now() - scCDelAt < 600) return;   /* that double-click already deleted a chord: never add one back */
   const cc = e.target.closest("[data-scc]"); if (cc){ e.preventDefault(); clearTimeout(scCT); scCDel(cc.dataset.scc); return; }
   const nn = e.target.closest("[data-scn]"); if (nn && scStep() === 1){ e.preventDefault(); const [i, j] = nn.dataset.scn.split(":").map(Number); if (scLines[i].length < 2) return; scLines[i].splice(j, 1); scSel = null; scTrack(i); scSaveSoon(); return; }
   const lane = e.target.closest("[data-sccl]"), t = e.target.closest("[data-sct]"); if (!t || e.target.closest("[data-scw],[data-scwl]")) return;
@@ -1322,7 +1323,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v98</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v99</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
