@@ -1351,7 +1351,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v108</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v109</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3372,8 +3372,17 @@ function applyCollapse(){
 document.addEventListener("click", e => { const h = e.target.closest("[data-pickcat]"); if (!h) return; const c = h.dataset.pickcat; pickCat = pickCat === c ? "" : c; if (pickingProj && !openLinks) refreshDetail(); else renderPop(); });
 document.addEventListener("click", e => { const h = e.target.closest("[data-icatopen]"); if (!h || e.target.closest("button,a")) return; const c = h.dataset.icatopen;
   const opening = !ideaCatOpen.has(c); keepPos(h, () => { ideaCatOpen = new Set(opening ? [c] : []); try { localStorage.setItem("fd-ideacats", JSON.stringify([...ideaCatOpen])); } catch {} render(); }, opening); });
+/* (Oct 16, Chris: a folder sometimes needs 3 clicks; not reproduced) a press on a folder header that doesn't open/close it within 1s
+   writes a db 'alerts' row with what happened (moved px, drag state, what was under the pointer), so Cadence can see the real cause */
+let fdMiss = null;
+document.addEventListener("pointerdown", e => { const h = e.target.closest && e.target.closest("#list .msec > h4[data-ck]"); if (!h || e.target.closest("button,a")) return;
+  const m = fdMiss = {k: h.dataset.ck, x: e.clientX, y: e.clientY, t: Date.now(), ok: false, up: null, type: e.pointerType};
+  setTimeout(() => { if (m.ok || fdMiss !== m) return; try { db.collection("alerts").doc("missed-click-" + m.t).set({kind: "missed-click", at: new Date().toISOString(), folder: m.k, type: m.type,
+    moved: m.up ? Math.round(Math.hypot(m.up.x - m.x, m.up.y - m.y)) : null, gotUp: !!m.up, under: m.up ? m.up.under : "", dragOn: !!(fDrag && fDrag.on), fJust, heard: false}).catch(() => {}); } catch {} }, 1000); }, true);
+document.addEventListener("pointerup", e => { if (!fdMiss || fdMiss.up) return; const el = document.elementFromPoint(e.clientX, e.clientY); fdMiss.up = {x: e.clientX, y: e.clientY, under: el ? (el.tagName + "." + [...el.classList].join(".")).slice(0, 80) : ""}; }, true);
 document.addEventListener("click", e => { const h = e.target.closest("[data-ck]"); if (!h || e.target.closest("button,a")) return;
   const k = h.dataset.ck;
+  if (fdMiss && fdMiss.k === k) fdMiss.ok = true;
   if (phone() && h.closest("#list .msec")){ const opening = oneOpen() !== k; if (opening && oneOpen()) scrollStack = scrollStack.slice(0, 1); if (opening && !oneOpen()) scrollStack = []; if (!opening) scrollStack = scrollStack.slice(0, 1); return keepPos(h, () => { openOne[oneKey()] = oneOpen() === k ? "" : k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {}
     // (Oct 7) Chris: opening or closing a folder closes everything inside it (project lists, to-do details)
     taskOpen = null; saveTaskOpen(); subOpen = new Set(); try { localStorage.setItem("fd-subopen", "[]"); } catch {}
