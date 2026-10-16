@@ -1436,7 +1436,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v112</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v113</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3871,7 +3871,8 @@ const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/
 /* (Oct 14, Chris) Lab test rows: V1/V2/V3 = how many times a fix came back, and whether it's ready to check (lab-signoff function writes labRound/labStatus) */
 /* (Oct 16, Chris) song check rows: Submitted (grey) the moment he approves, Fixing (gold) while Cadence works, Ready (teal) = his turn */
 const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
-function labTag(t){ if (t && !t.done && SCTAG[t.scState]){ const [w, bg, fg] = SCTAG[t.scState]; return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
+function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
+  if (scs){ const [w, bg, fg] = SCTAG[scs]; return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
   if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing";
   return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
