@@ -1198,6 +1198,9 @@ window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => sc
 #shortchk .shbody .shchks{grid-template-columns:1fr}
 #shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
 @media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
+#shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:#000}
+#shortchk .shtime{position:absolute;top:8px;left:8px;z-index:2;background:rgba(0,0,0,.7);color:#fff;font:700 20px/1 ui-monospace,Menlo,monospace;padding:6px 10px;border-radius:8px;pointer-events:none}
+#shortchk .shseek{border:1px solid var(--teal);background:var(--soft);color:var(--teal);font-weight:700;border-radius:6px;padding:1px 7px;font-size:13px;cursor:pointer}
 #shortchk .shwhat{font-size:13.5px;line-height:1.35;color:var(--ink)}
 #shortchk .shstep{font-size:14px;font-weight:700;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #shortchk .shstep span{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
@@ -1237,8 +1240,8 @@ function shDraw(){
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
   else { const st = shShow(r), H = st === "hands", CK = H ? SH_CHKS_H : SH_CHKS, fx = shFx(r, st), ans = H ? r.hands : r.status;
     h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
-    + `<div class="shbody"><div class="shv"><iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe></div><div class="shside">`
-    + (H ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<b>${esc(String(c.at).replace(/\.\d+$/, ""))}</b> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
+    + `<div class="shbody"><div class="shv">${r.handsUrl ? `<video id="shvid" src="${esc(r.handsUrl)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>` : `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe>`}</div><div class="shside">`
+    + (H ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<button type="button" class="shseek" data-shx="seek" data-t="${esc(c.at)}">${esc(String(c.at).replace(/\.\d+$/, ""))}</button> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
     + `<div class="shstep">${H ? "Step 1 of 5: Hands" : "Step 2 of 5: Start + end"}</div><div class="shwhat">${H ? "Just look: are both hands and wrists inside the tall frame the whole time, with the lettered keys on top and no lyrics? Ignore the sound." : "Just listen: does it start right on the action and end cleanly, with no ums or pauses in the middle? The cuts are listed above."}</div>`
     + `<div class="shchks">${CK.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div></div></div>`
     + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc((H ? r.handsNote : r.note) || "")}">`
@@ -1249,6 +1252,10 @@ function shMain(){ const r = shRows && shRows[shI], b = document.getElementById(
   const st = shShow(r), fix = shFx(r, st).length || (el && el.value.trim()), ok = (st === "hands" ? r.hands : r.status) === "approved";
   b.className = "tb " + (fix ? "drop on" : "go" + (ok ? " on" : "")); b.dataset.shx = fix ? "fix" : "ok"; b.textContent = fix ? "Send fixes" : "Approve"; }
 document.addEventListener("input", e => { if (shRows && e.target.id === "shnote") shMain(); });
+/* (Oct 15, Chris) always-visible time while it plays (to the tenth); tap a cut time = jump 2 s before it */
+const shFmt = t => Math.floor(t / 60) + ":" + (t % 60).toFixed(1).padStart(4, "0");
+document.addEventListener("timeupdate", e => { if (e.target.id === "shvid"){ const el = document.getElementById("shtime"); if (el) el.textContent = shFmt(e.target.currentTime); } }, true);
+document.addEventListener("seeked", e => { if (e.target.id === "shvid"){ const el = document.getElementById("shtime"); if (el) el.textContent = shFmt(e.target.currentTime); } }, true);
 function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(), k = shShow(r) === "hands" ? "handsNote" : "note"; if (v === (r[k] || "")) return;
   r[k] = v; db.collection("shortcheck").doc(r.id).update({[k]: v, updated: new Date().toISOString()}).catch(() => {}); }
 async function shAnswer(st){
@@ -1276,13 +1283,14 @@ document.addEventListener("click", e => {
   const x = e.target.closest("[data-shx]"); if (!x) return; const a = x.dataset.shx;
   if (a === "close"){ shNoteSave(); shClose(); }
   else if (a === "back"){ shNoteSave(); if (shI > 0){ shI--; shDraw(); } }
+  else if (a === "seek"){ const v = document.getElementById("shvid"); if (v){ const p = String(x.dataset.t).split(":"); v.currentTime = Math.max(0, (+p[0]) * 60 + (+p[1]) - 2); v.play().catch(() => {}); } }
   else if (a === "ok") shAnswer("approved");
   else if (a === "drop"){ const r = shRows[shI]; if (r){ if (shShow(r) === "hands") r.handsFixes = []; else r.fixes = []; } shAnswer("dropped"); }
   else if (a === "fix") shAnswer("dropped");
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v91</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v92</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
