@@ -1138,7 +1138,9 @@ async function scPlay(){
     g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .02); g.gain.setValueAtTime(v, s + Math.max(.03, d - .08)); g.gain.linearRampToValueAtTime(0, s + d); o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .05); };
   let order = scLines.map((l, i) => i).filter(i => !done.includes(i)); if (!order.length) order = scLines.map((l, i) => i);
   const segs = [], mel = []; let t = 0;
-  order.forEach(i => { const l = scLines[i], s0 = Math.min(...l.map(n => n.g)), e0 = i + 1 < scLines.length ? Math.min(...scLines[i + 1].map(n => n.g)) : Math.max(...l.map(n => n.g + n.L));
+  /* (Oct 16, Chris: "the structure looks right, but the audio is not including those rests") each row plays exactly as drawn:
+     its whole bars, from its pickup bar to its last bar line, so the empty beats on the page are rests in the sound */
+  order.forEach(i => { const l = scLines[i], [s0, e0] = scRange(l);
     segs.push({i, s0, e0, t}); const at = g => T + (t + g - s0) * B;
     l.forEach(n => mel.push([at(n.g), n.m]));
     if (scStep() === 2){ const ch = []; l.forEach(n => (n.c || []).forEach(([k, x]) => ch.push([n.g + x, k]))); ch.sort((p, q) => p[0] - q[0]);
@@ -1323,7 +1325,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v99</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v100</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
