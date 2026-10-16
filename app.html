@@ -1495,7 +1495,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v121</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v122</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -1534,6 +1534,7 @@ async function labFresh(force){
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") labFresh(true); });
 addEventListener("focus", () => labFresh(true));
+setInterval(() => { if (document.visibilityState === "visible") labFresh(); }, 20000);   /* (Oct 16) a Lab note from another device shows within 20 s */
 
 // family money this month: read from the published budget page's small summary (Money Map/app/budget_build.py)
 fetch("budget.html").then(r => r.text()).then(t => { const m = t.match(/<script id="fdsum" type="application\/json">([^<]*)/); if (m) { fam = JSON.parse(m[1]); if (typeof render === "function" && !editing && !sorting) render(); } }).catch(() => {});
@@ -1671,6 +1672,7 @@ function labKey(url){ const lab = stats.find(x => x.id === "lab"), m = String(ur
     (lab.chapters || []).forEach((c, ci) => (c.lessons || []).forEach((L, li) => { if (L.id === id) k = [ci, li, card ? 1 : q ? 2 : 0, card || q]; })); }
   return k; }
 const labCmp = (a, b) => { const x = labKey(a.url), y = labKey(b.url); for (let i = 0; i < 4; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
+function labLessonS(id){ const lab = stats.find(x => x.id === "lab"); for (const c of (lab && lab.chapters) || []) for (const L of c.lessons) if (L.id === id) return L.s; return null; }
 function labStatusOf(url){ const lab = stats.find(x => x.id === "lab"), m = String(url || "").match(/[?&]go=([^&]+)/); if (!lab || !m) return null;
   const id = decodeURIComponent(m[1]); for (const c of lab.chapters || []) for (const L of c.lessons) if (L.id === id) return L.s; return null; }
 const revCounts = items => { const c = {good: 0, fix: 0, fixed: 0, none: 0}; items.forEach(r => c[RS[r.s ?? r.status] || "none"]++); return c; };
@@ -3932,7 +3934,7 @@ const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/
 const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
 function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
   if (scs){ const [w, bg, fg] = SCTAG[scs]; return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
-  if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing";
+  if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing" || labLessonS(t.labKey) === "fix";   /* (Oct 16, Chris) Fixing the moment he sends a Lab note (labFresh reads review_notes directly) */
   return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
