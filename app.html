@@ -979,6 +979,8 @@ a.tb.rs-fixed{flex-direction:column}
 <script>
 /* (Oct 15) Chris: a click (metronome) button next to the time signature; remembered per browser */
 function scClickOn(){ try { return localStorage.getItem("scClick") === "1"; } catch { return false; } }
+/* (Oct 16, Chris) chords check: a Melody button like Click, to hear the chords alone; remembered per browser */
+function scMelOn(){ try { return localStorage.getItem("scMel") !== "0"; } catch { return true; } }
 let scWords = null, scWSel = null, scCSel = null, scCT = null, scCDelAt = 0;   /* scCSel = picked chord 'row:note:k' (Oct 16) */   /* (Oct 15) Chris: words are their own pieces under the numbers, dragged apart, snapped to the beat */
 let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null;
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
@@ -1009,7 +1011,7 @@ function scSaveSoon(undo){ if (!undo){ const now = scSnap(); if (scLast && scLas
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows(), old = scQ(".scrows"), top = old ? old.scrollTop : 0;   /* (Oct 16, Chris) Stop never jumps back to the top */
   const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
-  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords"}</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb" data-scx="grid">Grid ${SCGRID[scG()]}</button><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
+  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords"}</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb" data-scx="grid">Grid ${SCGRID[scG()]}</button><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel" id="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button>`}</div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); const nw = scQ(".scrows"); if (nw) nw.scrollTop = top; }
@@ -1160,7 +1162,7 @@ async function scPlay(){
   /* rows play back to back in real time (the song's own rests live in the notes; Oct 16 the drawn-bars try added extra bars between rows) */
   order.forEach(i => { const l = scLines[i], s0 = Math.min(...l.map(n => n.g)), e0 = i + 1 < scLines.length ? Math.min(...scLines[i + 1].map(n => n.g)) : Math.max(...l.map(n => n.g + n.L));
     segs.push({i, s0, e0, t}); const at = g => T + (t + g - s0) * B;
-    l.forEach(n => mel.push([at(n.g), n.m]));
+    if (scStep() === 1 || scMelOn()) l.forEach(n => mel.push([at(n.g), n.m]));
     if (scStep() === 2){ const ch = []; l.forEach(n => (n.c || []).forEach(([k, x]) => ch.push([n.g + x, k]))); ch.sort((p, q) => p[0] - q[0]);
       ch.forEach(([g, k], x) => { const e = x + 1 < ch.length ? ch[x + 1][0] : e0; if (SCBASS[k]) scChordAt(c, at(g), at(e), k); }); }
     if (scClickOn()) for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++) scClick(c, at(b), ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0);
@@ -1199,6 +1201,7 @@ document.addEventListener("click", e => {
   const x = e.target.closest("[data-scx]"); if (!x) return; const a = x.dataset.scx;
   if (a === "close") scClose();
   else if (a === "click"){ try { localStorage.setItem("scClick", scClickOn() ? "0" : "1"); } catch {} x.textContent = scClickOn() ? "Click on" : "Click off"; x.classList.toggle("on", scClickOn()); if (scCtx){ scPlay(); } }
+  else if (a === "mel"){ try { localStorage.setItem("scMel", scMelOn() ? "0" : "1"); } catch {} x.textContent = scMelOn() ? "Melody on" : "Melody off"; x.classList.toggle("on", scMelOn()); if (scCtx){ scPlay(); } }
   else if (a === "play"){ if (scCtx){ scStop(); scDraw(); } else { scPlay(); x.textContent = "Stop"; } }
   else if (a === "up" || a === "down") scPitch(a === "up" ? 1 : -1);
   else if (a === "del") scDel();
@@ -1345,7 +1348,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v105</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v106</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
