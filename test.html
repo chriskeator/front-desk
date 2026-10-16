@@ -968,6 +968,10 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .sccl{position:absolute;left:0;right:0;top:6px;height:24px;cursor:copy}   /* (Oct 16) Chris: double-click the chord lane = new chord */
 #songchk .scc{z-index:1;justify-content:flex-start;padding-left:5px;box-sizing:border-box}
 #songchk .scc.sel{box-shadow:0 0 0 2px var(--gold)}
+/* (Oct 16, Chris) an approved step looks different: green frame + green bar, main button = Approved (closes) */
+.okbar{background:#1F9D55;color:#fff;font-weight:700;font-size:16px;border-radius:10px;padding:10px 14px;text-align:center;margin:4px 0 8px}
+.sccard.ok,.shcard.ok{box-shadow:0 0 0 5px #1F9D55}
+.tb.okd{background:#1F9D55!important;border-color:#1F9D55!important;color:#fff!important}
 #songchk .scn .scwin{width:86%;font:inherit;font-size:15px;text-align:center;padding:1px 4px;border:1px solid var(--gold);border-radius:4px;background:var(--card);color:var(--ink);box-sizing:border-box}
 #songchk .scsel{display:flex;align-items:center;gap:8px;grid-column:span 2;min-width:0}
 #songchk .scbtns .scsel .tb{width:auto;flex:none;padding-left:14px;padding-right:14px}
@@ -1011,9 +1015,10 @@ function scSync(){ scLines.forEach((l, i) => l.forEach(n => { const w = (scWords
 function scSaveSoon(){ clearTimeout(scTimer); scSync(); const id = scId, L = scClone(scLines), Wd = scClone(scWords); scTimer = setTimeout(() => { db.collection("songcheck").doc(id).update({lines: L, words: Wd, updated: new Date().toISOString()}).catch(() => {}); }, 500); }
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows();
-  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard" role="dialog" aria-modal="true"><div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords"}</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
+  const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
+  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords"}</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
-    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel" id="scsel"></div><button type="button" class="tb" data-scx="reset">Reset</button><button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button></div></div>`;
+    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel" id="scsel"></div><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button>`}</div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); }
 /* (Oct 15) Chris: a line glides left to right across each bar while it plays */
 function scHead(){ if (!scCtx || !scPH) return; const el0 = (scCtx.currentTime - scPH.T) / scPH.B, S = scPH.segs;
@@ -1278,23 +1283,24 @@ async function shOpen(tid, rid, view){
   shTask = tid || null; const j = rid ? shRows.findIndex(r => r.id === rid) : -1, k = shRows.findIndex(shStep); shI = j >= 0 ? j : k < 0 ? shRows.length : k; shDraw(); }
 function shClose(){ shView = null; shOne = false; shRows = null; document.getElementById("shortchk").innerHTML = ""; shBoard = null; if (tab === "today") render(); }
 function shDraw(){
-  const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh"><span class="scpill">${c}</span><button type="button" class="tb" data-shx="close">Close</button></div>`;
+  const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh">${shOne ? "<span></span>" : `<span class="scpill">${c}</span>`}<button type="button" class="tb" data-shx="close">Close</button></div>`;
   let h;
   if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.status === "fix" || x.hands === "fix").length;
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
   else { const st = shShow(r), H = st === "hands", CK = H ? SH_CHKS_H : SH_CHKS, fx = shFx(r, st), ans = H ? r.hands : r.status;
-    h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
+    h = head((shI + 1) + " of " + N) + (ans === "approved" ? `<div class="okbar">&#10003; ${H ? "Hands" : "Start + end"} approved</div>` : "") + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
     + `<div class="shbody"><div class="shv">${r.handsUrl ? `<video id="shvid" src="${esc(r.handsUrl)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>` : `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe>`}</div><div class="shside">`
     + (H ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<button type="button" class="shseek" data-shx="seek" data-t="${esc(c.at)}">${esc(String(c.at).replace(/\.\d+$/, ""))}</button> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
     + `<div class="shstep">${H ? "Step 1 of 5: Hands" : "Step 2 of 5: Start + end"}</div><div class="shwhat">${H ? "Just look: are both hands and wrists inside the tall frame the whole time, with the lettered keys on top and no lyrics? Ignore the sound." : "Just listen: does it start right on the action and end cleanly, with no ums or pauses in the middle? The cuts are listed above."}</div>`
     + `<div class="shchks">${CK.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div></div></div>`
     + `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${esc((H ? r.handsNote : r.note) || "")}">`
-    + `<div class="shbtns"><button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button><button type="button" class="tb drop${!H && r.status === "dropped" && !fx.length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`; }
-  document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
+    + `<div class="shbtns">${shOne ? "<span></span>" : `<button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button>`}<button type="button" class="tb drop${!H && r.status === "dropped" && !fx.length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`; }
+  const okc = r && (shShow(r) === "hands" ? r.hands : r.status) === "approved";
+  document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard${okc ? " ok" : ""}" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
 /* (Oct 15) Chris: a red check OR any note text turns Approve into a red Send fixes */
 function shMain(){ const r = shRows && shRows[shI], b = document.getElementById("shmain"), el = document.getElementById("shnote"); if (!r || !b) return;
   const st = shShow(r), fix = shFx(r, st).length || (el && el.value.trim()), ok = (st === "hands" ? r.hands : r.status) === "approved";
-  b.className = "tb " + (fix ? "drop on" : "go" + (ok ? " on" : "")); b.dataset.shx = fix ? "fix" : "ok"; b.textContent = fix ? "Send fixes" : "Approve"; }
+  b.className = "tb " + (fix ? "drop on" : ok ? "okd" : "go"); b.dataset.shx = fix ? "fix" : ok ? "close" : "ok"; b.innerHTML = fix ? "Send fixes" : ok ? "&#10003; Approved" : "Approve"; }
 document.addEventListener("input", e => { if (shRows && e.target.id === "shnote") shMain(); });
 /* (Oct 15, Chris) always-visible time while it plays (to the tenth); tap a cut time = jump 2 s before it */
 const shFmt = t => Math.floor(t / 60) + ":" + (t % 60).toFixed(1).padStart(4, "0");
@@ -1335,7 +1341,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v95</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v96</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
