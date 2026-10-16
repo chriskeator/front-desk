@@ -1147,7 +1147,7 @@ function scPicker(){ const p = document.getElementById("scpkr"); if (!p) return;
   if (scMulti.length){ p.innerHTML = `<span class="scpn">${scMulti.length} picked</span><button type="button" class="tb" data-scx="copy">Copy</button><button type="button" class="tb" data-scx="cut">Cut</button>${clip}<span style="flex:1"></span><button type="button" class="tb" data-scx="del">Delete</button>`; return; }
   if (!scPick){ p.innerHTML = scPt ? `${clip}<span style="flex:1"></span><button type="button" class="tb" data-scx="dup">Repeat row below</button><button type="button" class="tb" data-scx="newrow">New row from here</button>` : clip; return; } const {k, b} = scPick;
   const vals = k === "n" ? SCNUMS.map(v => `<button type="button" class="tb${SCDEG[b.m % 12] === v ? " on" : ""}" data-scv="${v}">${v}</button>`).join("")
-    : k === "c" ? SCCHS.map(v => `<button type="button" class="tb${b.k === v ? " on" : ""}" data-scv="${v}">${v}</button>`).join("")
+    : k === "c" ? `<input class="scwin" id="scwin" value="${esc(b.k)}" aria-label="Chord" placeholder="chord" autocapitalize="off" autocomplete="off" spellcheck="false" style="max-width:140px">`   /* (Oct 16, Chris) chords are TYPED, any chord (no picker) */
     : `<input class="scwin" id="scwin" value="${esc(b.w)}" aria-label="Word" placeholder="word">`;
   p.innerHTML = vals + `<span style="flex:1"></span><button type="button" class="tb" data-scx="copy">Copy</button>${clip}<button type="button" class="tb" data-scx="dup">Repeat row below</button><button type="button" class="tb" data-scx="newrow">New row from here</button><button type="button" class="tb" data-scx="split">Split</button><button type="button" class="tb" data-scx="del">Delete</button>`; }
 /* Copy = the picked block(s), kept with their spacing; Paste = at the spot tapped (gold line), replacing what was there */
@@ -1197,7 +1197,7 @@ function scAdd(k, i, g){ const L = scSort(k, i), q = scG1(), [a] = scRg[i];
   const prev = L.filter(b => b.g <= g).pop() || L[0];
   const b = k === "n" ? {g, L: len, m: prev ? prev.m : 60, w: "", c: []} : k === "w" ? {g, L: len, w: ""} : {g, L: len, k: "1"};
   L.push(b); scSort(k, i); scPick = {k, i, b}; scAll(); scSaveSoon(); if (k === "n") scBeep(b.m); if (k === "c") scChordBeep("1");
-  if (k === "w"){ const e = document.getElementById("scwin"); if (e) e.focus(); } return b; }
+  if (k === "w" || k === "c"){ const e = document.getElementById("scwin"); if (e){ e.focus(); if (k === "c") e.select(); } } return b; }
 function scSetVal(v){ if (!scPick) return; const {k, b} = scPick;
   if (k === "n"){ const pc = +Object.keys(SCDEG).find(x => SCDEG[x] === v); let best = b.m; for (let x = b.m - 6; x <= b.m + 6; x++) if (((x % 12) + 12) % 12 === pc){ best = x; break; } b.m = best; scBeep(b.m); }
   else if (k === "c"){ b.k = v; scChordBeep(v); }
@@ -1247,10 +1247,10 @@ window.addEventListener("pointerup", () => { const D = scDrag; if (!D) return; s
   if (D.grp && D.moved){ ["n", "w", "c"].forEach(k => scSort(k, D.i)); scAll(); if (scSnap() !== scLast) scSaveSoon(); return; }
   if (D.moved){ scSort(D.k, D.i); scPick = {k: D.k, i: D.i, b: D.b}; scAll(); if (scSnap() !== scLast) scSaveSoon(); return; }
   const same = scPick && scPick.b === D.b; scMulti = []; scPt = null; scSetPick({k: D.k, i: D.i, b: D.b});
-  if (D.k === "w" && same){ const w = document.getElementById("scwin"); if (w){ w.focus(); w.select(); } } });
-document.addEventListener("input", e => { if (e.target.id !== "scwin" || !scPick || scPick.k !== "w") return; scPick.b.w = e.target.value;
+  if ((D.k === "w" || D.k === "c") && same){ const w = document.getElementById("scwin"); if (w){ w.focus(); w.select(); } } });
+document.addEventListener("input", e => { if (e.target.id !== "scwin" || !scPick || scPick.k === "n") return; if (scPick.k === "c") scPick.b.k = e.target.value.trim(); else scPick.b.w = e.target.value;
   const el = scQ(`.scb.sel span`); if (el) el.textContent = e.target.value; });
-document.addEventListener("change", e => { if (e.target.id === "scwin" && scId) scSaveSoon(); });
+document.addEventListener("change", e => { if (e.target.id === "scwin" && scId){ if (scPick && scPick.k === "c") scChordBeep(scPick.b.k); scSaveSoon(); } });
 /* (Oct 15) Chris: the Rhodes sounded bad; melody plays on the real piano (the Lab's Salamander samples), old synth only if a sample won't load */
 function scEP(c, s, d, m, v){ const h = [1, .45, .06, .16, .03], re = new Float32Array(h.length + 1), im = new Float32Array(h.length + 1); h.forEach((a, i) => { im[i + 1] = a; });
   const o = c.createOscillator(), g = c.createGain(); o.setPeriodicWave(c.createPeriodicWave(re, im)); o.frequency.value = 440 * 2 ** ((m - 69) / 12);
@@ -1279,8 +1279,17 @@ function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; cle
 /* (Oct 15) Chris: Play starts at the top row that isn't checked; checked rows are skipped */
 /* (Oct 16, Chris) no synth: chords play on the same piano as the melody (left-hand bass note + a soft chord in the middle) */
 const SCTRI = {"1":[48,52,55],"2m":[50,53,57],"3m":[52,55,59],"4":[53,57,60],"5":[55,59,62],"6m":[57,60,64]};
-const scChordNotes = k => SCBASS[k] ? [SCBASS[k]].concat(SCTRI[k]) : [];
-function scChordAt(c, s, cut, k){ if (!SCBASS[k]) return; scPiano(c, s, 0, SCBASS[k], .55, cut); SCTRI[k].forEach(m => scPiano(c, s, 0, m, .32, cut)); }
+/* (Oct 16, Chris types any chord): number-system chord -> bass + chord notes, e.g. 1, 6m, b7, 4/5, 1/3, 5sus, 2m7, 4maj7, 7dim */
+const SCDG = {"1":0,"2":2,"3":4,"4":5,"5":7,"6":9,"7":11};
+function scParse(k){ if (SCBASS[k]) return [SCBASS[k], SCTRI[k]];
+  const m = /^\s*([b#♭♯]?)([1-7])\s*(.*?)(?:\s*\/\s*([b#♭♯]?)([1-7]))?\s*$/.exec(String(k || "")); if (!m) return null;
+  const acc = a => a === "b" || a === "♭" ? -1 : a === "#" || a === "♯" ? 1 : 0, r = (SCDG[m[2]] + acc(m[1]) + 12) % 12, q = m[3].toLowerCase();
+  let iv = /dim|°/.test(q) ? [0, 3, 6] : /sus2/.test(q) ? [0, 2, 7] : /sus/.test(q) ? [0, 5, 7] : /aug|\+/.test(q) ? [0, 4, 8] : /^m(?!aj)|min/.test(q) ? [0, 3, 7] : [0, 4, 7];
+  if (/maj7|ma7|Δ/.test(q)) iv = iv.concat(11); else if (/7/.test(q)) iv = iv.concat(10); else if (/6/.test(q)) iv = iv.concat(9);
+  const root = 48 + r, tri = iv.map(x => root + x), bp = m[5] ? (SCDG[m[5]] + acc(m[4]) + 12) % 12 : r;
+  return [36 + bp, tri]; }
+const scChordNotes = k => { const P = scParse(k); return P ? [P[0]].concat(P[1]) : []; };
+function scChordAt(c, s, cut, k){ const P = scParse(k); if (!P) return; scPiano(c, s, 0, P[0], .55, cut); P[1].forEach(m => scPiano(c, s, 0, m, .32, cut)); }
 function scChordBeep(k){ if (window.DESK_TEST) return; scPLoad(scChordNotes(k)).then(() => { try { const c = new AudioContext(); scChordAt(c, c.currentTime + .02, c.currentTime + 1, k); setTimeout(() => c.close(), 1500); } catch {} }); }
 /* (Oct 16, Chris) Mute bar: Play skips the silent beats of a muted bar (notes inside it still play). scWarp = song beat -> play beat */
 function scToggleMute(s){ const m = (scDoc.muted || []).filter(x => Math.abs(x - s) > 1e-9); if (m.length === (scDoc.muted || []).length) m.push(s); scDoc.muted = m.sort((p, q) => p - q); scBar = null; scSaveSoon(); scAll(); }
@@ -1299,10 +1308,10 @@ function scSched(){ const done = scRows(), K = scSkips();
     l.forEach(n => mel.push({g: n.g, t: at(n.g), m: n.m})); t += scWarp(e0, K) - w0; });
   return {segs, mel: mel.sort((p, q) => p.t - q.t), total: t, K}; }
 async function scPlay(){
-  scStop(); const c = scCtx = new AudioContext(); await scPLoad(scLines.flat().map(n => n.m).concat(scStep() === 2 ? Object.keys(SCBASS).flatMap(scChordNotes) : [])); if (scCtx !== c) return;
+  scStop(); const c = scCtx = new AudioContext(); await scPLoad(scLines.flat().map(n => n.m).concat(scStep() === 2 ? scChords.flat().map(c => c.k).flatMap(scChordNotes) : [])); if (scCtx !== c) return;
   const B = 60 / scDoc.bpm, T = c.currentTime + .3, S = scSched(), K = S.K, skipped = g => K.some(([a, b]) => g >= a - 1e-9 && g < b - 1e-9);
   S.segs.forEach(q => { const at = g => T + q.at(g) * B;
-    if (scStep() === 2 && scChdOn()) (scChords[q.i] || []).forEach(ch => { if (SCBASS[ch.k] && ch.g < q.e0) scChordAt(c, at(Math.max(ch.g, q.s0)), at(Math.min(scEnd(ch), q.e0)), ch.k); });
+    if (scStep() === 2 && scChdOn()) (scChords[q.i] || []).forEach(ch => { if (scParse(ch.k) && ch.g < q.e0) scChordAt(c, at(Math.max(ch.g, q.s0)), at(Math.min(scEnd(ch), q.e0)), ch.k); });
     if (scClickOn()) for (let b = Math.ceil(q.s0 - 1e-9); b < q.e0 - 1e-9; b++) if (!skipped(b)) scClick(c, at(b), ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0); });
   const mel = scStep() === 1 || scMelOn() ? S.mel : [];
   mel.forEach((n, k) => scPiano(c, T + n.t * B, 0, n.m, 1, k + 1 < mel.length ? T + mel[k + 1].t * B : null));
@@ -1514,7 +1523,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v122</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v123</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
