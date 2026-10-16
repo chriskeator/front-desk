@@ -1236,7 +1236,7 @@ function shClose(){ shRows = null; document.getElementById("shortchk").innerHTML
 function shDraw(){
   const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh"><span class="scpill">${c}</span><button type="button" class="tb" data-shx="close">Close</button></div>`;
   let h;
-  if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.hands === "fix").length;
+  if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.status === "fix" || x.hands === "fix").length;
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
   else { const st = shShow(r), H = st === "hands", CK = H ? SH_CHKS_H : SH_CHKS, fx = shFx(r, st), ans = H ? r.hands : r.status;
     h = head((shI + 1) + " of " + N) + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
@@ -1266,7 +1266,7 @@ async function shAnswer(st){
     else { r.hands = st === "approved" ? "approved" : "fix"; r.handsNote = el ? el.value.trim() : (r.handsNote || ""); const fx = r.hands === "approved" ? [] : shFx(r, "hands"); r.handsFixes = fx;
       db.collection("shortcheck").doc(r.id).update({hands: r.hands, handsNote: [fx.map(i => "Fix: " + SH_CHKS_H[i]).join("; "), r.handsNote].filter(Boolean).join("; "), handsFixes: fx, handsAt: now, updated: now}).catch(() => {}); } }
   else {
-    r.status = st; r.note = el ? el.value.trim() : (r.note || ""); const fx = st === "approved" ? [] : (r.fixes || []);
+    r.status = st; r.note = el ? el.value.trim() : (r.note || ""); const fx = st === "fix" ? (r.fixes || []) : [];
     if (st === "dropped" && !fx.length && !r.note) r.note = "Drop, don't redo";
     const fixText = fx.map(i => "Fix: " + SH_CHKS[i]).join("; ");
     db.collection("shortcheck").doc(r.id).update({status: st, note: [fixText, r.note].filter(Boolean).join("; "), fixes: fx, answeredAt: now, updated: now}).catch(() => {}); }
@@ -1286,11 +1286,11 @@ document.addEventListener("click", e => {
   else if (a === "seek"){ const v = document.getElementById("shvid"); if (v){ const p = String(x.dataset.t).split(":"); v.currentTime = Math.max(0, (+p[0]) * 60 + (+p[1]) - 2); v.play().catch(() => {}); } }
   else if (a === "ok") shAnswer("approved");
   else if (a === "drop"){ const r = shRows[shI]; if (r){ if (shShow(r) === "hands") r.handsFixes = []; else r.fixes = []; } shAnswer("dropped"); }
-  else if (a === "fix") shAnswer("dropped");
+  else if (a === "fix") shAnswer("fix");
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v92</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v93</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3715,18 +3715,18 @@ function homeShorts(){
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const blk = (bg, bd, txt, rid) => `<i class="sblk"${rid ? ` data-shortrow="${esc(rid)}" role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${rid ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${txt ? `<span class="sfw">${txt}</span>` : ""}</i>`;
-  const cells = (k, you, rid) => SHS.map((t, i) => i < k ? blk("#1FA598", "#1FA598") : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
-  const row = (title, sub, k, you, rid) => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${cells(k, you, rid)}</span></div>`;
+  const cells = (k, you, rid, fixing) => SHS.map((t, i) => i < k ? blk("#1FA598", "#1FA598") : i === k && fixing ? blk("#FDE8E4", "#D85A30", `<span style="color:#B23B17;font-weight:600">Fixing</span>`) : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
+  const row = (title, sub, k, you, rid, fixing) => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${cells(k, you, rid, fixing)}</span></div>`;
   const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SHS.map((t, i) => `<i class="sblk" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SHAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   const md = d => { const p = String(d).slice(5, 10).split("-"); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
-  const W = (shBoard || []).map(r => ({r, k: r.hands !== "approved" ? 0 : !r.status ? 1 : 2, you: !!shStep(r)})).sort((a, b) => b.you - a.you || a.k - b.k || (a.r.order || 0) - (b.r.order || 0));
+  const W = (shBoard || []).map(r => ({r, k: r.hands !== "approved" ? 0 : !r.status || r.status === "fix" ? 1 : 2, you: !!shStep(r), fixing: r.hands === "fix" || r.status === "fix"})).sort((a, b) => b.you - a.you || a.k - b.k || (a.r.order || 0) - (b.r.order || 0));
   const S = sb.filter(x => x.kind === "scheduled").sort((a, b) => a.date.localeCompare(b.date)), P = sb.filter(x => x.kind === "posted").sort((a, b) => b.date.localeCompare(a.date));
   if (!W.length && !S.length && !P.length) return "";
   const yours = W.filter(x => x.you).length;
   const sec = (t, L, f) => L.length ? label(t, L.length) + head + L.map(f).join("") : "";
   return `<div class="msec" style="--cc:#D85A30"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
-    + sec("In the works", W, x => row(x.r.title, x.r.source, x.k, x.you, x.you ? x.r.id : ""))
+    + sec("In the works", W, x => row(x.r.title, x.r.source, x.k, x.you, x.you ? x.r.id : "", x.fixing))
     + sec("Scheduled", S, x => row(x.title, md(x.date), 6, null))
     + sec("Posted this week", P, x => row(x.title, md(x.date), 7, false)) + `</div></div>`; }
 document.addEventListener("click", e => { const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow); }, true);
