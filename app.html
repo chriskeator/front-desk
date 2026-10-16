@@ -971,6 +971,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scc.no{color:var(--line)}
 #songchk .scbn{position:absolute;top:-18px;font-size:11px;color:var(--muted);white-space:nowrap}
 #songchk .scbn.in{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+#songchk .scck.scadd{margin-left:6px;font-size:22px;color:var(--teal)}
 #songchk .scck{width:40px;height:40px;flex:none;align-self:center;margin-left:10px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:18px;cursor:pointer;padding:0}
 #songchk .scrow.done .sctrk,#songchk .scrow.done .scpk{background:rgba(31,157,85,.16)}
 #songchk .scrow.done .scck{background:#1F9D55;color:#fff;border-color:#1F9D55}
@@ -1061,7 +1062,7 @@ function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows(), old = scQ(".scrows"), top = old ? old.scrollTop : 0;   /* (Oct 16, Chris) Stop never jumps back to the top */
   const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
   document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords: " + SCLV[scLv][0]}</span>${st === 2 ? `<span class="sclvs">${Object.keys(SCLV).map(k => `<button type="button" class="tb${k === scLv ? " on" : ""}" data-sclv="${k}">${SCLV[k][0]}</button>`).join("")}</span>` : ""}<span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb" data-scx="grid">Grid ${SCGRID[scG()]}</button><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
-    + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
+    + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button>${st === 1 ? `<button type="button" class="scck scadd" data-scadd="${i}" aria-label="Add a row underneath">+</button>` : ""}</div>`).join("") + `</div>`
     + `<div class="scpkr" id="scpkr"></div>`
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve " + SCLV[scLv][0] + " chords"}</button>`}</div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); scPicker(); const nw = scQ(".scrows"); if (nw) nw.scrollTop = top; }
@@ -1270,6 +1271,7 @@ document.addEventListener("click", e => {
     ck.parentNode.classList.toggle("done", k < 0); scCount(); if (scId) db.collection("songcheck").doc(scId).update({rows: R}).catch(() => {}); return; }
   const v = e.target.closest("[data-scv]"); if (v){ scSetVal(v.dataset.scv); return; }
   const lb = e.target.closest("[data-sclv]"); if (lb){ scSetLv(lb.dataset.sclv); return; }
+  const ad = e.target.closest("[data-scadd]"); if (ad){ const i = +ad.dataset.scadd; scPick = null; scMulti = []; scPt = {i, g: scRg[i][0]}; scDup(); return; }   /* (Oct 16, Chris) + = new row underneath (a copy to edit) */
   if (e.target.closest(".scl")) return;   /* empty space: handled on pointerup (tap = paste spot, drag = box select) */
   const x = e.target.closest("[data-scx]"); if (!x) return; const a = x.dataset.scx;
   if (a === "close") scClose();
@@ -1428,7 +1430,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v115</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v116</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
