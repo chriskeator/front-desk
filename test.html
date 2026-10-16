@@ -1242,19 +1242,28 @@ async function scPlay(){
   scPH = {T, B, segs}; requestAnimationFrame(scHead);
   scPlayEnd = setTimeout(() => { scStop(); if (scId) scDraw(); }, (t * B + 1) * 1000); }
 async function scApprove(){
-  const st = scStep(), id = scId, now = new Date().toISOString();
-  scSync();
-  if (scView && (scView < (scDoc.step || 1) || scDoc.status === "approved")){ await db.collection("songcheck").doc(id).update({lines: scLines, words: scWords, chords: scChords, [st === 1 ? "melodyOK" : "chordsOK"]: now, updated: now}); scClose(); render(); return; }
-  /* (Oct 16, Chris) one step per check, like Shorts: Approve closes the page and ticks that box on the Songs board */
-  const nm = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, ""), sg = (songs || []).find(x => nm(x.title) === nm(scDoc.name));
-  if (sg && (sg.step || 0) <= st) db.collection("songs").doc(sg.id).update({step: st + 1}).catch(() => {});
-  if (st === 1){ await db.collection("songcheck").doc(id).update({step: 2, status: "chords", lines: scLines, words: scWords, chords: scChords, melodyOK: now, updated: now}); scBoard = null; scClose(); render(); return; }
-  await db.collection("songcheck").doc(id).update({status: "approved", lines: scLines, chords: scChords, chordsOK: now, updated: now}); scBoard = null;
+  const st = scStep(), id = scId, now = new Date().toISOString(), D = scDoc;
+  scSync(); const L = scClone(scLines), W = scClone(scWords), C = scClone(scChords);
   const t = allTasks.find(x => !x.done && Array.isArray(x.songcheck) && x.songcheck.some(p => p[0] === id));
-  if (t){ const others = t.songcheck.map(p => p[0]).filter(x => x !== id), left = [];
-    for (const o of others){ const d = await db.collection("songcheck").doc(o).get(); if (!d.exists || d.data().status !== "approved") left.push(o); }
-    if (!left.length) await db.collection("tasks").doc(t.id).update({done: true, doneAt: now}); }
-  scClose(); render(); }
+  /* (Oct 16, Chris) Approve = back to the list AT ONCE with the song's row closed and its pill saying Submitted;
+     Cadence turns it to Fixing when she starts, Ready when it's his turn again. The db writes follow (proven by desk-songcheck-test.py) */
+  if (t){ t.scState = "submitted"; t.scAt = now; }
+  scClose(); closePop(); taskOpen = null; saveTaskOpen(); render();
+  if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
+  const SC = db.collection("songcheck").doc(id), done = () => { scBoard = null; render(); };
+  try {
+    if (scView && (scView < (D.step || 1) || D.status === "approved")){ await SC.update({lines: L, words: W, chords: C, [st === 1 ? "melodyOK" : "chordsOK"]: now, updated: now}); return done(); }
+    /* (Oct 16, Chris) one step per check, like Shorts: Approve closes the page and ticks that box on the Songs board */
+    const nm = x => String(x || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, ""), sg = (songs || []).find(x => nm(x.title) === nm(D.name));
+    if (sg && (sg.step || 0) <= st) db.collection("songs").doc(sg.id).update({step: st + 1}).catch(() => {});
+    if (st === 1){ await SC.update({step: 2, status: "chords", lines: L, words: W, chords: C, melodyOK: now, updated: now}); return done(); }
+    await SC.update({status: "approved", lines: L, chords: C, chordsOK: now, updated: now});
+    if (t){ const others = t.songcheck.map(p => p[0]).filter(x => x !== id), left = [];
+      for (const o of others){ const d = await db.collection("songcheck").doc(o).get(); if (!d.exists || d.data().status !== "approved") left.push(o); }
+      if (!left.length) await db.collection("tasks").doc(t.id).update({done: true, doneAt: now}); }
+    done();
+  } catch { if (t){ t.scState = ""; render(); } }   /* a failed save shows no Submitted pill, so nothing looks sent that wasn't */
+}
 document.addEventListener("keydown", e => { if (!scId) return;
   if (e.target.id === "scwin"){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); e.target.blur(); } return; }
   if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || "") || e.target.isContentEditable) return;
@@ -1419,7 +1428,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v110</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v111</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3852,7 +3861,10 @@ function songsHTML(){ const ST = SSTEPS(), n = ST.length;
 const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/)[0], k = w.toLowerCase();
   return ({lyrics: "Lyr", melody: "Mel", chords: "Chd", band: "Bnd", cards: "Crd", lesson: "Lsn", check: "Chk"})[k] || (w.charAt(0).toUpperCase() + w.slice(1, 3)); };
 /* (Oct 14, Chris) Lab test rows: V1/V2/V3 = how many times a fix came back, and whether it's ready to check (lab-signoff function writes labRound/labStatus) */
-function labTag(t){ if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing";
+/* (Oct 16, Chris) song check rows: Submitted (grey) the moment he approves, Fixing (gold) while Cadence works, Ready (teal) = his turn */
+const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
+function labTag(t){ if (t && !t.done && SCTAG[t.scState]){ const [w, bg, fg] = SCTAG[t.scState]; return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
+  if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing";
   return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
