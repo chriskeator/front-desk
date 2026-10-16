@@ -994,152 +994,164 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scbtns{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:4px}
 #songchk .scbtns .tb[disabled]{opacity:.45;cursor:default}
 #songchk .scbtns .tb{height:46px;width:100%}
+#songchk .scb{position:absolute;box-sizing:border-box;border-radius:6px;user-select:none;touch-action:none;cursor:grab;overflow:hidden;z-index:1;display:flex;align-items:center;padding:0 5px;white-space:nowrap;font-size:15px}
+#songchk .scb span{pointer-events:none;overflow:hidden}
+#songchk .scb.k-n{background:var(--soft);border:1px solid var(--teal);color:var(--teal);font-weight:700}
+#songchk .scb.k-w{background:var(--card);border:1px dashed var(--line);color:var(--ink)}
+#songchk .scb.k-c{color:var(--pick);font-weight:700;border-left:2px solid var(--pick);background:transparent}
+#songchk .scb.sel{box-shadow:0 0 0 2px var(--gold);z-index:2}
+#songchk .scb.lock{pointer-events:none;cursor:default}
+#songchk .scb.d{opacity:.85;cursor:grabbing;z-index:3}
+#songchk .scb .sce{position:absolute;top:0;bottom:0;width:25%;max-width:12px;cursor:ew-resize;z-index:2}
+#songchk .scb .sce[data-sce="l"]{left:0}
+#songchk .scb .sce[data-sce="r"]{right:0}
+#songchk .scb.sel .sce::after{content:"";position:absolute;top:25%;bottom:25%;left:calc(50% - 1.5px);width:3px;border-radius:2px;background:var(--gold)}
+#songchk .scl{position:absolute;left:0;right:0;cursor:copy}
+#songchk .scpkr{display:flex;gap:6px;align-items:center;height:46px;margin:2px 0 8px;overflow-x:auto}
+#songchk .scpkr .tb{height:42px;min-width:46px;padding:0 10px;flex:none}
+#songchk .scpkr .tb.on{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+#songchk .scpkr input{height:42px;flex:0 1 320px;min-width:120px;box-sizing:border-box;font:inherit;font-size:16px;padding:6px 10px;border:2px solid var(--gold);border-radius:8px;background:var(--card);color:var(--ink)}
+#songchk .scrow.two .sctrk{height:122px}
 </style>
 <script>
-/* (Oct 15) Chris: a click (metronome) button next to the time signature; remembered per browser */
+/* (Oct 16, Chris: "the tools are a disaster, rebuild from scratch") ONE BLOCK TOOL for numbers, words and chords.
+   Every block works the same: tap = pick (gold) + picker under the rows; drag the middle = move; drag an edge = stretch;
+   snapped to the song's grid; a block stops at its neighbour (never covers it); Delete removes only that block;
+   double-click empty space = new block; double-click a block = delete it; Back undoes every change; Reset = the original.
+   Step 1 edits numbers + words, step 2 edits chords (numbers and words show, locked). Proven by desk-songcheck-test.py. */
 function scClickOn(){ try { return localStorage.getItem("scClick") === "1"; } catch { return false; } }
 /* (Oct 16, Chris) chords check: a Melody button like Click, to hear the chords alone; remembered per browser */
 function scMelOn(){ try { return localStorage.getItem("scMel") !== "0"; } catch { return true; } }
-let scWords = null, scWSel = null, scCSel = null, scCT = null, scCDelAt = 0;   /* scCSel = picked chord 'row:note:k' (Oct 16) */   /* (Oct 15) Chris: words are their own pieces under the numbers, dragged apart, snapped to the beat */
-let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null;
+let scId = null, scDoc = null, scLines = null, scWords = null, scChords = null, scRg = null, scSpan = 4, scPick = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null, scView = null;
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
-const SCCH = ["1","4","5","6m","2m","3m",""], SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
+const SCNUMS = ["1","2","b3","3","4","#4","5","6","b7","7"], SCCHS = ["1","4","5","6m","2m","3m"];
+const SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
 const scClone = x => JSON.parse(JSON.stringify(x));
 /* (Oct 16, Chris) snap grid per song: 4/4 = 16ths, 3/4 and 6/8 = 8ths, swing = 8th triplets; doc.grid (steps per beat) wins, the Grid button cycles it */
 const SCGRID = {4: "16ths", 2: "8ths", 3: "Swing"};
 const scG = () => (scDoc && scDoc.grid) || (scDoc && scDoc.meter === 4 ? 4 : 2), scG1 = () => 1 / scG();
-const scQ16 = g => Math.round(g * scG()) / scG();
-const scWL = (ws, k, end) => ws[k].L != null ? ws[k].L : Math.max(.25, (k + 1 < ws.length ? ws[k + 1].g : end) - ws[k].g);   /* old words without a length run to the next word */   /* (Oct 16, Chris) notes and words snap to the 16th-note grid (beat = 1) */
+const scSnapG = g => Math.round(g * scG() + 1e-6) / scG();
 const scQ = s => document.querySelector("#songchk " + s);
-let scView = null;   /* (Oct 16, Chris) green boxes open an approved step again */
-async function scOpen(id, view){
-  const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  scView = view ? +view : null; scId = id; scDoc = s.data(); scLines = scClone(scDoc.lines); scWords = scDoc.words ? scClone(scDoc.words) : scWordsFrom(scLines); scSel = null; scWSel = null; scUndo = []; scLast = scSnap(); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
-function scClose(){ scStop(); scId = null; scDoc = null; document.getElementById("songchk").innerHTML = ""; }
 const scStep = () => scView || scDoc.step || 1;
 const scRows = () => ((scDoc.rows || {})[scStep()] || []);
-const scWordsFrom = L => L.map(l => l.filter(n => n.w).map(n => ({g: n.g, w: n.w})));
-/* each note keeps the word that starts on its beat (n.w), so the song files still read lines the same way */
-function scSync(){ scLines.forEach((l, i) => l.forEach(n => { const w = (scWords[i] || []).find(x => Math.abs(x.g - n.g) < 1e-9); n.w = w ? w.w : ""; })); }
-/* (Oct 16, Chris) Back = undo the last change (notes, words, chords); every save keeps the state before it */
+const scEnd = b => b.g + b.L;
+function scRange(l){ const M = scDoc.meter, a = Math.floor(Math.min(...l.map(n => n.g)) / M + 1e-9) * M, b = Math.ceil(Math.max(...l.map(n => n.g + n.L)) / M - 1e-9) * M; return [a, Math.max(b, a + M)]; }
+/* which blocks a step edits, and where each lane sits in the row (top, height in px) */
+const scEdit = k => scStep() === 1 ? k !== "c" : k === "c";
+const scLane = k => scStep() === 1 ? ({n: [6, 40], w: [52, 32]})[k] : ({c: [6, 26], n: [36, 40], w: [82, 32]})[k];
+const scList = (k, i) => k === "n" ? scLines[i] : k === "w" ? scWords[i] : scChords[i];
+const scSort = (k, i) => scList(k, i).sort((p, q) => p.g - q.g);
+/* words: each word has its own length (default = the note it sits on); chords: their own list (default = to the next chord) */
+function scWordsFrom(L){ return L.map(l => l.filter(n => n.w).map(n => ({g: n.g, L: n.L, w: n.w}))); }
+function scChordsFrom(L, rg){ return L.map((l, i) => { const C = []; l.forEach(n => (n.c || []).forEach(q => C.push({g: n.g + q[1], k: q[0]}))); C.sort((p, q) => p.g - q.g);
+  const end = rg[i][0] + scSpan; return C.map((c, x) => Object.assign(c, {L: Math.max(scG1(), (x + 1 < C.length ? C[x + 1].g : end) - c.g)})); }); }
+function scFixWords(){ scWords = scLines.map((l, i) => (scWords[i] || []).map(w => { if (w.L == null){ const n = l.find(n => Math.abs(n.g - w.g) < 1e-9); w.L = n ? n.L : 1; } return w; }).sort((p, q) => p.g - q.g)); }
+function scRanges(){ scRg = scLines.map(scRange); scSpan = Math.max(...scRg.map(([a, b]) => b - a)); }
+function scLoad(doc){ scDoc = doc; scLines = scClone(doc.lines); scRanges();
+  scWords = doc.words ? scClone(doc.words) : scWordsFrom(scLines); scFixWords();
+  scChords = doc.chords ? scClone(doc.chords) : scChordsFrom(scLines, scRg); scPick = null; scUndo = []; scLast = scSnap(); }
+async function scOpen(id, view){
+  const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
+  scView = view ? +view : null; scId = id; scLoad(s.data()); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
+function scClose(){ scStop(); scId = null; scDoc = null; scPick = null; document.getElementById("songchk").innerHTML = ""; }
+/* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
+function scSync(){ scLines.forEach((l, i) => { l.sort((p, q) => p.g - q.g);
+  l.forEach(n => { const w = (scWords[i] || []).find(x => Math.abs(x.g - n.g) < 1e-9); n.w = w ? w.w : ""; n.c = []; });
+  (scChords[i] || []).forEach(c => { let n = l.find(n => n.g <= c.g + 1e-9 && c.g < n.g + n.L - 1e-9) || l.filter(n => n.g <= c.g + 1e-9).pop() || l[0]; n.c.push([c.k, +(c.g - n.g).toFixed(6)]); }); }); }
+/* (Oct 16, Chris) Back = undo the last change; every save keeps the state before it */
 let scUndo = [], scLast = null;
-const scSnap = () => JSON.stringify({L: scLines, W: scWords});
+const scSnap = () => JSON.stringify({L: scLines, W: scWords, C: scChords});
 function scBackBtn(){ const b = scQ('[data-scx="undo"]'); if (b) b.disabled = !scUndo.length; }
-function scSaveSoon(undo){ if (!undo){ const now = scSnap(); if (scLast && scLast !== now){ scUndo.push(scLast); if (scUndo.length > 100) scUndo.shift(); } scLast = now; } scBackBtn();
-  clearTimeout(scTimer); scSync(); const id = scId, L = scClone(scLines), Wd = scClone(scWords); scTimer = setTimeout(() => { db.collection("songcheck").doc(id).update({lines: L, words: Wd, updated: new Date().toISOString()}).catch(() => {}); }, 500); }
+function scSaveSoon(undo){ if (!undo){ const now = scSnap(); if (scLast && scLast !== now){ scUndo.push(scLast); if (scUndo.length > 200) scUndo.shift(); } scLast = now; } scBackBtn();
+  clearTimeout(scTimer); scSync(); if (!scId) return; const id = scId, L = scClone(scLines), Wd = scClone(scWords), C = scClone(scChords);
+  scTimer = setTimeout(() => { db.collection("songcheck").doc(id).update({lines: L, words: Wd, chords: C, updated: new Date().toISOString()}).catch(() => {}); }, 500); }
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows(), old = scQ(".scrows"), top = old ? old.scrollTop : 0;   /* (Oct 16, Chris) Stop never jumps back to the top */
   const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
   document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords"}</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb" data-scx="grid">Grid ${SCGRID[scG()]}</button><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
-    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel" id="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button>`}</div></div>`;
-  scCount(); scLines.forEach((l, i) => scTrack(i)); const nw = scQ(".scrows"); if (nw) nw.scrollTop = top; }
+    + `<div class="scpkr" id="scpkr"></div>`
+    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button>`}</div></div>`;
+  scCount(); scLines.forEach((l, i) => scTrack(i)); scPicker(); const nw = scQ(".scrows"); if (nw) nw.scrollTop = top; }
 /* (Oct 15) Chris: a line glides left to right across each bar while it plays */
 function scHead(){ if (!scCtx || !scPH) return; const el0 = (scCtx.currentTime - scPH.T) / scPH.B, S = scPH.segs;
   let sg = S[S.length - 1]; for (const q of S) if (el0 < q.t + q.e0 - q.s0){ sg = q; break; }
   const i = sg.i, beat = sg.s0 + Math.max(0, el0 - sg.t);
   const t = scQ(`[data-sct="${i}"]`);
-  if (t){ const span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), [a] = scRange(scLines[i]), W = t.clientWidth / span;
+  if (t){ const a = scRg[i][0], W = t.clientWidth / scSpan;
     let el = document.getElementById("scph"); if (!el || el.parentNode !== t){ if (el) el.remove(); el = document.createElement("div"); el.id = "scph"; el.className = "scph"; t.appendChild(el); t.parentNode.scrollIntoView({block: "nearest", behavior: "smooth"}); }
     el.style.left = Math.max(0, Math.min(t.clientWidth - 3, (beat - a) * W)) + "px"; }
   requestAnimationFrame(scHead); }
 function scCount(){ const c = document.getElementById("sccnt"); if (c) c.textContent = scRows().length + " of " + scLines.length + " rows done"; }
-function scRange(l){ const M = scDoc.meter, a = Math.floor(Math.min(...l.map(n => n.g)) / M + 1e-9) * M, b = Math.ceil(Math.max(...l.map(n => n.g + n.L)) / M - 1e-9) * M; return [a, Math.max(b, a + M)]; }
+const scLabel = (k, b) => k === "n" ? SCDEG[b.m % 12] : k === "w" ? esc(b.w) : esc(b.k);
 function scTrack(i){
   const t = scQ(`[data-sct="${i}"]`); if (!t) return;
-  const M = scDoc.meter, st = scStep(), l = scLines[i], span = Math.max(...scLines.map(x => { const [a, b] = scRange(x); return b - a; })), [a] = scRange(l), W = t.clientWidth / span;
-  const first = Math.min(...l.map(n => n.g)), pick = first > a + 1e-9;
+  const M = scDoc.meter, l = scLines[i], [a] = scRg[i], span = scSpan, W = t.clientWidth / span;
+  const pick = Math.min(...l.map(n => n.g)) > a + 1e-9 && scRg[i][0] < 0 + 1e-9 && Math.min(...l.map(n => n.g)) - a >= 1;
   let h = pick ? `<div class="scpk" style="left:0;width:${M * W}px"></div>` : "";
   for (let b = 1; b <= span; b++) h += `<div class="${b % M === 0 ? "scbl" : "scbt"}" style="left:${b * W - (b === span ? 2 : 0)}px"></div>`;
   /* (Oct 16, Chris) row 0 = the intro (doc.intro, built from the last line, no words): its bars say "intro" */
   const intro = scDoc.intro && i === 0;
   for (let b = 0; b < span; b += M) h += `<div class="scbn${intro ? " in" : ""}" style="left:${b * W + 4}px">${intro ? "intro" : b === 0 && pick ? "pickup" : "bar " + (Math.floor((a + b) / M) + 1)}</div>`;
-  if (st === 2){ const CH = []; l.forEach((n, j) => (n.c || []).forEach((q, k) => CH.push({g: n.g + q[1], k: q[0], id: i + ":" + j + ":" + k}))); CH.sort((p, q) => p.g - q.g);
-    h += `<div class="sccl" data-sccl="${i}"></div>`;
-    CH.forEach((c, x) => { const e = x + 1 < CH.length ? CH[x + 1].g : a + span; h += `<div class="scc${scCSel === c.id ? " sel" : ""}" data-scc="${c.id}" style="left:${(c.g - a) * W + 1}px;width:${Math.max(W / 2, (e - c.g) * W - 4)}px">${esc(c.k)}</div>`; }); }
-  l.forEach((n, j) => {
-    const x = (n.g - a) * W + 1, w = n.L * W - 2;
-    const over = l.some((q, k) => k !== j && q.g < n.g + n.L - 1e-9 && n.g < q.g + q.L - 1e-9);
-    h += `<div class="scn${over ? " x" : ""}${scSel === i + ":" + j ? " sel" : ""}" data-scn="${i}:${j}" style="left:${x}px;width:${w}px"><b>${SCDEG[n.m % 12]}</b><div class="sce" data-sce="l"></div><div class="sce" data-sce="r"></div></div>`; });
-  const ws = (scWords[i] = (scWords[i] || []).sort((p, q) => p.g - q.g));
-  h += `<div class="scwl" data-scwl="${i}"></div>`;
-  /* (Oct 16, Chris) a word block edits exactly like a number: hand in the middle moves it, arrows on both edges stretch it (w.L) */
-  ws.forEach((w, k) => { const L = scWL(ws, k, a + span); h += `<div class="scw${scWSel === i + ":" + k ? " sel" : ""}" data-scw="${i}:${k}" style="left:${(w.g - a) * W + 1}px;width:${Math.max(W / 4, L * W - 2)}px"><span>${esc(w.w)}</span><div class="sce" data-sce="l"></div><div class="sce" data-sce="r"></div></div>`; });
-  t.innerHTML = h; scSelBar(); }
-function scSelAll(){ scLines.forEach((l, i) => scTrack(i)); }
-/* (Oct 15) Chris: numbers edit like words: tap a number, tap again, type 1-7 (b3, #4, b7 too), Enter. Same octave, nearest pitch */
-function scNEdit(i, j){ const e = scQ(`[data-scn="${i}:${j}"]`), n = scLines[i][j]; if (!e || !n) return; e.classList.remove("d");
-  const b = e.querySelector("b"), inp = document.createElement("input"); inp.className = "scwin scnin"; inp.value = SCDEG[n.m % 12]; inp.setAttribute("aria-label", "Number");
-  if (b) b.replaceWith(inp); else e.appendChild(inp); inp.focus(); inp.select(); let gone = false;
-  inp.addEventListener("blur", () => { if (gone) return; gone = true; const v = inp.value.trim().replace(/^♭/, "b").replace(/^♯/, "#");
-    const pc = Object.keys(SCDEG).find(k => SCDEG[k] === v);
-    if (!inp.dataset.cancel && pc != null){ const o = n.m; let best = o; for (let x = o - 12; x <= o + 12; x++) if (x % 12 === +pc && (best % 12 !== +pc || Math.abs(x - o) < Math.abs(best - o))) best = x;
-      if (best !== o){ n.m = best; scSaveSoon(); scBeep(best); } }
-    scTrack(i); }); }
-/* tap a word = pick it; tap again = type; tap empty space under a beat = new word there; Delete key removes a picked word */
-function scWEdit(i, k){ const e = scQ(`[data-scw="${i}:${k}"]`), w = scWords[i][k]; if (!e || !w) return;
-  const inp = document.createElement("input"); inp.className = "scwin"; inp.value = w.w; inp.setAttribute("aria-label", "Word"); e.innerHTML = ""; e.appendChild(inp); inp.focus(); inp.select(); let gone = false;
-  inp.addEventListener("blur", () => { if (gone) return; gone = true; if (!inp.dataset.cancel) w.w = inp.value.trim(); if (!w.w) scWords[i].splice(scWords[i].indexOf(w), 1); scWSel = null; scTrack(i); scSaveSoon(); }); }
-function scWDel(){ if (!scWSel) return; const [i, k] = scWSel.split(":").map(Number); scWords[i].splice(k, 1); scWSel = null; scTrack(i); scSaveSoon(); }
+  for (const k of (scStep() === 1 ? ["n", "w"] : ["c", "n", "w"])){ const [top, ht] = scLane(k), ed = scEdit(k);
+    if (ed) h += `<div class="scl" data-lane="${k}:${i}" style="top:${top}px;height:${ht}px"></div>`;
+    scSort(k, i).forEach((b, x) => { h += `<div class="scb k-${k}${ed ? "" : " lock"}${scPick && scPick.b === b ? " sel" : ""}" data-b="${k}:${i}:${x}" style="top:${top}px;height:${ht}px;left:${(b.g - a) * W + 1}px;width:${Math.max(6, b.L * W - 2)}px"><span>${scLabel(k, b)}</span>${ed ? `<i class="sce" data-sce="l"></i><i class="sce" data-sce="r"></i>` : ""}</div>`; }); }
+  t.innerHTML = h; }
+function scAll(){ scLines.forEach((l, i) => scTrack(i)); scPicker(); }
+/* the picker under the rows: what the picked block is, Split, Delete */
+function scPicker(){ const p = document.getElementById("scpkr"); if (!p) return; scBackBtn();
+  if (!scPick){ p.innerHTML = ""; return; } const {k, b} = scPick;
+  const vals = k === "n" ? SCNUMS.map(v => `<button type="button" class="tb${SCDEG[b.m % 12] === v ? " on" : ""}" data-scv="${v}">${v}</button>`).join("")
+    : k === "c" ? SCCHS.map(v => `<button type="button" class="tb${b.k === v ? " on" : ""}" data-scv="${v}">${v}</button>`).join("")
+    : `<input class="scwin" id="scwin" value="${esc(b.w)}" aria-label="Word" placeholder="word">`;
+  p.innerHTML = vals + `<span style="flex:1"></span><button type="button" class="tb" data-scx="split">Split</button><button type="button" class="tb" data-scx="del">Delete</button>`; }
+function scFind(b){ for (const k of ["n", "w", "c"]) for (let i = 0; i < scLines.length; i++) if (scList(k, i).includes(b)) return {k, i, b}; return null; }
+function scSetPick(p){ scPick = p; scAll(); }
+/* move / stretch: snapped, kept inside the row, stopped by the neighbours of the same kind */
+function scBounds(k, i, b){ const L = scSort(k, i), x = L.indexOf(b), [a] = scRg[i];
+  const prev = x > 0 ? scEnd(L[x - 1]) : a, next = x + 1 < L.length ? L[x + 1].g : a + scSpan;
+  return {lo: Math.min(prev, b.g), hi: Math.max(next, scEnd(b))}; }
+function scMove(k, i, b, mode, g0, L0, dBeats){ const {lo, hi} = scBounds(k, i, b), q = scG1(), e0 = g0 + L0;
+  if (mode === "m"){ b.g = Math.max(lo, Math.min(hi - L0, scSnapG(g0 + dBeats))); b.L = L0; }
+  else if (mode === "r"){ b.g = g0; b.L = Math.max(q, Math.min(hi, scSnapG(e0 + dBeats)) - g0); }
+  else { b.g = Math.max(lo, Math.min(e0 - q, scSnapG(g0 + dBeats))); b.L = e0 - b.g; } }
+function scDelete(p){ p = p || scPick; if (!p) return; const L = scList(p.k, p.i); if (p.k === "n" && L.length < 2) return; const x = L.indexOf(p.b); if (x < 0) return;
+  L.splice(x, 1); if (scPick && scPick.b === p.b) scPick = null; scAll(); scSaveSoon(); }
+function scSplit(){ if (!scPick) return; const {k, i, b} = scPick, q = scG1(); if (b.L < 2 * q - 1e-9) return;
+  const h = Math.max(q, scSnapG(b.L / 2)), nb = Object.assign(scClone(b), {g: b.g + h, L: b.L - h}); if (k === "w") nb.w = ""; if (k === "n") nb.w = "";
+  b.L = h; scList(k, i).push(nb); scSort(k, i); scAll(); scSaveSoon(); }
+function scAdd(k, i, g){ const L = scSort(k, i), q = scG1(), [a] = scRg[i];
+  if (L.some(b => b.g <= g + 1e-9 && g < scEnd(b) - 1e-9)) return null;
+  const nx = L.find(b => b.g > g + 1e-9), len = Math.min(1, (nx ? nx.g : a + scSpan) - g); if (len < q - 1e-9) return null;
+  const prev = L.filter(b => b.g <= g).pop() || L[0];
+  const b = k === "n" ? {g, L: len, m: prev ? prev.m : 60, w: "", c: []} : k === "w" ? {g, L: len, w: ""} : {g, L: len, k: "1"};
+  L.push(b); scSort(k, i); scPick = {k, i, b}; scAll(); scSaveSoon(); if (k === "n") scBeep(b.m); if (k === "c") scChordBeep("1");
+  if (k === "w"){ const e = document.getElementById("scwin"); if (e) e.focus(); } return b; }
+function scSetVal(v){ if (!scPick) return; const {k, b} = scPick;
+  if (k === "n"){ const pc = +Object.keys(SCDEG).find(x => SCDEG[x] === v); let best = b.m; for (let x = b.m - 6; x <= b.m + 6; x++) if (((x % 12) + 12) % 12 === pc){ best = x; break; } b.m = best; scBeep(b.m); }
+  else if (k === "c"){ b.k = v; scChordBeep(v); }
+  scAll(); scSaveSoon(); }
+function scPitch(d){ if (!scPick) return; const {k, b} = scPick;
+  if (k === "c"){ b.k = SCCHS[((SCCHS.indexOf(b.k) + d) % SCCHS.length + SCCHS.length) % SCCHS.length]; scChordBeep(b.k); scAll(); scSaveSoon(); return; }
+  if (k !== "n") return; const up = [0,2,4,5,7,9,11], kk = b.m % 12, o = b.m - kk; let idx = up.indexOf(kk); if (idx < 0) idx = up.findIndex(x => x > kk) - (d > 0 ? 1 : 0);
+  idx += d; b.m = o + 12 * Math.floor(idx / 7) + up[((idx % 7) + 7) % 7]; scAll(); scSaveSoon(); scBeep(b.m); }
+let scDrag = null;
 document.addEventListener("pointerdown", ev => {
-  if (ev.target.classList && ev.target.classList.contains("scwin")) return;
-  const lane = ev.target.closest("#songchk [data-scwl]"), e = ev.target.closest("#songchk [data-scw]"); if (!lane && !e) return; ev.preventDefault();
-  const t = (e || lane).parentNode, i = +t.dataset.sct, [a] = scRange(scLines[i]), span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
-  if (lane){ const g = a + Math.max(0, Math.min(span - scG1(), Math.floor((ev.clientX - t.getBoundingClientRect().left) / W * scG()) / scG()));
-    if (scWords[i].some(w => Math.abs(w.g - g) < 1e-9)) return; const nx = scWords[i].filter(x => x.g > g).sort((p, q) => p.g - q.g)[0], w = {g, w: "", L: Math.max(scG1(), Math.min(1, nx ? nx.g - g : 1))}; scWords[i].push(w); scTrack(i); scWEdit(i, scWords[i].indexOf(w)); return; }
-  const k = +e.dataset.scw.split(":")[1], w = scWords[i][k], x0 = ev.clientX, g0 = w.g, L0 = scWL(scWords[i], k, a + span), end = g0 + L0, mode = ev.target.dataset.sce || "m"; let moved = false;
-  e.setPointerCapture(ev.pointerId); e.classList.add("d");
-  const mv = m => { const dx = (m.clientX - x0) / W; if (Math.abs(dx) >= .125) moved = true; if (!moved) return; w.L = L0;
-    if (mode === "m") w.g = Math.max(a, Math.min(a + span - L0, scQ16(g0 + dx)));
-    else if (mode === "r") w.L = Math.max(scG1(), Math.min(a + span - g0, scQ16(end + dx) - g0));
-    else { w.g = Math.max(a, Math.min(end - scG1(), scQ16(g0 + dx))); w.L = end - w.g; }
-    e.style.left = ((w.g - a) * W + 1) + "px"; e.style.width = (w.L * W - 2) + "px"; };
-  const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
-    if (moved){ if (scWords[i].some(x => x !== w && Math.abs(x.g - w.g) < 1e-9)) w.g = g0; scWSel = null; scTrack(i); scSaveSoon(); return; }
-    const key = i + ":" + k; if (scWSel === key){ scWEdit(i, k); return; } scWSel = key; scSel = null; scSelAll(); };
-  e.addEventListener("pointermove", mv); e.addEventListener("pointerup", up); });
-/* (Oct 15) Chris: change a note's word and delete a note. Tap a note: its word box and Delete show next to Play */
-function scSelBar(){ const b = document.getElementById("scsel"); if (!b) return; const k = scStep() === 2 ? (scCSel ? "c" + scCSel : "") : (scSel || "");
-  if (b.dataset.k === k) return; b.dataset.k = k; if (!k){ b.innerHTML = ""; return; }
-  if (k[0] === "c"){ b.innerHTML = `<button type="button" class="tb" data-scx="csplit">Split chord</button><button type="button" class="tb" data-scx="cdel">Delete chord</button>`; return; }
-  const [i, j] = k.split(":").map(Number), n = (scLines[i] || [])[j]; if (!n){ b.innerHTML = ""; return; }
-  b.innerHTML = `<button type="button" class="tb" data-scx="split">Split note</button><button type="button" class="tb" data-scx="del">Delete note</button>`; }
-/* (Oct 15) Chris: one word over two notes (3 and 2 under 'sky'). Split = two notes of the same pitch; the second has no word (held line) */
-function scSplit(){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), l = scLines[i], n = l && l[j]; if (!n || n.L < 1) return;
-  const h = Math.max(.5, Math.floor(n.L) / 2);
-  const b = {g: n.g + h, L: n.L - h, m: n.m, w: ""}; n.L = h; l.splice(j + 1, 0, b); scTrack(i); scSaveSoon(); }
-/* (Oct 16, Chris) chords edit like notes: tap = pick (tap again = next chord), double-click = delete, double-click empty lane = new chord, Split / Delete buttons */
-function scCAt(i, g){ const l = scLines[i]; let j = l.findIndex(n => n.g <= g + 1e-9 && g < n.g + n.L - 1e-9); if (j < 0){ j = 0; l.forEach((n, x) => { if (n.g <= g + 1e-9) j = x; }); }
-  const n = l[j]; n.c = (n.c || []).filter(q => Math.abs(n.g + q[1] - g) > 1e-9); n.c.push(["1", g - n.g]); n.c.sort((p, q) => p[1] - q[1]); scCSel = null; scTrack(i); scSaveSoon(); }
-function scCDel(id){ id = id || scCSel; if (!id) return; const [i, j, k] = id.split(":").map(Number), n = scLines[i][j]; if (!n || !n.c) return; n.c.splice(k, 1); scCSel = null; scTrack(i); scSaveSoon(); }
-function scCNext(id, d){ const [i, j, k] = id.split(":").map(Number), n = scLines[i][j], L = SCCH.filter(Boolean), q = n && n.c && n.c[k]; if (!q) return;
-  q[0] = L[((L.indexOf(q[0]) + (d || 1)) % L.length + L.length) % L.length]; scTrack(i); scSaveSoon(); scChordBeep(q[0]); }
-function scCSplit(){ if (!scCSel) return; const [i, j, k] = scCSel.split(":").map(Number), l = scLines[i], n = l[j], q = n.c[k], g = n.g + q[1];
-  const all = []; l.forEach(m => (m.c || []).forEach(c => all.push(m.g + c[1]))); all.sort((p, r) => p - r);
-  const [a] = scRange(l), span = Math.max(...scLines.map(x => { const [p, r] = scRange(x); return r - p; })), nx = all.find(x => x > g + 1e-9), e = nx != null ? nx : a + span;
-  const h = Math.max(.5, Math.floor((e - g)) / 2); if (e - g < 1) return; const g2 = g + h;
-  let jj = l.findIndex(m => m.g <= g2 + 1e-9 && g2 < m.g + m.L - 1e-9); if (jj < 0) jj = j; const m = l[jj]; m.c = (m.c || []).concat([[q[0], g2 - m.g]]).sort((p, r) => p[1] - r[1]); scCSel = null; scTrack(i); scSaveSoon(); }
-function scDel(){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), l = scLines[i]; if (!l || !l[j] || l.length < 2) return;
-  l.splice(j, 1); scSel = null; scTrack(i); scSaveSoon(); }
-
-document.addEventListener("pointerdown", ev => {
-  if (ev.target.classList && ev.target.classList.contains("scwin")) return;
-  const e = ev.target.closest("#songchk [data-scn]"); if (!e) return; ev.preventDefault();
-  const [i, j] = e.dataset.scn.split(":").map(Number), n = scLines[i][j], t = e.parentNode, [a] = scRange(scLines[i]);
-  const span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
-  const mode = ev.target.dataset.sce || "m", x0 = ev.clientX, g0 = n.g, L0 = n.L, end = g0 + L0; let moved = false;
-  e.setPointerCapture(ev.pointerId); e.classList.add("d");
-  const mv = m => { const dx = (m.clientX - x0) / W; if (Math.abs(dx) >= .125) moved = true;
-    if (mode === "m") n.g = Math.max(a, Math.min(a + span - L0, scQ16(g0 + dx)));
-    else if (mode === "r") n.L = Math.max(scG1(), Math.min(a + span - g0, scQ16(end + dx) - g0));
-    else { n.g = Math.max(a, Math.min(end - scG1(), scQ16(g0 + dx))); n.L = end - n.g; }
-    e.style.left = ((n.g - a) * W + 1) + "px"; e.style.width = (n.L * W - 2) + "px"; };
-  const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
-    if (moved){ scSaveSoon(); scTrack(i); } else if (scSel === i + ":" + j && scStep() === 1){ scNEdit(i, j); } else { scSel = i + ":" + j; scWSel = null; scSelAll(); } };
-  e.addEventListener("pointermove", mv); e.addEventListener("pointerup", up); });
-function scPitch(d){ if (!scSel) return; const [i, j] = scSel.split(":").map(Number), n = scLines[i][j];
-  const up = [0,2,4,5,7,9,11], k = n.m % 12, o = n.m - k; let idx = up.indexOf(k); if (idx < 0) idx = up.findIndex(x => x > k) - (d > 0 ? 1 : 0);
-  idx += d; n.m = o + 12 * Math.floor(idx / 7) + up[((idx % 7) + 7) % 7]; scTrack(i); scSaveSoon(); scBeep(n.m); }
+  if (!scId || ev.button > 0) return; const e = ev.target.closest && ev.target.closest("#songchk .scb:not(.lock)"); if (!e) return;
+  ev.preventDefault(); const [k, i, x] = e.dataset.b.split(":"), I = +i, b = scSort(k, I)[+x]; if (!b) return;
+  const t = e.parentNode, W = t.clientWidth / scSpan;
+  scDrag = {k, i: I, b, e, W, x0: ev.clientX, g0: b.g, L0: b.L, mode: (ev.target.dataset && ev.target.dataset.sce) || "m", moved: false};
+  try { e.setPointerCapture(ev.pointerId); } catch {} e.classList.add("d"); });
+window.addEventListener("pointermove", ev => { const D = scDrag; if (!D) return; const d = (ev.clientX - D.x0) / D.W;
+  if (!D.moved && Math.abs(ev.clientX - D.x0) < 4) return; D.moved = true;
+  scMove(D.k, D.i, D.b, D.mode, D.g0, D.L0, d); const a = scRg[D.i][0]; D.e.style.left = ((D.b.g - a) * D.W + 1) + "px"; D.e.style.width = Math.max(6, D.b.L * D.W - 2) + "px"; });
+window.addEventListener("pointerup", () => { const D = scDrag; if (!D) return; scDrag = null; D.e.classList.remove("d");
+  if (D.moved){ scSort(D.k, D.i); scPick = {k: D.k, i: D.i, b: D.b}; scAll(); if (scSnap() !== scLast) scSaveSoon(); return; }
+  const same = scPick && scPick.b === D.b; scSetPick({k: D.k, i: D.i, b: D.b});
+  if (D.k === "w" && same){ const w = document.getElementById("scwin"); if (w){ w.focus(); w.select(); } } });
+document.addEventListener("input", e => { if (e.target.id !== "scwin" || !scPick || scPick.k !== "w") return; scPick.b.w = e.target.value;
+  const el = scQ(`.scb.sel span`); if (el) el.textContent = e.target.value; });
+document.addEventListener("change", e => { if (e.target.id === "scwin" && scId) scSaveSoon(); });
 /* (Oct 15) Chris: the Rhodes sounded bad; melody plays on the real piano (the Lab's Salamander samples), old synth only if a sample won't load */
 function scEP(c, s, d, m, v){ const h = [1, .45, .06, .16, .03], re = new Float32Array(h.length + 1), im = new Float32Array(h.length + 1); h.forEach((a, i) => { im[i + 1] = a; });
   const o = c.createOscillator(), g = c.createGain(); o.setPeriodicWave(c.createPeriodicWave(re, im)); o.frequency.value = 440 * 2 ** ((m - 69) / 12);
@@ -1150,7 +1162,7 @@ for (let m = 21; m <= 108; m += 3) SCPM.push(m);
 const scPB = {}, scPQ = {};
 const scPName = m => ["C","Cs","D","Ds","E","F","Fs","G","Gs","A","As","B"][m % 12] + (Math.floor(m / 12) - 1);
 const scPNear = m => SCPM.reduce((b, x) => Math.abs(x - m) < Math.abs(b - m) ? x : b, SCPM[0]);
-function scPLoad(ms){ let dc = null; return Promise.all([...new Set(ms.map(scPNear))].map(x => scPQ[x] = scPQ[x] || fetch(SCPS + scPName(x) + ".mp3").then(r => r.arrayBuffer())
+function scPLoad(ms){ if (window.DESK_TEST) return Promise.resolve(); let dc = null; return Promise.all([...new Set(ms.map(scPNear))].map(x => scPQ[x] = scPQ[x] || fetch(SCPS + scPName(x) + ".mp3").then(r => r.arrayBuffer())
   .then(b => (dc = dc || new AudioContext()).decodeAudioData(b)).then(buf => { scPB[x] = buf; }).catch(() => { delete scPQ[x]; }))).then(() => { if (dc) dc.close().catch(() => {}); }); }
 /* (Oct 15) Chris: approve-sound = Lab song-card sound. Same as piano-engine.js playHandAt: peak 0.68, 12ms rise, "long" ring
    (full 0.25s, fade tc 1.1s, silent by 4.5s), the next melody note cuts it (tc 0.03, gone 0.14s later) */
@@ -1163,27 +1175,24 @@ function scPiano(c, s, d, m, v, cut){ const x = scPNear(m), buf = scPB[x]; if (!
 function scClick(c, s, acc){ s += .018; const o = c.createOscillator(), g = c.createGain(); o.type = "square"; o.frequency.value = acc ? 1400 : 1000;
   g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(acc ? .18 : .12, s + .002); g.gain.exponentialRampToValueAtTime(.0001, s + .045);
   o.connect(g).connect(c.destination); o.start(s); o.stop(s + .06); }
-function scBeep(m){ scPLoad([m]).then(() => { try { const c = new AudioContext(); scPiano(c, c.currentTime + .02, .5, m, 1, c.currentTime + .9); setTimeout(() => c.close(), 1500); } catch {} }); }
+function scBeep(m){ if (window.DESK_TEST) return; scPLoad([m]).then(() => { try { const c = new AudioContext(); scPiano(c, c.currentTime + .02, .5, m, 1, c.currentTime + .9); setTimeout(() => c.close(), 1500); } catch {} }); }
 function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } scPH = null; const h = document.getElementById("scph"); if (h) h.remove(); }
 /* (Oct 15) Chris: Play starts at the top row that isn't checked; checked rows are skipped */
 /* (Oct 16, Chris) no synth: chords play on the same piano as the melody (left-hand bass note + a soft chord in the middle) */
 const SCTRI = {"1":[48,52,55],"2m":[50,53,57],"3m":[52,55,59],"4":[53,57,60],"5":[55,59,62],"6m":[57,60,64]};
 const scChordNotes = k => SCBASS[k] ? [SCBASS[k]].concat(SCTRI[k]) : [];
 function scChordAt(c, s, cut, k){ if (!SCBASS[k]) return; scPiano(c, s, 0, SCBASS[k], .55, cut); SCTRI[k].forEach(m => scPiano(c, s, 0, m, .32, cut)); }
-function scChordBeep(k){ scPLoad(scChordNotes(k)).then(() => { try { const c = new AudioContext(); scChordAt(c, c.currentTime + .02, c.currentTime + 1, k); setTimeout(() => c.close(), 1500); } catch {} }); }
+function scChordBeep(k){ if (window.DESK_TEST) return; scPLoad(scChordNotes(k)).then(() => { try { const c = new AudioContext(); scChordAt(c, c.currentTime + .02, c.currentTime + 1, k); setTimeout(() => c.close(), 1500); } catch {} }); }
 async function scPlay(){
   scStop(); const c = scCtx = new AudioContext(); await scPLoad(scLines.flat().map(n => n.m).concat(scStep() === 2 ? Object.keys(SCBASS).flatMap(scChordNotes) : [])); if (scCtx !== c) return;
   const B = 60 / scDoc.bpm, T = c.currentTime + .3, done = scRows();
-  const tone = (s, d, m, v, type) => { const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.value = 440 * 2 ** ((m - 69) / 12);
-    g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(v, s + .02); g.gain.setValueAtTime(v, s + Math.max(.03, d - .08)); g.gain.linearRampToValueAtTime(0, s + d); o.connect(g).connect(c.destination); o.start(s); o.stop(s + d + .05); };
   let order = scLines.map((l, i) => i).filter(i => !done.includes(i)); if (!order.length) order = scLines.map((l, i) => i);
   const segs = [], mel = []; let t = 0;
-  /* rows play back to back in real time (the song's own rests live in the notes; Oct 16 the drawn-bars try added extra bars between rows) */
+  /* rows play back to back in real time (the song's own rests live in the notes) */
   order.forEach(i => { const l = scLines[i], s0 = Math.min(...l.map(n => n.g)), e0 = i + 1 < scLines.length ? Math.min(...scLines[i + 1].map(n => n.g)) : Math.max(...l.map(n => n.g + n.L));
     segs.push({i, s0, e0, t}); const at = g => T + (t + g - s0) * B;
     if (scStep() === 1 || scMelOn()) l.forEach(n => mel.push([at(n.g), n.m]));
-    if (scStep() === 2){ const ch = []; l.forEach(n => (n.c || []).forEach(([k, x]) => ch.push([n.g + x, k]))); ch.sort((p, q) => p[0] - q[0]);
-      ch.forEach(([g, k], x) => { const e = x + 1 < ch.length ? ch[x + 1][0] : e0; if (SCBASS[k]) scChordAt(c, at(g), at(e), k); }); }
+    if (scStep() === 2) (scChords[i] || []).forEach(ch => { if (SCBASS[ch.k] && ch.g < e0) scChordAt(c, at(Math.max(ch.g, s0)), at(Math.min(scEnd(ch), e0)), ch.k); });
     if (scClickOn()) for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++) scClick(c, at(b), ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0);
     t += e0 - s0; });
   mel.sort((p, q) => p[0] - q[0]).forEach(([s, m], k) => scPiano(c, s, 0, m, 1, k + 1 < mel.length ? mel[k + 1][0] : null));
@@ -1192,59 +1201,53 @@ async function scPlay(){
 async function scApprove(){
   const st = scStep(), id = scId, now = new Date().toISOString();
   scSync();
-  if (scView && (scView < (scDoc.step || 1) || scDoc.status === "approved")){ await db.collection("songcheck").doc(id).update({lines: scLines, words: scWords, [st === 1 ? "melodyOK" : "chordsOK"]: now, updated: now}); scClose(); render(); return; }
+  if (scView && (scView < (scDoc.step || 1) || scDoc.status === "approved")){ await db.collection("songcheck").doc(id).update({lines: scLines, words: scWords, chords: scChords, [st === 1 ? "melodyOK" : "chordsOK"]: now, updated: now}); scClose(); render(); return; }
   /* (Oct 16, Chris) one step per check, like Shorts: Approve closes the page and ticks that box on the Songs board */
   const nm = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, ""), sg = (songs || []).find(x => nm(x.title) === nm(scDoc.name));
   if (sg && (sg.step || 0) <= st) db.collection("songs").doc(sg.id).update({step: st + 1}).catch(() => {});
-  if (st === 1){ await db.collection("songcheck").doc(id).update({step: 2, status: "chords", lines: scLines, words: scWords, melodyOK: now, updated: now}); scBoard = null; scClose(); render(); return; }
-  await db.collection("songcheck").doc(id).update({status: "approved", lines: scLines, chordsOK: now, updated: now}); scBoard = null;
+  if (st === 1){ await db.collection("songcheck").doc(id).update({step: 2, status: "chords", lines: scLines, words: scWords, chords: scChords, melodyOK: now, updated: now}); scBoard = null; scClose(); render(); return; }
+  await db.collection("songcheck").doc(id).update({status: "approved", lines: scLines, chords: scChords, chordsOK: now, updated: now}); scBoard = null;
   const t = allTasks.find(x => !x.done && Array.isArray(x.songcheck) && x.songcheck.some(p => p[0] === id));
   if (t){ const others = t.songcheck.map(p => p[0]).filter(x => x !== id), left = [];
     for (const o of others){ const d = await db.collection("songcheck").doc(o).get(); if (!d.exists || d.data().status !== "approved") left.push(o); }
     if (!left.length) await db.collection("tasks").doc(t.id).update({done: true, doneAt: now}); }
   scClose(); render(); }
-document.addEventListener("keydown", e => { if (!scId) return; if (e.target.classList && e.target.classList.contains("scwin")){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); if (e.key === "Escape") e.target.dataset.cancel = "1"; e.target.blur(); } return; }
-  if (e.key === " " && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || "") && !e.target.isContentEditable){ e.preventDefault(); if (scCtx){ scStop(); scDraw(); } else { scPlay(); const pb = document.querySelector('#songchk [data-scx="play"]'); if (pb) pb.textContent = "Stop"; } return; }   /* (Oct 16, Chris) spacebar = Play and Stop */
-  if (scStep() === 2 && scCSel && (e.key === "Delete" || e.key === "Backspace")){ e.preventDefault(); scCDel(); return; }
-  if (scStep() === 2 && scCSel && (e.key === "ArrowUp" || e.key === "ArrowDown")){ e.preventDefault(); scCNext(scCSel, e.key === "ArrowUp" ? 1 : -1); return; }
-  if (e.key === "Escape") scClose(); else if (scStep() === 1 && (e.key === "Delete" || e.key === "Backspace") && (scSel || scWSel)){ e.preventDefault(); if (scWSel) scWDel(); else scDel(); } else if (scStep() === 1 && (e.key === "ArrowUp" || e.key === "ArrowDown")){ e.preventDefault(); scPitch(e.key === "ArrowUp" ? 1 : -1); } });
+document.addEventListener("keydown", e => { if (!scId) return;
+  if (e.target.id === "scwin"){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); e.target.blur(); } return; }
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || "") || e.target.isContentEditable) return;
+  if (e.key === " "){ e.preventDefault(); if (scCtx){ scStop(); scDraw(); } else { scPlay(); const pb = scQ('[data-scx="play"]'); if (pb) pb.textContent = "Stop"; } return; }   /* (Oct 16, Chris) spacebar = Play and Stop */
+  if ((e.key === "Delete" || e.key === "Backspace") && scPick){ e.preventDefault(); scDelete(); return; }
+  if ((e.key === "ArrowUp" || e.key === "ArrowDown") && scPick){ e.preventDefault(); scPitch(e.key === "ArrowUp" ? 1 : -1); return; }
+  if (e.key === "Escape"){ if (scPick) scSetPick(null); else scClose(); } });
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-songchk]"); if (go){ e.preventDefault(); e.stopPropagation(); scOpen(go.dataset.songchk, go.dataset.scview); return; }
   if (!scId || !e.target.closest("#songchk")) return;
   const ck = e.target.closest("[data-scck]");
   if (ck){ const i = +ck.dataset.scck, st = scStep(), R = scDoc.rows = scDoc.rows || {}; const r = R[st] = R[st] || []; const k = r.indexOf(i); if (k < 0) r.push(i); else r.splice(k, 1);
-    ck.parentNode.classList.toggle("done", k < 0); scCount(); db.collection("songcheck").doc(scId).update({rows: R}).catch(() => {}); return; }
-  const cc = e.target.closest("[data-scc]");
-  if (cc){ const id = cc.dataset.scc; clearTimeout(scCT); if (e.detail >= 2){ scCDelAt = Date.now(); scCDel(id); return; }   /* (Oct 16, Chris) the 1st click redraws the row, so dblclick lost its chord: delete on the 2nd click */
-    if (scCSel !== id){ scCSel = id; scSel = null; scSelAll(); return; } scCT = setTimeout(() => scCNext(id, 1), 260); return; }
+    ck.parentNode.classList.toggle("done", k < 0); scCount(); if (scId) db.collection("songcheck").doc(scId).update({rows: R}).catch(() => {}); return; }
+  const v = e.target.closest("[data-scv]"); if (v){ scSetVal(v.dataset.scv); return; }
+  if (e.target.closest(".scl")){ if (scPick) scSetPick(null); return; }   /* a tap on empty space lets go of the picked block */
   const x = e.target.closest("[data-scx]"); if (!x) return; const a = x.dataset.scx;
   if (a === "close") scClose();
   else if (a === "click"){ try { localStorage.setItem("scClick", scClickOn() ? "0" : "1"); } catch {} x.textContent = scClickOn() ? "Click on" : "Click off"; x.classList.toggle("on", scClickOn()); if (scCtx){ scPlay(); } }
   else if (a === "mel"){ try { localStorage.setItem("scMel", scMelOn() ? "0" : "1"); } catch {} x.textContent = scMelOn() ? "Melody on" : "Melody off"; x.classList.toggle("on", scMelOn()); if (scCtx){ scPlay(); } }
   else if (a === "play"){ if (scCtx){ scStop(); scDraw(); } else { scPlay(); x.textContent = "Stop"; } }
-  else if (a === "up" || a === "down") scPitch(a === "up" ? 1 : -1);
-  else if (a === "del") scDel();
+  else if (a === "del") scDelete();
   else if (a === "split") scSplit();
-  else if (a === "cdel") scCDel();
-  else if (a === "csplit") scCSplit();
-  else if (a === "grid"){ const nx = {4: 2, 2: 3, 3: 4}[scG()]; scDoc.grid = nx; x.textContent = "Grid " + SCGRID[nx]; db.collection("songcheck").doc(scId).update({grid: nx}).catch(() => {}); }
-  else if (a === "undo"){ if (!scUndo.length) return; const o = JSON.parse(scUndo.pop()); scLines = o.L; scWords = o.W; scLast = scSnap(); scSel = null; scWSel = null; scCSel = null; scSelAll(); scSaveSoon(true); }
-  else if (a === "reset"){ if (scStep() === 1){ scLines = scClone(scDoc.orig); scWords = scWordsFrom(scLines); scWSel = null; } else scLines.forEach((l, i) => l.forEach((n, j) => { n.c = scClone(((scDoc.orig[i] || [])[j] || {}).c || []); })); scSel = null; scDraw(); scSaveSoon(); }
-  else if (a === "back"){ scDoc.step = 1; db.collection("songcheck").doc(scId).update({step: 1, status: "melody"}).catch(() => {}); scDraw(); }
+  else if (a === "grid"){ const nx = {4: 2, 2: 3, 3: 4}[scG()]; scDoc.grid = nx; x.textContent = "Grid " + SCGRID[nx]; if (scId) db.collection("songcheck").doc(scId).update({grid: nx}).catch(() => {}); }
+  else if (a === "undo"){ if (!scUndo.length) return; const o = JSON.parse(scUndo.pop()); scLines = o.L; scWords = o.W; scChords = o.C; scLast = scSnap(); scPick = null; scAll(); scSaveSoon(true); }
+  else if (a === "reset"){ if (scStep() === 1){ scLines = scClone(scDoc.orig).map((l, i) => l.map(n => Object.assign(n, {c: (((scLines[i] || []).find(m => Math.abs(m.g - n.g) < 1e-9) || {}).c) || n.c || []}))); scWords = scWordsFrom(scDoc.orig); scFixWords(); }
+    else scChords = scChordsFrom(scDoc.orig, scRg);
+    scPick = null; scAll(); scSaveSoon(); }
   else if (a === "ok") scApprove(); }, true);
 window.addEventListener("resize", () => { if (scId) scLines.forEach((l, i) => scTrack(i)); });
-/* (Oct 16, Chris) double-click: on a note or chord = delete it; on empty space = add one there (melody: same pitch as the note before, 1 beat; chords: a 1 chord) */
-document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#songchk")) return; if (e.target.classList && e.target.classList.contains("scwin")) return;
-  if (Date.now() - scCDelAt < 600) return;   /* that double-click already deleted a chord: never add one back */
-  const cc = e.target.closest("[data-scc]"); if (cc){ e.preventDefault(); clearTimeout(scCT); scCDel(cc.dataset.scc); return; }
-  const nn = e.target.closest("[data-scn]"); if (nn && scStep() === 1){ e.preventDefault(); const [i, j] = nn.dataset.scn.split(":").map(Number); if (scLines[i].length < 2) return; scLines[i].splice(j, 1); scSel = null; scTrack(i); scSaveSoon(); return; }
-  const lane = e.target.closest("[data-sccl]"), t = e.target.closest("[data-sct]"); if (!t || e.target.closest("[data-scw],[data-scwl]")) return;
-  const i = +t.dataset.sct, [a] = scRange(scLines[i]), span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
-  const g = a + Math.max(0, Math.min(span - scG1(), Math.floor((e.clientX - t.getBoundingClientRect().left) / W * scG()) / scG())); e.preventDefault();
-  if (lane || scStep() === 2){ if (scStep() === 2) scCAt(i, g); return; }
-  const l = scLines[i]; if (l.some(n => n.g < g + 1 - 1e-9 && g < n.g + n.L - 1e-9)) return;
-  const prev = l.filter(n => n.g <= g).sort((p, q) => q.g - p.g)[0] || l[0], nx = l.filter(n => n.g > g).sort((p, q) => p.g - q.g)[0];
-  const L = Math.max(.5, Math.min(1, nx ? nx.g - g : 1)); l.push({g, L, m: prev.m, w: "", c: []}); l.sort((p, q) => p.g - q.g); scTrack(i); scSaveSoon(); scBeep(prev.m); });
+/* (Oct 16, Chris) double-click a block = delete it; double-click empty space = a new block there (1 beat, or up to the next block) */
+document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#songchk") || e.target.id === "scwin") return;
+  const bl = e.target.closest(".scb:not(.lock)"); if (bl){ e.preventDefault(); const [k, i, x] = bl.dataset.b.split(":"), b = scSort(k, +i)[+x]; if (b) scDelete({k, i: +i, b}); return; }
+  const ln = e.target.closest(".scl"); if (!ln) return; e.preventDefault();
+  const [k, i] = ln.dataset.lane.split(":"), I = +i, t = ln.parentNode, W = t.clientWidth / scSpan, [a] = scRg[I];
+  const g = a + Math.max(0, Math.min(scSpan - scG1(), Math.floor((e.clientX - t.getBoundingClientRect().left) / W * scG() + 1e-6) / scG()));
+  scAdd(k, I, g); });
 </script>
 <div id="shortchk"></div>
 <style>
@@ -1367,7 +1370,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v106</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v107</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
