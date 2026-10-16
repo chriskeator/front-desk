@@ -982,7 +982,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .sce{position:absolute;top:0;bottom:0;width:12px;cursor:ew-resize;z-index:2}   /* (Oct 15) Chris: stretch arrow on both edges, hand in the middle */
 #songchk .sce[data-sce="l"]{left:0}
 #songchk .sce[data-sce="r"]{right:0}
-#songchk .scn.d .sce{cursor:ew-resize}
+#songchk .scn.d .sce,#songchk .scw.d .sce{cursor:ew-resize}
 #songchk .scc{position:absolute;top:6px;height:24px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--pick);cursor:pointer;border-radius:6px;user-select:none}
 #songchk .scc:hover{background:var(--hover)}
 #songchk .scc.no{color:var(--line)}
@@ -1003,7 +1003,8 @@ let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTim
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
 const SCCH = ["1","4","5","6m","2m","3m",""], SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
 const scClone = x => JSON.parse(JSON.stringify(x));
-const scQ16 = g => Math.round(g * 4) / 4;   /* (Oct 16, Chris) notes and words snap to the 16th-note grid (beat = 1) */
+const scQ16 = g => Math.round(g * 4) / 4;
+const scWL = (ws, k, end) => ws[k].L != null ? ws[k].L : Math.max(.25, (k + 1 < ws.length ? ws[k + 1].g : end) - ws[k].g);   /* old words without a length run to the next word */   /* (Oct 16, Chris) notes and words snap to the 16th-note grid (beat = 1) */
 const scQ = s => document.querySelector("#songchk " + s);
 let scView = null;   /* (Oct 16, Chris) green boxes open an approved step again */
 async function scOpen(id, view){
@@ -1057,7 +1058,8 @@ function scTrack(i){
     h += `<div class="scn${over ? " x" : ""}${scSel === i + ":" + j ? " sel" : ""}" data-scn="${i}:${j}" style="left:${x}px;width:${w}px"><b>${SCDEG[n.m % 12]}</b><div class="sce" data-sce="l"></div><div class="sce" data-sce="r"></div></div>`; });
   const ws = (scWords[i] = (scWords[i] || []).sort((p, q) => p.g - q.g));
   h += `<div class="scwl" data-scwl="${i}"></div>`;
-  ws.forEach((w, k) => { const e = k + 1 < ws.length ? ws[k + 1].g : a + span; h += `<div class="scw${scWSel === i + ":" + k ? " sel" : ""}" data-scw="${i}:${k}" style="left:${(w.g - a) * W + 1}px;width:${Math.max(W / 2, (e - w.g) * W - 4)}px"><span>${esc(w.w)}</span></div>`; });
+  /* (Oct 16, Chris) a word block edits exactly like a number: hand in the middle moves it, arrows on both edges stretch it (w.L) */
+  ws.forEach((w, k) => { const L = scWL(ws, k, a + span); h += `<div class="scw${scWSel === i + ":" + k ? " sel" : ""}" data-scw="${i}:${k}" style="left:${(w.g - a) * W + 1}px;width:${Math.max(W / 4, L * W - 2)}px"><span>${esc(w.w)}</span><div class="sce" data-sce="l"></div><div class="sce" data-sce="r"></div></div>`; });
   t.innerHTML = h; scSelBar(); }
 function scSelAll(){ scLines.forEach((l, i) => scTrack(i)); }
 /* (Oct 15) Chris: numbers edit like words: tap a number, tap again, type 1-7 (b3, #4, b7 too), Enter. Same octave, nearest pitch */
@@ -1079,10 +1081,14 @@ document.addEventListener("pointerdown", ev => {
   const lane = ev.target.closest("#songchk [data-scwl]"), e = ev.target.closest("#songchk [data-scw]"); if (!lane && !e) return; ev.preventDefault();
   const t = (e || lane).parentNode, i = +t.dataset.sct, [a] = scRange(scLines[i]), span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
   if (lane){ const g = a + Math.max(0, Math.min(span - .25, Math.floor((ev.clientX - t.getBoundingClientRect().left) / W * 4) / 4));
-    if (scWords[i].some(w => Math.abs(w.g - g) < 1e-9)) return; const w = {g, w: ""}; scWords[i].push(w); scTrack(i); scWEdit(i, scWords[i].indexOf(w)); return; }
-  const k = +e.dataset.scw.split(":")[1], w = scWords[i][k], x0 = ev.clientX, g0 = w.g; let moved = false;
+    if (scWords[i].some(w => Math.abs(w.g - g) < 1e-9)) return; const nx = scWords[i].filter(x => x.g > g).sort((p, q) => p.g - q.g)[0], w = {g, w: "", L: Math.max(.25, Math.min(1, nx ? nx.g - g : 1))}; scWords[i].push(w); scTrack(i); scWEdit(i, scWords[i].indexOf(w)); return; }
+  const k = +e.dataset.scw.split(":")[1], w = scWords[i][k], x0 = ev.clientX, g0 = w.g, L0 = scWL(scWords[i], k, a + span), end = g0 + L0, mode = ev.target.dataset.sce || "m"; let moved = false;
   e.setPointerCapture(ev.pointerId); e.classList.add("d");
-  const mv = m => { const q = scQ16(g0 + (m.clientX - x0) / W); if (q !== g0) moved = true; w.g = Math.max(a, Math.min(a + span - .25, q)); e.style.left = ((w.g - a) * W + 1) + "px"; };
+  const mv = m => { const dx = (m.clientX - x0) / W; if (Math.abs(dx) >= .125) moved = true; if (!moved) return; w.L = L0;
+    if (mode === "m") w.g = Math.max(a, Math.min(a + span - L0, scQ16(g0 + dx)));
+    else if (mode === "r") w.L = Math.max(.25, Math.min(a + span - g0, scQ16(end + dx) - g0));
+    else { w.g = Math.max(a, Math.min(end - .25, scQ16(g0 + dx))); w.L = end - w.g; }
+    e.style.left = ((w.g - a) * W + 1) + "px"; e.style.width = (w.L * W - 2) + "px"; };
   const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
     if (moved){ if (scWords[i].some(x => x !== w && Math.abs(x.g - w.g) < 1e-9)) w.g = g0; scWSel = null; scTrack(i); scSaveSoon(); return; }
     const key = i + ":" + k; if (scWSel === key){ scWEdit(i, k); return; } scWSel = key; scSel = null; scSelAll(); };
@@ -1354,7 +1360,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v103</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v104</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
