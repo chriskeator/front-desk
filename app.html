@@ -1131,6 +1131,7 @@ async function scApprove(){
     if (!left.length) await db.collection("tasks").doc(t.id).update({done: true, doneAt: now}); }
   scClose(); }
 document.addEventListener("keydown", e => { if (!scId) return; if (e.target.classList && e.target.classList.contains("scwin")){ if (e.key === "Enter" || e.key === "Escape"){ e.preventDefault(); if (e.key === "Escape") e.target.dataset.cancel = "1"; e.target.blur(); } return; }
+  if (e.key === " " && !/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || "") && !e.target.isContentEditable){ e.preventDefault(); if (scCtx){ scStop(); scDraw(); } else { scPlay(); const pb = document.querySelector('#songchk [data-scx="play"]'); if (pb) pb.textContent = "Stop"; } return; }   /* (Oct 16, Chris) spacebar = Play and Stop */
   if (e.key === "Escape") scClose(); else if (scStep() === 1 && (e.key === "Delete" || e.key === "Backspace") && (scSel || scWSel)){ e.preventDefault(); if (scWSel) scWDel(); else scDel(); } else if (scStep() === 1 && (e.key === "ArrowUp" || e.key === "ArrowDown")){ e.preventDefault(); scPitch(e.key === "ArrowUp" ? 1 : -1); } });
 document.addEventListener("click", e => {
   const go = e.target.closest("[data-songchk]"); if (go){ e.preventDefault(); e.stopPropagation(); scOpen(go.dataset.songchk); return; }
@@ -1245,11 +1246,11 @@ async function shAnswer(st){
     if (st === "dropped" && !shFx(r, "hands").length && !(el && el.value.trim())){ r.hands = "dropped"; r.status = "dropped"; r.note = "Drop, don't redo";
       db.collection("shortcheck").doc(r.id).update({hands: "dropped", status: "dropped", note: r.note, answeredAt: now, updated: now}).catch(() => {}); }
     else { r.hands = st === "approved" ? "approved" : "fix"; r.handsNote = el ? el.value.trim() : (r.handsNote || ""); const fx = r.hands === "approved" ? [] : shFx(r, "hands"); r.handsFixes = fx;
-      db.collection("shortcheck").doc(r.id).update({hands: r.hands, handsNote: [fx.map(i => "Fix: " + SH_CHKS_H[i]).join("; "), r.handsNote].filter(Boolean).join("; "), handsFixes: fx, handsAt: now, updated: now}).catch(() => {}); } }
+      db.collection("shortcheck").doc(r.id).update({hands: r.hands, handsNote: [fx.filter(i => SH_CHKS_H[i]).map(i => "Fix: " + SH_CHKS_H[i]).join("; "), r.handsNote].filter(Boolean).join("; "), handsFixes: fx, handsAt: now, updated: now}).catch(() => {}); } }
   else {
     r.status = st; r.note = el ? el.value.trim() : (r.note || ""); const fx = st === "fix" ? (r.fixes || []) : [];
     if (st === "dropped" && !fx.length && !r.note) r.note = "Drop, don't redo";
-    const fixText = fx.map(i => "Fix: " + SH_CHKS[i]).join("; ");
+    const fixText = fx.filter(i => SH_CHKS[i]).map(i => "Fix: " + SH_CHKS[i]).join("; ");
     db.collection("shortcheck").doc(r.id).update({status: st, note: [fixText, r.note].filter(Boolean).join("; "), fixes: fx, answeredAt: now, updated: now}).catch(() => {}); }
   if (step === "hands" && r.hands === "approved"){ shDraw(); return; }   /* same Short goes straight on to Start + end */
   shI++; while (shI < shRows.length && !shStep(shRows[shI])) shI++;
@@ -1271,7 +1272,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v93</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v94</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3689,7 +3690,7 @@ function labTag(t){ if (!t || !t.labKey || t.done) return ""; const r = t.labRou
   return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
-let shBoard = null;
+let shBoard = null, scBoard = null;
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
 function homeShorts(){
   if (shBoard === null){ shBoard = []; db.collection("shortcheck").get().then(s => { shBoard = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); if (tab === "today") render(); }).catch(() => {}); }
@@ -3715,8 +3716,12 @@ function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice(
   if (!L.length) return "";
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${ST.map(t => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${esc(SABBR(t))}</span><span class="sfw">${esc(String(t).replace(/^Starter\s+/i, "").split(/\s+/)[0].replace(/^\w/, c => c.toUpperCase()))}</span></i>`).join("")}</span></div>`;
-  const row = (x, sub) => { const k = Math.min(x.step || 0, n);
-    return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${ST.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-block;background:${i < k ? "#1FA598" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}"></i>`).join("")}</span></div>`; };
+  /* (Oct 16, Chris) like Shorts: the gold box says Check and opens that song's check page (db 'songcheck', matched by name) */
+  if (scBoard === null){ scBoard = []; db.collection("songcheck").get().then(s => { scBoard = s.docs.map(d => Object.assign({id: d.id}, d.data())); if (tab === "today") render(); }).catch(() => {}); }
+  const scn = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
+  const scFor = x => (scBoard || []).find(r => scn(r.name) === scn(x.title) && r.status !== "approved");
+  const row = (x, sub) => { const k = Math.min(x.step || 0, n), sc = scFor(x);
+    return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${ST.map((t, i) => { const ck = i === k && sc; return `<i class="sblk" title="${esc(t)}"${ck ? ` data-songchk="${esc(sc.id)}" role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${ck ? "cursor:pointer;" : ""}background:${i < k ? "#1FA598" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}">${ck ? `<span class="sfw">Check</span>` : ""}</i>`; }).join("")}</span></div>`; };
   /* (Oct 14, Chris) Christmas folder inside Songs: the Nov 1 songs, each with Chris's next step + day from his "Songs:" to-dos */
   const XM = /christmas|silent night|o come, all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
   /* (Oct 15, Chris) like Shorts: header = how many need his check + how many are approved and scheduled for their Lab release */
