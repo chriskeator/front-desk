@@ -913,8 +913,10 @@ a.tb.rs-fixed{flex-direction:column}
 <style>
 /* (Oct 15) Chris: song check page. Step 1 melody, step 2 chords; drag/stretch notes in measures; a check per row; Approve */
 #songchk .scbg{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:60}
-#songchk .sccard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1180px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:auto;background:var(--card);color:var(--ink);border-radius:14px;padding:16px 18px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+#songchk .sccard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1180px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:hidden;display:flex;flex-direction:column;background:var(--card);color:var(--ink);border-radius:14px;padding:16px 18px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25)}
 @media (min-width:1000px){#songchk .sccard{width:calc(80vw - 20px)}}
+/* (Oct 16, Chris) the CARD never scrolls: only the rows list shrinks and scrolls inside (desk-cardscroll-test.py, every size) */
+#songchk .sccard > *{flex:none}#songchk .sccard > .scrows{flex:0 1 auto;min-height:0}
 #songchk .sch{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 #songchk .sch .t{font:600 19px var(--display)}
 #songchk .scpill{font-size:12px;padding:4px 12px;border-radius:8px;background:var(--soft);color:var(--teal);font-weight:600;white-space:nowrap}
@@ -1426,7 +1428,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v114</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v115</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
