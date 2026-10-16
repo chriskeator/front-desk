@@ -972,7 +972,8 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scck{width:40px;height:40px;flex:none;align-self:center;margin-left:10px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:18px;cursor:pointer;padding:0}
 #songchk .scrow.done .sctrk,#songchk .scrow.done .scpk{background:rgba(31,157,85,.16)}
 #songchk .scrow.done .scck{background:#1F9D55;color:#fff;border-color:#1F9D55}
-#songchk .scbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:4px}
+#songchk .scbtns{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:4px}
+#songchk .scbtns .tb[disabled]{opacity:.45;cursor:default}
 #songchk .scbtns .tb{height:46px;width:100%}
 </style>
 <script>
@@ -983,25 +984,31 @@ let scId = null, scDoc = null, scLines = null, scSel = null, scCtx = null, scTim
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
 const SCCH = ["1","4","5","6m","2m","3m",""], SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
 const scClone = x => JSON.parse(JSON.stringify(x));
+const scQ16 = g => Math.round(g * 4) / 4;   /* (Oct 16, Chris) notes and words snap to the 16th-note grid (beat = 1) */
 const scQ = s => document.querySelector("#songchk " + s);
 let scView = null;   /* (Oct 16, Chris) green boxes open an approved step again */
 async function scOpen(id, view){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  scView = view ? +view : null; scId = id; scDoc = s.data(); scLines = scClone(scDoc.lines); scWords = scDoc.words ? scClone(scDoc.words) : scWordsFrom(scLines); scSel = null; scWSel = null; scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
+  scView = view ? +view : null; scId = id; scDoc = s.data(); scLines = scClone(scDoc.lines); scWords = scDoc.words ? scClone(scDoc.words) : scWordsFrom(scLines); scSel = null; scWSel = null; scUndo = []; scLast = scSnap(); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ scStop(); scId = null; scDoc = null; document.getElementById("songchk").innerHTML = ""; }
 const scStep = () => scView || scDoc.step || 1;
 const scRows = () => ((scDoc.rows || {})[scStep()] || []);
 const scWordsFrom = L => L.map(l => l.filter(n => n.w).map(n => ({g: n.g, w: n.w})));
 /* each note keeps the word that starts on its beat (n.w), so the song files still read lines the same way */
 function scSync(){ scLines.forEach((l, i) => l.forEach(n => { const w = (scWords[i] || []).find(x => Math.abs(x.g - n.g) < 1e-9); n.w = w ? w.w : ""; })); }
-function scSaveSoon(){ clearTimeout(scTimer); scSync(); const id = scId, L = scClone(scLines), Wd = scClone(scWords); scTimer = setTimeout(() => { db.collection("songcheck").doc(id).update({lines: L, words: Wd, updated: new Date().toISOString()}).catch(() => {}); }, 500); }
+/* (Oct 16, Chris) Back = undo the last change (notes, words, chords); every save keeps the state before it */
+let scUndo = [], scLast = null;
+const scSnap = () => JSON.stringify({L: scLines, W: scWords});
+function scBackBtn(){ const b = scQ('[data-scx="undo"]'); if (b) b.disabled = !scUndo.length; }
+function scSaveSoon(undo){ if (!undo){ const now = scSnap(); if (scLast && scLast !== now){ scUndo.push(scLast); if (scUndo.length > 100) scUndo.shift(); } scLast = now; } scBackBtn();
+  clearTimeout(scTimer); scSync(); const id = scId, L = scClone(scLines), Wd = scClone(scWords); scTimer = setTimeout(() => { db.collection("songcheck").doc(id).update({lines: L, words: Wd, updated: new Date().toISOString()}).catch(() => {}); }, 500); }
 function scDraw(){
-  const st = scStep(), M = scDoc.meter, rows = scRows();
+  const st = scStep(), M = scDoc.meter, rows = scRows(), old = scQ(".scrows"), top = old ? old.scrollTop : 0;   /* (Oct 16, Chris) Stop never jumps back to the top */
   const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
   document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords"}</span><span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button><span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button></div>`).join("") + `</div>`
-    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel" id="scsel"></div><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button>`}</div></div>`;
-  scCount(); scLines.forEach((l, i) => scTrack(i)); }
+    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel" id="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve chords"}</button>`}</div></div>`;
+  scCount(); scLines.forEach((l, i) => scTrack(i)); const nw = scQ(".scrows"); if (nw) nw.scrollTop = top; }
 /* (Oct 15) Chris: a line glides left to right across each bar while it plays */
 function scHead(){ if (!scCtx || !scPH) return; const el0 = (scCtx.currentTime - scPH.T) / scPH.B, S = scPH.segs;
   let sg = S[S.length - 1]; for (const q of S) if (el0 < q.t + q.e0 - q.s0){ sg = q; break; }
@@ -1052,11 +1059,11 @@ document.addEventListener("pointerdown", ev => {
   if (ev.target.classList && ev.target.classList.contains("scwin")) return;
   const lane = ev.target.closest("#songchk [data-scwl]"), e = ev.target.closest("#songchk [data-scw]"); if (!lane && !e) return; ev.preventDefault();
   const t = (e || lane).parentNode, i = +t.dataset.sct, [a] = scRange(scLines[i]), span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
-  if (lane){ const g = a + Math.max(0, Math.min(span - .5, Math.floor((ev.clientX - t.getBoundingClientRect().left) / W * 2) / 2));
+  if (lane){ const g = a + Math.max(0, Math.min(span - .25, Math.floor((ev.clientX - t.getBoundingClientRect().left) / W * 4) / 4));
     if (scWords[i].some(w => Math.abs(w.g - g) < 1e-9)) return; const w = {g, w: ""}; scWords[i].push(w); scTrack(i); scWEdit(i, scWords[i].indexOf(w)); return; }
   const k = +e.dataset.scw.split(":")[1], w = scWords[i][k], x0 = ev.clientX, g0 = w.g; let moved = false;
   e.setPointerCapture(ev.pointerId); e.classList.add("d");
-  const mv = m => { const d = Math.round((m.clientX - x0) / W * 2) / 2; if (d) moved = true; w.g = Math.max(a, Math.min(a + span - .5, g0 + d)); e.style.left = ((w.g - a) * W + 1) + "px"; };
+  const mv = m => { const q = scQ16(g0 + (m.clientX - x0) / W); if (q !== g0) moved = true; w.g = Math.max(a, Math.min(a + span - .25, q)); e.style.left = ((w.g - a) * W + 1) + "px"; };
   const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
     if (moved){ if (scWords[i].some(x => x !== w && Math.abs(x.g - w.g) < 1e-9)) w.g = g0; scWSel = null; scTrack(i); scSaveSoon(); return; }
     const key = i + ":" + k; if (scWSel === key){ scWEdit(i, k); return; } scWSel = key; scSel = null; scSelAll(); };
@@ -1092,10 +1099,10 @@ document.addEventListener("pointerdown", ev => {
   const span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
   const mode = ev.target.dataset.sce || "m", x0 = ev.clientX, g0 = n.g, L0 = n.L, end = g0 + L0; let moved = false;
   e.setPointerCapture(ev.pointerId); e.classList.add("d");
-  const mv = m => { const d = Math.round((m.clientX - x0) / W * 2) / 2; if (d) moved = true;
-    if (mode === "m") n.g = Math.max(a, Math.min(a + span - L0, g0 + d));
-    else if (mode === "r") n.L = Math.max(.5, Math.min(a + span - g0, L0 + d));
-    else { n.g = Math.max(a, Math.min(end - .5, g0 + d)); n.L = end - n.g; }
+  const mv = m => { const dx = (m.clientX - x0) / W; if (Math.abs(dx) >= .125) moved = true;
+    if (mode === "m") n.g = Math.max(a, Math.min(a + span - L0, scQ16(g0 + dx)));
+    else if (mode === "r") n.L = Math.max(.25, Math.min(a + span - g0, scQ16(end + dx) - g0));
+    else { n.g = Math.max(a, Math.min(end - .25, scQ16(g0 + dx))); n.L = end - n.g; }
     e.style.left = ((n.g - a) * W + 1) + "px"; e.style.width = (n.L * W - 2) + "px"; };
   const up = () => { e.removeEventListener("pointermove", mv); e.removeEventListener("pointerup", up);
     if (moved){ scSaveSoon(); scTrack(i); } else if (scSel === i + ":" + j && scStep() === 1){ scNEdit(i, j); } else { scSel = i + ":" + j; scWSel = null; scSelAll(); } };
@@ -1189,6 +1196,7 @@ document.addEventListener("click", e => {
   else if (a === "split") scSplit();
   else if (a === "cdel") scCDel();
   else if (a === "csplit") scCSplit();
+  else if (a === "undo"){ if (!scUndo.length) return; const o = JSON.parse(scUndo.pop()); scLines = o.L; scWords = o.W; scLast = scSnap(); scSel = null; scWSel = null; scCSel = null; scSelAll(); scSaveSoon(true); }
   else if (a === "reset"){ if (scStep() === 1){ scLines = scClone(scDoc.orig); scWords = scWordsFrom(scLines); scWSel = null; } else scLines.forEach((l, i) => l.forEach((n, j) => { n.c = scClone(((scDoc.orig[i] || [])[j] || {}).c || []); })); scSel = null; scDraw(); scSaveSoon(); }
   else if (a === "back"){ scDoc.step = 1; db.collection("songcheck").doc(scId).update({step: 1, status: "melody"}).catch(() => {}); scDraw(); }
   else if (a === "ok") scApprove(); }, true);
@@ -1200,7 +1208,7 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
   const nn = e.target.closest("[data-scn]"); if (nn && scStep() === 1){ e.preventDefault(); const [i, j] = nn.dataset.scn.split(":").map(Number); if (scLines[i].length < 2) return; scLines[i].splice(j, 1); scSel = null; scTrack(i); scSaveSoon(); return; }
   const lane = e.target.closest("[data-sccl]"), t = e.target.closest("[data-sct]"); if (!t || e.target.closest("[data-scw],[data-scwl]")) return;
   const i = +t.dataset.sct, [a] = scRange(scLines[i]), span = Math.max(...scLines.map(x => { const [p, q] = scRange(x); return q - p; })), W = t.clientWidth / span;
-  const g = a + Math.max(0, Math.min(span - .5, Math.floor((e.clientX - t.getBoundingClientRect().left) / W * 2) / 2)); e.preventDefault();
+  const g = a + Math.max(0, Math.min(span - .25, Math.floor((e.clientX - t.getBoundingClientRect().left) / W * 4) / 4)); e.preventDefault();
   if (lane || scStep() === 2){ if (scStep() === 2) scCAt(i, g); return; }
   const l = scLines[i]; if (l.some(n => n.g < g + 1 - 1e-9 && g < n.g + n.L - 1e-9)) return;
   const prev = l.filter(n => n.g <= g).sort((p, q) => q.g - p.g)[0] || l[0], nx = l.filter(n => n.g > g).sort((p, q) => p.g - q.g)[0];
@@ -1327,7 +1335,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v102</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v103</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
