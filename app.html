@@ -1322,7 +1322,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v97</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v98</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3199,7 +3199,8 @@ function moneyFolders(){ $("bar").innerHTML = "";
 function stickUpdate(){ const L = $("list"); if (!L || L.classList.contains("fdlock")) return; const LT = L.getBoundingClientRect().top + L.clientTop;
   const all = [...L.querySelectorAll(".rowon, .subon")].filter(x => x.getClientRects().length && x.closest(".msec") && !x.closest(".kids")), h = all.pop();
   L.querySelectorAll(".fdstick").forEach(x => { if (x !== h){ x.classList.remove("fdstick", "stuck"); x.style.top = ""; } });
-  const inner = h && h.nextElementSibling && h.nextElementSibling.matches(".tdetail, .sublist, .mbody, .replist") ? h.closest(".msec") : null;
+  const hb = h && h.nextElementSibling && h.nextElementSibling.matches(".tdetail, .sublist, .mbody, .replist") ? h.nextElementSibling : null;
+  const inner = hb && hb.getBoundingClientRect().top - h.offsetHeight <= LT + 1 ? h.closest(".msec") : null;   /* (Oct 16, Chris) the folder header unpins only once the open row's header reaches the top (All songs far below used to unpin Songs at once) */
   L.querySelectorAll(".msec > h4").forEach(x => { x.classList.toggle("nostick", x.parentElement === inner); if (x.parentElement === inner) x.classList.remove("stuck"); });   /* (Oct 11, Chris) only ONE frozen header: the innermost open one */
   L.querySelectorAll(".msec > h4:not(.nostick)").forEach(x => { const box = x.parentElement; const st = box.getBoundingClientRect().top < LT - 1 && !box.classList.contains("collapsed"); x.classList.toggle("stuck", st); });
   if (!h) return; const body = h.nextElementSibling;
