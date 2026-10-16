@@ -989,6 +989,7 @@ a.tb.rs-fixed{flex-direction:column}
 #songchk .scc:hover{background:var(--hover)}
 #songchk .scc.no{color:var(--line)}
 #songchk .scbn{position:absolute;top:-18px;font-size:11px;color:var(--muted);white-space:nowrap}
+#songchk .scbn[data-scbar]{cursor:pointer;padding:0 4px;border-radius:6px}#songchk .scbn[data-scbar]:hover,#songchk .scbn.on{background:#FAEEDA;color:#854F0B}
 #songchk .scbn.in{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 #songchk .scck.scadd{margin-left:6px;font-size:22px;color:var(--teal)}
 #songchk .scck{width:40px;height:40px;flex:none;align-self:center;margin-left:10px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:18px;cursor:pointer;padding:0}
@@ -1059,7 +1060,7 @@ let scLv = "easy";
 function scSetLv(k){ if (!SCLV[k] || k === scLv) return; clearTimeout(scTimer); scSync(); const C = scClone(scChords); scDoc[SCLV[scLv][1]] = C;
   if (scId) db.collection("songcheck").doc(scId).update({[SCLV[scLv][1]]: C, updated: new Date().toISOString()}).catch(() => {});
   scLv = k; scChords = scClone(scDoc[SCLV[k][1]] || scDoc.chords || scChordsFrom(scLines, scRg)); scPick = null; scMulti = []; scPt = null; scUndo = []; scLast = scSnap(); scDraw(); }
-function scLoad(doc){ scDoc = doc; scLv = "easy"; scLines = scClone(doc.lines); scRanges();
+function scLoad(doc){ scDoc = doc; scLv = "easy"; scBar = null; scLines = scClone(doc.lines); scRanges();
   scWords = doc.words ? scClone(doc.words) : scWordsFrom(scLines); scFixWords();
   scChords = doc.chords ? scClone(doc.chords) : scChordsFrom(scLines, scRg); scPick = null; scMulti = []; scPt = null; scUndo = []; scLast = scSnap(); }
 async function scOpen(id, view){
@@ -1104,7 +1105,7 @@ function scTrack(i){
   for (let b = 1; b <= span; b++) h += `<div class="${b % M === 0 ? "scbl" : "scbt"}" style="left:${b * W - (b === span ? 2 : 0)}px"></div>`;
   /* (Oct 16, Chris) row 0 = the intro (doc.intro, built from the last line, no words): its bars say "intro" */
   const intro = scDoc.intro && i === 0;
-  for (let b = 0; b < span; b += M) h += `<div class="scbn${intro ? " in" : ""}" style="left:${b * W + 4}px">${intro ? "intro" : b === 0 && pick ? "pickup" : "bar " + (Math.floor((a + b) / M) + 1)}</div>`;
+  for (let b = 0; b < span; b += M) h += `<div class="scbn${intro ? " in" : ""}${!intro && scBar === Math.floor((a + b) / M) * M ? " on" : ""}"${intro ? "" : ` data-scbar="${Math.floor((a + b) / M) * M}"`} style="left:${b * W + 4}px">${intro ? "intro" : b === 0 && pick ? "pickup" : "bar " + (Math.floor((a + b) / M) + 1)}</div>`;
   for (const k of (scStep() === 1 ? ["n", "w"] : ["c", "n", "w"])){ const [top, ht] = scLane(k), ed = scEdit(k);
     if (ed) h += `<div class="scl" data-lane="${k}:${i}" style="top:${top}px;height:${ht}px"></div>`;
     scSort(k, i).forEach((b, x) => { h += `<div class="scb k-${k}${ed ? "" : " lock"}${(scPick && scPick.b === b) || scMulti.includes(b) ? " sel" : ""}" data-b="${k}:${i}:${x}" style="top:${top}px;height:${ht}px;left:${(b.g - a) * W + 1}px;width:${Math.max(6, b.L * W - 2)}px"><span>${scLabel(k, b)}</span>${ed ? `<i class="sce" data-sce="l"></i><i class="sce" data-sce="r"></i>` : ""}</div>`; }); }
@@ -1114,6 +1115,7 @@ function scAll(){ scLines.forEach((l, i) => scTrack(i)); scPicker(); }
 /* the picker under the rows: what the picked block is, Split, Delete */
 function scPicker(){ const p = document.getElementById("scpkr"); if (!p) return; scBackBtn();
   const clip = scClip ? `<button type="button" class="tb" data-scx="paste"${scPt ? "" : " disabled"}>Paste ${scClip.length}</button>` : "";
+  if (scBar != null){ const M = scDoc.meter; p.innerHTML = `<span class="scpn">Bar ${Math.floor(scBar / M) + 1}</span><span style="flex:1"></span><button type="button" class="tb" data-scx="addbar">Add bar after</button><button type="button" class="tb drop" data-scx="rmbar">Remove bar</button>`; return; }
   if (scMulti.length){ p.innerHTML = `<span class="scpn">${scMulti.length} picked</span><button type="button" class="tb" data-scx="copy">Copy</button><button type="button" class="tb" data-scx="cut">Cut</button>${clip}<span style="flex:1"></span><button type="button" class="tb" data-scx="del">Delete</button>`; return; }
   if (!scPick){ p.innerHTML = scPt ? `${clip}<span style="flex:1"></span><button type="button" class="tb" data-scx="dup">Repeat row below</button><button type="button" class="tb" data-scx="newrow">New row from here</button>` : clip; return; } const {k, b} = scPick;
   const vals = k === "n" ? SCNUMS.map(v => `<button type="button" class="tb${SCDEG[b.m % 12] === v ? " on" : ""}" data-scv="${v}">${v}</button>`).join("")
@@ -1146,7 +1148,7 @@ function scNewRow(){ const i = scPick ? scPick.i : scPt ? scPt.i : -1; if (i < 0
   const R = scDoc.rows || {}; Object.keys(R).forEach(st => { R[st] = R[st].map(x => x > i ? x + 1 : x); });
   scRanges(); scPick = null; scPt = null; scMulti = []; scDraw(); scSaveSoon(); }
 function scFind(b){ for (const k of ["n", "w", "c"]) for (let i = 0; i < scLines.length; i++) if (scList(k, i).includes(b)) return {k, i, b}; return null; }
-function scSetPick(p){ scPick = p; scAll(); }
+function scSetPick(p){ scPick = p; scBar = null; scAll(); }
 /* move / stretch: snapped, kept inside the row, stopped by the neighbours of the same kind */
 function scBounds(k, i, b){ const L = scSort(k, i), x = L.indexOf(b), [a] = scRg[i];
   const prev = x > 0 ? scEnd(L[x - 1]) : a, next = x + 1 < L.length ? L[x + 1].g : a + scSpan;
@@ -1176,12 +1178,21 @@ function scPitch(d){ if (!scPick) return; const {k, b} = scPick;
   if (k === "c"){ b.k = SCCHS[((SCCHS.indexOf(b.k) + d) % SCCHS.length + SCCHS.length) % SCCHS.length]; scChordBeep(b.k); scAll(); scSaveSoon(); return; }
   if (k !== "n") return; const up = [0,2,4,5,7,9,11], kk = b.m % 12, o = b.m - kk; let idx = up.indexOf(kk); if (idx < 0) idx = up.findIndex(x => x > kk) - (d > 0 ? 1 : 0);
   idx += d; b.m = o + 12 * Math.floor(idx / 7) + up[((idx % 7) + 7) % 7]; scAll(); scSaveSoon(); scBeep(b.m); }
-let scDrag = null, scMulti = [], scClip = null, scPt = null, scBox = null;   /* (Oct 16, Chris) box-select several blocks, Copy, tap a spot, Paste; New row from here */
+let scDrag = null, scMulti = [], scClip = null, scPt = null, scBox = null, scBar = null;
+/* (Oct 16, Chris) tap a bar number: Remove bar = that bar's notes, words and chords go and everything after slides one bar earlier
+   (closes an empty bar); Add bar after = everything after slides one bar later. Rows left empty go. Back undoes it. */
+function scBarEdit(s, add){ const M = scDoc.meter, end = s + M, A = [scLines, scWords, scChords];
+  if (add) A.forEach(R => R.forEach(l => (l || []).forEach(b => { if (b.g >= end - 1e-9) b.g += M; })));
+  else { A.forEach(R => R.forEach((l, i) => { if (!l) return; R[i] = l.filter(b => !(b.g >= s - 1e-9 && b.g < end - 1e-9));
+      R[i].forEach(b => { if (b.g >= end - 1e-9) b.g -= M; else if (b.g + b.L > s + 1e-9) b.L = Math.max(scG1(), s - b.g); }); }));
+    for (let i = scLines.length - 1; i >= 0; i--) if (!scLines[i].length){ scLines.splice(i, 1); scWords.splice(i, 1); scChords.splice(i, 1); } }
+  scBar = null; scPick = null; scMulti = []; scPt = null; scRanges(); scSaveSoon(); scDraw(); }   /* (Oct 16, Chris) box-select several blocks, Copy, tap a spot, Paste; New row from here */
 document.addEventListener("pointerdown", ev => {
   if (!scId || ev.button > 0) return; const e = ev.target.closest && ev.target.closest("#songchk .scb:not(.lock)"); if (!e) return;
   ev.preventDefault(); const [k, i, x] = e.dataset.b.split(":"), I = +i, b = scSort(k, I)[+x]; if (!b) return;
   const t = e.parentNode, W = t.clientWidth / scSpan;
   scDrag = {k, i: I, b, e, W, x0: ev.clientX, g0: b.g, L0: b.L, mode: (ev.target.dataset && ev.target.dataset.sce) || "m", moved: false};
+  if (scDrag.mode === "m" && scMulti.length > 1 && scMulti.includes(b)) scDrag.grp = scMulti.map(x => ({x, g0: x.g}));   /* (Oct 16, Chris) drag a picked group together */
   try { e.setPointerCapture(ev.pointerId); } catch {} e.classList.add("d"); });
 document.addEventListener("pointerdown", ev => { if (!scId || ev.button > 0) return; const ln = ev.target.closest && ev.target.closest("#songchk .scl"); if (!ln) return;
   const t = ln.parentNode, r = t.getBoundingClientRect(); scBox = {i: +ln.dataset.lane.split(":")[1], t, r, x0: ev.clientX, y0: ev.clientY, moved: false, el: null}; });
@@ -1189,15 +1200,22 @@ window.addEventListener("pointermove", ev => { const B = scBox; if (!B) return; 
   if (!B.el){ B.el = document.createElement("div"); B.el.className = "scbox"; B.t.appendChild(B.el); }
   const x1 = Math.min(B.x0, ev.clientX), x2 = Math.max(B.x0, ev.clientX), y1 = Math.min(B.y0, ev.clientY), y2 = Math.max(B.y0, ev.clientY);
   Object.assign(B.el.style, {left: (x1 - B.r.left) + "px", top: (y1 - B.r.top) + "px", width: (x2 - x1) + "px", height: (y2 - y1) + "px"}); B.box = [x1, y1, x2, y2]; });
-window.addEventListener("pointerup", ev => { const B = scBox; if (!B) return; scBox = null;
+window.addEventListener("pointerup", ev => { const B = scBox; if (!B) return; scBox = null; scBar = null;
   if (B.moved && B.box){ const [x1, y1, x2, y2] = B.box; scMulti = [...B.t.querySelectorAll(".scb:not(.lock)")].filter(e => { const q = e.getBoundingClientRect(); return q.left < x2 && q.right > x1 && q.top < y2 && q.bottom > y1; })
       .map(e => { const [k, i, x] = e.dataset.b.split(":"); return scSort(k, +i)[+x]; }).filter(Boolean); scPick = null; scPt = null; scAll(); return; }
   const W = B.t.clientWidth / scSpan, [a] = scRg[B.i]; scPick = null; scMulti = [];
   scPt = {i: B.i, g: a + Math.max(0, Math.min(scSpan - scG1(), Math.floor((B.x0 - B.r.left) / W * scG() + 1e-6) / scG()))}; scAll(); });
 window.addEventListener("pointermove", ev => { const D = scDrag; if (!D) return; const d = (ev.clientX - D.x0) / D.W;
   if (!D.moved && Math.abs(ev.clientX - D.x0) < 4) return; D.moved = true;
+  if (D.grp){ const a = scRg[D.i][0], q = scG1(), set = new Set(D.grp.map(o => o.x)); let lo = -1e9, hi = 1e9;
+    for (const k of ["n", "w", "c"]){ if (!scEdit(k)) continue; const L = scSort(k, D.i), G = D.grp.filter(o => L.includes(o.x)); if (!G.length) continue;
+      const g1 = Math.min(...G.map(o => o.g0)), g2 = Math.max(...G.map(o => o.g0 + o.x.L)), O = L.filter(x => !set.has(x));
+      lo = Math.max(lo, a - g1, ...O.filter(x => x.g + x.L <= g1 + 1e-9).map(x => x.g + x.L - g1));
+      hi = Math.min(hi, a + scSpan - g2, ...O.filter(x => x.g >= g2 - 1e-9).map(x => x.g - g2)); }
+    const dd = Math.max(lo, Math.min(hi, Math.round(d / q) * q)); D.grp.forEach(o => { o.x.g = +(o.g0 + dd).toFixed(6); }); scTrack(D.i); return; }
   scMove(D.k, D.i, D.b, D.mode, D.g0, D.L0, d); const a = scRg[D.i][0]; D.e.style.left = ((D.b.g - a) * D.W + 1) + "px"; D.e.style.width = Math.max(6, D.b.L * D.W - 2) + "px"; });
 window.addEventListener("pointerup", () => { const D = scDrag; if (!D) return; scDrag = null; D.e.classList.remove("d");
+  if (D.grp && D.moved){ ["n", "w", "c"].forEach(k => scSort(k, D.i)); scAll(); if (scSnap() !== scLast) scSaveSoon(); return; }
   if (D.moved){ scSort(D.k, D.i); scPick = {k: D.k, i: D.i, b: D.b}; scAll(); if (scSnap() !== scLast) scSaveSoon(); return; }
   const same = scPick && scPick.b === D.b; scMulti = []; scPt = null; scSetPick({k: D.k, i: D.i, b: D.b});
   if (D.k === "w" && same){ const w = document.getElementById("scwin"); if (w){ w.focus(); w.select(); } } });
@@ -1290,6 +1308,9 @@ document.addEventListener("click", e => {
     ck.parentNode.classList.toggle("done", k < 0); scCount(); if (scId) db.collection("songcheck").doc(scId).update({rows: R}).catch(() => {}); return; }
   const v = e.target.closest("[data-scv]"); if (v){ scSetVal(v.dataset.scv); return; }
   const lb = e.target.closest("[data-sclv]"); if (lb){ scSetLv(lb.dataset.sclv); return; }
+  const bn = e.target.closest("[data-scbar]"); if (bn){ const s = +bn.dataset.scbar; scBar = scBar === s ? null : s; scPick = null; scMulti = []; scPt = null; scAll(); return; }
+  if (e.target.closest('[data-scx="rmbar"]') && scBar != null){ scBarEdit(scBar, false); return; }
+  if (e.target.closest('[data-scx="addbar"]') && scBar != null){ scBarEdit(scBar, true); return; }
   const ad = e.target.closest("[data-scadd]"); if (ad){ const i = +ad.dataset.scadd; scPick = null; scMulti = []; scPt = {i, g: scRg[i][0]}; scDup(); return; }   /* (Oct 16, Chris) + = new row underneath (a copy to edit) */
   if (e.target.closest(".scl")) return;   /* empty space: handled on pointerup (tap = paste spot, drag = box select) */
   const x = e.target.closest("[data-scx]"); if (!x) return; const a = x.dataset.scx;
@@ -1449,7 +1470,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v116</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v117</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
