@@ -1341,7 +1341,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v96</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v97</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3790,8 +3790,11 @@ function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice(
   const scn = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
   const scAny = x => (scBoard || []).find(r => scn(r.name) === scn(x.title)), scFor = x => { const r = scAny(x); return r && r.status !== "approved" ? r : null; };
   /* board step Melody -> check page step 1, Starter chords -> step 2 */
-  const row = (x, sub) => { const k = Math.min(x.step || 0, n), sc = scFor(x), sa = scAny(x);
-    return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${ST.map((t, i) => { const v = /^melody/i.test(t) ? 1 : /^(starter\s+)?chords/i.test(t) ? 2 : 0, ck = i === k && sc, ok = i < k && sa && v, cl = ck || ok; return `<i class="sblk" title="${esc(t)}"${cl ? ` data-songchk="${esc((sc || sa).id)}"${ok ? ` data-scview="${v}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:${ok ? "#fff" : "#3a2a00"};${cl ? "cursor:pointer;" : ""}background:${i < k ? "#1FA598" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}">${ck ? `<span class="sfw">Check</span>` : ok ? `<span class="sfw" style="font-weight:600">Approved</span>` : ""}</i>`; }).join("")}</span></div>`; };
+  /* (Oct 16, Chris) SAME look as Shorts: teal = Approved, gold = Check (his turn), light gold = Making (Cadence's turn) */
+  const NXT = ["Your turn: paste lyrics", "Cadence: melody", "Your turn: OK chords", "Band: you pick instruments", "Cadence: cards", "Cadence: lesson", "Your turn: final check"];
+  const turn = x => { const k = Math.min(x.step || 0, n); return k >= n ? "" : scFor(x) || /^(Your turn|Band: you)/.test(NXT[k] || "") ? "you" : "cadence"; };
+  const row = (x, sub) => { const k = Math.min(x.step || 0, n), sc = scFor(x), sa = scAny(x), tu = turn(x);
+    return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${ST.map((t, i) => { const v = /^melody/i.test(t) ? 1 : /^(starter\s+)?chords/i.test(t) ? 2 : 0, ck = i === k && sc, ok = i < k && sa && v, cl = ck || ok, mk = i === k && tu === "cadence"; return `<i class="sblk" title="${esc(t)}"${cl ? ` data-songchk="${esc((sc || sa).id)}"${ok ? ` data-scview="${v}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:${ok ? "#fff" : "#3a2a00"};${cl ? "cursor:pointer;" : ""}background:${i < k ? "#1FA598" : mk ? "#FBEFD0" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}">${i < k ? `<span class="sfw" style="color:#fff;font-weight:600">Approved</span>` : mk ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : i === k ? `<span class="sfw">Check</span>` : ""}</i>`; }).join("")}</span></div>`; };
   /* (Oct 14, Chris) Christmas folder inside Songs: the Nov 1 songs, each with Chris's next step + day from his "Songs:" to-dos */
   const XM = /christmas|silent night|o come, all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
   /* (Oct 15, Chris) like Shorts: header = how many need his check + how many are approved and scheduled for their Lab release */
@@ -3809,7 +3812,7 @@ function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice(
   const secX = X.length ? label("\u{1F384} Christmas \u00b7 Nov 1", X.length) + head + X.map(x => row(x, nextFor(x))).join("") : "";
   const secN = NOW.length ? label("Next to release", NOW.length) + head + NOW.map(x => row(x, nextStep(x))).join("") : "";
   const secS = DONE.length ? label("Scheduled", DONE.length) + head + DONE.map(x => row(x, x.release ? "Lab release " + md(x.release) : "Approved \u00b7 no release day yet")).join("") : "";
-  const mine = X.concat(NOW).filter(x => /^(Your turn|Band: you)/.test(NX[Math.min(x.step || 0, n)] || "") || TT.some(t => t.title.toLowerCase().replace(/[^a-z ]/g, "").includes(key(x)))).length;
+  const mine = X.concat(NOW).filter(x => turn(x) === "you").length;   /* (Oct 16) header counts the gold Check boxes, like Shorts */
   /* (Oct 14, Chris) All songs (the full public domain list) at the bottom, closed until tapped. Ticks: grey = found by Grok/Muse, not approved; teal = Chris approved (song passed his final check) */
   const SL = ((stats.find(x => x.id === "songlist") || {}).songs || []).slice().sort((a, b) => (a.mine || 0) - (b.mine || 0) || a.t.localeCompare(b.t));
   const nm = t => String(t).toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
