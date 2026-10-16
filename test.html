@@ -1054,7 +1054,13 @@ function scWordsFrom(L){ return L.map(l => l.filter(n => n.w).map(n => ({g: n.g,
 function scChordsFrom(L, rg){ return L.map((l, i) => { const C = []; l.forEach(n => (n.c || []).forEach(q => C.push({g: n.g + q[1], k: q[0]}))); C.sort((p, q) => p.g - q.g);
   const end = rg[i][0] + scSpan; return C.map((c, x) => Object.assign(c, {L: Math.max(scG1(), (x + 1 < C.length ? C[x + 1].g : end) - c.g)})); }); }
 function scFixWords(){ scWords = scLines.map((l, i) => (scWords[i] || []).map(w => { if (w.L == null){ const n = l.find(n => Math.abs(n.g - w.g) < 1e-9); w.L = n ? n.L : 1; } return w; }).sort((p, q) => p.g - q.g)); }
-function scRanges(){ scRg = scLines.map(scRange); scSpan = Math.max(...scRg.map(([a, b]) => b - a)); }
+/* (Oct 16, Chris picked layout A) bar 1 of every row starts at the same spot; a pickup sits in a narrow strip on the left (scP beats wide).
+   scRgB = each row's whole bars (Repeat row uses it); scRg = what the row shows: [bar 1 - scP, end] */
+let scRgB = [], scP = 0, scB1 = [];
+function scRanges(){ const M = scDoc.meter; scRgB = scLines.map(scRange);
+  scB1 = scLines.map(l => { const f = Math.min(...l.map(n => n.g)); return Math.ceil(f / M - 1e-9) * M; });
+  scP = Math.max(0, ...scLines.map((l, i) => scB1[i] - Math.min(...l.map(n => n.g)))); scP = Math.ceil(scP - 1e-9);
+  scRg = scRgB.map((r, i) => [scB1[i] - scP, Math.max(r[1], scB1[i] + M)]); scSpan = Math.max(...scRg.map(([a, b]) => b - a)); }
 /* (Oct 16, Chris) every song has 3 chord levels; the chords step says plainly which one he is checking. Easy = field chords (what the Lab reads), Medium/Hard own fields, start as a copy of Easy */
 const SCLV = {easy: ["Easy", "chords"], medium: ["Medium", "chordsMedium"], hard: ["Hard", "chordsHard"]};
 let scLv = "easy";
@@ -1101,13 +1107,16 @@ const scLabel = (k, b) => k === "n" ? SCDEG[b.m % 12] : k === "w" ? esc(b.w) : e
 function scTrack(i){
   const t = scQ(`[data-sct="${i}"]`); if (!t) return;
   const M = scDoc.meter, l = scLines[i], [a] = scRg[i], span = scSpan, W = t.clientWidth / span;
-  const pick = Math.min(...l.map(n => n.g)) > a + 1e-9 && scRg[i][0] < 0 + 1e-9 && Math.min(...l.map(n => n.g)) - a >= 1;
-  let h = pick ? `<div class="scpk" style="left:0;width:${M * W}px"></div>` : "";
-  for (let b = 1; b <= span; b++) h += `<div class="${b % M === 0 ? "scbl" : "scbt"}" style="left:${b * W - (b === span ? 2 : 0)}px"></div>`;
+  const first = Math.min(...l.map(n => n.g)), pick = scB1[i] - first > 1e-9, P = scP, sub = M === 3 ? .5 : 1;   /* (Oct 16, Chris) 3/4 bar = 6 boxes (eighths), like 6/8 */
+  let h = P ? `<div class="scpk" style="left:0;width:${P * W}px"></div>` : "";
+  for (let x = sub; x <= span - P + 1e-9; x += sub){ const bl = Math.abs(x / M - Math.round(x / M)) < 1e-9; h += `<div class="${bl ? "scbl" : "scbt"}" style="left:${(P + x) * W - (Math.abs(P + x - span) < 1e-9 ? 2 : 0)}px"></div>`; }
+  if (P) h += `<div class="scbl" style="left:${P * W}px"></div>`;
   /* (Oct 16, Chris) row 0 = the intro (doc.intro, built from the last line, no words): its bars say "intro" */
   const intro = scDoc.intro && i === 0;
-  for (let b = 0; b < span; b += M) h += `<div class="scbn${intro ? " in" : ""}${!intro && scBar === Math.floor((a + b) / M) * M ? " on" : ""}${!intro && scMuted(Math.floor((a + b) / M) * M) ? " mu" : ""}"${intro ? "" : ` data-scbar="${Math.floor((a + b) / M) * M}"`} style="left:${b * W + 4}px">${intro ? "intro" : (b === 0 && pick ? "pickup" : "bar " + (Math.floor((a + b) / M) + 1)) + (scMuted(Math.floor((a + b) / M) * M) ? " muted" : "")}</div>`
-    + (!intro && scMuted(Math.floor((a + b) / M) * M) ? `<div class="scmu" style="left:${b * W}px;width:${M * W}px"></div>` : "");
+  const lab = (g, x, txt) => `<div class="scbn${intro ? " in" : ""}${!intro && scBar === g ? " on" : ""}${!intro && scMuted(g) ? " mu" : ""}"${intro ? "" : ` data-scbar="${g}"`} style="left:${Math.max(0, x) * W + 4}px">${intro ? "intro" : txt + (scMuted(g) ? " muted" : "")}</div>`
+    + (!intro && scMuted(g) ? `<div class="scmu" style="left:${Math.max(0, x) * W}px;width:${(Math.min(span, x + M) - Math.max(0, x)) * W}px"></div>` : "");
+  if (pick) h += lab(scB1[i] - M, P - M, "pickup");
+  for (let x = P; x < span - 1e-9; x += M){ const g = a + x; h += lab(g, x, "bar " + (Math.floor(g / M + 1e-9) + 1)); }
   for (const k of (scStep() === 1 ? ["n", "w"] : ["c", "n", "w"])){ const [top, ht] = scLane(k), ed = scEdit(k);
     if (ed) h += `<div class="scl" data-lane="${k}:${i}" style="top:${top}px;height:${ht}px"></div>`;
     scSort(k, i).forEach((b, x) => { h += `<div class="scb k-${k}${ed ? "" : " lock"}${(scPick && scPick.b === b) || scMulti.includes(b) ? " sel" : ""}" data-b="${k}:${i}:${x}" style="top:${top}px;height:${ht}px;left:${(b.g - a) * W + 1}px;width:${Math.max(6, b.L * W - 2)}px"><span>${scLabel(k, b)}</span>${ed ? `<i class="sce" data-sce="l"></i><i class="sce" data-sce="r"></i>` : ""}</div>`; }); }
@@ -1134,7 +1143,7 @@ function scPaste(){ if (!scClip || !scPt) return; const i = scPt.i, out = [];
   ["n", "w", "c"].forEach(k => scSort(k, i)); if (!scLines[i].length) return; scRanges(); scMulti = out; scPick = null; scPt = null; scAll(); scSaveSoon(); }
 /* (Oct 16, Chris) Repeat row below: the same melody + chords + words again as a new row right after it (later rows move later by
    that row's length), so two verses squished on one line become two rows: then he deletes the extra words in each */
-function scDup(){ const i = scPick ? scPick.i : scPt ? scPt.i : -1; if (i < 0) return; const D = scRg[i][1] - scRg[i][0];
+function scDup(){ const i = scPick ? scPick.i : scPt ? scPt.i : -1; if (i < 0) return; const D = scRgB[i][1] - scRgB[i][0];
   const sh = (L, d) => L.forEach(b => { b.g += d; });
   for (let j = i + 1; j < scLines.length; j++){ sh(scLines[j], D); sh(scWords[j] || [], D); sh(scChords[j] || [], D); }
   const n = scClone(scLines[i]), w = scClone(scWords[i] || []), c = scClone(scChords[i] || []); sh(n, D); sh(w, D); sh(c, D);
@@ -1484,7 +1493,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v118</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v119</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
