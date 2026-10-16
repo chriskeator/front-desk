@@ -1370,7 +1370,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v107</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v108</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3457,6 +3457,15 @@ function fdErr(err){ try { console.error(err); let n = document.getElementById("
   n.textContent = "Front Desk error (send Cadence a screenshot): " + String(err && (err.stack || err.message) || err).split("\n").slice(0, 2).join(" | "); n.style.display = "block"; clearTimeout(n._t); n._t = setTimeout(() => n.style.display = "none", 15000); } catch {} }
 window.addEventListener("error", e => fdErr(e.error || e.message));
 window.addEventListener("unhandledrejection", e => fdErr(e.reason));
+/* (Oct 16, Chris: "sometimes it takes three clicks") a db update re-drew the page between his press and the click, so the click was lost.
+   Live updates now wait until the press (and its click) is over; his own taps still redraw at once. */
+let fdPress = false, fdLater = false, fdPressT = null;
+function liveRender(){ if (fdPress){ fdLater = true; return; } render(); }
+function fdRelease(){ clearTimeout(fdPressT); fdPress = false; if (fdLater){ fdLater = false; render(); } }
+document.addEventListener("pointerdown", () => { fdPress = true; clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 4000); }, true);
+document.addEventListener("pointerup", () => { clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 400); }, true);
+document.addEventListener("pointercancel", () => { clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 50); }, true);
+window.addEventListener("click", () => setTimeout(fdRelease, 0));
 function render(){ { const L0 = $("list"); if (L0 && L0.dataset.kptab !== tab + "|" + (sub || "")){ L0.dataset.kptab = tab + "|" + (sub || ""); kpSet(L0, 0); L0.classList.remove("fdlock"); L0._lock = null; } }   // (Oct 8) new screen = no leftover room on top
   if (phone() && tab === "projects" && psub !== "projects") psub = "projects";   // (Oct 7) phone: everything opens in place, no Back screens
   const f = document.activeElement && document.activeElement.id === "sortsearch";
@@ -4500,7 +4509,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const fail = () => { $("list").innerHTML = '<div class="empty"><b>Couldn\'t load</b><span>Close and reopen this page.</span></div>'; };
   const first = name => { if (deskWait.delete(name) && !deskWait.size) deskGo(); };
   const live = (name, order, set) => (deskWait.add(name), db.collection(name).orderBy(order[0], order[1]).limit(300)
-    .onSnapshot(s => { first(name); set(s.docs.map(d=>({id:d.id,...d.data()}))); if (!editing && !sorting && !answering && !revFix && !bulkPick && !(editOpen && document.querySelector("#list .tdedit"))) render(); }, () => { first(name); fail(); }));
+    .onSnapshot(s => { first(name); set(s.docs.map(d=>({id:d.id,...d.data()}))); if (!editing && !sorting && !answering && !revFix && !bulkPick && !(editOpen && document.querySelector("#list .tdedit"))) liveRender(); }, () => { first(name); fail(); }));
   live("projects", ["order","asc"], v => projects = v);
   live("jobs", ["updated","desc"], v => jobs = v);
   live("items", ["added","desc"], v => items = v);
@@ -4520,7 +4529,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("requests", ["asks","desc"], v => requests = v.flatMap(r => Array.isArray(r.list) ? r.list.map((x, i) => ({id: r.id + "-" + i, ...x})) : [r]));   // (Oct 9) a doc with list[] = a whole scan
   live("songsteps", ["order","asc"], v => songSteps = v);
   /* (Oct 11) Lab links: 313 videos, so this one reads up to 400 rows (live() stops at 300) */
-  deskWait.add("lablinks"); db.collection("lablinks").orderBy("order","asc").limit(400).onSnapshot(q => { first("lablinks"); lablinks = q.docs.map(d=>({id:d.id,...d.data()})).filter(x => !x.removed); if (!editing && !sorting && !answering && !revFix && !bulkPick && !(editOpen && document.querySelector("#list .tdedit"))) render(); }, fail);
+  deskWait.add("lablinks"); db.collection("lablinks").orderBy("order","asc").limit(400).onSnapshot(q => { first("lablinks"); lablinks = q.docs.map(d=>({id:d.id,...d.data()})).filter(x => !x.removed); if (!editing && !sorting && !answering && !revFix && !bulkPick && !(editOpen && document.querySelector("#list .tdedit"))) liveRender(); }, fail);
   live("labpractices", ["order","asc"], v => labPractices = v);
   live("questions", ["asked","asc"], v => questions = v);
   live("sort", ["added","asc"], v => sorts = v.sort((a,b)=>Math.abs(+b.total||0)-Math.abs(+a.total||0)));
