@@ -1489,6 +1489,18 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .row.ok .nt{background:#cdebd8}
 @media (max-width:520px){#songchk .row{grid-template-columns:repeat(3,minmax(0,1fr)) 36px}}
 #songchk .b .t{line-height:normal}
+/* (Oct 16 night, Chris) TEAL LOOK on the song editor (his pick from the old song check): teal number boxes, darker bar lines, plain words.
+   Colours only: no size, border width or font metric changes, so nothing shifts and the 16th graph paper stays exact. */
+#songchk .secard{--se-tbg:#E9F4F1;--se-tbd:#2C7A70;--se-tink:#1F6F66;--se-tpk:#CBE6DF;--se-thov:#DDEFEA;--se-bar:#3A4048}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-tbg:#173A36;--se-tbd:#4FB3A6;--se-tink:#8FE0D4;--se-tpk:#22524C;--se-thov:#1D4641;--se-bar:#9AA3A8}}
+:root[data-theme="dark"] #songchk .secard{--se-tbg:#173A36;--se-tbd:#4FB3A6;--se-tink:#8FE0D4;--se-tpk:#22524C;--se-thov:#1D4641;--se-bar:#9AA3A8}
+#songchk .secard .row>.b[data-i]{border-color:var(--se-bar)}
+#songchk .secard .nt:not(.w){background:var(--se-tbg);border-color:var(--se-tbd);color:var(--se-tink)}
+#songchk .secard .nt:not(.w) .tx i{font-weight:700}
+#songchk .secard .nt:not(.w):hover,html[data-drag] #songchk .secard .nt:not(.w):hover{background:var(--se-thov)}
+#songchk .secard .nt:not(.w).np,html[data-drag] #songchk .secard .nt:not(.w).np{background:var(--se-tpk)}
+#songchk .secard .nt.w .tx{font-weight:400;color:var(--se-ink)}
+#songchk .secard .nt .lo::after,#songchk .secard .nt .hi::after{background:var(--se-tink)}
 </style>
 <script>
 /* (Oct 16, chat 12, Chris) NEW SONG EDITOR = the approved prototype (Front Desk/song-bar-editor-layer1.html v65, built layer by layer with Chris),
@@ -1880,7 +1892,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v132</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v133</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
