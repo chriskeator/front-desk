@@ -1504,16 +1504,21 @@ function len(n){if(MT===6)return n+' eighth'+(n===1?'':'s');const b=n/SB,w=Math.
 function zi(){let z=bars.findIndex(b=>b.id===zeroId);if(z<0){z=Math.max(0,Math.min(zeroIdx,bars.length-1));zeroId=bars[z]&&bars[z].id}return z}
 function lab(i){const k=i-zi();return k>=0?'bar '+(k+1):(DOC&&DOC.intro?'intro':'pickup')}
 function draw(pv){const B=pv&&pv.C?pv.C:pv&&pv.leadA!=null?bars:pv||bars,N=S(),per=innerWidth<=520?2:4;R.innerHTML='';
-/* (Oct 16, Chris: "bar one on the left, bar two centre left, bar three centre right, bar four right ... for every song") bar 1 always
-   starts a row in the first column; intro / pickup bars sit right-aligned on their own row(s) above it, empty cells before them */
-const z0=(()=>{const k=B.findIndex(b=>b.id===zeroId||(b.src!=null&&b.src===zeroId));return k>=0?k:Math.min(zi(),B.length)})(),off=Math.ceil(z0/per)*per,tot=off+(B.length-z0)+1;
-for(let r=0;r<Math.ceil(tot/per);r++){const row=document.createElement('div');row.className='row';
-if(r===0){const L=document.createElement('div');L.className='b lead';L.dataset.lead=1;const la=pv&&pv.leadA!=null?pv.leadA:leadA;
+/* (Oct 16, Chris) THE 5-COLUMN GRID: column 1 = lead-in (only when there is lead-in time), bar 1 in column 2, then bars 2, 3, 4
+   left to right; every row = 4 bars. A partial bar before the first full bar (the pickup, e.g. "A-" before "way") sits in column 1;
+   whole intro bars sit right-aligned in columns 2-5 of the row(s) above bar 1's row. */
+const z0=(()=>{const k=B.findIndex(b=>b.id===zeroId||(b.src!=null&&b.src===zeroId));return k>=0?k:Math.min(zi(),B.length)})();
+const P1=z0>0&&B[0]&&(B[0].a||0)>0?1:0,F=z0-P1,IR=Math.ceil(F/per),PLAN=[];
+for(let r=0;r<IR;r++){const row=['sp'];for(let c=0;c<per;c++){const k=r*per+c-(IR*per-F);row.push(k>=0?P1+k:'sp')}PLAN.push(row)}
+for(let r=0;r<Math.ceil((B.length-z0+1)/per);r++){const row=['sp'];for(let c=0;c<per;c++){const i=z0+r*per+c;if(i<B.length)row.push(i);else{row.push('add');break}}PLAN.push(row)}
+if(P1)PLAN[0][0]=0;{const la0=pv&&pv.leadA!=null?pv.leadA:leadA;if(PLAN[0][0]==='sp'&&la0<N)PLAN[0][0]='lead'}
+PLAN.forEach(cells=>{const row=document.createElement('div');row.className='row';cells.forEach(v=>{
+if(v==='sp'){const e=document.createElement('div');e.className='sp';row.appendChild(e);return}
+if(v==='lead'){const L=document.createElement('div');L.className='b lead';L.dataset.lead=1;const la=pv&&pv.leadA!=null?pv.leadA:leadA;
 let h='<div class="t">lead-in'+(la>=N?' · none':' · '+len(N-la))+'</div>';for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
-if(la>0)h+='<div class="offl" style="width:'+(la/N*100)+'%"></div>';h+='<div class="e" data-side="L" data-j="lead" style="left:'+(Math.min(la,N-0.6)/N*100)+'%"></div>';L.innerHTML=h;row.appendChild(L)}
-else{const sp=document.createElement('div');sp.className='sp';row.appendChild(sp)}
-for(let c=0;c<per;c++){const i=r*per+c-off+z0;if(i>B.length)break;if(i<0){const e=document.createElement('div');e.className='sp';row.appendChild(e);continue}
-if(i===B.length){const a=document.createElement('div');a.className='b add';a.dataset.add=1;a.innerHTML='<div class="t">+ new bar</div>';row.appendChild(a);break}
+if(la>0)h+='<div class="offl" style="width:'+(la/N*100)+'%"></div>';h+='<div class="e" data-side="L" data-j="lead" style="left:'+(Math.min(la,N-0.6)/N*100)+'%"></div>';L.innerHTML=h;row.appendChild(L);return}
+if(v==='add'){const a=document.createElement('div');a.className='b add';a.dataset.add=1;a.innerHTML='<div class="t">+ new bar</div>';row.appendChild(a);return}
+const i=v;
 const b=B[i],d=document.createElement('div');d.className='b'+(drag&&drag.ids&&drag.ids.has(b.id)?' slot':sel.includes(i)?' s':'')+(b.m?' m':'');d.dataset.i=i;d.dataset.id=b.id;
 const a0=b.a||0,num=drag&&drag.k==='move'&&drag.moved?bars.findIndex(x=>x.id===(b.src||b.id)):i;let h='<div class="t">'+lab(num)+(b.n-a0<N?' · '+len(b.n-a0):'')+(b.m?' · muted':'')+'</div>';
 for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
@@ -1521,7 +1526,7 @@ if(b.n<N)h+='<div class="off" style="width:'+((N-b.n)/N*100)+'%"></div>';if(a0>0
 h+='<div class="e" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div><div class="e" data-side="R" data-j="'+i+'" style="left:calc('+(b.n/N*100)+'% - 5px)"></div>';
 if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id)q.id=++id;h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+(q.w?String(q.d).replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'):[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join(''))+'</span><div class="ne r"></div></div>'});
 h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
-d.innerHTML=h;row.appendChild(d)}R.appendChild(row)}
+d.innerHTML=h;row.appendChild(d)});R.appendChild(row)});
 if(!pv&&!drag)saveSoon()}
 /* light(): refresh highlights and markers WITHOUT rebuilding (a rebuild between two clicks kills the double-click) */
 function light(){const N=S(),pq=notePick&&(bars.find(b=>b.id===notePick.b)||{notes:[]}).notes[notePick.n];
@@ -1853,7 +1858,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v126</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v127</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
