@@ -1468,6 +1468,9 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 #songchk .nt .hi::after{top:-5px}
 #songchk .nt input{width:90%;font:inherit;text-align:left;border:0;background:var(--se-card);color:var(--se-ink);border-radius:3px;outline:2px solid var(--se-line2)}
 /* (Oct 16, Chris: "you can't even read the words") lyric boxes show plain words, one piece of text, never one letter per 16th */
+/* (Oct 16, Chris: "they weren't in boxes, just on the line") lyrics = plain words on the line: no box, no border; a word may run past its spot */
+#songchk .nt.w{background:transparent!important;border-color:transparent!important;overflow:visible}
+#songchk .nt.w,#songchk .nt.w:hover,#songchk .nt.w.np{border-color:transparent!important;pointer-events:none;cursor:default}   /* (Oct 16 7pm, Chris) melody step: lyrics = plain read-only words (no pick, drag, edit) */
 #songchk .nt.w .tx{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;white-space:nowrap;padding-left:4px}
 #songchk .nt.slot{background:transparent;border:1px dashed var(--se-line2)}
 #songchk .nt.slot>*{visibility:hidden}
@@ -1534,7 +1537,7 @@ function draw(pv){const B=pv&&pv.C?pv.C:pv&&pv.leadA!=null?bars:pv||bars,N=S(),p
 const z0=(()=>{const k=B.findIndex(b=>b.id===zeroId||(b.src!=null&&b.src===zeroId));return k>=0?k:Math.min(zi(),B.length)})();
 const P1=z0>0&&B[0]&&(B[0].a||0)>0?1:0,F=z0-P1,IR=Math.ceil(F/per),PLAN=[];
 for(let r=0;r<IR;r++){const row=['sp'];for(let c=0;c<per;c++){const k=r*per+c-(IR*per-F);row.push(k>=0?P1+k:'sp')}PLAN.push(row)}
-for(let r=0;r<Math.ceil((B.length-z0+1)/per);r++){const row=['sp'];for(let c=0;c<per;c++){const i=z0+r*per+c;if(i<B.length)row.push(i);else{row.push('add');break}}PLAN.push(row)}
+for(let r=0;r<Math.max(1,Math.ceil((B.length-z0)/per));r++){const row=['sp'];for(let c=0;c<per;c++){const i=z0+r*per+c;if(i<B.length)row.push(i);else break}PLAN.push(row)}   /* (Oct 16, Chris) no '+ new bar' box: double-click a bar number adds one */
 if(P1)PLAN[0][0]=0;{const la0=pv&&pv.leadA!=null?pv.leadA:leadA;if(PLAN[0][0]==='sp'&&la0<N)PLAN[0][0]='lead'}
 /* (Oct 16, Chris) a check mark at the right of every row: tap = this row is good, the whole row turns green (doc.rowsOk, saved at once) */
 const OKS=(DOC&&DOC.rowsOk)||[];const SEEN=new Set();   /* (Oct 16, Chris: dragging one box moved boxes on bars 7, 9, 10) copied bars shared box ids: every box gets its own */
@@ -1599,7 +1602,8 @@ pastePos=(e.clientX-rr.left)/rr.width<.5?i:i+1;if(!sel.includes(i))sel=[i];drag=
 sel=[];startAt=null;pastePos=null;draw()});
 ED.addEventListener('dblclick',e=>{const T=document.elementFromPoint(e.clientX,e.clientY)||e.target;
 if(T.classList.contains('t')&&T.parentNode.dataset.i!=null){const i=+T.parentNode.dataset.i;save();bars.splice(i+1,0,nb());sel=[i+1];startAt=null;flip(()=>draw());hint('Added a bar after '+lab(i));return}
-if(T.closest('.gr'))return;const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.contains('w'));const nt=T.closest('.nt');if(nt){editNote(+nt.dataset.nb,+nt.dataset.nn);return}
+if(T.closest('.gr'))return;const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.contains('w'));if(lw)return;   /* (Oct 16 7pm, Chris) lyrics are read-only on the melody step */
+const nt=T.closest('.nt');if(nt){editNote(+nt.dataset.nb,+nt.dataset.nn);return}
 const b=T.closest('.b[data-i]');if(!b||T.classList.contains('t')||T.classList.contains('e'))return;const i=+b.dataset.i,bb=bars[i],r=b.getBoundingClientRect(),N=S();
 let st=Math.floor((e.clientX-r.left)/r.width*N);st=Math.max(bb.a||0,Math.min(bb.n-1,st));bb.notes=bb.notes||[];if(bb.notes.some(o=>!o.w===!lw&&st>=o.s&&st<o.s+o.l))return;
 const nx=bb.notes.filter(o=>!o.w===!lw&&o.s>st).reduce((a,o)=>Math.min(a,o.s),bb.n);st=bb.notes.filter(o=>!o.w===!lw&&o.s+o.l<=st).reduce((a,o)=>Math.max(a,o.s+o.l),bb.a||0);const l=nx-st;   /* fill the whole empty space */if(l<1)return;
@@ -1642,7 +1646,7 @@ const sig=JSON.stringify(bars.map(b=>(b.notes||[]).map(x=>[x.id,x.s,x.l])));if(s
 const bi=bars.findIndex(b=>(b.notes||[]).includes(q));notePick={b:bars[bi].id,n:bars[bi].notes.indexOf(q)};flipNotes(()=>draw());hint('Let go: drop into '+lab(bi))}
 else if(drag.k==='band'){const er=ED.getBoundingClientRect(),x1=Math.min(drag.x0,e.clientX),x2=Math.max(drag.x0,e.clientX),y1=Math.min(drag.y0,e.clientY),y2=Math.max(drag.y0,e.clientY);if(x2-x1<4&&y2-y1<4)return;
 let bd=ED.querySelector('.nband');if(!bd){bd=document.createElement('div');bd.className='nband';ED.appendChild(bd)}Object.assign(bd.style,{left:(x1-er.left)+'px',top:(y1-er.top)+'px',width:(x2-x1)+'px',height:(y2-y1)+'px'});
-noteSel=[];R.querySelectorAll('.nt[data-qid]').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const b=bars[+el.dataset.nb],q=b&&(b.notes||[]).find(x=>String(x.id)===el.dataset.qid);if(q)noteSel.push(q)}});light();hint(noteSel.length+' box'+(noteSel.length===1?'':'es')+' picked')}
+noteSel=[];R.querySelectorAll('.nt[data-qid]').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const b=bars[+el.dataset.nb],q=b&&(b.notes||[]).find(x=>String(x.id)===el.dataset.qid);if(q&&!q.w)noteSel.push(q)}});light();hint(noteSel.length+' box'+(noteSel.length===1?'':'es')+' picked')}
 else if(drag.k==='ngroup'){const N=S(),d=Math.round((e.clientX-drag.x0)/drag.bw*N);if(d===drag.d)return;
 const tgt=drag.orig.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {q:o.q,bi,s:g-bi*N}}),moving=new Set(drag.orig.map(o=>o.q));
 const ok=tgt.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.q.l<=B.n&&!(B.notes||[]).some(o=>!o.w===!t.q.w&&!moving.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.q.l)&&!tgt.some(u=>u!==t&&u.bi===t.bi&&!u.q.w===!t.q.w&&t.s<u.s+u.q.l&&u.s<t.s+t.q.l)});if(!ok)return;
@@ -1895,7 +1899,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v130</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v131</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
