@@ -1088,8 +1088,9 @@ function scLoad(doc){ scGridDoc(doc); scDoc = doc; scLv = "easy"; scBar = null; 
   scChords = doc.chords ? scClone(doc.chords) : scChordsFrom(scLines, scRg); scPick = null; scMulti = []; scPt = null; scUndo = []; scLast = scSnap(); }
 async function scOpen(id, view){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  scView = view ? +view : null; scId = id; scLoad(s.data()); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
-function scClose(){ scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
+  const d = s.data(); if ((view ? +view : d.step || 1) === 1){ scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }   /* (Oct 16, chat 12, Chris) melody = the new song editor */
+  scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
+function scClose(){ if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
 /* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
 function scSync(){ scLines.forEach((l, i) => { l.sort((p, q) => p.g - q.g);
   l.forEach(n => { const w = (scWords[i] || []).find(x => Math.abs(x.g - n.g) < 1e-9); n.w = w ? w.w : ""; n.c = []; });
@@ -1393,6 +1394,349 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
   const g = a + Math.max(0, Math.min(scSpan - scG1(), Math.floor((e.clientX - t.getBoundingClientRect().left) / W * scG() + 1e-6) / scG()));
   scAdd(k, I, g); });
 </script>
+<style>
+/* (Oct 16, chat 12) NEW SONG EDITOR look = the prototype (greys only), scoped to #songchk so nothing else on the desk changes */
+#songchk .secard{--se-bg:#FBFAF6;--se-card:#FFFFFF;--se-ink:#2A2F34;--se-mute:#6B6F66;--se-line:#DCD8CC;--se-line2:#B9B4A6;--se-stripe:#EFECE3;--se-gold:#2A2F34;--se-goldbg:#ECEAE4;--se-goldink:#2A2F34;--se-teal:#2A2F34;--se-hov:#F3F1EC;--se-hov2:#E8E5DE;--se-font:inherit}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-bg:#16191B;--se-card:#1F2427;--se-ink:#EEEBE3;--se-mute:#A2A69E;--se-line:#353C40;--se-line2:#4E565B;--se-stripe:#262C30;--se-gold:#EEEBE3;--se-goldbg:#2E3437;--se-goldink:#EEEBE3;--se-teal:#EEEBE3;--se-hov:#252B2E;--se-hov2:#2F363A;}}
+:root[data-theme="dark"] #songchk .secard{--se-bg:#16191B;--se-card:#1F2427;--se-ink:#EEEBE3;--se-mute:#A2A69E;--se-line:#353C40;--se-line2:#4E565B;--se-stripe:#262C30;--se-gold:#EEEBE3;--se-goldbg:#2E3437;--se-goldink:#EEEBE3;--se-teal:#EEEBE3;--se-hov:#252B2E;--se-hov2:#2F363A;}
+#songchk .secard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1180px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:hidden;display:flex;flex-direction:column;gap:12px;background:var(--se-bg);color:var(--se-ink);border-radius:14px;padding:16px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25)}
+@media (min-width:1000px){#songchk .secard{width:calc(80vw - 20px)}}
+#songchk .secard>*{flex:none}#songchk .sescroll{flex:0 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 8px 0}
+#songchk .setop .tb{height:36px;flex:none}#songchk .setop .mt.play{height:28px}#songchk .okbar{margin:0}
+#songchk .setop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+#songchk .setop h1{font-size:18px;font-weight:700;margin:0;margin-right:auto}
+#songchk #se-hint{font-size:13px;color:var(--se-mute);min-height:20px;background:var(--se-card);border:1px solid var(--se-line);border-radius:8px;padding:8px 12px}
+#songchk .mt{font:inherit;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;border:1px solid var(--se-line2);background:var(--se-card);color:var(--se-mute);cursor:pointer}
+#songchk .mt.on{background:var(--se-goldbg);border-color:var(--se-gold);color:var(--se-goldink)}
+#songchk .mt:focus-visible{outline:2px solid var(--se-teal);outline-offset:2px}
+#songchk #se-ed{position:relative;user-select:none;-webkit-user-select:none;touch-action:none}
+#songchk .row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:12px}
+#songchk .b{position:relative;box-sizing:border-box;height:118px;border:1px solid var(--se-line2);border-radius:6px;background:var(--se-card);cursor:default}
+#songchk .b .t{position:absolute;left:0;right:0;top:0;height:22px;border-bottom:1px solid var(--se-line);font-size:12px;font-weight:600;color:var(--se-mute);padding:3px 8px;cursor:grab;box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#songchk .b .k{position:absolute;top:24px;bottom:4px;width:9px;margin-left:-4px;z-index:1}
+#songchk .b .k::after{content:"";position:absolute;left:4px;top:0;bottom:0;border-left:1px solid var(--se-line2)}
+#songchk .b .k.sub{top:50px}
+#songchk .b .k.sub::after{border-left-color:var(--se-line)}
+#songchk .b .k:hover::after{border-left-color:var(--se-ink)}
+#songchk .b .off{position:absolute;top:22px;bottom:0;right:0;background:repeating-linear-gradient(135deg,var(--se-bg) 0 5px,var(--se-stripe) 5px 10px);border-left:2px solid var(--se-line2);pointer-events:none}
+#songchk .b.s{background:var(--se-goldbg)}
+#songchk .b.s .t{color:var(--se-goldink)}
+#songchk .b.m{background:repeating-linear-gradient(135deg,var(--se-card) 0 6px,var(--se-stripe) 6px 12px)}
+#songchk .b.m .t{color:var(--se-mute);font-style:italic}
+#songchk .b.add{border-style:dashed;cursor:copy;background:transparent}
+#songchk .b.add .t{cursor:copy;border:0}
+#songchk .g{position:absolute;top:0;bottom:0;left:-10px;width:10px;cursor:copy;z-index:2}
+#songchk .g.r{left:auto;right:-10px}
+#songchk .e{position:absolute;top:0;bottom:0;width:5px;cursor:ew-resize;z-index:3}
+#songchk .b .offl{position:absolute;top:22px;bottom:0;left:0;background:repeating-linear-gradient(135deg,var(--se-bg) 0 5px,var(--se-stripe) 5px 10px);border-right:2px solid var(--se-line2);pointer-events:none}
+#songchk #se-ins{position:absolute;width:4px;background:var(--se-teal);border-radius:2px;pointer-events:none;z-index:4}
+#songchk .mt.play{background:var(--se-ink);color:var(--se-card);border-color:var(--se-ink);min-width:78px}
+#songchk .ph{position:absolute;top:0;bottom:0;width:3px;margin-left:-1px;background:var(--se-ink);border-radius:2px;z-index:6;pointer-events:none}
+#songchk .b[data-i]:has(.t:hover){background-color:var(--se-hov)}
+#songchk .b .gr:hover,#songchk .b:has(.k:hover) .gr,#songchk .b .ln:hover,#songchk .b .ly:hover{background:var(--se-hov)}
+#songchk .b.s:hover{background-color:var(--se-goldbg)}
+#songchk .b .t:hover{background:var(--se-hov2)}
+#songchk .g:hover{background:var(--se-hov2);border-radius:3px}
+#songchk .e::after{content:"";position:absolute;top:0;bottom:0;border-left:1px solid transparent}
+#songchk .e[data-side="L"]::after{left:0}
+#songchk .e[data-side="R"]::after{right:0}
+#songchk .e:hover::after{border-left-color:var(--se-ink)}
+#songchk .b.add:hover{background:var(--se-hov)}
+#songchk .st{position:absolute;top:22px;bottom:0;width:0;border-left:2px dashed var(--se-ink);opacity:.55;pointer-events:none;z-index:4}
+#songchk .row{gap:0}
+#songchk .row>.b{border-radius:0}
+#songchk .row>.b+.b{margin-left:-1px}
+#songchk .g{top:0;bottom:auto;height:22px;left:-6px;width:12px}
+#songchk .g.r{left:auto;right:-6px}
+#songchk .e{top:22px}
+#songchk .ghost{position:absolute;z-index:20;pointer-events:none;opacity:.92;box-shadow:0 6px 18px rgba(0,0,0,.18);cursor:grabbing}
+#songchk .b.slot{background:transparent;border:1px dashed var(--se-line2)}
+#songchk .b.slot>*{visibility:hidden}
+#songchk .pp{position:absolute;top:-3px;bottom:-3px;width:4px;background:var(--se-ink);border-radius:2px;z-index:7;pointer-events:none}
+#songchk .nt{position:absolute;top:28px;bottom:5px;box-sizing:border-box;border:1px solid var(--se-line2);border-radius:4px;background:var(--se-goldbg);font-size:15px;font-weight:700;color:var(--se-ink);display:flex;align-items:center;justify-content:flex-start;padding-left:0;cursor:grab;z-index:4;overflow:hidden;white-space:nowrap}
+#songchk .nt:hover{background:var(--se-hov2)}
+#songchk .nt.np{background:var(--se-line)}
+#songchk .nt .ne{position:absolute;top:0;bottom:0;width:5px;cursor:ew-resize}
+#songchk .nt .ne.l{left:0}
+#songchk .nt .ne.r{right:0}
+#songchk .nt .ne:hover{border-left:1px solid var(--se-ink)}
+#songchk .nt .ne.r:hover{border-left:0;border-right:1px solid var(--se-ink)}
+#songchk .nt .lo{position:relative}
+#songchk .nt .lo::after,#songchk .nt .hi::after{content:"";position:absolute;left:0.3em;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--se-ink)}
+#songchk .nt .lo::after{bottom:-5px}
+#songchk .nt .hi{position:relative}
+#songchk .nt .hi::after{top:-5px}
+#songchk .nt input{width:90%;font:inherit;text-align:left;border:0;background:var(--se-card);color:var(--se-ink);border-radius:3px;outline:2px solid var(--se-line2)}
+#songchk .nt.slot{background:transparent;border:1px dashed var(--se-line2)}
+#songchk .nt.slot>*{visibility:hidden}
+#songchk .nt.ghost{position:absolute;z-index:20;pointer-events:none;opacity:.92;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+#songchk .b .gr{position:absolute;left:0;right:0;top:22px;height:20px;cursor:default}
+#songchk .b .ln{position:absolute;left:0;right:0;top:42px;height:38px;border-top:1px solid var(--se-line);cursor:default}
+#songchk .b .ly{position:absolute;left:0;right:0;top:80px;bottom:0;border-top:1px solid var(--se-line);cursor:default}
+#songchk .b .k{top:22px!important;bottom:auto!important;height:20px}
+#songchk .b .k.sub{top:32px!important;height:10px}
+#songchk .nt{top:46px!important;bottom:auto!important;height:30px}
+#songchk .e{top:0!important;bottom:auto!important;height:22px}
+html[data-drag] #songchk .b .gr,html[data-drag] #songchk .b .ln,html[data-drag] #songchk .b .ly{background:transparent!important}
+html[data-drag] #songchk .b[data-i]:not(.s){background-color:var(--se-card)!important}
+html[data-drag] #songchk .nt:hover{background:var(--se-goldbg)}
+html[data-drag] #songchk .nt.np,html[data-drag] #songchk .nt.np:hover{background:var(--se-line)}
+html[data-drag="grab"] *{cursor:grabbing!important}
+html[data-drag="size"] *{cursor:ew-resize!important}
+#songchk .nsnap{position:absolute;top:46px;height:30px;box-sizing:border-box;border:1.5px dashed var(--se-ink);border-radius:4px;pointer-events:none;z-index:3;opacity:.5}
+#songchk .nt.ghost{top:var(--gy,0px)!important}
+#songchk .nt.slot,#songchk .nt.slot:hover,html[data-drag] #songchk .nt.slot,html[data-drag] #songchk .nt.slot:hover{background:var(--se-card)!important}
+#songchk .nband{position:absolute;border:1px dashed var(--se-ink);background:transparent;pointer-events:none;z-index:15}
+#songchk .nt .tx{display:flex;width:100%;height:100%;align-items:center}
+#songchk .nt .tx i{flex:0 0 auto;font:400 12px ui-monospace,Menlo,monospace;font-style:normal;box-sizing:border-box;padding-left:1px;overflow:visible;white-space:pre}
+#songchk .nt input{font:400 12px ui-monospace,Menlo,monospace!important;padding:0!important;margin:0;height:100%;border:0!important;box-sizing:border-box}
+#songchk .nt.ed{overflow:visible}
+#songchk .nt.w{top:84px!important}
+#songchk .nt.w.ghost{top:var(--gy,0px)!important}
+#songchk .b.lead{cursor:default;border-style:dashed}
+#songchk .b.lead .t{cursor:default}
+#songchk .sp{visibility:hidden}
+@media (max-width:520px){#songchk .row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#songchk .b .t{line-height:normal}
+</style>
+<script>
+/* (Oct 16, chat 12, Chris) NEW SONG EDITOR = the approved prototype (Front Desk/song-bar-editor-layer1.html v65, built layer by layer with Chris),
+   copied as is: bars with 4 rows (hand top strip, beat grid, numbers, lyrics), edges, lead-in, Play + playhead + spacebar, Windows+C/V/Z,
+   Backspace, text boxes on the 16th graph paper, no pushing, no flashing, never a rebuild on a plain click or a drag step.
+   The MELODY step opens here; the chords step keeps the old page until Chris asks for a chords row.
+   db songcheck doc <-> bars: notes {g beats, L, m midi} = number boxes (d = degree, o = octave); words = lyric boxes (w:1); chords ride hidden in
+   their bar (b.ch) so they move with it; a note held over the bar line continues as a '-' box (hold). doc.bars/zero/lead keep the bar shapes.
+   Every change saves (0.5s debounce). Proven by desk-songcheck-test.js. */
+(function(){
+let ON = false, DOC = null, DID = null, VIEW = null, OKD = false, lastSig = null, saveT = null;
+let MT=4,BT=4,SB=4;const FINE=false;const Q=()=>FINE?1:SB;const S=()=>BT*SB;let id=0;const nb=n=>({id:++id,m:false,a:0,n:n||S()});
+function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?2:3;const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+'/4'}
+let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
+let R=null,H=null,INS=null,ED=null,PB=null;
+const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
+const hint=t=>{if(H)H.textContent=t};const lo=()=>sel.length?Math.min(...sel):-1,hi=()=>sel.length?Math.max(...sel):-1;
+const FR={0:'',0.25:'¼',0.5:'½',0.75:'¾'};
+function len(n){if(MT===6)return n+' eighth'+(n===1?'':'s');const b=n/SB,w=Math.floor(b),f=b-w;return (w||'')+(FR[f]!=null?FR[f]:'')+' beat'+(b===1?'':'s')}
+/* bar names: the bar where the song's beat 0 sits = bar 1; bars before it = intro (or pickup) */
+function zi(){let z=bars.findIndex(b=>b.id===zeroId);if(z<0){z=Math.max(0,Math.min(zeroIdx,bars.length-1));zeroId=bars[z]&&bars[z].id}return z}
+function lab(i){const k=i-zi();return k>=0?'bar '+(k+1):(DOC&&DOC.intro?'intro':'pickup')}
+function draw(pv){const B=pv&&pv.C?pv.C:pv&&pv.leadA!=null?bars:pv||bars,N=S(),per=innerWidth<=520?2:4;R.innerHTML='';
+for(let r=0;r<Math.ceil((B.length+1)/per);r++){const row=document.createElement('div');row.className='row';
+if(r===0){const L=document.createElement('div');L.className='b lead';L.dataset.lead=1;const la=pv&&pv.leadA!=null?pv.leadA:leadA;
+let h='<div class="t">lead-in'+(la>=N?' · none':' · '+len(N-la))+'</div>';for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
+if(la>0)h+='<div class="offl" style="width:'+(la/N*100)+'%"></div>';h+='<div class="e" data-side="L" data-j="lead" style="left:'+(Math.min(la,N-0.6)/N*100)+'%"></div>';L.innerHTML=h;row.appendChild(L)}
+else{const sp=document.createElement('div');sp.className='sp';row.appendChild(sp)}
+for(let c=0;c<per;c++){const i=r*per+c;if(i>B.length)break;
+if(i===B.length){const a=document.createElement('div');a.className='b add';a.dataset.add=1;a.innerHTML='<div class="t">+ new bar</div>';row.appendChild(a);break}
+const b=B[i],d=document.createElement('div');d.className='b'+(drag&&drag.ids&&drag.ids.has(b.id)?' slot':sel.includes(i)?' s':'')+(b.m?' m':'');d.dataset.i=i;d.dataset.id=b.id;
+const a0=b.a||0,num=drag&&drag.k==='move'&&drag.moved?bars.findIndex(x=>x.id===(b.src||b.id)):i;let h='<div class="t">'+lab(num)+(b.n-a0<N?' · '+len(b.n-a0):'')+(b.m?' · muted':'')+'</div>';
+for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
+if(b.n<N)h+='<div class="off" style="width:'+((N-b.n)/N*100)+'%"></div>';if(a0>0)h+='<div class="offl" style="width:'+(a0/N*100)+'%"></div>';
+h+='<div class="e" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div><div class="e" data-side="R" data-j="'+i+'" style="left:calc('+(b.n/N*100)+'% - 5px)"></div>';
+if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id)q.id=++id;h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join('')+'</span><div class="ne r"></div></div>'});
+h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
+d.innerHTML=h;row.appendChild(d)}R.appendChild(row)}
+if(!pv&&!drag)saveSoon()}
+/* light(): refresh highlights and markers WITHOUT rebuilding (a rebuild between two clicks kills the double-click) */
+function light(){const N=S(),pq=notePick&&(bars.find(b=>b.id===notePick.b)||{notes:[]}).notes[notePick.n];
+R.querySelectorAll('.b[data-i]').forEach(el=>{const i=+el.dataset.i;el.classList.toggle('s',sel.includes(i));el.querySelectorAll('.st,.pp').forEach(x=>x.remove());
+if(startAt&&startAt.i===i&&!startAt.whole){const d=document.createElement('div');d.className='st';d.style.left=(startAt.k/N*100)+'%';el.appendChild(d)}
+if(CLIP&&pastePos===i){const d=document.createElement('div');d.className='pp';d.style.left='-2px';el.appendChild(d)}
+if(CLIP&&pastePos===i+1&&i===bars.length-1){const d=document.createElement('div');d.className='pp';d.style.right='-2px';el.appendChild(d)}});
+R.querySelectorAll('.nt[data-qid]').forEach(x=>x.classList.toggle('np',(!!pq&&String(pq.id)===x.dataset.qid)||noteSel.some(q=>String(q.id)===x.dataset.qid)))}
+function flipNotes(fn){const old={};R.querySelectorAll('.nt[data-qid]').forEach(e=>{old[e.dataset.qid]=e.getBoundingClientRect()});fn();if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;R.querySelectorAll('.nt[data-qid]').forEach(e=>{const o=old[e.dataset.qid];if(!o||e.classList.contains('slot'))return;const n=e.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;if(dx||dy)e.animate([{transform:'translate('+dx+'px,'+dy+'px)'},{transform:'none'}],{duration:160,easing:'ease-out'})})}
+function flip(fn){const old={};R.querySelectorAll('.b[data-id]').forEach(e=>{old[e.dataset.id]=e.getBoundingClientRect()});fn();
+if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+R.querySelectorAll('.b[data-id]').forEach(e=>{const o=old[e.dataset.id];if(!o)return;const n=e.getBoundingClientRect(),dx=o.left-n.left,dy=o.top-n.top;if(dx||dy)e.animate([{transform:'translate('+dx+'px,'+dy+'px)'},{transform:'none'}],{duration:160,easing:'ease-out'})})}
+function spot(x,y){const el=document.elementsFromPoint(x,y).find(e=>e.dataset&&e.dataset.i!=null&&R.contains(e));if(!el)return null;const r=el.getBoundingClientRect();return {i:+el.dataset.i,f:Math.max(0,Math.min(1,(x-r.left-el.clientLeft)/el.clientWidth))}}   /* inside the 1px border, like the boxes */
+function showIns(g){if(!INS)return;if(g==null){INS.hidden=true;return}const els=[...R.querySelectorAll('.b[data-i]')],er=ED.getBoundingClientRect();let r,x;
+if(g<els.length){r=els[g].getBoundingClientRect();x=r.left-7}else{r=els[els.length-1].getBoundingClientRect();x=r.right+3}
+INS.hidden=false;Object.assign(INS.style,{left:(x-er.left)+'px',top:(r.top-er.top)+'px',height:r.height+'px'})}
+function sizeTo(P,j,side){const N=S(),C=bars.map(b=>({...b})),b=C[j],a=b.a||0,f=Math.round(P.f*N);
+if(side==='L'){b.a=P.i<j?0:P.i>j?Math.max(0,b.n-1):Math.max(0,Math.min(b.n-1,f));return {C,sel:[j],msg:'Let go: '+lab(j)+' starts '+(b.a?len(b.a)+' late':'on beat 1')+' ('+len(b.n-b.a)+')'}}
+if(P.i>j){const n=Math.max(1,Math.min(N,f));for(let k=j+1;k<=P.i;k++)C.splice(k,0,nb(k===P.i?n:N));b.n=N;return {C,sel:Array.from({length:P.i-j+1},(_,k)=>j+k),msg:'Let go: add '+(P.i-j)+' bar'+(P.i-j>1?'s':'')+' after '+lab(j)+(n<N?' (last one '+len(n)+')':'')}}
+b.n=P.i<j?a+1:Math.max(a+1,Math.min(N,f));b.n=Math.min(N,b.n);return {C,sel:[j],msg:'Let go: '+lab(j)+' = '+len(b.n-a)}}
+function bindED(){
+ED.addEventListener('pointermove',e=>{if(drag)return;const t=e.target;
+if(t.classList.contains('g'))hint('Click: add a new bar here');
+else if(t.classList.contains('e')&&t.dataset.j==='lead')hint('Drag: make the lead-in longer or shorter (snaps to '+(BT===4?'16th notes':'8th notes')+')');
+else if(t.classList.contains('e'))hint(t.dataset.side==='L'?'Drag: move where this bar starts (snaps to '+(BT===4?'16th notes':'8th notes')+')':'Drag: shrink or grow this bar (snaps to '+(BT===4?'16th notes':'8th notes')+'); past the next bar adds bars');
+else if(t.closest('[data-add]'))hint('Click: add a bar at the end (a new row starts by itself)');
+else if(t.classList.contains('b')||t.classList.contains('k')||t.classList.contains('t')){const i=+t.closest('.b').dataset.i;if(isNaN(i)){hint('');return}hint(t.classList.contains('t')?(sel.includes(i)&&sel.length>1?'Drag: move the picked bars':'Drag: move '+lab(i)):'Click: pick '+lab(i)+' and start Play here. Drag across bars: pick a section.')}
+else hint('Click empty space: unpick')});
+ED.addEventListener('pointerdown',e=>{if(drag||ED.querySelector('.ghost'))cancelDrag();setTimeout(()=>{if(drag&&drag.k!=='band')document.documentElement.dataset.drag=(drag.k==='size'||drag.k==='nsize'||drag.k==='lead')?'size':'grab'},0);if(e.button!==0)return;try{window.focus()}catch(x){}const t=e.target;
+if(t.classList.contains('g')){save();const g=+t.dataset.gap;bars.splice(g,0,nb());sel=[g];draw();hint('Added a bar');return}
+if(t.closest('[data-add]')){save();bars.push(nb());sel=[bars.length-1];draw();hint('Added a bar');return}
+const nt=t.closest('.nt');if(nt&&!t.closest('input')){const bi=+nt.dataset.nb,ni=+nt.dataset.nn,bb=bars[bi],q=bb.notes[ni];
+if(t.classList.contains('ne')){save();const sd=t.classList.contains('l')?'L':'R',srt=bb.notes.filter(o=>!o.w===!q.w).sort((a,b)=>a.s-b.s),qi=srt.indexOf(q),nb2=sd==='R'?srt[qi+1]:srt[qi-1];drag={k:'nsize',bi,ni,q,side:sd,nb:nb2,nbS:nb2&&nb2.s,nbE:nb2&&nb2.s+nb2.l};document.body.style.cursor='ew-resize';return}
+if(e.shiftKey){const k=noteSel.indexOf(q);if(k<0)noteSel.push(q);else noteSel.splice(k,1);notePick=null;light();return}
+if(noteSel.length>1&&noteSel.includes(q)){save();drag={k:'ngroup',x0:e.clientX,orig:noteSel.map(x=>({q:x,bi:bars.findIndex(b=>(b.notes||[]).includes(x)),s:x.s})),bw:nt.parentNode.getBoundingClientRect().width};return}
+noteSel=[q];const was=notePick&&notePick.b===bb.id&&notePick.n===ni;notePick={b:bb.id,n:ni};sel=[];startAt=null;pastePos=null;
+const nr=nt.getBoundingClientRect();drag={k:'nmove',bi,ni,q,was,x0:e.clientX,y0:e.clientY,ox:e.clientX-nr.left,oy:e.clientY-nr.top,w:nr.width,h:nr.height,moved:false};light();return}
+if(t.closest('input'))return;
+if(t.classList.contains('e')&&t.dataset.j==='lead'){drag={k:'lead'};document.body.style.cursor='ew-resize';return}
+if(t.classList.contains('e')){drag={k:'size',j:+t.dataset.j,side:t.dataset.side};document.body.style.cursor='ew-resize';return}
+notePick=null;const b=t.closest('.b[data-i]');if(b){const i=+b.dataset.i,rr=b.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();k=Math.max(bb.a||0,Math.min(bb.n-1,k));const was=sel.length===1&&sel[0]===i&&!e.shiftKey;if(t.classList.contains('t'))startAt={i,k:bb.a||0,whole:true};   /* top strip = the whole bar, no beat */if(PL){stopPlay();setTimeout(startPlay,0)}if(e.shiftKey&&sel.length){const a=Math.min(lo(),i),z=Math.max(hi(),i);sel=[];for(let q=a;q<=z;q++)sel.push(q);draw();return}if(!t.classList.contains('t')){startAt={i,k};if(t.classList.contains('ln')||t.classList.contains('ly')){noteSel=[];notePick=null;drag={k:'band',x0:e.clientX,y0:e.clientY}}light();return}   /* number / lyric lanes: only set where Play starts */
+pastePos=(e.clientX-rr.left)/rr.width<.5?i:i+1;if(!sel.includes(i))sel=[i];drag={k:'move',x0:e.clientX,y0:e.clientY,moved:false,was,ox:e.clientX-rr.left,oy:e.clientY-rr.top,w:rr.width,h:rr.height};light();return}
+sel=[];startAt=null;pastePos=null;draw()});
+ED.addEventListener('dblclick',e=>{const T=document.elementFromPoint(e.clientX,e.clientY)||e.target;
+if(T.classList.contains('t')&&T.parentNode.dataset.i!=null){const i=+T.parentNode.dataset.i;save();bars.splice(i+1,0,nb());sel=[i+1];startAt=null;flip(()=>draw());hint('Added a bar after '+lab(i));return}
+if(T.closest('.gr'))return;const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.contains('w'));const nt=T.closest('.nt');if(nt){editNote(+nt.dataset.nb,+nt.dataset.nn);return}
+const b=T.closest('.b[data-i]');if(!b||T.classList.contains('t')||T.classList.contains('e'))return;const i=+b.dataset.i,bb=bars[i],r=b.getBoundingClientRect(),N=S();
+let st=Math.floor((e.clientX-r.left)/r.width*N);st=Math.max(bb.a||0,Math.min(bb.n-1,st));bb.notes=bb.notes||[];if(bb.notes.some(o=>!o.w===!lw&&st>=o.s&&st<o.s+o.l))return;
+const nx=bb.notes.filter(o=>!o.w===!lw&&o.s>st).reduce((a,o)=>Math.min(a,o.s),bb.n);st=bb.notes.filter(o=>!o.w===!lw&&o.s+o.l<=st).reduce((a,o)=>Math.max(a,o.s+o.l),bb.a||0);const l=nx-st;   /* fill the whole empty space */if(l<1)return;
+const prev=lw?null:bars.slice(0,i+1).flatMap(x=>(x.notes||[]).filter(o=>!o.w&&!/^\s*-+\s*$/.test(String(o.d)))).pop();save();const q={s:st,l,d:lw?'':prev?prev.d:'1',o:lw?0:prev?prev.o||0:0};if(lw)q.w=1;bb.notes.push(q);bb.notes.sort((a,b)=>a.s-b.s);const ni=bb.notes.indexOf(q);notePick={b:bb.id,n:ni};sel=[];draw();editNote(i,ni)});
+}
+window.addEventListener('pointermove',e=>{if(!ON||!drag)return;
+if(drag.k==='pick'){const P=spot(e.clientX,e.clientY);if(!P)return;if(P.i!==drag.a)drag.moved=true;const a=Math.min(drag.a,P.i),z=Math.max(drag.a,P.i);sel=[];for(let k=a;k<=z;k++)sel.push(k);draw();hint('Picked bars '+(a+1)+(z>a?'-'+(z+1):''))}
+else if(drag.k==='move'){if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<3)return;
+const er=ED.getBoundingClientRect();
+if(!drag.moved){drag.moved=true;const X=[...sel].sort((a,b)=>a-b);drag.copy=e.altKey;drag.items=X.map(i=>drag.copy?{...JSON.parse(JSON.stringify(bars[i])),id:'c'+(++id),src:bars[i].id}:bars[i]);drag.others=drag.copy?bars.slice():bars.filter((_,i)=>!X.includes(i));drag.ids=new Set(drag.items.map(b=>b.id));
+const src=R.querySelector('.b[data-id="'+bars[X[0]].id+'"]'),gh=src.cloneNode(true);gh.classList.add('ghost');gh.classList.remove('slot');gh.style.width=drag.w+'px';gh.style.height=drag.h+'px';gh.style.margin='0';if(X.length>1)gh.querySelector('.t').textContent=lab(X[0])+' to '+lab(X[X.length-1]);ED.appendChild(gh);drag.gh=gh;
+drag.g=drag.copy?X[X.length-1]+1:X[0];const P=drag.others.slice();P.splice(drag.g,0,...drag.items);const keep=sel;sel=[];draw(P);sel=keep;ED.appendChild(gh)}
+document.body.style.cursor='grabbing';drag.gh.style.left=(e.clientX-er.left-drag.ox)+'px';drag.gh.style.top=(e.clientY-er.top-drag.oy)+'px';
+const cx=e.clientX-drag.ox+drag.w/2,cy=e.clientY-drag.oy+drag.h/2;   /* the middle of the dragged bar: half over a neighbour = swap */
+if(performance.now()-(drag.at||0)<200)return;   /* let the last glide finish before the next swap (no jitter) */
+const qx=cx-er.left,qy=cy-er.top;   /* hit-test on the bars' resting places, never their moving pictures */
+const el=[...R.querySelectorAll('.b[data-id]')].find(x=>qx>=x.offsetLeft&&qx<x.offsetLeft+x.offsetWidth&&qy>=x.offsetTop&&qy<x.offsetTop+x.offsetHeight);if(!el||drag.ids.has(isNaN(+el.dataset.id)?el.dataset.id:+el.dataset.id))return;const k=drag.others.findIndex(b=>String(b.id)===el.dataset.id);if(k<0)return;
+const g=k>=drag.g?k+1:k;if(g===drag.g)return;const m=el.offsetWidth*.12;if(k>=drag.g?qx<el.offsetLeft+m&&qy<el.offsetTop+el.offsetHeight&&qy>=el.offsetTop&&el.offsetTop===R.querySelector('.b.slot').offsetTop:qx>el.offsetLeft+el.offsetWidth-m&&el.offsetTop===R.querySelector('.b.slot').offsetTop)return;drag.at=performance.now();drag.g=g;
+const P=drag.others.slice();P.splice(g,0,...drag.items);const keep=sel;sel=[];flip(()=>draw(P));sel=keep;ED.appendChild(drag.gh);hint(drag.copy?'Let go: copy here':'Let go: move here')}
+else if(drag.k==='nsize'){const bb=bars[drag.bi],q=drag.q,o=drag.nb,el=R.querySelector('.b[data-i="'+drag.bi+'"]'),r=el.getBoundingClientRect(),N=S(),st=Math.round((e.clientX-r.left-el.clientLeft)/el.clientWidth*N);
+if(drag.side==='R'){let end=Math.max(q.s+1,Math.min(bb.n,st));if(o){end=Math.min(end,drag.nbE-1);o.s=Math.max(drag.nbS,end);o.l=drag.nbE-o.s}q.l=end-q.s}
+else{const end=q.s+q.l;let ns=Math.max(bb.a||0,Math.min(end-1,st));if(o){ns=Math.max(ns,drag.nbS+1);o.l=Math.min(drag.nbE,ns)-o.s}q.s=ns;q.l=end-ns}
+[q,o].forEach(x=>{if(!x)return;const ne=R.querySelector('.nt[data-qid="'+x.id+'"]');if(ne){ne.style.left=(x.s/N*100)+'%';ne.style.width=(x.l/N*100)+'%'}});   /* resize the boxes themselves: no rebuild, no flash */
+hint(o&&(drag.side==='R'?o.s>drag.nbS:o.s+o.l<drag.nbE)?'The next block gets shorter':'Block: '+len(q.l))}
+else if(drag.k==='nmove'){if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<3)return;const er=ED.getBoundingClientRect(),q=drag.q,N=S();
+if(!drag.moved){drag.moved=true;save();drag.orig=bars.map(b=>(b.notes||[]).map(x=>({q:x,s:x.s,l:x.l})));drag.home={bi:bars.findIndex(b=>(b.notes||[]).includes(q)),s:q.s};
+const src=R.querySelector('.nt[data-qid="'+q.id+'"]');const gh=src.cloneNode(true);gh.classList.remove('np');gh.classList.add('ghost');gh.style.width=drag.w+'px';gh.style.height=drag.h+'px';gh.style.margin='0';ED.appendChild(gh);drag.gh=gh;src.classList.add('slot')}
+drag.gh.style.left=(e.clientX-er.left-drag.ox)+'px';drag.gh.style.setProperty('--gy',(e.clientY-er.top-drag.oy)+'px');   /* the box flies with the mouse, up and down too */
+const P=spot(e.clientX-drag.ox+3,e.clientY-drag.oy+drag.h/2);if(!P)return;{const be=R.querySelector('.b[data-i="'+P.i+'"]'),br=be.getBoundingClientRect();P.f=Math.max(0,Math.min(1,(e.clientX-drag.ox-br.left-be.clientLeft)/be.clientWidth))}   /* exact left edge: left and right snap alike */
+/* every move starts again from how things were when the box was picked up: back at the start = nothing changed */
+bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})});
+const home=bars[drag.home.bi];home.notes.splice(home.notes.indexOf(q),1);const dst=bars[P.i];dst.notes=dst.notes||[];
+const raw=P.f*N+(P.i-(drag.lastI??P.i))*N,dir=raw>(drag.lastRaw??raw)?1:raw<(drag.lastRaw??raw)?-1:(drag.dir||0);drag.dir=dir;drag.lastRaw=P.f*N;drag.lastI=P.i;
+let ns=Math.max(dst.a||0,Math.min(dst.n-1,dir>0?Math.floor(P.f*N+0.7):dir<0?Math.ceil(P.f*N-0.7):Math.round(P.f*N)));   /* the outline snaps a little AHEAD of the box */
+/* no pushing (Chris, v59): a box drops only into empty space; over another box it stays home */
+let ok=ns+q.l<=dst.n&&!dst.notes.some(o=>!o.w===!q.w&&ns<o.s+o.l&&o.s<ns+q.l);q.s=ns;
+if(ok)dst.notes.push(q);else{bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})})}
+bars.forEach(b=>(b.notes||[]).sort((a,c)=>a.s-c.s));
+const sig=JSON.stringify(bars.map(b=>(b.notes||[]).map(x=>[x.id,x.s,x.l])));if(sig===drag.sig)return;drag.sig=sig;
+const bi=bars.findIndex(b=>(b.notes||[]).includes(q));notePick={b:bars[bi].id,n:bars[bi].notes.indexOf(q)};flipNotes(()=>draw());hint('Let go: drop into '+lab(bi))}
+else if(drag.k==='band'){const er=ED.getBoundingClientRect(),x1=Math.min(drag.x0,e.clientX),x2=Math.max(drag.x0,e.clientX),y1=Math.min(drag.y0,e.clientY),y2=Math.max(drag.y0,e.clientY);if(x2-x1<4&&y2-y1<4)return;
+let bd=ED.querySelector('.nband');if(!bd){bd=document.createElement('div');bd.className='nband';ED.appendChild(bd)}Object.assign(bd.style,{left:(x1-er.left)+'px',top:(y1-er.top)+'px',width:(x2-x1)+'px',height:(y2-y1)+'px'});
+noteSel=[];R.querySelectorAll('.nt[data-qid]').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const b=bars[+el.dataset.nb],q=b&&(b.notes||[]).find(x=>String(x.id)===el.dataset.qid);if(q)noteSel.push(q)}});light();hint(noteSel.length+' box'+(noteSel.length===1?'':'es')+' picked')}
+else if(drag.k==='ngroup'){const N=S(),d=Math.round((e.clientX-drag.x0)/drag.bw*N);if(d===drag.d)return;
+const tgt=drag.orig.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {q:o.q,bi,s:g-bi*N}}),moving=new Set(drag.orig.map(o=>o.q));
+const ok=tgt.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.q.l<=B.n&&!(B.notes||[]).some(o=>!o.w===!t.q.w&&!moving.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.q.l)&&!tgt.some(u=>u!==t&&u.bi===t.bi&&!u.q.w===!t.q.w&&t.s<u.s+u.q.l&&u.s<t.s+t.q.l)});if(!ok)return;
+drag.d=d;drag.orig.forEach(o=>{bars.forEach(b=>{if(b.notes){const k=b.notes.indexOf(o.q);if(k>=0)b.notes.splice(k,1)}})});tgt.forEach(t=>{t.q.s=t.s;const B=bars[t.bi];B.notes=B.notes||[];B.notes.push(t.q)});bars.forEach(b=>(b.notes||[]).sort((x,y)=>x.s-y.s));draw();hint('Moving '+tgt.length+' boxes')}
+else if(drag.k==='lead'){const el=R.querySelector('.b.lead');if(!el)return;const r=el.getBoundingClientRect(),N=S();let a=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N);a=Math.max(0,Math.min(N,a));drag.a=a;draw({leadA:a});hint(a>=N?'Let go: no lead-in':'Let go: lead-in = '+len(N-a))}
+else if(drag.k==='size'){const P=spot(e.clientX,e.clientY);if(!P)return;const Q=sizeTo(P,drag.j,drag.side);drag.P=Q;const keep=sel;sel=Q.sel;draw(Q.C);sel=keep;hint(Q.msg)}});
+function cancelDrag(){if(drag&&drag.orig)bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})});delete document.documentElement.dataset.drag;ED.querySelectorAll('.ghost').forEach(x=>x.remove());drag=null;document.body.style.cursor='';showIns(null);draw()}
+['pointercancel','blur','contextmenu'].forEach(ev=>window.addEventListener(ev,()=>{if(ON&&drag)cancelDrag()}));
+window.addEventListener('pointerup',()=>{if(!ON)return;delete document.documentElement.dataset.drag;ED.querySelectorAll('.nband').forEach(x=>x.remove());const D=drag;drag=null;if(D&&D.gh)D.gh.remove();document.body.style.cursor='';showIns(null);if(!D)return;
+if(D.k==='move'&&D.moved&&D.g!=null){save();const P=D.others.slice();P.splice(D.g,0,...D.items);bars=P.map(b=>typeof b.id==='string'?{id:++id,m:b.m,a:b.a,n:b.n,notes:b.notes||[],ch:b.ch}:b);sel=D.items.map((_,j)=>D.g+j);draw();hint(D.copy?'Copied':'Moved')}
+else if(D.k==='move'&&D.moved){draw()}
+else if(D.k==='nmove'&&!D.moved&&D.was){notePick=null;light()}
+else if(D.k==='nmove'&&!D.moved){light()}
+else if(D.k==='nmove'||D.k==='nsize'){if(D.gh)D.gh.remove();const bi=bars.findIndex(b=>(b.notes||[]).includes(D.q));if(D.q&&bi>=0)notePick={b:bars[bi].id,n:bars[bi].notes.indexOf(D.q)};draw()}
+else if((D.k==='pick'||D.k==='move')&&D.was&&!D.moved){if(PL)stopPlay();sel=[];startAt=null;pastePos=null;light();hint('Unpicked')}
+else if(D.k==='lead'&&D.a!=null){save();leadA=D.a;draw()}
+else if(D.k==='size'&&D.P){save();bars=D.P.C;sel=D.P.sel;draw()}else if((D.k==='move'&&!D.moved)||D.k==='band')light();else draw()});
+const DEG={'1':0,'2':2,'3':4,'4':5,'5':7,'6':9,'7':11};
+function editNote(bi,ni){const el=R.querySelector('.nt[data-nb="'+bi+'"][data-nn="'+ni+'"]');if(!el)return;const q=bars[bi].notes[ni],sp=el.querySelector('span');const inp=document.createElement('input');inp.id='se-nin';inp.value=q.d;sp.replaceWith(inp);
+const cv=document.createElement('canvas').getContext('2d');cv.font='400 12px ui-monospace, Menlo, monospace';const cw=cv.measureText('0').width,stp=el.clientWidth/q.l;el.classList.add('ed');Object.assign(inp.style,{letterSpacing:Math.max(0,stp-cw)+'px',textIndent:'1px',outline:'none',width:(el.clientWidth+stp*2)+'px',background:'transparent'});   /* same font and size as the box: nothing grows */   /* one character = one 16th, like graph paper */
+inp.focus();inp.select();
+const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.replace(/\s+$/,'');if(ok){if(v.trim()){q.d=v;const B=bars[bi];let room=B.n-q.s;B.notes.forEach(o=>{if(o!==q&&!o.w===!q.w&&o.s>q.s)room=Math.min(room,o.s-q.s)});q.l=Math.max(q.l,Math.min(room,v.length))}else{const L=bars[bi].notes,k=L.indexOf(q);if(k>=0)L.splice(k,1);notePick=null}}if(ON)draw()};
+inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false)});inp.addEventListener('blur',()=>done(true))}
+/* keys: only while the editor is open; first in line (capture) so nothing else on the desk reacts to them */
+document.addEventListener('keydown',e=>{if(!ON)return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const mod=e.metaKey||e.ctrlKey,stop=()=>e.stopPropagation();
+if(e.code==='Space'){stop();e.preventDefault();if(!e.repeat){PL?stopPlay():startPlay()}return}
+if(e.key==='Escape'){stop();if(drag)cancelDrag();else if(notePick||noteSel.length||sel.length){notePick=null;noteSel=[];sel=[];light()}else scClose();return}
+if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')){stop();if(!sel.length){hint('Pick a bar first, then copy');return}e.preventDefault();CLIP=[...sel].sort((a,b)=>a-b).map(i=>JSON.parse(JSON.stringify({m:bars[i].m,a:bars[i].a||0,n:bars[i].n,notes:bars[i].notes||[],ch:bars[i].ch})));light();hint('Copied '+CLIP.length+' bar'+(CLIP.length>1?'s':'')+'. Click where it goes, then Windows+V');return}
+if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')){stop();if(!CLIP){hint('Nothing copied yet');return}e.preventDefault();const pos=pastePos!=null?pastePos:sel.length?lo():bars.length;save();const add=CLIP.map(b=>({...JSON.parse(JSON.stringify(b)),id:++id}));bars.splice(pos,0,...add);sel=add.map((_,k)=>pos+k);startAt=null;pastePos=null;flip(()=>draw());hint('Pasted; the bars after it moved ahead');return}
+if(noteSel.length>1&&e.key==='Backspace'){stop();e.preventDefault();save();bars.forEach(b=>{if(b.notes)b.notes=b.notes.filter(q=>!noteSel.includes(q))});noteSel=[];notePick=null;draw();hint('Deleted');return}
+if(notePick&&(e.key==='Backspace'||e.key==='ArrowUp'||e.key==='ArrowDown')){const bi=bars.findIndex(x=>x.id===notePick.b);if(bi>=0){stop();e.preventDefault();save();const bb=bars[bi];if(e.key==='ArrowUp'||e.key==='ArrowDown'){const q=bb.notes[notePick.n];q.o=Math.max(-1,Math.min(1,(q.o||0)+(e.key==='ArrowUp'?1:-1)));notePick={b:bb.id,n:bars[bi].notes.indexOf(q)};hint(q.o<0?'Low octave (dot under)':q.o>0?'High octave (dot over)':'Middle octave')}else{bb.notes.splice(notePick.n,1);notePick=null;hint('Note deleted')}draw();return}}
+if(e.key==='Backspace'&&sel.length){stop();e.preventDefault();save();bars=bars.filter((_,i)=>!sel.includes(i));sel=[];draw();hint('Deleted');return}
+if(mod&&(String(e.key).toLowerCase()==='z'||e.code==='KeyZ')){stop();e.preventDefault();if(!hist.length){hint('Nothing to undo');return}const o=JSON.parse(hist.pop());bars=o.bars;sel=o.sel;if(o.leadA!=null)leadA=o.leadA;draw();hint('Back one step')}},true);
+addEventListener('resize',()=>{if(ON&&!drag)draw()});
+/* PLAY: the desk's real piano (scPiano, the Lab samples) for the numbers, the prototype's click on every beat */
+let PL=null,AC=null;
+function click(t,hi){const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.08)}
+/* where each bar starts on the song's clock (16ths), bars back to back */
+function starts(){const st=[];let T=0;bars.forEach(b=>{st.push(T);T+=b.n-(b.a||0)});st.push(T);return st}
+const isHold=q=>!q.w&&/^\s*-+\s*$/.test(String(q.d));
+function toks(q){const T=[],str=String(q.d);for(let c=0;c<str.length;c++){const m=/^([b#♭♯]?)([1-7])/.exec(str.slice(c));if(m&&(c===0||!/[0-9]/.test(str[c-1]))){T.push({at:q.s+c,m});c+=m[0].length-1}}return T}
+/* every sounding note: t = song clock (16ths), len, mid (midi); a '-' box right after a note holds it over the bar line */
+function melody(){const st=starts(),out=[];let last=null;
+bars.forEach((b,i)=>{const g0=st[i]-(b.a||0);(b.notes||[]).filter(q=>!q.w).sort((a,c)=>a.s-c.s).forEach(q=>{
+if(isHold(q)){if(last&&last.t+last.len===g0+q.s)last.len+=Math.min(q.l,b.n-q.s);return}
+const T=toks(q);T.forEach((t,k)=>{const end=Math.min(k+1<T.length?T[k+1].at:q.s+q.l,b.n);if(end<=t.at)return;
+last={t:g0+t.at,len:end-t.at,mid:60+DEG[t.m[2]]+(/[b♭]/.test(t.m[1])?-1:/[#♯]/.test(t.m[1])?1:0)+12*(q.o||0),q,one:T.length===1&&k===0};out.push(last)})})});return out}
+async function startPlay(){if(!ON)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(x){hint('Sound is blocked here');return}
+const ac=AC,mel=melody();PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop';await scPLoad(mel.map(n=>n.mid));if(!PL||PL.ac!==ac)return;
+const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,t0=AC.currentTime+0.1,seg=[],st=starts();let t=t0;const from=startAt?startAt.i:sel.length?lo():0;
+if(!from&&leadA<N){seg.push({i:'lead',a:leadA,n:N,t});t+=(N-leadA)*step}
+const a0=startAt&&startAt.i===from&&bars[from]?Math.max(bars[from].a||0,startAt.k):bars[from]?bars[from].a||0:0,P0=bars[from]?st[from]+a0-(bars[from].a||0):0,tS=t;
+for(let i=from;i<bars.length;i++){const b=bars[i];if(b.m)continue;const a=i===from?a0:b.a||0;seg.push({i,a,n:b.n,t});t+=(b.n-a)*step}
+if(!seg.length){stopPlay();hint('Nothing to play');return}
+PL={seg,t0,end:t,step,N,nodes:[],ac};
+const sounding=mel.filter(n=>n.t+n.len>P0);sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e)});
+seg.forEach(g=>{for(let k=g.a;k<g.n;k++)if(k%SB===0||k===g.a)click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead')});
+hint('Playing at '+bpm+' BPM'+(from?' from '+lab(from):''));requestAnimationFrame(tick)}
+function stopPlay(){if(!PL)return;const ac=PL.ac;PL=null;try{ac&&ac.close()}catch(x){}if(AC===ac)AC=null;document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());if(PB)PB.innerHTML='&#9654; Play'}
+function tick(){if(!PL||!AC||!PL.end)return;const now=AC.currentTime;if(now>=PL.end){stopPlay();hint('Done');return}
+let g=PL.seg[0];for(const x of PL.seg)if(x.t<=now)g=x;const st=g.a+Math.max(0,(now-g.t)/PL.step);
+const el=g.i==='lead'?R.querySelector('.b.lead'):R.querySelector('.b[data-i="'+g.i+'"]');if(el){let ph=el.querySelector('.ph');if(!ph){document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());ph=document.createElement('div');ph.className='ph';el.appendChild(ph);
+const sc=ED.parentNode,r=el.getBoundingClientRect(),sr=sc.getBoundingClientRect();if(r.bottom>sr.bottom)sc.scrollTop+=r.bottom-sr.bottom+8;else if(r.top<sr.top)sc.scrollTop-=sr.top-r.top+8}   /* keep the playing bar in view */
+ph.style.left=(Math.min(st,g.n)/PL.N*100)+'%'}
+requestAnimationFrame(tick)}
+/* ---- db doc <-> bars ---- */
+function fromDoc(doc){setMeter(doc.meter||4);const N=S(),M=doc.meter||4,U=N/M;id=0;
+const notes=(doc.lines||[]).flat().filter(Boolean),words=Array.isArray(doc.words)?doc.words.flat().filter(Boolean):notes.filter(n=>n.w).map(n=>({g:n.g,L:n.L,w:n.w}));
+const LV=['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(doc[f])),allG=notes.map(n=>n.g).concat(words.map(w=>w.g),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g)));
+const ends=notes.map(n=>n.g+n.L).concat(words.map(w=>w.g+w.L),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g+c.L)));
+let meta,z;if(Array.isArray(doc.bars)&&doc.bars.length&&doc.zero!=null){meta=doc.bars.map(b=>({n:b.n,a:b.a||0}));z=Math.max(0,Math.min(doc.zero,meta.length-1))}
+else{const mn=Math.min(0,...allG),B0=Math.floor(mn/M+1e-9)*M,mx=ends.length?Math.max(...ends):M,cnt=Math.max(1,Math.ceil((mx-B0)/M-1e-9));meta=[];for(let i=0;i<cnt;i++)meta.push({n:N,a:0});z=Math.round(-B0/M);
+if(z>0&&allG.length)meta[0].a=Math.max(0,Math.min(N-1,Math.round((Math.min(...allG)-B0)*U)))}   /* the song's first bar starts where its first note is (a pickup) */
+bars=meta.map(m=>Object.assign(nb(m.n),{a:m.a,notes:[]}));zeroId=bars[z].id;zeroIdx=z;
+let st=starts();const Z=st[z]-(bars[z].a||0);
+const placeT=t=>{for(;;){let base=0;for(let i=0;i<bars.length;i++){const b=bars[i],l=b.n-(b.a||0);if(t<base+l||i===bars.length-1&&t<base+l)return {i,s:(b.a||0)+Math.max(0,t-base)};base+=l}bars.push(Object.assign(nb(),{notes:[]}))}};
+const span=(g,L,mk)=>{let t=Math.round(g*U+Z),e=Math.round((g+L)*U+Z);if(e<=t)e=t+1;let first=true,guard=0;while(t<e&&guard++<400){const P=placeT(t),b=bars[P.i],l=Math.min(e-t,b.n-P.s);if(l<=0)break;mk(b,P.s,l,first);first=false;t+=l}};
+notes.forEach(n=>span(n.g,n.L,(b,s,l,f)=>b.notes.push(f?{s,l,d:SCDEG[((n.m%12)+12)%12],o:Math.floor((n.m-60)/12),x:{c:n.c||[]}}:{s,l,d:'-',o:0})));
+words.forEach(w=>span(w.g,w.L,(b,s,l,f)=>{if(f)b.notes.push({s,l,d:String(w.w||''),o:0,w:1})}));
+LV.forEach(f=>doc[f].flat().filter(Boolean).forEach(c=>span(c.g,c.L,(b,s,l,fi)=>{b.ch=b.ch||{};(b.ch[f]=b.ch[f]||[]).push({s,l,k:c.k,cont:!fi})})));
+bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s));leadA=doc.lead!=null?doc.lead:N-SB}
+function toDoc(){const N=S(),M=DOC.meter||4,U=N/M,B=4*M,I=!!DOC.intro,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6);
+const G=(i,s)=>r6((st[i]-(bars[i].a||0)+s-Z)/U);
+const notes=melody().map(n=>({g:r6((n.t-Z)/U),L:r6(n.len/U),m:n.mid,w:'',c:n.one&&n.q.x&&n.q.x.c?JSON.parse(JSON.stringify(n.q.x.c)):[]}));
+const words=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>words.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));
+notes.forEach(n=>{const w=words.find(x=>Math.abs(x.g-n.g)<1e-6);n.w=w?w.w:''});
+const key=g=>I?(g<0?0:1+Math.floor(g/B+1e-9)):Math.floor(g/B+1e-9),keys=[...new Set(notes.map(n=>key(n.g)))].sort((p,q)=>p-q);
+const at=g=>{const k=key(g);let x=keys.indexOf(k);if(x<0){x=keys.filter(q=>q<k).length-1;if(x<0)x=0}return x};
+const grp=L=>{const out=keys.map(()=>[]);if(!keys.length)return out;L.forEach(b=>out[at(b.g)].push(b));out.forEach(l=>l.sort((p,q)=>p.g-q.g));return out};
+const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),zero:z,lead:leadA};
+['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(DOC[f])).forEach(f=>{const C=[];bars.forEach((b,i)=>((b.ch||{})[f]||[]).forEach(c=>C.push({g:G(i,c.s),L:r6(c.l/U),k:c.k,cont:c.cont})));C.sort((p,q)=>p.g-q.g);
+const out=[];C.forEach(c=>{const p=out[out.length-1];if(c.cont&&p&&p.k===c.k&&Math.abs(p.g+p.L-c.g)<1e-6)p.L=r6(p.L+c.L);else out.push({g:c.g,L:c.L,k:c.k})});P[f]=grp(out)});
+return P}
+function sig(){return JSON.stringify([bars.map(b=>[b.n,b.a||0,(b.notes||[]).map(q=>[q.s,q.l,q.d,q.o||0,q.w?1:0]),b.ch||0]),leadA,zi()])}
+function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;lastSig=s;clearTimeout(saveT);saveT=setTimeout(flush,500)}
+function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;const P=toDoc();Object.assign(DOC,P);SE.saves++;
+db.collection('songcheck').doc(DID).update(Object.assign({},P,{updated:new Date().toISOString()})).catch(()=>{})}
+/* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
+function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
+scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
+function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;VIEW=view?+view:null;OKD=!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'));
+fromDoc(doc);sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
+document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; Melody approved</div>':'')
++'<div class="setop"><h1>'+esc(doc.name)+'</h1><button type="button" class="mt play" id="se-play">&#9654; Play</button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>'
++'<div id="se-hint">Point at anything: this line says what a click or drag will do.</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
+R=document.getElementById('se-rows');H=document.getElementById('se-hint');INS=document.getElementById('se-ins');ED=document.getElementById('se-ed');PB=document.getElementById('se-play');setMeter(MT);
+bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();draw();scPLoad(melody().map(n=>n.mid))}
+function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
+document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='close')scClose()});
+const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},draw:()=>draw()};
+})();
+</script>
 <div id="shortchk"></div>
 <style>
 /* (Oct 15) Chris: one Shorts check session. Watch a cut, Approve or Drop (or a note), straight to the next */
@@ -1523,7 +1867,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v123</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v124</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3624,7 +3968,14 @@ window.addEventListener("unhandledrejection", e => fdErr(e.reason));
 /* (Oct 16, Chris: "sometimes it takes three clicks") a db update re-drew the page between his press and the click, so the click was lost.
    Live updates now wait until the press (and its click) is over; his own taps still redraw at once. */
 let fdPress = false, fdLater = false, fdPressT = null;
-function liveRender(){ if (fdPress){ fdLater = true; return; } render(); }
+/* (Oct 16, Chris: hovering a row flashed grey/white ~2s after load) every snapshot re-rendered #list/#bar with the SAME html, rebuilding the hovered row.
+   Live renders now skip identical writes (user-tap renders always write) and a burst of snapshots = one render (120ms trailing) */
+let fdLive = false, fdLiveT = null;
+function fdGuard(){ const D = Object.getOwnPropertyDescriptor(Element.prototype, "innerHTML");
+  ["list", "bar"].forEach(k => { const el = document.getElementById(k); if (!el || el._fdG) return; el._fdG = 1;
+    Object.defineProperty(el, "innerHTML", {configurable: true, get(){ return D.get.call(this); }, set(v){ if (fdLive && v === this._lastH) return; this._lastH = v; D.set.call(this, v); }}); }); }
+function liveRender(){ if (fdPress){ fdLater = true; return; } fdGuard(); clearTimeout(fdLiveT);
+  fdLiveT = setTimeout(() => { fdLiveT = null; if (fdPress){ fdLater = true; return; } fdLive = true; try { render(); } finally { fdLive = false; } }, 120); }
 function fdRelease(){ clearTimeout(fdPressT); fdPress = false; if (fdLater){ fdLater = false; render(); } }
 document.addEventListener("pointerdown", () => { fdPress = true; clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 4000); }, true);
 document.addEventListener("pointerup", () => { clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 400); }, true);
