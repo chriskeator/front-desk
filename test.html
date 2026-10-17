@@ -1926,6 +1926,8 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 #shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
 @media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
 #shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:#000}
+/* (Oct 17, Chris) a row's V1 · Ready / Checks pill sits at the row's bottom right, the same spot on every row */
+#list .chc:has(.ltag),#pop .chc:has(.ltag){position:relative}#list .chc .ltag,#pop .chc .ltag{position:absolute;right:14px;bottom:11px;margin:0!important}#list .chc:has(.ltag)>span,#pop .chc:has(.ltag)>span{padding-right:120px}
 #songchk .ctcard{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80vw,1100px);max-width:calc(100vw - 32px);height:min(88vh,860px);box-sizing:border-box;background:var(--card,#fff);border-radius:18px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;z-index:61;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 #songchk .cth{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}#songchk .cth .t{font:600 19px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 #songchk .ctlvp{width:140px;font-size:12px;font-weight:600;color:var(--teal-ink,#1f6f66)}#songchk .ctlvs{display:inline-flex;gap:4px}#songchk .ctlvs .tb{width:96px}
@@ -2037,7 +2039,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v140</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v141</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4482,14 +4484,14 @@ const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/
 /* (Oct 16, Chris) song check rows: Submitted (grey) the moment he approves, Fixing (gold) while Cadence works, Ready (teal) = his turn */
 const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
 function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
-  if (scs){ const [w, bg, fg] = SCTAG[scs]; return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
+  if (scs){ const [w, bg, fg] = SCTAG[scs]; return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
   /* (Oct 17, Chris + ChatGPT) a Lab ship task shows the full ship checks for the EXACT Test version (stats/labchecks, lab-checks-status.py):
      Passed (green), Passed* = only failures Chris approved (green), Running (grey), Failed / Not run (red). Missing = Not run. */
   if (t && !t.done && t.shipChecks){ const L = stats.find(x => x.id === "labchecks") || {}, R = L.result || "NOT RUN", ok = /^PASSED/.test(R), run = R === "RUNNING";
     const w = R === "PASSED WITH KNOWN" ? "Passed*" : R === "NOT RUN" ? "Not run" : R.charAt(0) + R.slice(1).toLowerCase();
-    return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ok ? "#DDF1EE" : run ? "#ECEAE4" : "#FBE2DC"};color:${ok ? "#0F766E" : run ? "#555" : "#B4362A"}">Checks v${L.version || "?"} \u00b7 ${w}</span>`; }
+    return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ok ? "#DDF1EE" : run ? "#ECEAE4" : "#FBE2DC"};color:${ok ? "#0F766E" : run ? "#555" : "#B4362A"}">Checks v${L.version || "?"} \u00b7 ${w}</span>`; }
   if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing" || labLessonS(t.labKey) === "fix";   /* (Oct 16, Chris) Fixing the moment he sends a Lab note (labFresh reads review_notes directly) */
-  return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
+  return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
 let shBoard = null, scBoard = null;
