@@ -1681,7 +1681,10 @@ function editNote(bi,ni){const el=R.querySelector('.nt[data-nb="'+bi+'"][data-nn
 const cv=document.createElement('canvas').getContext('2d');cv.font='400 12px ui-monospace, Menlo, monospace';const cw=cv.measureText('0').width,stp=el.clientWidth/q.l;el.classList.add('ed');Object.assign(inp.style,{letterSpacing:q.w?'0px':Math.max(0,stp-cw)+'px',textIndent:'1px',outline:'none',width:(el.clientWidth+stp*2)+'px',background:'transparent'});   /* same font and size as the box: nothing grows */   /* one character = one 16th, like graph paper */
 inp.focus();inp.select();
 const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.replace(/\s+$/,'');if(ok){if(v.trim()){q.d=v;const B=bars[bi];let room=B.n-q.s;B.notes.forEach(o=>{if(o!==q&&!o.w===!q.w&&o.s>q.s)room=Math.min(room,o.s-q.s)});q.l=Math.max(q.l,Math.min(room,v.length))}else{const L=bars[bi].notes,k=L.indexOf(q);if(k>=0)L.splice(k,1);notePick=null}}if(ON)draw()};
-inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false)});inp.addEventListener('blur',()=>done(true))}
+inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false);
+if(e.key==='Tab'){e.preventDefault();   /* (Oct 16 night, Chris) Tab = save and jump to the NEXT number box (Shift+Tab = back), no mouse */
+const all=[];bars.forEach(B=>(B.notes||[]).filter(o=>!!o.w===!!q.w).sort((x,y)=>x.s-y.s).forEach(o=>all.push(o)));const k=all.indexOf(q),nx=all[k+(e.shiftKey?-1:1)];
+done(true);if(!nx)return;const bi2=bars.findIndex(B=>(B.notes||[]).includes(nx));if(bi2<0)return;notePick={b:bars[bi2].id,n:bars[bi2].notes.indexOf(nx)};editNote(bi2,bars[bi2].notes.indexOf(nx))}});inp.addEventListener('blur',()=>done(true))}
 /* keys: only while the editor is open; first in line (capture) so nothing else on the desk reacts to them */
 document.addEventListener('keydown',e=>{if(!ON)return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const mod=e.metaKey||e.ctrlKey,stop=()=>e.stopPropagation();
 if(e.code==='Space'){stop();e.preventDefault();if(!e.repeat){PL?stopPlay():startPlay()}return}
@@ -1691,11 +1694,15 @@ if(e.key==='Escape'){stop();if(drag)cancelDrag();else if(notePick||noteSel.lengt
 if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')&&(noteSel.length||notePick)){stop();e.preventDefault();const st=starts(),L=[];
 bars.forEach((b,bi)=>(b.notes||[]).forEach((q,ni)=>{if(noteSel.includes(q)||(notePick&&notePick.b===b.id&&notePick.n===ni))L.push({t:st[bi]-(b.a||0)+q.s,l:q.l,d:q.d,o:q.o||0,w:q.w?1:0})}));
 const t0=Math.min(...L.map(x=>x.t));CLIPN=L.map(x=>({...x,t:x.t-t0}));CLIPK='n';hint('Copied '+L.length+' box'+(L.length>1?'es':'')+'. Click where it goes, then Windows+V');return}
-if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')&&CLIPK==='n'&&CLIPN){stop();e.preventDefault();if(!startAt){hint('Click where it goes first, then Windows+V');return}
-const st=starts(),P=st[startAt.i]-(bars[startAt.i].a||0)+startAt.k;save();let put=0,miss=0;const added=[];
+if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')&&CLIPK==='n'&&CLIPN){stop();e.preventDefault();
+/* (Oct 16 night, Chris: "copy and paste did nothing") paste spot = a clicked spot OR a clicked box; pasting OVER boxes replaces them (never a silent fail) */
+const pkI=notePick?bars.findIndex(B=>B.id===notePick.b):-1,pkQ=pkI>=0?(bars[pkI].notes||[])[notePick.n]:null;
+if(!startAt&&!pkQ){hint('Click a box or a spot, then Windows+V');return}
+const st=starts(),P=pkQ?st[pkI]-(bars[pkI].a||0)+pkQ.s:st[startAt.i]-(bars[startAt.i].a||0)+startAt.k;save();let put=0,miss=0;const added=[];
+CLIPN.forEach(c=>{const T=P+c.t;for(let x=0;x<bars.length;x++){if(T>=st[x]&&T<st[x+1]){const b=bars[x],sl=T-(st[x]-(b.a||0)),l=Math.min(c.l,b.n-sl);if(l>0)b.notes=(b.notes||[]).filter(o=>!(!o.w===!c.w&&o.s<sl+l&&sl<o.s+o.l));break}}});
 CLIPN.forEach(c=>{const T=P+c.t;let j=-1;for(let x=0;x<bars.length;x++){if(T>=st[x]&&T<st[x+1]){j=x;break}}if(j<0){miss++;return}const b=bars[j],sl=T-(st[j]-(b.a||0)),l=Math.min(c.l,b.n-sl);
 if(l<=0||(b.notes||[]).some(o=>!o.w===!c.w&&o.s<sl+l&&sl<o.s+o.l)){miss++;return}const q={s:sl,l,d:c.d,o:c.o,w:c.w?1:0,id:++id};if(!c.w)delete q.w;(b.notes=b.notes||[]).push(q);added.push(q);put++});
-noteSel=added;notePick=null;draw();hint('Pasted '+put+' box'+(put===1?'':'es')+(miss?'; '+miss+' had no empty space there':''));return}
+noteSel=added;notePick=null;draw();hint('Pasted '+put+' box'+(put===1?'':'es')+(miss?'; '+miss+' did not fit past the end of the song':''));return}
 if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')){stop();if(!sel.length){hint('Pick a bar first, then copy');return}e.preventDefault();CLIPK='b';CLIP=[...sel].sort((a,b)=>a-b).map(i=>JSON.parse(JSON.stringify({m:bars[i].m,a:bars[i].a||0,n:bars[i].n,notes:bars[i].notes||[],ch:bars[i].ch})));light();hint('Copied '+CLIP.length+' bar'+(CLIP.length>1?'s':'')+'. Click where it goes, then Windows+V');return}
 if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')){stop();if(!CLIP){hint('Nothing copied yet');return}e.preventDefault();const pos=pastePos!=null?pastePos:sel.length?lo():bars.length;save();const add=CLIP.map(b=>{const c=JSON.parse(JSON.stringify(b));(c.notes||[]).forEach(q=>{q.id=++id});return {...c,id:++id}});bars.splice(pos,0,...add);sel=add.map((_,k)=>pos+k);startAt=null;pastePos=null;flip(()=>draw());hint('Pasted; the bars after it moved ahead');return}
 if(noteSel.length>1&&e.key==='Backspace'){stop();e.preventDefault();save();bars.forEach(b=>{if(b.notes)b.notes=b.notes.filter(q=>!noteSel.includes(q))});noteSel=[];notePick=null;draw();hint('Deleted');return}
@@ -1911,7 +1918,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v133</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v134</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
