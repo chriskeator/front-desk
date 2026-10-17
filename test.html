@@ -2037,7 +2037,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v139</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v140</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4483,6 +4483,11 @@ const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/
 const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
 function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
   if (scs){ const [w, bg, fg] = SCTAG[scs]; return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
+  /* (Oct 17, Chris + ChatGPT) a Lab ship task shows the full ship checks for the EXACT Test version (stats/labchecks, lab-checks-status.py):
+     Passed (green), Passed* = only failures Chris approved (green), Running (grey), Failed / Not run (red). Missing = Not run. */
+  if (t && !t.done && t.shipChecks){ const L = stats.find(x => x.id === "labchecks") || {}, R = L.result || "NOT RUN", ok = /^PASSED/.test(R), run = R === "RUNNING";
+    const w = R === "PASSED WITH KNOWN" ? "Passed*" : R === "NOT RUN" ? "Not run" : R.charAt(0) + R.slice(1).toLowerCase();
+    return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ok ? "#DDF1EE" : run ? "#ECEAE4" : "#FBE2DC"};color:${ok ? "#0F766E" : run ? "#555" : "#B4362A"}">Checks v${L.version || "?"} \u00b7 ${w}</span>`; }
   if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing" || labLessonS(t.labKey) === "fix";   /* (Oct 16, Chris) Fixing the moment he sends a Lab note (labFresh reads review_notes directly) */
   return ` <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
