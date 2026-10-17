@@ -1479,7 +1479,12 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .b.lead{cursor:default;border-style:dashed}
 #songchk .b.lead .t{cursor:default}
 #songchk .sp{visibility:hidden}
-@media (max-width:520px){#songchk .row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#songchk .row{grid-template-columns:repeat(5,minmax(0,1fr)) 40px}
+#songchk .rok{align-self:center;justify-self:end;width:32px;height:32px;margin-left:8px;border-radius:50%;border:1.5px solid var(--se-line2);background:var(--se-card);color:var(--se-mute);font:700 16px/1 inherit;cursor:pointer;padding:0}
+#songchk .row.ok .rok{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
+#songchk .row.ok>.b:not(.lead){background:#e2f4e8}
+#songchk .row.ok .nt{background:#cdebd8}
+@media (max-width:520px){#songchk .row{grid-template-columns:repeat(3,minmax(0,1fr)) 36px}}
 #songchk .b .t{line-height:normal}
 </style>
 <script>
@@ -1512,7 +1517,9 @@ const P1=z0>0&&B[0]&&(B[0].a||0)>0?1:0,F=z0-P1,IR=Math.ceil(F/per),PLAN=[];
 for(let r=0;r<IR;r++){const row=['sp'];for(let c=0;c<per;c++){const k=r*per+c-(IR*per-F);row.push(k>=0?P1+k:'sp')}PLAN.push(row)}
 for(let r=0;r<Math.ceil((B.length-z0+1)/per);r++){const row=['sp'];for(let c=0;c<per;c++){const i=z0+r*per+c;if(i<B.length)row.push(i);else{row.push('add');break}}PLAN.push(row)}
 if(P1)PLAN[0][0]=0;{const la0=pv&&pv.leadA!=null?pv.leadA:leadA;if(PLAN[0][0]==='sp'&&la0<N)PLAN[0][0]='lead'}
-PLAN.forEach(cells=>{const row=document.createElement('div');row.className='row';cells.forEach(v=>{
+/* (Oct 16, Chris) a check mark at the right of every row: tap = this row is good, the whole row turns green (doc.rowsOk, saved at once) */
+const OKS=(DOC&&DOC.rowsOk)||[];
+PLAN.forEach((cells,pr)=>{const rk=pr<IR?'i'+pr:'b'+((pr-IR)*per+1),row=document.createElement('div');row.className='row'+(OKS.includes(rk)?' ok':'');row.dataset.rk=rk;while(cells.length<per+1)cells.push('sp');cells.forEach(v=>{
 if(v==='sp'){const e=document.createElement('div');e.className='sp';row.appendChild(e);return}
 if(v==='lead'){const L=document.createElement('div');L.className='b lead';L.dataset.lead=1;const la=pv&&pv.leadA!=null?pv.leadA:leadA;
 let h='<div class="t">lead-in'+(la>=N?' · none':' · '+len(N-la))+'</div>';for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
@@ -1526,7 +1533,7 @@ if(b.n<N)h+='<div class="off" style="width:'+((N-b.n)/N*100)+'%"></div>';if(a0>0
 h+='<div class="e" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div><div class="e" data-side="R" data-j="'+i+'" style="left:calc('+(b.n/N*100)+'% - 5px)"></div>';
 if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id)q.id=++id;h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+(q.w?String(q.d).replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'):[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join(''))+'</span><div class="ne r"></div></div>'});
 h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
-d.innerHTML=h;row.appendChild(d)});R.appendChild(row)});
+d.innerHTML=h;row.appendChild(d)});{const ck=document.createElement('button');ck.type='button';ck.className='rok';ck.dataset.rok=rk;ck.setAttribute('aria-label','Row is good');ck.innerHTML='&#10003;';row.appendChild(ck)}R.appendChild(row)});
 if(!pv&&!drag)saveSoon()}
 /* light(): refresh highlights and markers WITHOUT rebuilding (a rebuild between two clicks kills the double-click) */
 function light(){const N=S(),pq=notePick&&(bars.find(b=>b.id===notePick.b)||{notes:[]}).notes[notePick.n];
@@ -1555,7 +1562,8 @@ else if(t.classList.contains('e'))hint(t.dataset.side==='L'?'Drag: move where th
 else if(t.closest('[data-add]'))hint('Click: add a bar at the end (a new row starts by itself)');
 else if(t.classList.contains('b')||t.classList.contains('k')||t.classList.contains('t')){const i=+t.closest('.b').dataset.i;if(isNaN(i)){hint('');return}hint(t.classList.contains('t')?(sel.includes(i)&&sel.length>1?'Drag: move the picked bars':'Drag: move '+lab(i)):'Click: pick '+lab(i)+' and start Play here. Drag across bars: pick a section.')}
 else hint('Click empty space: unpick')});
-ED.addEventListener('pointerdown',e=>{if(drag||ED.querySelector('.ghost'))cancelDrag();setTimeout(()=>{if(drag&&drag.k!=='band')document.documentElement.dataset.drag=(drag.k==='size'||drag.k==='nsize'||drag.k==='lead')?'size':'grab'},0);if(e.button!==0)return;try{window.focus()}catch(x){}const t=e.target;
+ED.addEventListener('click',e=>{const k=e.target.closest&&e.target.closest('.rok');if(!k||!DOC)return;const rk=k.dataset.rok,L=DOC.rowsOk=(DOC.rowsOk||[]).slice(),i=L.indexOf(rk);if(i<0)L.push(rk);else L.splice(i,1);k.parentNode.classList.toggle('ok',i<0);if(DID)db.collection('songcheck').doc(DID).update({rowsOk:L,updated:new Date().toISOString()}).catch(()=>{})});
+ED.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.rok'))return;if(drag||ED.querySelector('.ghost'))cancelDrag();setTimeout(()=>{if(drag&&drag.k!=='band')document.documentElement.dataset.drag=(drag.k==='size'||drag.k==='nsize'||drag.k==='lead')?'size':'grab'},0);if(e.button!==0)return;try{window.focus()}catch(x){}const t=e.target;
 if(t.classList.contains('g')){save();const g=+t.dataset.gap;bars.splice(g,0,nb());sel=[g];draw();hint('Added a bar');return}
 if(t.closest('[data-add]')){save();bars.push(nb());sel=[bars.length-1];draw();hint('Added a bar');return}
 const nt=t.closest('.nt');if(nt&&!t.closest('input')){const bi=+nt.dataset.nb,ni=+nt.dataset.nn,bb=bars[bi],q=bb.notes[ni];
@@ -1858,7 +1866,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v127</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v128</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
