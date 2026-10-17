@@ -1518,7 +1518,7 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 let ON = false, DOC = null, DID = null, VIEW = null, OKD = false, lastSig = null, saveT = null;
 let MT=4,BT=4,SB=4;const FINE=false;const Q=()=>FINE?1:SB;const S=()=>BT*SB;let id=0;const nb=n=>({id:++id,m:false,a:0,n:n||S()});
 function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?2:3;const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+'/4'}
-let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
+let CLIPN=null,CLIPK=null;let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
 const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
 const hint=t=>{if(H)H.textContent=t};const lo=()=>sel.length?Math.min(...sel):-1,hi=()=>sel.length?Math.max(...sel):-1;
@@ -1670,7 +1670,17 @@ inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(t
 document.addEventListener('keydown',e=>{if(!ON)return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const mod=e.metaKey||e.ctrlKey,stop=()=>e.stopPropagation();
 if(e.code==='Space'){stop();e.preventDefault();if(!e.repeat){PL?stopPlay():startPlay()}return}
 if(e.key==='Escape'){stop();if(drag)cancelDrag();else if(notePick||noteSel.length||sel.length){notePick=null;noteSel=[];sel=[];light()}else scClose();return}
-if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')){stop();if(!sel.length){hint('Pick a bar first, then copy');return}e.preventDefault();CLIP=[...sel].sort((a,b)=>a-b).map(i=>JSON.parse(JSON.stringify({m:bars[i].m,a:bars[i].a||0,n:bars[i].n,notes:bars[i].notes||[],ch:bars[i].ch})));light();hint('Copied '+CLIP.length+' bar'+(CLIP.length>1?'s':'')+'. Click where it goes, then Windows+V');return}
+/* (Oct 16, Chris: "copy / paste on text boxes is not working") Windows+C on picked text boxes copies THEM; click the spot, Windows+V pastes
+   them there (same gaps between them), only into empty space (never on top of another box in the same row) */
+if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')&&(noteSel.length||notePick)){stop();e.preventDefault();const st=starts(),L=[];
+bars.forEach((b,bi)=>(b.notes||[]).forEach((q,ni)=>{if(noteSel.includes(q)||(notePick&&notePick.b===b.id&&notePick.n===ni))L.push({t:st[bi]-(b.a||0)+q.s,l:q.l,d:q.d,o:q.o||0,w:q.w?1:0})}));
+const t0=Math.min(...L.map(x=>x.t));CLIPN=L.map(x=>({...x,t:x.t-t0}));CLIPK='n';hint('Copied '+L.length+' box'+(L.length>1?'es':'')+'. Click where it goes, then Windows+V');return}
+if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')&&CLIPK==='n'&&CLIPN){stop();e.preventDefault();if(!startAt){hint('Click where it goes first, then Windows+V');return}
+const st=starts(),P=st[startAt.i]-(bars[startAt.i].a||0)+startAt.k;save();let put=0,miss=0;const added=[];
+CLIPN.forEach(c=>{const T=P+c.t;let j=-1;for(let x=0;x<bars.length;x++){if(T>=st[x]&&T<st[x+1]){j=x;break}}if(j<0){miss++;return}const b=bars[j],sl=T-(st[j]-(b.a||0)),l=Math.min(c.l,b.n-sl);
+if(l<=0||(b.notes||[]).some(o=>!o.w===!c.w&&o.s<sl+l&&sl<o.s+o.l)){miss++;return}const q={s:sl,l,d:c.d,o:c.o,w:c.w?1:0,id:++id};if(!c.w)delete q.w;(b.notes=b.notes||[]).push(q);added.push(q);put++});
+noteSel=added;notePick=null;draw();hint('Pasted '+put+' box'+(put===1?'':'es')+(miss?'; '+miss+' had no empty space there':''));return}
+if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')){stop();if(!sel.length){hint('Pick a bar first, then copy');return}e.preventDefault();CLIPK='b';CLIP=[...sel].sort((a,b)=>a-b).map(i=>JSON.parse(JSON.stringify({m:bars[i].m,a:bars[i].a||0,n:bars[i].n,notes:bars[i].notes||[],ch:bars[i].ch})));light();hint('Copied '+CLIP.length+' bar'+(CLIP.length>1?'s':'')+'. Click where it goes, then Windows+V');return}
 if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')){stop();if(!CLIP){hint('Nothing copied yet');return}e.preventDefault();const pos=pastePos!=null?pastePos:sel.length?lo():bars.length;save();const add=CLIP.map(b=>({...JSON.parse(JSON.stringify(b)),id:++id}));bars.splice(pos,0,...add);sel=add.map((_,k)=>pos+k);startAt=null;pastePos=null;flip(()=>draw());hint('Pasted; the bars after it moved ahead');return}
 if(noteSel.length>1&&e.key==='Backspace'){stop();e.preventDefault();save();bars.forEach(b=>{if(b.notes)b.notes=b.notes.filter(q=>!noteSel.includes(q))});noteSel=[];notePick=null;draw();hint('Deleted');return}
 if(notePick&&(e.key==='Backspace'||e.key==='ArrowUp'||e.key==='ArrowDown')){const bi=bars.findIndex(x=>x.id===notePick.b);if(bi>=0){stop();e.preventDefault();save();const bb=bars[bi];if(e.key==='ArrowUp'||e.key==='ArrowDown'){const q=bb.notes[notePick.n];q.o=Math.max(-1,Math.min(1,(q.o||0)+(e.key==='ArrowUp'?1:-1)));notePick={b:bb.id,n:bars[bi].notes.indexOf(q)};hint(q.o<0?'Low octave (dot under)':q.o>0?'High octave (dot over)':'Middle octave')}else{bb.notes.splice(notePick.n,1);notePick=null;hint('Note deleted')}draw();return}}
@@ -1885,7 +1895,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v128</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v129</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
