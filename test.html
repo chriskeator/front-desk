@@ -1467,6 +1467,8 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 #songchk .nt .hi{position:relative}
 #songchk .nt .hi::after{top:-5px}
 #songchk .nt input{width:90%;font:inherit;text-align:left;border:0;background:var(--se-card);color:var(--se-ink);border-radius:3px;outline:2px solid var(--se-line2)}
+/* (Oct 16, Chris: "you can't even read the words") lyric boxes show plain words, one piece of text, never one letter per 16th */
+#songchk .nt.w .tx{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;white-space:nowrap;padding-left:4px}
 #songchk .nt.slot{background:transparent;border:1px dashed var(--se-line2)}
 #songchk .nt.slot>*{visibility:hidden}
 #songchk .nt.ghost{position:absolute;z-index:20;pointer-events:none;opacity:.92;box-shadow:0 6px 18px rgba(0,0,0,.18)}
@@ -1533,7 +1535,7 @@ const a0=b.a||0,num=drag&&drag.k==='move'&&drag.moved?bars.findIndex(x=>x.id===(
 for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
 if(b.n<N)h+='<div class="off" style="width:'+((N-b.n)/N*100)+'%"></div>';if(a0>0)h+='<div class="offl" style="width:'+(a0/N*100)+'%"></div>';
 h+='<div class="e" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div><div class="e" data-side="R" data-j="'+i+'" style="left:calc('+(b.n/N*100)+'% - 5px)"></div>';
-if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id)q.id=++id;h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join('')+'</span><div class="ne r"></div></div>'});
+if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id)q.id=++id;h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+(q.w?String(q.d).replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'):[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join(''))+'</span><div class="ne r"></div></div>'});
 h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
 d.innerHTML=h;row.appendChild(d)}R.appendChild(row)}
 if(!pv&&!drag)saveSoon()}
@@ -1644,7 +1646,7 @@ else if(D.k==='lead'&&D.a!=null){save();leadA=D.a;draw()}
 else if(D.k==='size'&&D.P){save();bars=D.P.C;sel=D.P.sel;draw()}else if((D.k==='move'&&!D.moved)||D.k==='band')light();else draw()});
 const DEG={'1':0,'2':2,'3':4,'4':5,'5':7,'6':9,'7':11};
 function editNote(bi,ni){const el=R.querySelector('.nt[data-nb="'+bi+'"][data-nn="'+ni+'"]');if(!el)return;const q=bars[bi].notes[ni],sp=el.querySelector('span');const inp=document.createElement('input');inp.id='se-nin';inp.value=q.d;sp.replaceWith(inp);
-const cv=document.createElement('canvas').getContext('2d');cv.font='400 12px ui-monospace, Menlo, monospace';const cw=cv.measureText('0').width,stp=el.clientWidth/q.l;el.classList.add('ed');Object.assign(inp.style,{letterSpacing:Math.max(0,stp-cw)+'px',textIndent:'1px',outline:'none',width:(el.clientWidth+stp*2)+'px',background:'transparent'});   /* same font and size as the box: nothing grows */   /* one character = one 16th, like graph paper */
+const cv=document.createElement('canvas').getContext('2d');cv.font='400 12px ui-monospace, Menlo, monospace';const cw=cv.measureText('0').width,stp=el.clientWidth/q.l;el.classList.add('ed');Object.assign(inp.style,{letterSpacing:q.w?'0px':Math.max(0,stp-cw)+'px',textIndent:'1px',outline:'none',width:(el.clientWidth+stp*2)+'px',background:'transparent'});   /* same font and size as the box: nothing grows */   /* one character = one 16th, like graph paper */
 inp.focus();inp.select();
 const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.replace(/\s+$/,'');if(ok){if(v.trim()){q.d=v;const B=bars[bi];let room=B.n-q.s;B.notes.forEach(o=>{if(o!==q&&!o.w===!q.w&&o.s>q.s)room=Math.min(room,o.s-q.s)});q.l=Math.max(q.l,Math.min(room,v.length))}else{const L=bars[bi].notes,k=L.indexOf(q);if(k>=0)L.splice(k,1);notePick=null}}if(ON)draw()};
 inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false)});inp.addEventListener('blur',()=>done(true))}
@@ -1867,7 +1869,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v124</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v125</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
