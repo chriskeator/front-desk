@@ -1069,7 +1069,8 @@ function scLoad(doc){ scGridDoc(doc); scDoc = doc; scLv = "easy"; scBar = null; 
   scChords = doc.chords ? scClone(doc.chords) : scChordsFrom(scLines, scRg); scPick = null; scMulti = []; scPt = null; scUndo = []; scLast = scSnap(); }
 async function scOpen(id, view){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  const d = s.data(); if ((view ? +view : d.step || 1) === 1){ scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }   /* (Oct 16 night, Chris hated the editor chords card: chords step back on the old page) */   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
+  const d = s.data(); if ((view ? +view : d.step || 1) === 1){ scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }
+  if (window.CT){ window.CT.open(id, view, d); return; }   /* (Oct 17, Chris) chords step = one text box, chord numbers above the words */   /* (Oct 16 night, Chris hated the editor chords card: chords step back on the old page) */   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
   scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
 /* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
@@ -1821,6 +1822,62 @@ function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete doc
 document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead()}else if(x.dataset.se==='con'){CON=!CON;cHead()}else if(x.dataset.se==='close')scClose()});
 const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},draw:()=>draw()};
 })();
+/* (Oct 17, Chris: "i just want the lyric box with numbers on top") CHORDS STEP = ONE TEXT BOX. Each song row = a chord line above its
+   lyric line (rows without words show the melody numbers instead). A chord sounds on the word under its first letter. One level is
+   checked at a time (Easy, then Medium, then Hard); the other tabs show their chords to compare (read only). Picture: Front Desk/Chords as text - picture (Oct 16).html */
+(function(){
+const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Easy',medium:'Medium',hard:'Hard'};
+let ID=null,D=null,LV='easy',TOK=[],ORIG={},LAST={},saveT=null,AC=null,PLAY=null;
+const r6=x=>+(+x).toFixed(6),cur=()=>LVS.find(k=>!(D&&D[LOK[k]]))||null;
+function tokens(){ return scLines.map((l,i)=>{ const W=(scWords[i]||[]).filter(w=>String(w.w||'').trim()).slice().sort((a,b)=>a.g-b.g);
+  return W.length?W.map(w=>({g:w.g,t:String(w.w).trim()})):l.slice().sort((a,b)=>a.g-b.g).map(n=>({g:n.g,t:SCDEG[((n.m%12)+12)%12]})); }); }
+function rowsOf(lv){ const f=LF[lv]; return Array.isArray(D[f])&&D[f].length?scClone(D[f]):lv==='easy'?scClone(scChords):scClone(D.chords&&D.chords.length?D.chords:scChords); }
+/* text for one level; also remembers where each chord was written (so an untouched chord keeps its exact time) */
+function toText(rows,keep){ const out=[],orig=[];TOK.forEach((tk,i)=>{ let ly='';tk.forEach((t,j)=>{ if(j&&!/-$/.test(tk[j-1].t))ly+=' ';t.col=ly.length;ly+=t.t;t.end=ly.length });
+  let ch='';const o=[];(rows[i]||[]).slice().sort((a,b)=>a.g-b.g).forEach(c=>{ let j=-1;tk.forEach((t,x)=>{ if(t.g<=c.g+1e-6)j=x });if(j<0)j=0;
+    let col=tk[j]?tk[j].col:0;if(ch.length&&col<=ch.length)col=ch.length+1;ch=ch.padEnd(col,' ')+c.k;o.push({col,k:String(c.k),g:c.g}) });
+  out.push(ch.replace(/\s+$/,'')+'\n'+ly);orig.push(o) });if(keep)ORIG[LV]=orig;return out.join('\n\n') }
+/* text back to chord rows. Returns {rows} or {err} */
+function parse(txt){ const blocks=String(txt).replace(/\r/g,'').split(/\n\s*\n/).map(b=>b.split('\n')).filter(b=>b.some(x=>x.trim()));
+  if(blocks.length!==TOK.length)return {err:'Keep one chord line above each line of words ('+TOK.length+' lines). Found '+blocks.length+'.'};
+  const rows=[],all=[],bad=[];blocks.forEach((b,i)=>{ const chl=b.length>1?b[0]:'',tk=TOK[i],o=(ORIG[LV]||[])[i]||[],R=[];let m;const re=/\S+/g;
+    while((m=re.exec(chl))){ const col=m.index,k=m[0];if(!scParse(k))bad.push(k);
+      const same=o.find(x=>x.col===col&&x.k===k);let g;if(same)g=same.g;else{ let j=0;tk.forEach((t,x)=>{ if(t.col<=col)j=x });g=tk[j]?tk[j].g:0 }
+      const c={g:r6(g),L:1,k};R.push(c);all.push(c) }
+    rows.push(R) });
+  if(bad.length)return {err:'Not a chord: '+[...new Set(bad)].join(', ')+' (use numbers like 1, 4, 5, 6m, 2m7, 5/7)'};
+  all.sort((a,b)=>a.g-b.g);const end=Math.max(...scLines.flat().map(n=>n.g+n.L),0);all.forEach((c,x)=>{ const nx=all.slice(x+1).find(q=>q.g>c.g+1e-6);c.L=r6(Math.max(.25,(nx?nx.g:end)-c.g)) });
+  return {rows} }
+function head(){ const C=cur();document.querySelectorAll('#songchk [data-ct="lv"]').forEach(b=>{ const k=b.dataset.lv;b.innerHTML=(D[LOK[k]]?'&#10003; ':'')+LNM[k];b.classList.toggle('on',k===LV) });
+  const ta=document.getElementById('ct-ta'),ok=document.getElementById('ct-ok'),lp=document.getElementById('ct-lvp');
+  ta.readOnly=LV!==C;ok.textContent=C?'Approve '+LNM[C]+' chords':'All approved';ok.disabled=!C||LV!==C;lp.textContent='Chords: '+LNM[LV]+(LV===C?'':' (view)') }
+function show(){ const ta=document.getElementById('ct-ta');ta.value=LAST[LV]!=null?LAST[LV]:toText(rowsOf(LV),true);if(LAST[LV]==null){ LAST[LV]=ta.value;ORIG['t'+LV]=ta.value }head();msg('') }
+function msg(t){ const e=document.getElementById('ct-msg');if(e)e.textContent=t }
+function save(){ clearTimeout(saveT);saveT=null;if(!ID||LV!==cur())return;const P=parse(document.getElementById('ct-ta').value);if(P.err){ msg(P.err);return null }
+  msg('');D[LF[LV]]=P.rows;db.collection('songcheck').doc(ID).update({[LF[LV]]:P.rows,updated:new Date().toISOString()}).catch(()=>{});return P.rows }
+function stop(){ if(PLAY){ try{PLAY.close()}catch(e){} PLAY=null }const b=document.getElementById('ct-play');if(b)b.innerHTML='&#9654; Play' }
+async function play(){ if(PLAY)return stop();const P=parse(document.getElementById('ct-ta').value);if(P.err){ msg(P.err);return }
+  const ac=PLAY=new (window.AudioContext||window.webkitAudioContext)();document.getElementById('ct-play').innerHTML='&#9632; Stop';
+  const N=scLines.flat(),C=P.rows.flat();await scPLoad(N.map(n=>n.m).concat(C.flatMap(c=>scChordNotes(c.k))));if(PLAY!==ac)return;
+  const bpm=D.bpm||100,sb=60/bpm,g0=Math.min(...N.map(n=>n.g),...C.map(c=>c.g),0),t0=ac.currentTime+.15,at=g=>t0+(g-g0)*sb;
+  N.forEach(n=>scPiano(ac,at(n.g),0,n.m,1,at(n.g+n.L)));C.forEach(c=>scChordAt(ac,at(c.g),at(c.g+c.L),c.k));
+  const end=Math.max(...N.map(n=>n.g+n.L),...C.map(c=>c.g+c.L));setTimeout(()=>{ if(PLAY===ac)stop() },(at(end)-ac.currentTime+.5)*1000) }
+function approve(){ const C=cur();if(!C||LV!==C)return;const rows=save();if(!rows)return;stop();
+  scId=ID;scDoc=D;scView=2;scLv=C;scChords=scClone(rows);const id=ID;ID=null;scApprove() }
+function open(id,view,d){ stop();ID=id;D=d;scId=id;scView=view?+view:null;scLoad(d);TOK=tokens();ORIG={};LAST={};LV=cur()||'easy';
+  document.getElementById('songchk').innerHTML='<div class="scbg" data-ct="close"></div><div class="ctcard" role="dialog" aria-modal="true">'
+  +'<div class="cth"><span class="t">'+esc(d.name)+'</span><span class="ctlvp" id="ct-lvp"></span><span class="ctlvs">'+LVS.map(k=>'<button type="button" class="tb" data-ct="lv" data-lv="'+k+'"></button>').join('')+'</span>'
+  +'<span class="ctts">Time signature <b>'+(d.meter||4)+'/4</b></span><span class="ctsp"></span><button type="button" class="tb ctplay" id="ct-play" data-ct="play">&#9654; Play</button><button type="button" class="tb" data-ct="close">Close</button></div>'
+  +'<textarea id="ct-ta" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><div class="ctft"><span id="ct-msg"></span><span class="ctsp"></span><button type="button" class="tb" data-ct="reset">Reset</button><button type="button" class="tb go" id="ct-ok" data-ct="ok"></button></div></div>';
+  const ta=document.getElementById('ct-ta');ta.addEventListener('input',()=>{ LAST[LV]=ta.value;clearTimeout(saveT);saveT=setTimeout(save,700) });
+  ta.addEventListener('keydown',e=>e.stopPropagation());show() }
+function close(){ if(saveT)save();stop();ID=null;D=null;document.getElementById('songchk').innerHTML='' }
+document.addEventListener('click',e=>{ const x=e.target.closest&&e.target.closest('#songchk [data-ct]');if(!x||!D)return;const a=x.dataset.ct;
+  if(a==='close'){ if(saveT)save();scClose();close() }else if(a==='play')play();else if(a==='ok')approve();
+  else if(a==='reset'){ if(LV!==cur())return;LAST[LV]=ORIG['t'+LV];show();save() }
+  else if(a==='lv'){ if(saveT)save();stop();LV=x.dataset.lv;show() } });
+window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show()},get lv(){return LV},get cur(){return cur()},get on(){return !!D}};
+})();
 </script>
 <div id="shortchk"></div>
 <style>
@@ -1849,6 +1906,14 @@ const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(
 #shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
 @media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
 #shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:#000}
+#songchk .ctcard{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80vw,1100px);max-width:calc(100vw - 32px);height:min(88vh,860px);box-sizing:border-box;background:var(--card,#fff);border-radius:18px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;z-index:61;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+#songchk .cth{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}#songchk .cth .t{font:600 19px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
+#songchk .ctlvp{width:140px;font-size:12px;font-weight:600;color:var(--teal-ink,#1f6f66)}#songchk .ctlvs{display:inline-flex;gap:4px}#songchk .ctlvs .tb{width:96px}
+#songchk .ctlvs .tb.on{background:var(--teal);color:#fff;border-color:var(--teal)}#songchk .ctts{font-size:13px;color:var(--muted,#6b7280);white-space:nowrap}#songchk .ctsp{flex:1}#songchk .ctplay{width:96px}
+#songchk #ct-ta{flex:1;width:100%;box-sizing:border-box;resize:none;border:1.5px solid var(--line,#cfd8d5);border-radius:12px;padding:16px 18px;font:15px/1.6 ui-monospace,Menlo,monospace;color:var(--ink);background:var(--card,#fff);white-space:pre;overflow:auto}
+#songchk #ct-ta[readonly]{background:var(--bg,#f6f5f1);color:var(--muted,#6b7280)}
+#songchk .ctft{display:flex;align-items:center;gap:12px}#songchk #ct-msg{color:#b4532a;font-size:13px}#songchk #ct-ok{min-width:200px}#songchk #ct-ok:disabled{opacity:.45;cursor:default}
+@media (max-width:600px){#songchk .cth{flex-wrap:wrap}#songchk .ctlvs .tb{width:auto;flex:1}}
 #songchk .sclvs{display:inline-flex;gap:4px}#songchk .sclvs .tb{width:84px;text-align:center}#songchk .sch .scpill{min-width:118px;text-align:center;box-sizing:border-box}   /* (Oct 16 night, Chris) nothing in the header shifts */#songchk .sclvs .tb.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 /* (Oct 16, Chris picked A) computer: full-height card, the tall video fills it top to bottom; note (grows) + buttons at the bottom of the right column */
 #shortchk .shcard.wide{height:calc(100vh - 24px)}
@@ -1952,7 +2017,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v137</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v138</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
