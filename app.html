@@ -1069,7 +1069,7 @@ function scLoad(doc){ scGridDoc(doc); scDoc = doc; scLv = "easy"; scBar = null; 
   scChords = doc.chords ? scClone(doc.chords) : scChordsFrom(scLines, scRg); scPick = null; scMulti = []; scPt = null; scUndo = []; scLast = scSnap(); }
 async function scOpen(id, view){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  const d = s.data(); { scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
+  const d = s.data(); if ((view ? +view : d.step || 1) === 1){ scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }   /* (Oct 16 night, Chris hated the editor chords card: chords step back on the old page) */   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
   scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
 /* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
@@ -1952,7 +1952,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v135</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v136</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
