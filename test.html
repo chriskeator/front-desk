@@ -1459,6 +1459,7 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 #songchk .nt.np{background:var(--se-line)}
 #songchk .nt .ne{position:absolute;top:0;bottom:0;width:5px;cursor:ew-resize}
 #songchk .nt .ne.l{left:0}
+#songchk .nt .ne{z-index:2}   /* (Oct 17, Chris: low/high notes would not stretch from the LEFT) the octave-dot number layer (position:relative) sat on top of the left handle */
 #songchk .nt .ne.r{right:0}
 #songchk .nt .ne:hover{border-left:1px solid var(--se-ink)}
 #songchk .nt .ne.r:hover{border-left:0;border-right:1px solid var(--se-ink)}
@@ -2036,7 +2037,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v138</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v139</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
