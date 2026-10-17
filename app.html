@@ -1021,7 +1021,7 @@ const SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
 const scClone = x => JSON.parse(JSON.stringify(x));
 /* (Oct 16, Chris) snap grid per song: 4/4 = 16ths, 3/4 and 6/8 = 8ths, swing = 8th triplets; doc.grid (steps per beat) wins, the Grid button cycles it */
 const SCGRID = {4: "16ths", 2: "8ths", 3: "Swing"};
-const scG = () => (scDoc && scDoc.grid) || (scDoc && scDoc.meter === 4 ? 4 : 2), scG1 = () => 1 / scG();
+const scG = () => 4,   /* (Oct 16 night, Chris) no Grid button: every song snaps to 16ths */ scG1 = () => 1 / scG();
 const scSnapG = g => Math.round(g * scG() + 1e-6) / scG();
 const scQ = s => document.querySelector("#songchk " + s);
 const scStep = () => scView || scDoc.step || 1;
@@ -1086,7 +1086,7 @@ function scSaveSoon(undo){ if (!undo){ const now = scSnap(); if (scLast && scLas
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows(), old = scQ(".scrows"), top = old ? old.scrollTop : 0;   /* (Oct 16, Chris) Stop never jumps back to the top */
   const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
-  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords: " + SCLV[scLv][0]}</span>${st === 2 ? `<span class="sclvs">${Object.keys(SCLV).map(k => `<button type="button" class="tb${k === scLv ? " on" : ""}" data-sclv="${k}">${SCLV[k][0]}</button>`).join("")}</span>` : ""}<span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb" data-scx="grid">Grid ${SCGRID[scG()]}</button><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${scStep() === 1 ? `<button type="button" class="tb scclk${scMuteMode ? " on" : ""}" data-scx="mutemode">${scMuteMode ? "Done muting" : "Mute bars"}</button>` : ""}${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button><button type="button" class="tb scclk${scChdOn() ? " on" : ""}" data-scx="chd">${scChdOn() ? "Chords on" : "Chords off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
+  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords: " + SCLV[scLv][0]}</span>${st === 2 ? `<span class="sclvs">${Object.keys(SCLV).map(k => `<button type="button" class="tb${k === scLv ? " on" : ""}" data-sclv="${k}">${SCLV[k][0]}</button>`).join("")}</span>` : ""}<span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${scStep() === 1 ? `<button type="button" class="tb scclk${scMuteMode ? " on" : ""}" data-scx="mutemode">${scMuteMode ? "Done muting" : "Mute bars"}</button>` : ""}${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button><button type="button" class="tb scclk${scChdOn() ? " on" : ""}" data-scx="chd">${scChdOn() ? "Chords on" : "Chords off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button>${st === 1 ? `<button type="button" class="scck scadd" data-scadd="${i}" aria-label="Add a row underneath">+</button>` : ""}</div>`).join("") + `</div>`
     + `<div class="scpkr" id="scpkr"></div>`
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve " + SCLV[scLv][0] + " chords"}</button>`}</div></div>`;
@@ -1777,7 +1777,7 @@ const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(
 #shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
 @media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
 #shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:#000}
-#songchk .sclvs{display:inline-flex;gap:4px}#songchk .sclvs .tb.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+#songchk .sclvs{display:inline-flex;gap:4px}#songchk .sclvs .tb{width:84px;text-align:center}#songchk .sch .scpill{min-width:118px;text-align:center;box-sizing:border-box}   /* (Oct 16 night, Chris) nothing in the header shifts */#songchk .sclvs .tb.on{background:var(--teal);color:#fff;border-color:var(--teal)}
 /* (Oct 16, Chris picked A) computer: full-height card, the tall video fills it top to bottom; note (grows) + buttons at the bottom of the right column */
 #shortchk .shcard.wide{height:calc(100vh - 24px)}
 #shortchk .shcard.wide .shbody{flex:1}
@@ -1880,7 +1880,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v131</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v132</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
