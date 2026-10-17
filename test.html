@@ -1088,7 +1088,7 @@ function scLoad(doc){ scGridDoc(doc); scDoc = doc; scLv = "easy"; scBar = null; 
   scChords = doc.chords ? scClone(doc.chords) : scChordsFrom(scLines, scRg); scPick = null; scMulti = []; scPt = null; scUndo = []; scLast = scSnap(); }
 async function scOpen(id, view){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
-  const d = s.data(); if ((view ? +view : d.step || 1) === 1){ scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }   /* (Oct 16, chat 12, Chris) melody = the new song editor */
+  const d = s.data(); { scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
   scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
 /* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
@@ -1520,6 +1520,21 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .secard .nt:not(.w).np,html[data-drag] #songchk .secard .nt:not(.w).np{background:var(--se-tpk)}
 #songchk .secard .nt.w .tx{font-weight:400;color:var(--se-ink)}
 #songchk .secard .nt .lo::after,#songchk .secard .nt .hi::after{background:var(--se-tink)}
+/* chords step: gold chord markers on the beat row; numbers, words, bar edges locked */
+#songchk .secard{--se-cg:#8A6100;--se-cgbg:#FBF3DF;--se-cgpk:#F1DDA8}
+:root[data-theme="dark"] #songchk .secard{--se-cg:#E6C46A;--se-cgbg:#3A3220;--se-cgpk:#5A4A22}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-cg:#E6C46A;--se-cgbg:#3A3220;--se-cgpk:#5A4A22}}
+#songchk .secard .chd{position:absolute;top:22px;height:20px;box-sizing:border-box;margin-left:1px;padding:0 6px 0 4px;border-left:2px solid var(--se-cg);border-radius:5px 0 0 5px;background:var(--se-card);color:var(--se-cg);font:700 13px/20px var(--se-font);z-index:5;cursor:grab;white-space:nowrap}
+#songchk .secard .chd:hover{background:var(--se-cgbg)}
+#songchk .secard .chd.cp{background:var(--se-cgpk)}
+#songchk .secard .chd input{width:46px;height:18px;border:0;outline:none;background:transparent;font:inherit;color:inherit;padding:0}
+#songchk .secard.cm .nt,#songchk .secard.cm .e,#songchk .secard.cm .g{pointer-events:none}
+#songchk .secard.cm .b .t{cursor:default}
+#songchk .secard.cm.ro .chd{cursor:default}
+#songchk .secard .selv{display:inline-flex;gap:4px}#songchk .secard .selv .tb{width:96px}
+#songchk .secard .selv .tb.on,#songchk .secard .setg.on{background:var(--se-tink);color:#fff;border-color:var(--se-tink)}
+#songchk .secard .setg{width:112px}#songchk .secard .selvp{width:150px;font-size:12px;font-weight:600;color:var(--se-tink)}
+#songchk .secard #se-okc{min-width:190px}#songchk .secard #se-okc:disabled{opacity:.45;cursor:default}
 </style>
 <script>
 /* (Oct 16, chat 12, Chris) NEW SONG EDITOR = the approved prototype (Front Desk/song-bar-editor-layer1.html v65, built layer by layer with Chris),
@@ -1533,7 +1548,11 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 let ON = false, DOC = null, DID = null, VIEW = null, OKD = false, lastSig = null, saveT = null;
 let MT=4,BT=4,SB=4;const FINE=false;const Q=()=>FINE?1:SB;const S=()=>BT*SB;let id=0;const nb=n=>({id:++id,m:false,a:0,n:n||S()});
 function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?2:3;const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+'/4'}
-let CLIPN=null,CLIPK=null;let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
+let CLIPN=null,CLIPK=null;
+/* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
+   (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
+let CM=false,LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Easy',medium:'Medium',hard:'Hard'};
+const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM&&LVK===CUR(),lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
 const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
 const hint=t=>{if(H)H.textContent=t};const lo=()=>sel.length?Math.min(...sel):-1,hi=()=>sel.length?Math.max(...sel):-1;
@@ -1566,7 +1585,7 @@ for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*10
 if(b.n<N)h+='<div class="off" style="width:'+((N-b.n)/N*100)+'%"></div>';if(a0>0)h+='<div class="offl" style="width:'+(a0/N*100)+'%"></div>';
 h+='<div class="e" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div><div class="e" data-side="R" data-j="'+i+'" style="left:calc('+(b.n/N*100)+'% - 5px)"></div>';
 if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id||SEEN.has(q.id))q.id=++id;SEEN.add(q.id);h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+(q.w?String(q.d).replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'):[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join(''))+'</span><div class="ne r"></div></div>'});
-h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
+h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(CM)((b.ch||{})[LF[LVK]]||[]).forEach(c=>{if(c.cont)return;h+='<div class="chd'+(cPick===c?' cp':'')+'" data-cb="'+i+'" style="left:'+(c.s/N*100)+'%">'+esc(c.k)+'</div>'});if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
 d.innerHTML=h;row.appendChild(d)});{const ck=document.createElement('button');ck.type='button';ck.className='rok';ck.dataset.rok=rk;ck.setAttribute('aria-label','Row is good');ck.innerHTML='&#10003;';row.appendChild(ck)}R.appendChild(row)});
 if(!pv&&!drag)saveSoon()}
 /* light(): refresh highlights and markers WITHOUT rebuilding (a rebuild between two clicks kills the double-click) */
@@ -1724,14 +1743,14 @@ if(isHold(q)){if(last&&last.t+last.len===g0+q.s)last.len+=Math.min(q.l,b.n-q.s);
 const T=toks(q);T.forEach((t,k)=>{const end=Math.min(k+1<T.length?T[k+1].at:q.s+q.l,b.n);if(end<=t.at)return;
 last={t:g0+t.at,len:end-t.at,mid:60+DEG[t.m[2]]+(/[b♭]/.test(t.m[1])?-1:/[#♯]/.test(t.m[1])?1:0)+12*(q.o||0),q,one:T.length===1&&k===0};out.push(last)})})});return out}
 async function startPlay(){if(!ON)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(x){hint('Sound is blocked here');return}
-const ac=AC,mel=melody();PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop';await scPLoad(mel.map(n=>n.mid));if(!PL||PL.ac!==ac)return;
+const ac=AC,mel=melody();PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop';await scPLoad(mel.map(n=>n.mid).concat(CM?bars.flatMap(b=>((b.ch||{})[LF[LVK]]||[]).flatMap(c=>scChordNotes(c.k))):[]));if(!PL||PL.ac!==ac)return;
 const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,t0=AC.currentTime+0.1,seg=[],st=starts();let t=t0;const from=startAt?startAt.i:sel.length?lo():0;
 if(!from&&leadA<N){seg.push({i:'lead',a:leadA,n:N,t});t+=(N-leadA)*step}
 const a0=startAt&&startAt.i===from&&bars[from]?Math.max(bars[from].a||0,startAt.k):bars[from]?bars[from].a||0:0,P0=bars[from]?st[from]+a0-(bars[from].a||0):0,tS=t;
 for(let i=from;i<bars.length;i++){const b=bars[i];if(b.m)continue;const a=i===from?a0:b.a||0;seg.push({i,a,n:b.n,t});t+=(b.n-a)*step}
 if(!seg.length){stopPlay();hint('Nothing to play');return}
 PL={seg,t0,end:t,step,N,nodes:[],ac};
-const sounding=mel.filter(n=>n.t+n.len>P0);sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e)});
+const sounding=mel.filter(n=>n.t+n.len>P0&&(!CM||MON));if(CM&&CON)seg.forEach(g=>{if(g.i==='lead')return;((bars[g.i].ch||{})[LF[LVK]]||[]).forEach(c=>{const s0=Math.max(c.s,g.a),e0=c.s+c.l;if(e0>s0)scChordAt(AC,g.t+(s0-g.a)*step,g.t+(e0-g.a)*step,c.k)})});sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e)});
 seg.forEach(g=>{for(let k=g.a;k<g.n;k++)if(k%SB===0||k===g.a)click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead')});
 hint('Playing at '+bpm+' BPM'+(from?' from '+lab(from):''));requestAnimationFrame(tick)}
 function stopPlay(){if(!PL)return;const ac=PL.ac;PL=null;try{ac&&ac.close()}catch(x){}if(AC===ac)AC=null;document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());if(PB)PB.innerHTML='&#9654; Play'}
@@ -1776,16 +1795,50 @@ db.collection('songcheck').doc(DID).update(Object.assign({},P,{updated:new Date(
 /* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
 function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
-function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;VIEW=view?+view:null;OKD=!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'));
+function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;VIEW=view?+view:null;CM=(VIEW||doc.step||1)>=2;cPick=null;cDrag=null;
+if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
+OKD=CM?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'));
 fromDoc(doc);sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
-document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; Melody approved</div>':'')
-+'<div class="setop"><h1>'+esc(doc.name)+'</h1><button type="button" class="mt play" id="se-play">&#9654; Play</button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>'
-+'<div id="se-hint">Point at anything: this line says what a click or drag will do.</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
+const top=CM?'<div class="setop"><h1>'+esc(doc.name)+'</h1><span class="selvp" id="se-lvp"></span><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"></button>').join('')+'</span><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb go" data-se="okc" id="se-okc"></button></div>'
+:'<div class="setop"><h1>'+esc(doc.name)+'</h1><button type="button" class="mt play" id="se-play">&#9654; Play</button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>';
+document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CM?'All chords':'Melody')+' approved</div>':'')+top
++'<div id="se-hint">'+(CM?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
 R=document.getElementById('se-rows');H=document.getElementById('se-hint');INS=document.getElementById('se-ins');ED=document.getElementById('se-ed');PB=document.getElementById('se-play');setMeter(MT);
-bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();draw();scPLoad(melody().map(n=>n.mid))}
+bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();if(CM)cHead();draw();scPLoad(melody().map(n=>n.mid))}
+/* chords step header: tabs (tick = approved, the one being checked is the only one you can change), toggles, approve label. Fixed widths: nothing shifts */
+function cHead(){const cur=CUR();document.querySelectorAll('#songchk [data-se="lv"]').forEach(b=>{const k=b.dataset.lv;b.innerHTML=(DOC[LOK[k]]?'&#10003; ':'')+LNM[k];b.classList.toggle('on',k===LVK)});
+const lp=document.getElementById('se-lvp');if(lp)lp.textContent='Chords: '+LNM[LVK]+(LVK===cur?'':' (view)');
+document.querySelector('#songchk .secard').classList.toggle('ro',!CED());
+const m=document.querySelector('#songchk [data-se="mon"]'),c=document.querySelector('#songchk [data-se="con"]');if(m){m.textContent=MON?'Melody on':'Melody off';m.classList.toggle('on',MON)}if(c){c.textContent=CON?'Chords on':'Chords off';c.classList.toggle('on',CON)}
+const ok=document.getElementById('se-okc');if(ok){ok.textContent=cur?'Approve '+LNM[cur]+' chords':'All approved';ok.disabled=!cur||LVK!==cur}}
+/* after any chord change: lengths run to the next chord, and a chord rings on into the next bars until a new one starts */
+function renorm(){const f=LF[LVK];let prev=null;bars.forEach(b=>{b.ch=b.ch||{};const L=b.ch[f]=(b.ch[f]||[]).filter(c=>!c.cont&&(String(c.k).trim()!==''||c.nw));L.sort((x,y)=>x.s-y.s);const a=b.a||0;
+if(prev&&!(L[0]&&L[0].s<=a))L.unshift({s:a,l:1,k:prev,cont:true});L.forEach((c,j)=>{const nx=L[j+1];c.l=Math.max(1,(nx?nx.s:b.n)-c.s)});if(L.length)prev=L[L.length-1].k})}
+function cAt(bd,x){const i=+bd.dataset.i,rr=bd.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(x-rr.left)/rr.width))*S());return {i,k:Math.max(bb.a||0,Math.min(bb.n-1,k))}}
+function cAll(){const out=[];bars.forEach((b,i)=>((b.ch||{})[LF[LVK]]||[]).forEach(c=>{if(!c.cont)out.push({i,c})}));return out}
+function editChord(c){const i=bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c));const el=[...R.querySelectorAll('.chd')].find(e=>+e.dataset.cb===i&&e.style.left===(c.s/S()*100)+'%');if(!el)return;
+const inp=document.createElement('input');inp.id='se-cin';inp.value=c.nw?'':c.k;el.textContent='';el.appendChild(inp);el.classList.add('ed');inp.focus();inp.select();
+const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.trim();if(ok&&v){c.k=v;delete c.nw}else if(ok||c.nw){const L=lvl(bars[i]);if(!ok&&!c.nw)return draw();if(c.nw||!v)L.splice(L.indexOf(c),1)}renorm();if(ON)draw()};
+inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false);
+if(e.key==='Tab'){e.preventDefault();const A=cAll(),k=A.findIndex(x=>x.c===c),nx=A[k+(e.shiftKey?-1:1)];done(true);if(nx&&lvl(bars[nx.i]).includes(nx.c)){cPick=nx.c;save();editChord(nx.c)}}});inp.addEventListener('blur',()=>done(true))}
+window.addEventListener('pointerdown',e=>{if(!ON||!CM||e.button!==0)return;const t=e.target;if(!t.closest||!t.closest('#se-ed')||t.closest('.rok')||t.closest('input'))return;e.stopPropagation();
+const cd=t.closest('.chd');if(cd&&CED()){const i=+cd.dataset.cb,c=((bars[i].ch||{})[LF[LVK]]||[]).find(x=>!x.cont&&cd.style.left===(x.s/S()*100)+'%');if(c){cPick=c;R.querySelectorAll('.chd').forEach(x=>x.classList.toggle('cp',x===cd));cDrag={i,c,el:cd,x0:e.clientX,moved:false};document.documentElement.dataset.drag='grab'}return}
+cPick=null;R.querySelectorAll('.chd.cp').forEach(x=>x.classList.remove('cp'));const bd=t.closest('.b[data-i]');if(bd){startAt=cAt(bd,e.clientX);if(PL){stopPlay();setTimeout(startPlay,0)}light()}},true);
+window.addEventListener('pointermove',e=>{if(!cDrag)return;if(!cDrag.moved&&Math.abs(e.clientX-cDrag.x0)<4)return;cDrag.moved=true;const bd=[...R.querySelectorAll('.b[data-i]')].find(x=>{const r=x.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<r.right&&e.clientY>=r.top-30&&e.clientY<r.bottom+10});if(!bd)return;   /* by position: the drag cursor lock turns hit-testing off */
+const P=cAt(bd,e.clientX);cDrag.to=P;if(cDrag.el.parentNode!==bd)bd.appendChild(cDrag.el);cDrag.el.style.left=(P.k/S()*100)+'%'},true);
+window.addEventListener('pointerup',e=>{if(!cDrag)return;const D=cDrag;cDrag=null;delete document.documentElement.dataset.drag;if(!D.moved||!D.to)return;
+const T=lvl(bars[D.to.i]);if(T.some(x=>!x.cont&&x!==D.c&&x.s===D.to.k)){draw();hint('A chord is already there');return}save();const L=lvl(bars[D.i]);L.splice(L.indexOf(D.c),1);D.c.s=D.to.k;lvl(bars[D.to.i]).push(D.c);cPick=D.c;renorm();draw()},true);
+window.addEventListener('dblclick',e=>{if(!ON||!CM)return;const t=document.elementFromPoint(e.clientX,e.clientY)||e.target;if(!t.closest||!t.closest('#se-ed')||t.closest('input'))return;e.stopPropagation();if(!CED())return;
+const cd=t.closest('.chd');if(cd&&cPick){save();editChord(cPick);return}if(!t.closest('.gr')&&!t.classList.contains('k'))return;const bd=t.closest('.b[data-i]');if(!bd)return;const P=cAt(bd,e.clientX),L=lvl(bars[P.i]);if(L.some(c=>!c.cont&&c.s===P.k))return;
+save();const c={s:P.k,l:1,k:'',nw:1};L.push(c);renorm();cPick=c;draw();editChord(c)},true);
+window.addEventListener('keydown',e=>{if(!ON||!CM)return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const k=String(e.key).toLowerCase(),mod=e.metaKey||e.ctrlKey;
+if((e.key==='Backspace'||e.key==='Delete')&&cPick&&CED()){e.stopPropagation();e.preventDefault();save();const i=bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(cPick));if(i>=0){const L=lvl(bars[i]);L.splice(L.indexOf(cPick),1)}cPick=null;renorm();draw();hint('Chord removed');return}
+if(e.key==='Backspace'||e.key==='Delete'||e.key==='ArrowUp'||e.key==='ArrowDown'||(mod&&(k==='c'||k==='v'||k==='x'))){e.stopPropagation();e.preventDefault()}},true);   /* the melody is locked on the chords step */
+function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
+scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
 function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
-document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='close')scClose()});
-const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},draw:()=>draw()};
+document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead()}else if(x.dataset.se==='con'){CON=!CON;cHead()}else if(x.dataset.se==='close')scClose()});
+const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},draw:()=>draw()};
 })();
 </script>
 <div id="shortchk"></div>
@@ -1918,7 +1971,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v134</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v135</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
