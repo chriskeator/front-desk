@@ -1966,11 +1966,13 @@ let shRows = null, shI = 0, shTask = null, shWait = 0, shView = null, shOne = fa
    (Oct 15, Chris) HANDS FIRST, then Start + end, both on the Hands (cropped) video: fields hands/handsNote/handsFixes, then status/note/fixes */
 const SH_CHKS = ["Starts on the action", "Ends clean, note rings", "No ums, smacks, pauses", "One idea on its own"];
 const SH_CHKS_H = ["Both hands in view", "Wrists not cut off", "Lettered keys on top", "No lyrics or extras"];
+const SH_CHKS_W = ["Title + words right", "Graphic matches the music", "Nothing covers the hands", "Ending logo + link"];   /* (Oct 17) step 3 Words: fields words/wordsNote/wordsFixes, video wordsUrl (shorts-videos-up.py) */
+const shAns = (r, st) => st === "hands" ? r.hands : st === "words" ? r.words : r.status;
 const shQ = s => document.querySelector("#shortchk " + s);
 const shLen = s => { s = Math.round(+s || 0); return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + " s"; };
-const shStep = r => !r.handsFileId ? null : !r.hands ? "hands" : r.hands === "approved" && !r.status ? "start" : null;
-const shShow = r => (shView && shRows && r === shRows[shI] ? shView : null) || shStep(r) || (r.hands === "approved" ? "start" : "hands");
-const shFx = (r, st) => (st === "hands" ? r.handsFixes : r.fixes) || [];
+const shStep = r => !r.handsFileId ? null : !r.hands ? "hands" : r.hands === "approved" && !r.status ? "start" : r.status === "approved" && r.wordsUrl && !r.words ? "words" : null;
+const shShow = r => (shView && shRows && r === shRows[shI] ? shView : null) || shStep(r) || (r.status === "approved" && r.wordsUrl ? "words" : r.hands === "approved" ? "start" : "hands");
+const shFx = (r, st) => (st === "hands" ? r.handsFixes : st === "words" ? r.wordsFixes : r.fixes) || [];
 async function shOpen(tid, rid, view){
   shView = view || null; shOne = !!rid;
   const s = await db.collection("shortcheck").get(), all = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved);
@@ -1984,28 +1986,28 @@ function shDraw(){
   let h;
   if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.status === "fix" || x.hands === "fix").length;
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
-  else { const st = shShow(r), H = st === "hands", CK = H ? SH_CHKS_H : SH_CHKS, fx = shFx(r, st), ans = H ? r.hands : r.status;
-    h = head((shI + 1) + " of " + N) + (ans === "approved" ? `<div class="okbar">&#10003; ${H ? "Hands" : "Start + end"} approved</div>` : "") + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
-    + `<div class="shbody"><div class="shv">${r.handsUrl ? `<video id="shvid" src="${esc(r.handsUrl)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>` : `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe>`}</div><div class="shside">`
-    + (H ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<button type="button" class="shseek" data-shx="seek" data-t="${esc(c.at)}">${esc(String(c.at).replace(/\.\d+$/, ""))}</button> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
-    + `<div class="shstep">${H ? "Step 1 of 5: Hands" : "Step 2 of 5: Start + end"}</div><div class="shwhat">${H ? "Just look: are both hands and wrists inside the tall frame the whole time, with the lettered keys on top and no lyrics? Ignore the sound." : "Just listen: does it start right on the action and end cleanly, with no ums or pauses in the middle? The cuts are listed above."}</div>`
+  else { const st = shShow(r), H = st === "hands", W = st === "words", CK = H ? SH_CHKS_H : W ? SH_CHKS_W : SH_CHKS, fx = shFx(r, st), ans = shAns(r, st);
+    h = head((shI + 1) + " of " + N) + (ans === "approved" ? `<div class="okbar">&#10003; ${H ? "Hands" : W ? "Words" : "Start + end"} approved</div>` : "") + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
+    + `<div class="shbody"><div class="shv">${(W ? r.wordsUrl : r.handsUrl) ? `<video id="shvid" src="${esc(W ? r.wordsUrl : r.handsUrl)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>` : `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe>`}</div><div class="shside">`
+    + (H || W ? "" : `<div class="shcuts">${r.from ? `Long video ${esc(String(r.from).replace(/\.\d+$/, ""))} to ${esc(String(r.to).replace(/\.\d+$/, ""))} &middot; ` : ""}${(r.cuts || []).length ? `<b>Start, end + ${r.cuts.length} cut${r.cuts.length > 1 ? "s" : ""}:</b> ${r.cuts.map(c => `<button type="button" class="shseek" data-shx="seek" data-t="${esc(c.at)}">${esc(String(c.at).replace(/\.\d+$/, ""))}</button> ${esc(c.what || "")}`).join(" &middot; ")}` : "<b>Start + end only, no cuts inside</b>"}</div>`)
+    + `<div class="shstep">${H ? "Step 1 of 5: Hands" : W ? "Step 3 of 5: Words" : "Step 2 of 5: Start + end"}</div><div class="shwhat">${H ? "Just look: are both hands and wrists inside the tall frame the whole time, with the lettered keys on top and no lyrics? Ignore the sound." : W ? "Just look: are the title, captions and graphic right for what you play, and is nothing covering your hands? This is the YouTube version." : "Just listen: does it start right on the action and end cleanly, with no ums or pauses in the middle? The cuts are listed above."}</div>`
     + `<div class="shchks">${CK.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`;
     /* (Oct 16, Chris picked A) computer: note + Drop/Approve sit in the right column so the tall video runs to the card's bottom (desk-songcheck-test.py) */
     const nv = esc((H ? r.handsNote : r.note) || ""), NB = (shWide() ? `<textarea class="shnote" id="shnote" placeholder="Note (optional)">${nv}</textarea>` : `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${nv}">`)
       + `<div class="shbtns">${shOne ? "<span></span>" : `<button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button>`}<button type="button" class="tb drop${!H && r.status === "dropped" && !fx.length ? " on" : ""}" data-shx="drop">Drop</button><button type="button" class="tb" id="shmain"></button></div>`;
     h += shWide() ? NB + `</div></div>` : `</div></div>` + NB; }
-  const okc = r && (shShow(r) === "hands" ? r.hands : r.status) === "approved";
+  const okc = r && shAns(r, shShow(r)) === "approved";
   document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard${okc ? " ok" : ""}${r && shWide() ? " wide" : ""}" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
 /* (Oct 15) Chris: a red check OR any note text turns Approve into a red Send fixes */
 function shMain(){ const r = shRows && shRows[shI], b = document.getElementById("shmain"), el = document.getElementById("shnote"); if (!r || !b) return;
-  const st = shShow(r), fix = shFx(r, st).length || (el && el.value.trim()), ok = (st === "hands" ? r.hands : r.status) === "approved";
+  const st = shShow(r), fix = shFx(r, st).length || (el && el.value.trim()), ok = shAns(r, st) === "approved";
   b.className = "tb " + (fix ? "drop on" : ok ? "okd" : "go"); b.dataset.shx = fix ? "fix" : ok ? "close" : "ok"; b.innerHTML = fix ? "Send fixes" : ok ? "&#10003; Approved" : "Approve"; }
 document.addEventListener("input", e => { if (shRows && e.target.id === "shnote") shMain(); });
 /* (Oct 15, Chris) always-visible time while it plays (to the tenth); tap a cut time = jump 2 s before it */
 const shFmt = t => Math.floor(t / 60) + ":" + (t % 60).toFixed(1).padStart(4, "0");
 document.addEventListener("timeupdate", e => { if (e.target.id === "shvid"){ const el = document.getElementById("shtime"); if (el) el.textContent = shFmt(e.target.currentTime); } }, true);
 document.addEventListener("seeked", e => { if (e.target.id === "shvid"){ const el = document.getElementById("shtime"); if (el) el.textContent = shFmt(e.target.currentTime); } }, true);
-function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(), k = shShow(r) === "hands" ? "handsNote" : "note"; if (v === (r[k] || "")) return;
+function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(), st0 = shShow(r), k = st0 === "hands" ? "handsNote" : st0 === "words" ? "wordsNote" : "note"; if (v === (r[k] || "")) return;
   r[k] = v; db.collection("shortcheck").doc(r.id).update({[k]: v, updated: new Date().toISOString()}).catch(() => {}); }
 async function shAnswer(st){
   const r = shRows[shI]; if (!r) return; const el = document.getElementById("shnote"), now = new Date().toISOString(), step = shShow(r);
@@ -2014,6 +2016,11 @@ async function shAnswer(st){
       db.collection("shortcheck").doc(r.id).update({hands: "dropped", status: "dropped", note: r.note, answeredAt: now, updated: now}).catch(() => {}); }
     else { r.hands = st === "approved" ? "approved" : "fix"; r.handsNote = el ? el.value.trim() : (r.handsNote || ""); const fx = r.hands === "approved" ? [] : shFx(r, "hands"); r.handsFixes = fx;
       db.collection("shortcheck").doc(r.id).update({hands: r.hands, handsNote: [fx.filter(i => SH_CHKS_H[i]).map(i => "Fix: " + SH_CHKS_H[i]).join("; "), r.handsNote].filter(Boolean).join("; "), handsFixes: fx, handsAt: now, updated: now}).catch(() => {}); } }
+  else if (step === "words"){
+    if (st === "dropped" && !shFx(r, "words").length && !(el && el.value.trim())){ r.words = "dropped"; r.status = "dropped"; r.note = "Drop, don't redo";
+      db.collection("shortcheck").doc(r.id).update({words: "dropped", status: "dropped", note: r.note, answeredAt: now, updated: now}).catch(() => {}); }
+    else { r.words = st === "approved" ? "approved" : "fix"; r.wordsNote = el ? el.value.trim() : (r.wordsNote || ""); const fx = r.words === "approved" ? [] : shFx(r, "words"); r.wordsFixes = fx;
+      db.collection("shortcheck").doc(r.id).update({words: r.words, wordsNote: [fx.filter(i => SH_CHKS_W[i]).map(i => "Fix: " + SH_CHKS_W[i]).join("; "), r.wordsNote].filter(Boolean).join("; "), wordsFixes: fx, wordsAt: now, updated: now}).catch(() => {}); } }
   else {
     r.status = st; r.note = el ? el.value.trim() : (r.note || ""); const fx = st === "fix" ? (r.fixes || []) : [];
     if (st === "dropped" && !fx.length && !r.note) r.note = "Drop, don't redo";
@@ -2024,7 +2031,7 @@ async function shAnswer(st){
   shI++; while (shI < shRows.length && !shStep(shRows[shI])) shI++;
   if (shI >= shRows.length){ const k = shRows.findIndex(shStep); if (k >= 0) shI = k; }
   shDraw();
-  if (!shWait && shRows.every(x => x.status)){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
+  if (!shWait && shRows.every(x => !shStep(x))){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
 document.addEventListener("keydown", e => { if (!shRows) return; if (e.target.id === "shnote"){ if (e.key === "Enter"){ e.preventDefault(); e.target.blur(); } return; } if (e.key === "Escape") shClose(); });
 document.addEventListener("focusout", e => { if (shRows && e.target.id === "shnote") shNoteSave(); });
 document.addEventListener("click", e => {
@@ -2040,7 +2047,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v143</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v144</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4511,12 +4518,12 @@ function homeShorts(){
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const blk = (bg, bd, txt, rid, view) => `<i class="sblk"${rid ? ` data-shortrow="${esc(rid)}"${view ? ` data-shview="${view}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${rid ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${txt ? `<span class="sfw">${txt}</span>` : ""}</i>`;
-  const cells = (k, you, rid, fixing, id) => SHS.map((t, i) => i < k ? (id && i < 2 ? blk("#1FA598", "#1FA598", `<span style="color:#fff;font-weight:600">Approved</span>`, id, i ? "start" : "hands") : blk("#1FA598", "#1FA598")) : i === k && fixing ? blk("#FDE8E4", "#D85A30", `<span style="color:#B23B17;font-weight:600">Fixing</span>`) : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
+  const cells = (k, you, rid, fixing, id) => SHS.map((t, i) => i < k ? (id && i < 3 ? blk("#1FA598", "#1FA598", `<span style="color:#fff;font-weight:600">Approved</span>`, id, ["hands", "start", "words"][i]) : blk("#1FA598", "#1FA598")) : i === k && fixing ? blk("#FDE8E4", "#D85A30", `<span style="color:#B23B17;font-weight:600">Fixing</span>`) : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
   const row = (title, sub, k, you, rid, fixing, id) => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${cells(k, you, rid, fixing, id)}</span></div>`;
   const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SHS.map((t, i) => `<i class="sblk" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SHAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   const md = d => { const p = String(d).slice(5, 10).split("-"); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
-  const W = (shBoard || []).map(r => ({r, k: r.hands !== "approved" ? 0 : !r.status || r.status === "fix" ? 1 : 2, you: !!shStep(r), fixing: r.hands === "fix" || r.status === "fix"})).sort((a, b) => b.you - a.you || a.k - b.k || (a.r.order || 0) - (b.r.order || 0));
+  const W = (shBoard || []).map(r => ({r, k: r.hands !== "approved" ? 0 : !r.status || r.status === "fix" ? 1 : r.words !== "approved" ? 2 : 3, you: !!shStep(r), fixing: r.hands === "fix" || r.status === "fix" || r.words === "fix"})).sort((a, b) => b.you - a.you || a.k - b.k || (a.r.order || 0) - (b.r.order || 0));
   const S = sb.filter(x => x.kind === "scheduled").sort((a, b) => a.date.localeCompare(b.date)), P = sb.filter(x => x.kind === "posted").sort((a, b) => b.date.localeCompare(a.date));
   if (!W.length && !S.length && !P.length) return "";
   const yours = W.filter(x => x.you).length;
