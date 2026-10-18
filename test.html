@@ -2048,7 +2048,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v147</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v148</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4180,7 +4180,7 @@ function render(){ const L1 = $("list"), st1 = L1 ? L1.scrollTop : 0, k1 = L1 ? 
   // (Oct 8) Chris: coming back from the Lab (or any Go link) = the same spot: the to-do he left is open AND in view
   if (!backDone && phone() && taskOpen){ const det = document.querySelector("#list .tdetail"), L = $("list");
     if (det && L){ backDone = true; let moved = false; L.addEventListener("touchstart", () => { moved = true; }, {once: true});
-      const go = () => { if (moved) return; const d = document.querySelector("#list .tdetail"); if (!d) return; const row = d.previousElementSibling || d; L.scrollTop += row.getBoundingClientRect().top - L.getBoundingClientRect().top - 8; };
+      const go = () => { if (moved) return; const d = document.querySelector("#list .tdetail"); if (!d) return; const row = d.previousElementSibling || d, rb = row.getBoundingClientRect(), lb = L.getBoundingClientRect(); if (rb.top >= lb.top - 1 && rb.bottom <= lb.bottom + 1){ moved = true; return; } moved = true; L.scrollTop += rb.top - lb.top - 8; };   /* (Oct 18, Chris video: desk shifts on open) the open to-do already in view = never move; otherwise ONE scroll, never repeated */
       [60, 500, 1300].forEach(t => setTimeout(go, t)); } }   // again after the live data redraws the list
   try { localStorage.setItem("fd-where", JSON.stringify({tab, sub, psub, msub})); } catch {}
   { const k = navKey(); if (k !== navLast){ if (navLast && !navBusy) try { history.pushState({fd: 1}, ""); } catch {} navLast = k; } }
