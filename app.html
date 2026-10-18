@@ -881,7 +881,7 @@ a.tb.rs-fixed{flex-direction:column}
 #list .msec{overflow:clip!important}
 #list .msec > h4{position:sticky;top:0;z-index:3;background:inherit}
 @media (hover:hover){ #list .msec > h4:hover{background:inherit;background-image:linear-gradient(rgba(127,127,127,.08),rgba(127,127,127,.08))} }
-#list .fdstick{position:sticky!important;z-index:2}
+#list .fdstick{position:sticky!important;z-index:4}   /* (Oct 18, Chris phone screenshot) the pinned open row sits ABOVE its blurred folder header (z 3), never under it */
 #list .msec > h4.nostick{position:relative;box-shadow:none}
 /* (Oct 12, Chris) COMPUTER too: the open header pins like the phone; the page still scrolls freely (no lock) */
 /* (Oct 11, Chris) while pinned: only a thin line under it (no fade); solid background so nothing shows through */
@@ -2028,7 +2028,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v144</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v145</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
