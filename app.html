@@ -2021,7 +2021,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v142</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v143</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3901,7 +3901,8 @@ function stickUpdate(){ const L = $("list"); if (!L || L.classList.contains("fdl
   const all = [...L.querySelectorAll(".rowon, .subon")].filter(x => x.getClientRects().length && x.closest(".msec") && !x.closest(".kids")), h = all.pop();
   L.querySelectorAll(".fdstick").forEach(x => { if (x !== h){ x.classList.remove("fdstick", "stuck"); x.style.top = ""; } });
   const hb = h && h.nextElementSibling && h.nextElementSibling.matches(".tdetail, .sublist, .mbody, .replist") ? h.nextElementSibling : null;
-  const inner = hb && hb.getBoundingClientRect().top - h.offsetHeight <= LT + 1 ? h.closest(".msec") : null;   /* (Oct 16, Chris) the folder header unpins only once the open row's header reaches the top (All songs far below used to unpin Songs at once) */
+  /* (Oct 17, Chris video: header shaking) a pinned row header rests 8px below the list top, so allow 10px; measured on the row body only (never on the folder header, which moves when it unpins = flip-flop) */
+  const inner = hb && hb.getBoundingClientRect().top - h.offsetHeight <= LT + 10 ? h.closest(".msec") : null;   /* (Oct 16, Chris) the folder header unpins only once the open row's header reaches the top (All songs far below used to unpin Songs at once) */
   L.querySelectorAll(".msec > h4").forEach(x => { x.classList.toggle("nostick", x.parentElement === inner); if (x.parentElement === inner) x.classList.remove("stuck"); });   /* (Oct 11, Chris) only ONE frozen header: the innermost open one */
   L.querySelectorAll(".msec > h4:not(.nostick)").forEach(x => { const box = x.parentElement; const st = box.getBoundingClientRect().top < LT - 1 && !box.classList.contains("collapsed"); x.classList.toggle("stuck", st); });
   if (!h) return; const body = h.nextElementSibling;
@@ -3932,7 +3933,10 @@ function fdLock(L, ob, keepD){ if (!phone() || !ob || isDesktop()) return false;
   L.scrollTop = st0; L.dataset.lst = L.scrollTop;
   const room = B.scrollHeight - B.clientHeight; if (room < d - 0.5){ const pad = document.createElement("div"); pad.className = "fdpad"; pad.style.height = (d - room) + "px"; B.appendChild(pad); }
   B.scrollTop = d; L._lockD = d; B.onscroll = () => { L._lockD = B.scrollTop; };
-  L.querySelectorAll(".fdstick").forEach(x => { x.classList.remove("fdstick", "stuck"); x.style.top = ""; }); return true; }
+  L.querySelectorAll(".fdstick").forEach(x => { x.classList.remove("fdstick", "stuck"); x.style.top = ""; });
+  /* (Oct 17, Chris phone video) locked = the open row's header is on top, so its folder header must not pin over it (stickUpdate skips while locked; a re-render had left the folder header pinned) */
+  if (ob[0].tagName !== "H4"){ const fm = ob[0].closest(".msec"), fh = fm && fm.querySelector(":scope > h4"); if (fh){ fh.classList.add("nostick"); fh.classList.remove("stuck"); } }
+  return true; }
 function fdUnlock(L){ const B = L._lock; L._lock = null; L._lockHdr = null; if (!L.classList.contains("fdlock") && !B) return;
   const d = B && B.isConnected ? B.scrollTop : 0;
   if (B){ B.querySelectorAll(":scope > .fdpad").forEach(x => x.remove()); B.style.maxHeight = ""; B.classList.remove("fdscroll"); B.onscroll = null; }
@@ -4138,12 +4142,14 @@ document.addEventListener("pointerdown", () => { fdPress = true; clearTimeout(fd
 document.addEventListener("pointerup", () => { clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 400); }, true);
 document.addEventListener("pointercancel", () => { clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 50); }, true);
 window.addEventListener("click", () => setTimeout(fdRelease, 0));
-function render(){ { const L0 = $("list"); if (L0 && L0.dataset.kptab !== tab + "|" + (sub || "")){ L0.dataset.kptab = tab + "|" + (sub || ""); kpSet(L0, 0); L0.classList.remove("fdlock"); L0._lock = null; } }   // (Oct 8) new screen = no leftover room on top
+function render(){ const L1 = $("list"), st1 = L1 ? L1.scrollTop : 0, k1 = L1 ? L1.dataset.kptab : "";   /* (Oct 17, Chris: desk shakes) a live-data redraw keeps the list exactly where it was */
+  { const L0 = $("list"); if (L0 && L0.dataset.kptab !== tab + "|" + (sub || "")){ L0.dataset.kptab = tab + "|" + (sub || ""); kpSet(L0, 0); L0.classList.remove("fdlock"); L0._lock = null; } }   // (Oct 8) new screen = no leftover room on top
   if (phone() && tab === "projects" && psub !== "projects") psub = "projects";   // (Oct 7) phone: everything opens in place, no Back screens
   const f = document.activeElement && document.activeElement.id === "sortsearch";
   // (Oct 8) each step is guarded: one broken extra can never stop the page's buttons from working
   try { $("list").classList.toggle("roomy", tab === "today" || tab === "projects"); } catch {}
-  for (const f of [renderMain, renderPop, applyOrder, applyCollapse, () => phone() && applySubOpen(), addTodayBtns, applyTaskOpen, applyFocus]){ try { f(); } catch (err){ fdErr(err); } }
+  const keepSt = () => { if (L1 && L1.isConnected && k1 === tab + "|" + (sub || "") && Math.abs(L1.scrollTop - st1) > 1){ L1.scrollTop = st1; L1.dataset.lst = L1.scrollTop; } };
+  for (const f of [renderMain, renderPop, applyOrder, applyCollapse, () => phone() && applySubOpen(), addTodayBtns, applyTaskOpen, keepSt, applyFocus]){ try { f(); } catch (err){ fdErr(err); } }
   // (Oct 8) Chris: coming back from the Lab (or any Go link) = the same spot: the to-do he left is open AND in view
   if (!backDone && phone() && taskOpen){ const det = document.querySelector("#list .tdetail"), L = $("list");
     if (det && L){ backDone = true; let moved = false; L.addEventListener("touchstart", () => { moved = true; }, {once: true});
