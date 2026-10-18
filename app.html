@@ -704,6 +704,7 @@ a.tb.rs-fixed{flex-direction:column}
 .exleg:has(.sertog){flex-wrap:nowrap;gap:6px}
 .exleg .sertog{flex:1 1 0;min-width:0;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:7px 6px}
 .fdim{filter:blur(2px);opacity:.45}
+.fdhide{display:none!important}
 .tdpanel{margin-top:4px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px}
 .tdpanel .pfolds{max-height:none}
 /* (Oct 7) room under the last folder, so anything opened near the bottom can glide up into view */
@@ -2020,7 +2021,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v141</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v142</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4016,6 +4017,7 @@ function keepPos(el, fn, opening){
 }
 function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   document.querySelectorAll("#list .fdim").forEach(x => x.classList.remove("fdim"));
+  document.querySelectorAll("#list .fdhide").forEach(x => x.classList.remove("fdhide"));
   if (!phone()) return;
   const boxes = [...document.querySelectorAll("#list .msec:not(.pfold)")], open = boxes.filter(b => !b.classList.contains("collapsed"));
   if (!open.length) return;
@@ -4030,6 +4032,8 @@ function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   [...par.children].forEach(c => { if (c !== trow && c !== det) c.classList.add("fdim"); });
   if (par.classList.contains("sublist") && par.previousElementSibling) par.previousElementSibling.classList.add("fdim");
   const h2 = box2 && box2.querySelector(":scope > h4"); if (h2) h2.classList.add("fdim");
+  /* (Oct 17, Chris: "make the card bigger, you have lots of room") computer: an open to-do gets the blurred folders' room below it, so the list never scrolls */
+  if (isDesktop() && box2){ let n = box2.nextElementSibling; while (n){ if (n.matches(".msec")) n.classList.add("fdhide"); n = n.nextElementSibling; } }
 }
 function applyCollapse(){
   document.querySelectorAll(".msec:not(.pfold) > h4:not([data-icatopen]), .pcol > h4, .wkcol > h4").forEach(h => {
