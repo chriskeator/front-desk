@@ -701,6 +701,7 @@ a.tb.rs-fixed{flex-direction:column}
 .lvbar{display:flex;gap:4px;margin-top:4px}
 .lvbar span{flex:1 1 0;min-width:0;border-radius:6px;background:#E4E6E9;color:#8A9099;font-size:12px;font-weight:700;padding:6px 4px;text-align:center;white-space:nowrap;line-height:16px}   /* (Oct 11, Chris) 4 equal boxes, each labelled; only the current one in colour */
 .lvbar span.on{background:var(--lc);color:#16191c;font-weight:800}
+a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Chris video: Go flashed) no grey/blue Android tap flash on any desk button */
 .gobtn{display:block;width:100%;text-align:center;font-size:15px;font-weight:800;padding:11px;box-sizing:border-box;text-decoration:none}
 /* (Oct 7) long names wrap instead of running under the time / Today button */
 .chc b,.pc3t b,.chc span,.pc3t span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
@@ -895,7 +896,7 @@ a.tb.rs-fixed{flex-direction:column}
 /* (Oct 11, Chris) while pinned: only a thin line under it (no fade); solid background so nothing shows through */
 #list .msec > h4.stuck,#list .fdstick.stuck,#list .fdstick.stuck > .chc,#list .fdstick.stuck > .pc3t{box-shadow:inset 0 -1px 0 var(--line)!important}
 #list .msec > h4.stuck.fdim,#list .msec.fdim > h4.stuck{opacity:1!important;filter:none!important}   /* a pinned folder header is solid, never see-through */
-#list{overscroll-behavior:contain}
+#list{overscroll-behavior:contain;overflow-anchor:none}   /* (Oct 18, desk-film.py) the desk places rows itself (keepPos); Chrome's own scroll anchoring nudged the list by itself after a glide = the next tap jumped */
 #list.fdlock{overflow-y:hidden!important}
 #list .fdscroll{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 #list .fdscroll::-webkit-scrollbar{display:none}
@@ -2037,7 +2038,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v154</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v155</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4025,7 +4026,7 @@ function keepPos(el, fn, opening){
   jcClear();
   const key = [...el.attributes].filter(a => a.name.startsWith("data-")).map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join(""), tag = el.tagName.toLowerCase();
   const wasStuck = (el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el)).classList.contains("stuck");
-  let before = el.getBoundingClientRect().top; fdUnlock(L); before = el.getBoundingClientRect().top; const parts = fdParts(L, before); kbSet(L, 0); fn();   /* old room below is re-measured from scratch each time */
+  let before = el.getBoundingClientRect().top; const parts = fdParts(L, before); fdUnlock(L);   /* (Oct 18) 'before' = where Chris SEES it, measured before the unlock (an unlock near the end of the list can shift the page) */ kbSet(L, 0); fn();   /* old room below is re-measured from scratch each time */
   if (!el.isConnected && key){ const vis = [...L.querySelectorAll(tag + key)].filter(x => x.getClientRects().length); el = vis[0] || el; }   /* re-rendered: find the same header again */
   if (!el.isConnected){ return; }
   unstick();
@@ -4053,7 +4054,7 @@ function keepPos(el, fn, opening){
     if (L.scrollHeight - L.clientHeight < want - 0.5){ kbSet(L, want + L.clientHeight); kbSet(L, Math.max(0, (+L.dataset.kb || 0) - (L.scrollHeight - L.clientHeight - want))); }
     L.scrollTop = want; L.scrollTop += el.getBoundingClientRect().top - before; L.dataset.lst = L.scrollTop; stickUpdate();
     const S = L.scrollTop, G = K + gaps.reduce((t, g) => t + g.h, 0), LT = L.getBoundingClientRect().top + L.clientTop, LB = LT + L.clientHeight;
-    let Sf = Math.max(0, S - G), lock = false, toTop = false;
+    let Sf = S >= G ? S - G : S, lock = false, toTop = false;   /* room above for all of it: the tapped row stays; not enough: only it and the rows below glide up (never both ways at once) */
     if (opening && !isDesktop()){ const r = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el), nx = r.nextElementSibling, isB = nx && nx.matches(".tdetail,.sublist,.mbody,.replist");
       const bx = el.tagName === "H4" ? el.closest(".msec") : isB ? nx : r, nat0 = el.tagName === "H4" ? bx.getBoundingClientRect().top : isB ? nx.getBoundingClientRect().top - r.offsetHeight : r.getBoundingClientRect().top, bot0 = bx.getBoundingClientRect().bottom;
       /* the folder header stays pinned over the top of the list while a row in it is open: a row that fits must fit BELOW it (it was parked under it, then the header popped away) */
@@ -4062,10 +4063,12 @@ function keepPos(el, fn, opening){
       if (fits){ if (at(bot0, Sf) > LB + 0.5) Sf += at(bot0, Sf) - LB + 4; }
       else { Sf += at(nat0, Sf) - LT; lock = true; L._pinHold = true; stickUpdate(); } }   /* taller: the folder header scrolls away with the list (no pinned header popping off at the end) */
     else if (L.scrollHeight - G - (+L.dataset.kb || 0) <= L.clientHeight + 0.5){ Sf = 0; toTop = true; }
+    else if (outer && outer[0].tagName === "H4"){ const mr = outer[1].getBoundingClientRect(), nt = mr.top - G - (Sf - S);   /* closed inside an open folder that now fits: the same one glide shows its top (no lock + second glide = the 65px snap) */
+      if (mr.height <= L.clientHeight + 0.5 && nt < LT - 0.5) Sf = Math.max(0, Sf - (LT - nt)); }
     L._last = {G, S, Sf};   /* read by desk-film.py: the room that vanished above, so its one glide is allowed */
     const maxEnd = L.scrollHeight - G - L.clientHeight;
     if (Sf > maxEnd + 0.5) kbSet(L, (+L.dataset.kb || 0) + Sf - maxEnd);
-    const end = () => { L._pinHold = false; if (toTop) kbSet(L, 0); stickUpdate(); if (lock && el.isConnected) fdLock(L, openBlock(L)); else if (outer){ fdLock(L, outer); fitBack(L, outer); } L.dataset.jct = L.scrollTop; };
+    const end = () => { L._pinHold = false; if (toTop) kbSet(L, 0); stickUpdate(); if (lock && el.isConnected) fdLock(L, openBlock(L)); L.dataset.jct = L.scrollTop; };
     if (G > 0.5 || Math.abs(Sf - S) > 1) fdGlide(L, gaps, K, S, Sf, end); else end();
     L.dataset.jct = L.scrollTop; return; }
   L.scrollTop += el.getBoundingClientRect().top - before;
@@ -4737,6 +4740,9 @@ function fdOpenOut(url){
      package=chrome, so Android hands it to the Lab's own app instead of Chrome first (that double hop was the flashing) */
   const lab = /^lab\.worshippianoacademy\.com\//i.test(m[2]);
   const iu = "intent://" + m[2] + "#Intent;scheme=" + m[1].toLowerCase() + (lab ? "" : ";package=com.android.chrome") + ";S.browser_fallback_url=" + encodeURIComponent(url) + ";end";
+  /* (Oct 18, Chris video v154: the Lab app opened TWICE (splash, desk, splash): window.open of the intent launched it and returned
+     null, then the fallback below launched it again. A Lab link fires exactly ONE launch. */
+  if (lab){ try { window.top.location.href = iu; } catch { try { location.href = iu; } catch {} } return true; }
   let w = null; try { w = window.open(iu, "_blank"); } catch {}
   if (w) return true;
   try { window.top.location.href = iu; return true; } catch {}
@@ -5012,6 +5018,7 @@ document.addEventListener("click", async e => {
     const runAdd = finishing && tk && tk.runFrom ? {runFrom: null, worked: (+tk.worked || 0) + Math.max(1, Math.round((Date.now() - Date.parse(tk.runFrom)) / 60000))} : {};
     try { await db.collection("tasks").doc(d.task).update({done: finishing, doneAt: finishing ? new Date().toISOString() : null, ...runAdd});
       if (openLinks === d.task) openLinks = null;   // done: the pop-up closes
+      await new Promise(r => setTimeout(r, 0));   /* (Oct 18, desk-film.py) the new task list first: one draw of the final state (it drew a half-updated frame first) */
       render();
       if (finishing && tk){ lastDone = {id: tk.id, title: tk.title}; clearTimeout(undoTimer); undoTimer = setTimeout(() => { lastDone = null; render(); }, 10000); render(); } } catch { t.disabled = false; } return; }
   if (d.skipplan && db){ t.disabled = true; try { await db.collection("stats").doc("plan").set({date: plus(0), updated: new Date().toISOString(), by: "skip"}); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
