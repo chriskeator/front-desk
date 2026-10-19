@@ -7,7 +7,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Front Desk TEST">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png"><link rel="apple-touch-icon" href="icon-180-v2.png">
-<style>html,body{margin:0}</style>
+<style>html,body{margin:0}
+/* app: keep clear of the notch and home bar. (Oct 18, desk-film.py) in the HEAD so the very first paint already has it: at the end of the page it
+   arrived after the first paint and the whole page shifted 6px right and 4px down */
+/* (Oct 18, Chris: light mode on the phone app = dark splash then a hard white flash) installed app + light mode: the page starts on the
+   splash colour and the light page fades in over it (0.35s); dark mode and browser tabs never get this */
+html.fdsplash,html.fdfade{background:#171B1E} html.fdsplash body{opacity:0;background:var(--bg,#FFFDF8)} html.fdfade body{transition:opacity .35s ease}
+html body .wrap{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}</style>
+<script>try { if (matchMedia("(display-mode: standalone)").matches && !matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("fdsplash"); } catch (e) {}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>window.DESK_CFG = {url: "https://cndzteukojzzjpmzmdxr.supabase.co", key: "sb_publishable_S6pzTaqMtZCSQoE_2Pkmew_QnzmBUM3"};
 function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//; for (const t of (typeof allTasks !== "undefined" ? allTasks : [])) for (const l of (t.links || [])) { const m = re.exec(l.url || ""); if (m) return m[0] + "lab/"; } } catch (e) {} return "https://lab.worshippianoacademy.com/"; }</script>
@@ -913,6 +920,7 @@ a.tb.rs-fixed{flex-direction:column}
 #list .fdscroll::-webkit-scrollbar{display:none}
 #list .fdscroll > *{flex-shrink:0}
 #list::before{content:"";display:block;flex:none;height:var(--kp,0px);margin-bottom:-8px}
+#list .fdgap{display:block!important;flex:none;padding:0;margin:0;border:0;pointer-events:none} #list > .fdgap{margin-bottom:-8px}   /* (Oct 18) the blank gap a closed thing leaves for one glide (keepPos) */
 #list.kpglide::before{transition:height .35s ease}
 #list::after{content:"";display:block;flex:none;height:var(--kb,0px);margin-top:-8px}
 
@@ -2048,7 +2056,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v152</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v154</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3925,6 +3933,7 @@ function moneyFolders(){ $("bar").innerHTML = "";
 // (Oct 11, Chris) pin the open folder header (CSS) and the innermost open row header (here) to the top of the list;
 // a pinned row header is pushed off by the end of its open body, like a section header
 function stickUpdate(){ const L = $("list"); if (!L || L.classList.contains("fdlock")) return; const LT = L.getBoundingClientRect().top + L.clientTop;
+  if (L._pinHold){ L.querySelectorAll(".msec > h4").forEach(x => { x.classList.add("nostick"); x.classList.remove("stuck"); }); return; }
   const all = [...L.querySelectorAll(".rowon, .subon")].filter(x => x.getClientRects().length && x.closest(".msec") && !x.closest(".kids")), h = all.pop();
   L.querySelectorAll(".fdstick").forEach(x => { if (x !== h){ x.classList.remove("fdstick", "stuck"); x.style.top = ""; } });
   const hb = h && h.nextElementSibling && h.nextElementSibling.matches(".tdetail, .sublist, .mbody, .replist") ? h.nextElementSibling : null;
@@ -3974,7 +3983,7 @@ function fdRelock(){ const L = $("list"); if (!L || !L.classList.contains("fdloc
 function kbSet(L, n){ const kb = +L.dataset.kb || 0; if (Math.abs(n - kb) < 0.5) return;   /* room below = #list::after height (padding does not scroll in a flex list) */
   L.dataset.kb = n; if (n > 0) L.style.setProperty("--kb", n + "px"); else L.style.removeProperty("--kb"); }
 setTimeout(() => { const L = $("list"); if (L) L.addEventListener("scroll", () => { stickUpdate(); if (!L._fitting && Math.abs(L.scrollTop - (+L.dataset.jct || 0)) > 3 && L.querySelector(".justclosed")) jcClear();
-  const prev = +L.dataset.lst || 0, kb = +L.dataset.kb || 0; L.dataset.lst = L.scrollTop; if (!kb || L.scrollTop >= prev) return;
+  const prev = +L.dataset.lst || 0, kb = +L.dataset.kb || 0; L.dataset.lst = L.scrollTop; if (!kb || L._fitting || L.scrollTop >= prev) return;
   const slack = L.scrollHeight - L.clientHeight - L.scrollTop; kbSet(L, L.scrollTop <= 0 ? 0 : Math.max(0, kb - slack)); }, {passive: true}); }, 0);   /* scrolled UP: the room below shrinks by what is now off-screen below (nothing on screen moves); none left at the top */
 // (Oct 11, Chris) ONE shared open/close for every in-place row and folder on every screen: the tapped header never moves on
 // open or close (room is added above/below instead, and the room below shrinks as he scrolls away); after a close, that one
@@ -3999,54 +4008,84 @@ function fitBack(L, outer){
   if (s < 0.5 && !kp){ kbSet(L, 0); return; }
   kpSet(L, 0); kbSet(L, s + L.clientHeight); L.scrollTop = s; L.dataset.lst = s; L._fitting = true;
   glideBy(L, -s, () => { kbSet(L, 0); L.dataset.jct = L.scrollTop; setTimeout(() => { L._fitting = false; }, 50); }); }
+/* (Oct 18) what is open ABOVE the tapped row before a tap: each open to-do / list body and each open folder, with the row it hangs under
+   (found again after a redraw by its data- key) and how far that row reaches down (to the next row) */
+const FDKEYS = ["data-tlinks", "data-popproj", "data-allsongs", "data-mrow", "data-repopen", "data-songopen", "data-ideaopen", "data-icatopen"];
+function fdKeyOf(a){ const t = a.matches(FDKEYS.map(k => "[" + k + "]").join(",")) ? a : a.querySelector(FDKEYS.map(k => "[" + k + "]").join(",")); if (!t) return null;
+  const k = FDKEYS.find(x => t.hasAttribute(x)); return `[${k}="${CSS.escape(t.getAttribute(k))}"]`; }
+function fdReach(a){ const n = a.nextElementSibling; return n && n.getClientRects().length ? n.getBoundingClientRect().top : a.parentElement.getBoundingClientRect().bottom; }
+function fdParts(L, before){ const out = [];
+  L.querySelectorAll(".msec:not(.collapsed) > h4[data-ck]").forEach(h => { const m = h.parentElement; if (!m.getClientRects().length || m.getBoundingClientRect().bottom > before + 1) return; out.push({fold: h.dataset.ck, d: m.getBoundingClientRect().bottom - h.getBoundingClientRect().top}); });
+  L.querySelectorAll(".tdetail, .sublist, .replist, .mbody").forEach(b => { if (!b.getClientRects().length || b.getBoundingClientRect().bottom > before + 1) return; const a = b.previousElementSibling, k = a && fdKeyOf(a); if (!k) return;
+    const m = b.closest(".msec"), h = m && m.querySelector(":scope > h4"); out.push({k, in: h && h.dataset.ck, d: fdReach(b) - a.getBoundingClientRect().top}); });
+  return out; }
+/* after the redraw: a blank gap (.fdgap) where each of those shrank, so nothing above the tapped row moves in the tap frame */
+function fdGaps(L, parts){ const gaps = [], done = new Set();
+  for (const p of parts){ if (p.in && done.has(p.in)) continue; let a = null, after = null, d1 = 0;
+    if (p.fold){ const h = [...L.querySelectorAll(".msec > h4[data-ck]")].find(x => x.dataset.ck === p.fold && x.getClientRects().length); if (!h) continue; const m = h.parentElement; d1 = m.getBoundingClientRect().bottom - h.getBoundingClientRect().top; after = h; }
+    else { const t = [...L.querySelectorAll(p.k)].find(x => x.getClientRects().length && !x.closest(".tdetail .tdetail")); if (!t) continue; a = t.closest(".trow,.pc3") || t; d1 = fdReach(a) - a.getBoundingClientRect().top; after = a; }
+    const h = p.d - d1; if (h < 1) continue;
+    const g = document.createElement("div"); g.className = "fdgap"; g.style.height = h + "px"; after.after(g); gaps.push({el: g, h}); if (p.fold) done.add(p.fold); }
+  return gaps; }
+/* ONE smooth ~260ms glide: every gap (and any room above) shrinks to nothing while the list scrolls S -> Sf, all on the same curve */
+function fdGlide(L, gaps, K, S, Sf, done){ const t0 = performance.now(), ease = x => 1 - Math.pow(1 - x, 3); L._fitting = true; clearTimeout(L._fitT); let over = false, last = S;
+  const fin = () => { if (over) return; over = true;
+    if (Math.abs(L.scrollTop - last) > 2){ const rem = gaps.reduce((t, g) => t + (g.el.isConnected ? g.el.offsetHeight : 0), 0) + (K ? +L.dataset.kp || 0 : 0); const s0 = L.scrollTop;   /* he scrolled during the glide: stop where he is, never pull the list back */
+      gaps.forEach(g => g.el.remove()); if (K) kpSet(L, 0); L.scrollTop = Math.max(0, s0 - rem); }
+    else { gaps.forEach(g => g.el.remove()); if (K) kpSet(L, 0); L.scrollTop = Sf; }
+    L.dataset.lst = L.scrollTop; L._fitT = setTimeout(() => { L._fitting = false; }, 60); if (done) done(); };
+  const step = now => { if (over) return; if (Math.abs(L.scrollTop - last) > 2) return fin(); const k = Math.min(1, (now - t0) / 260), e = ease(k);
+    if (k >= 1) return fin();
+    gaps.forEach(g => { g.el.style.height = g.h * (1 - e) + "px"; }); if (K) kpSet(L, K * (1 - e));
+    L.scrollTop = S + (Sf - S) * e; last = L.scrollTop; L.dataset.lst = L.scrollTop; requestAnimationFrame(step); };
+  requestAnimationFrame(step); setTimeout(fin, 600); }   /* frames can stall (app in the background): the glide always finishes */
 function keepPos(el, fn, opening){
   const L = $("list"); if (!el || !L){ fn(); return; }
   jcClear();
   const key = [...el.attributes].filter(a => a.name.startsWith("data-")).map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join(""), tag = el.tagName.toLowerCase();
   const wasStuck = (el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el)).classList.contains("stuck");
-  let before = el.getBoundingClientRect().top; fdUnlock(L); kbSet(L, 0); fn();   /* old room below is re-measured from scratch each time */
+  let before = el.getBoundingClientRect().top; fdUnlock(L); before = el.getBoundingClientRect().top; const parts = fdParts(L, before); kbSet(L, 0); fn();   /* old room below is re-measured from scratch each time */
   if (!el.isConnected && key){ const vis = [...L.querySelectorAll(tag + key)].filter(x => x.getClientRects().length); el = vis[0] || el; }   /* re-rendered: find the same header again */
   if (!el.isConnected){ return; }
   unstick();
   const LT0 = L.getBoundingClientRect().top + L.clientTop, outer = !opening ? openBlock(L) : null;
-  if (outer && outer[0] !== el && before <= LT0 + 2) before += outer[0].offsetHeight;   /* the outer open thing's header takes the top again; the closed row sits right under it */
+  /* (Oct 18) no longer: 'the closed row sits right under the outer header' shifted it by a header height in one frame; it stays, and the one glide below settles it */
   /* a closed header leaves its pinned spot: it lands where it was pinned (top of the list), never off-screen */
   if (!opening){ const m = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el); m.classList.add("justclosed"); }
   // (Oct 8) when a folder ABOVE closes, the page can't scroll past the top, so a little room is added above instead;
   // that room is used up again the next time anything opens or closes, so the tapped row never jumps
-  if (isDesktop()){   /* computer: what he clicked stays exactly where it is, open or close; room below only so a close never jumps */
-    let want = L.scrollTop + el.getBoundingClientRect().top - before; const pad = +L.dataset.kp || 0;
-    if (want < 0){ kpSet(L, pad - want); want = 0; } else if (pad){ const use = Math.min(pad, want); kpSet(L, pad - use); want -= use; }   /* a folder above closed: room above, so nothing jumps */
-    if (L.scrollHeight - L.clientHeight < want - 0.5){ kbSet(L, want + L.clientHeight); kbSet(L, Math.max(0, (+L.dataset.kb || 0) - (L.scrollHeight - L.clientHeight - Math.max(0, want)))); }
-    L.scrollTop = want; L.scrollTop += el.getBoundingClientRect().top - before; L.dataset.lst = L.scrollTop; L.dataset.jct = L.scrollTop; return; }
-  if (phone()){ const pad = +L.dataset.kp || 0;
-    let want = L.scrollTop + el.getBoundingClientRect().top - before, np = pad;
-    if (want < 0){ np = pad - want; want = 0; } else if (pad){ const use = Math.min(pad, want); np = pad - use; want -= use; }
-    kpSet(L, np);
-    // (Oct 11, Chris) closing near the bottom: the list got shorter than the scroll position, so room is added BELOW instead
-    // (used up again as he scrolls up or the next time anything opens/closes); the tapped row never moves
-    if (L.scrollHeight - L.clientHeight < want - 0.5){ kbSet(L, want + L.clientHeight); kbSet(L, Math.max(0, (+L.dataset.kb || 0) - (L.scrollHeight - L.clientHeight - want))); }   /* oversize, then trim exactly */
-    L.scrollTop = want; L.scrollTop += el.getBoundingClientRect().top - before; L.dataset.lst = L.scrollTop; stickUpdate(); if (outer) fdLock(L, outer);
-    // (Oct 8) a blank gap showing at the very top glides closed a moment later
-    if (opening) setTimeout(() => { const kp = +L.dataset.kp || 0, vis = kp - L.scrollTop; if (vis <= 2) return;   /* (Oct 11) never on close: nothing moves on close */ const nk = kp - vis;
-      L.classList.add("kpglide"); kpSet(L, nk); setTimeout(() => { L.classList.remove("kpglide"); }, 400); }, 450);
-    // (Oct 11, Chris) opening ANYTHING slides its header to the very top of the list (~250ms) and it stays there while open
-    if (opening) setTimeout(() => { if (!el.isConnected) return; const r = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el), nx = r.nextElementSibling;
-      const LT = L.getBoundingClientRect().top + L.clientTop;
-      const nat = el.tagName === "H4" ? el.closest(".msec").getBoundingClientRect().top : nx && nx.matches(".tdetail,.sublist,.mbody,.replist") ? nx.getBoundingClientRect().top - r.offsetHeight : r.getBoundingClientRect().top;
-      const to0 = L.scrollTop + (nat - LT);
-      /* (Oct 18, Chris) no slide when the open thing already fits: if its bottom is on screen, nothing moves; if it is a bit
-         below, glide only enough to show its bottom; only taller than the screen slides its header to the top */
-      const bx = el.tagName === "H4" ? el.closest(".msec") : nx && nx.matches(".tdetail,.sublist,.mbody,.replist") ? nx : r, LB = LT + L.clientHeight, bot = bx.getBoundingClientRect().bottom;
-      if (bot - nat <= L.clientHeight - 4 && bot <= LB + 0.5) return;
-      const fits = bot - nat <= L.clientHeight - 4, to = fits ? L.scrollTop + (bot - LB) + 4 : to0;
-      if (fits){ const d = Math.max(-L.scrollTop, to - L.scrollTop); if (Math.abs(d) > 1) glideBy(L, d); return; }
-      if (to > L.scrollHeight - L.clientHeight + 0.5){ kbSet(L, (+L.dataset.kb || 0) + to + L.clientHeight); kbSet(L, Math.max(0, (+L.dataset.kb || 0) - (L.scrollHeight - L.clientHeight - to))); }
-      const d = Math.max(-L.scrollTop, to - L.scrollTop), lock = () => { if (el.isConnected) fdLock(L, openBlock(L)); };
-      if (Math.abs(d) > 1) glideBy(L, d, lock); else lock(); }, 30);
-    // (Oct 11, Chris) closing NEVER moves the tapped row, even at the very bottom: no glide; the room added below shrinks as he scrolls up (kbSet)
-    // (Oct 11, Chris: 3 Money Map folders) EXCEPT when the whole closed list fits on the screen: drop the room and glide back to the top
-    if (!opening) fitBack(L, outer);
+  /* (Oct 18) computer: the same one-glide code below; what he clicked stays where it is (no slide to show the bottom: the open to-do takes the hidden folders' room) */
+  if (phone()){
+    /* (Oct 18, Chris: "fix this shaking nonsense once and for all"; checked frame by frame by desk-film.py) ONE motion per tap, never a jump then
+       a glide. Content that vanished ABOVE the tapped row (an open to-do, an open folder) first leaves a blank gap of its own height in its place,
+       so nothing on screen moves in the tap frame; then ONE smooth glide shrinks every gap while the list slides to its end spot:
+       open = v149 (fits: stays; a bit below: just enough to show its bottom; taller than the screen: header to the top, then locked);
+       close = the tapped row stays (room below if needed), except when the whole list fits on the screen: back to the top.
+       No hidden room above (kp) is ever left behind (it made the next close jump). */
+    const gaps = fdGaps(L, parts);
+    let K = +L.dataset.kp || 0; if (K && L.scrollTop >= K){ const s0 = L.scrollTop; kpSet(L, 0); L.scrollTop = s0 - K; K = 0; }   /* old hidden room above: dropped where nothing shows */
+    if (!opening) L._pinHold = true;   /* folder headers do not re-pin in the middle of the glide (they jumped in over the closed row) */
+    const rb = el.tagName === "H4" ? el.closest(".msec") : (el.closest(".trow,.pc3") || el), up = before - el.getBoundingClientRect().top;
+    if (up > 0.5 && rb){ const g = document.createElement("div"); g.className = "fdgap"; g.style.height = up + "px"; rb.before(g); gaps.push({el: g, h: up}); }   /* the row would rise (it was pinned, or more vanished above): a gap right above it holds it, the glide closes it */
+    let want = L.scrollTop + el.getBoundingClientRect().top - before;
+    if (want < 0){ K -= want; kpSet(L, K); want = 0; }
+    if (L.scrollHeight - L.clientHeight < want - 0.5){ kbSet(L, want + L.clientHeight); kbSet(L, Math.max(0, (+L.dataset.kb || 0) - (L.scrollHeight - L.clientHeight - want))); }
+    L.scrollTop = want; L.scrollTop += el.getBoundingClientRect().top - before; L.dataset.lst = L.scrollTop; stickUpdate();
+    const S = L.scrollTop, G = K + gaps.reduce((t, g) => t + g.h, 0), LT = L.getBoundingClientRect().top + L.clientTop, LB = LT + L.clientHeight;
+    let Sf = Math.max(0, S - G), lock = false, toTop = false;
+    if (opening && !isDesktop()){ const r = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el), nx = r.nextElementSibling, isB = nx && nx.matches(".tdetail,.sublist,.mbody,.replist");
+      const bx = el.tagName === "H4" ? el.closest(".msec") : isB ? nx : r, nat0 = el.tagName === "H4" ? bx.getBoundingClientRect().top : isB ? nx.getBoundingClientRect().top - r.offsetHeight : r.getBoundingClientRect().top, bot0 = bx.getBoundingClientRect().bottom;
+      /* the folder header stays pinned over the top of the list while a row in it is open: a row that fits must fit BELOW it (it was parked under it, then the header popped away) */
+      const fh = el.tagName === "H4" ? null : el.closest(".msec") && el.closest(".msec").querySelector(":scope > h4"), FH = fh ? fh.offsetHeight : 0;
+      const at = (y, sf) => y - G - (sf - S), fits = bot0 - nat0 <= L.clientHeight - FH - 4;
+      if (fits){ if (at(bot0, Sf) > LB + 0.5) Sf += at(bot0, Sf) - LB + 4; }
+      else { Sf += at(nat0, Sf) - LT; lock = true; L._pinHold = true; stickUpdate(); } }   /* taller: the folder header scrolls away with the list (no pinned header popping off at the end) */
+    else if (L.scrollHeight - G - (+L.dataset.kb || 0) <= L.clientHeight + 0.5){ Sf = 0; toTop = true; }
+    L._last = {G, S, Sf};   /* read by desk-film.py: the room that vanished above, so its one glide is allowed */
+    const maxEnd = L.scrollHeight - G - L.clientHeight;
+    if (Sf > maxEnd + 0.5) kbSet(L, (+L.dataset.kb || 0) + Sf - maxEnd);
+    const end = () => { L._pinHold = false; if (toTop) kbSet(L, 0); stickUpdate(); if (lock && el.isConnected) fdLock(L, openBlock(L)); else if (outer){ fdLock(L, outer); fitBack(L, outer); } L.dataset.jct = L.scrollTop; };
+    if (G > 0.5 || Math.abs(Sf - S) > 1) fdGlide(L, gaps, K, S, Sf, end); else end();
     L.dataset.jct = L.scrollTop; return; }
   L.scrollTop += el.getBoundingClientRect().top - before;
   // (Oct 8) Chris: NO glide to the top any more. What he tapped stays exactly where it is; things open underneath; he scrolls himself.
@@ -4519,9 +4558,13 @@ function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : 
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
 let shBoard = null, scBoard = null;
+/* (Oct 18) a board refresh keeps showing the old board until the new one is here (setting it to [] first drew an empty board, then the full one = flicker) */
+let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null;
+function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
+function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
 function homeShorts(){
-  if (shBoard === null){ shBoard = []; db.collection("shortcheck").get().then(s => { shBoard = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); if (tab === "today") render(); }).catch(() => {}); }
+  if (shBoard === null) fdShLoad();
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const blk = (bg, bd, txt, rid, view) => `<i class="sblk"${rid ? ` data-shortrow="${esc(rid)}"${view ? ` data-shview="${view}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${rid ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${txt ? `<span class="sfw">${txt}</span>` : ""}</i>`;
@@ -4545,7 +4588,7 @@ function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice(
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${ST.map(t => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${esc(SABBR(t))}</span><span class="sfw">${esc(String(t).replace(/^Starter\s+/i, "").split(/\s+/)[0].replace(/^\w/, c => c.toUpperCase()))}</span></i>`).join("")}</span></div>`;
   /* (Oct 16, Chris) like Shorts: the gold box says Check and opens that song's check page (db 'songcheck', matched by name) */
-  if (scBoard === null){ scBoard = []; db.collection("songcheck").get().then(s => { scBoard = s.docs.map(d => Object.assign({id: d.id}, d.data())); if (tab === "today") render(); }).catch(() => {}); }
+  if (scBoard === null) fdScLoad();
   const scn = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
   const scAny = x => (scBoard || []).find(r => scn(r.name) === scn(x.title)), scFor = x => { const r = scAny(x); return r && r.status !== "approved" ? r : null; };
   /* board step Melody -> check page step 1, Starter chords -> step 2 */
@@ -5256,9 +5299,11 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("labpractices", ["order","asc"], v => labPractices = v);
   live("questions", ["asked","asc"], v => questions = v);
   live("sort", ["added","asc"], v => sorts = v.sort((a,b)=>Math.abs(+b.total||0)-Math.abs(+a.total||0)));
+  /* (Oct 18, desk-film.py) the Shorts + Songs boards are part of the FIRST draw (they used to arrive after it: header counts flipped "3 scheduled" -> "6 to check") */
+  deskWait.add("shboard"); fdShLoad().finally(() => first("shboard")); deskWait.add("scboard"); fdScLoad().finally(() => first("scboard"));
 })();
 </script>
 
-<style>/* app: keep clear of the notch and home bar */
-.wrap{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom));padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}</style>
+<script>(function(){ var h = document.documentElement; if (!h.classList.contains("fdsplash")) return; var go = function(){ if (go.d) return; go.d = 1; requestAnimationFrame(function(){ h.classList.add("fdfade"); requestAnimationFrame(function(){ h.classList.remove("fdsplash"); setTimeout(function(){ h.classList.remove("fdfade"); }, 500); }); }); };
+  /* the fonts first (max 0.4s), so the title never changes size once it shows */ try { document.fonts.ready.then(go); } catch (e) { go(); } setTimeout(go, 400); })();</script>
 </body></html>
