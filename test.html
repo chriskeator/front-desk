@@ -2048,7 +2048,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v151</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v152</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4709,7 +4709,10 @@ const FDURL = location.origin + "/app.html";
    the plain link); elsewhere the normal new tab. Capture phase, so the page's own click handlers still run. */
 function fdOpenOut(url){
   const m = /^(https?):\/\/(.+)$/i.exec(url || ""); if (!m || !/Android/i.test(navigator.userAgent)) return false;
-  const iu = "intent://" + m[2] + "#Intent;scheme=" + m[1].toLowerCase() + ";package=com.android.chrome;S.browser_fallback_url=" + encodeURIComponent(url) + ";end";
+  /* (Oct 18, Chris video: black, desk, white splash, desk again, Lab) a Lab link goes STRAIGHT to the installed Lab app: no
+     package=chrome, so Android hands it to the Lab's own app instead of Chrome first (that double hop was the flashing) */
+  const lab = /^lab\.worshippianoacademy\.com\//i.test(m[2]);
+  const iu = "intent://" + m[2] + "#Intent;scheme=" + m[1].toLowerCase() + (lab ? "" : ";package=com.android.chrome") + ";S.browser_fallback_url=" + encodeURIComponent(url) + ";end";
   let w = null; try { w = window.open(iu, "_blank"); } catch {}
   if (w) return true;
   try { window.top.location.href = iu; return true; } catch {}
