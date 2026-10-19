@@ -2029,7 +2029,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v149</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v150</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4015,7 +4015,13 @@ function keepPos(el, fn, opening){
     if (opening) setTimeout(() => { if (!el.isConnected) return; const r = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el), nx = r.nextElementSibling;
       const LT = L.getBoundingClientRect().top + L.clientTop;
       const nat = el.tagName === "H4" ? el.closest(".msec").getBoundingClientRect().top : nx && nx.matches(".tdetail,.sublist,.mbody,.replist") ? nx.getBoundingClientRect().top - r.offsetHeight : r.getBoundingClientRect().top;
-      const to = L.scrollTop + (nat - LT);
+      const to0 = L.scrollTop + (nat - LT);
+      /* (Oct 18, Chris) no slide when the open thing already fits: if its bottom is on screen, nothing moves; if it is a bit
+         below, glide only enough to show its bottom; only taller than the screen slides its header to the top */
+      const bx = el.tagName === "H4" ? el.closest(".msec") : nx && nx.matches(".tdetail,.sublist,.mbody,.replist") ? nx : r, LB = LT + L.clientHeight, bot = bx.getBoundingClientRect().bottom;
+      if (bot - nat <= L.clientHeight - 4 && bot <= LB + 0.5) return;
+      const fits = bot - nat <= L.clientHeight - 4, to = fits ? L.scrollTop + (bot - LB) + 4 : to0;
+      if (fits){ const d = Math.max(-L.scrollTop, to - L.scrollTop); if (Math.abs(d) > 1) glideBy(L, d); return; }
       if (to > L.scrollHeight - L.clientHeight + 0.5){ kbSet(L, (+L.dataset.kb || 0) + to + L.clientHeight); kbSet(L, Math.max(0, (+L.dataset.kb || 0) - (L.scrollHeight - L.clientHeight - to))); }
       const d = Math.max(-L.scrollTop, to - L.scrollTop), lock = () => { if (el.isConnected) fdLock(L, openBlock(L)); };
       if (Math.abs(d) > 1) glideBy(L, d, lock); else lock(); }, 30);
