@@ -1496,6 +1496,8 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 #songchk .nt.w,#songchk .nt.w:hover,#songchk .nt.w.np{border-color:transparent!important;cursor:grab}   /* (Oct 16 7pm, Chris) melody step: lyrics are never typed here. (Oct 20, Chris: 'the lyrics cannot move to the new phrasing') words DRAG again, onto the new notes */
 #songchk .nt.w:hover .tx,#songchk .nt.w.np .tx{background:var(--se-hov);border-radius:4px}
 #songchk .row.ok .nt.w{cursor:default}
+#songchk .secard.vnew .nt.w .tx{background:#fbf1d6;border-radius:4px}
+#songchk .selv .tb.vt{width:auto;min-width:34px;padding:0 8px}
 #songchk .nt.w .tx{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;white-space:nowrap;padding-left:4px}
 #songchk .nt.slot{background:transparent;border:1px dashed var(--se-line2)}
 #songchk .nt.slot>*{visibility:hidden}
@@ -1582,7 +1584,7 @@ const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+
 let CLIPN=null,CLIPK=null;
 /* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
    (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
-let CM=false,CS=false,LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
+let CM=false,CS=false,VER=1,VS=[],VW={},LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
 const RKF=()=>CS?'rowsOk_'+LF[LVK]:'rowsOk';   /* (Oct 20, Chris) row checks: melody has its own, each chords level has its own */
 const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM&&LVK===CUR(),lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
@@ -1826,12 +1828,12 @@ bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s));leadA=doc.lead!=null?doc.lead:N-SB
 function toDoc(){const N=S(),M=DOC.meter||4,U=N/M,B=4*M,I=!!DOC.intro,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6);
 const G=(i,s)=>r6((st[i]-(bars[i].a||0)+s-Z)/U);
 const notes=melody().map(n=>({g:r6((n.t-Z)/U),L:r6(n.len/U),m:n.mid,w:'',c:n.one&&n.q.x&&n.q.x.c?JSON.parse(JSON.stringify(n.q.x.c)):[]}));
-const words=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>words.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));
+const wcur=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>wcur.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));const words=VER>1&&VW[1]?JSON.parse(JSON.stringify(VW[1])):wcur;
 notes.forEach(n=>{const w=words.find(x=>Math.abs(x.g-n.g)<1e-6);n.w=w?w.w:''});
 const key=g=>I?(g<0?0:1+Math.floor(g/B+1e-9)):Math.floor(g/B+1e-9),keys=[...new Set(notes.map(n=>key(n.g)))].sort((p,q)=>p-q);
 const at=g=>{const k=key(g);let x=keys.indexOf(k);if(x<0){x=keys.filter(q=>q<k).length-1;if(x<0)x=0}return x};
 const grp=L=>{const out=keys.map(()=>[]);if(!keys.length)return out;L.forEach(b=>out[at(b.g)].push(b));out.forEach(l=>l.sort((p,q)=>p.g-q.g));return out};
-const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};['chordsMediumEdited','chordsHardEdited'].forEach(f=>{if(DOC[f])P[f]=DOC[f]});
+const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};['chordsMediumEdited','chordsHardEdited'].forEach(f=>{if(DOC[f])P[f]=DOC[f]});if(VS.length>1){const o={};for(let v=2;v<=VS.length;v++)o[v]=v===VER?wcur:(VW[v]||[]);P.wordsV=o;if(DOC.versesOk)P.versesOk=DOC.versesOk}
 ['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(DOC[f])).forEach(f=>{const C=[];bars.forEach((b,i)=>((b.ch||{})[f]||[]).forEach(c=>C.push({g:G(i,c.s),L:r6(c.l/U),k:c.k,cont:c.cont})));C.sort((p,q)=>p.g-q.g);
 const out=[];C.forEach(c=>{const p=out[out.length-1];if(c.cont&&p&&p.k===c.k&&Math.abs(p.g+p.L-c.g)<1e-6)p.L=r6(p.L+c.L);else out.push({g:c.g,L:c.L,k:c.k})});P[f]=grp(out)});
 return P}
@@ -1847,17 +1849,40 @@ db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().upd
 /* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
 function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
+/* (Oct 20, Chris) verse tabs: same numbers, each verse its own words. Verse 1 = doc.words; verse 2+ = doc.wordsV[n] (flat {g,L,w});
+   a verse never saved yet is placed by syllables onto verse 1's word spots (gold until he approves that verse) */
+function wNow(){const N=S(),M=DOC.meter||4,U=N/M,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6),out=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>out.push({g:r6((st[i]-(b.a||0)+q.s-Z)/U),L:r6(q.l/U),w:String(q.d)})));return out.sort((p,q)=>p.g-q.g)}
+function wPlace(list){const N=S(),M=DOC.meter||4,U=N/M,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0);bars.forEach(b=>b.notes=(b.notes||[]).filter(q=>!q.w));
+(list||[]).forEach(w=>{let t=Math.round(w.g*U+Z),e=Math.round((w.g+w.L)*U+Z);if(e<=t)e=t+1;let i=bars.findIndex((b,k)=>t>=st[k]&&t<st[k+1]);if(i<0)return;const b=bars[i],s0=(b.a||0)+t-st[i];b.notes.push({s:s0,l:Math.max(1,Math.min(e-t,b.n-s0)),d:String(w.w),o:0,w:1})});bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s))}
+function vSyl(w){const m=/^([^A-Za-z]*)(.*?)([^A-Za-z]*)$/.exec(w),core=m[2],lc=core.toLowerCase();if(!core)return [w];const G=[];let r=/[aeiouy]+/g,x;while((x=r.exec(lc)))G.push([x.index,x.index+x[0].length]);
+if(G.length>1){const L=G[G.length-1];if(L[1]===lc.length&&lc.endsWith('e')&&L[1]-L[0]===1&&!/le$/.test(lc))G.pop();else if(/ed$/.test(lc)&&L[0]===lc.length-2&&!/[td]ed$/.test(lc))G.pop();else if(/[^aeiouy]es$/.test(lc)&&L[0]===lc.length-2&&!/(s|x|z|ch|sh|c|g)es$/.test(lc))G.pop()}
+if(G.length<2)return [w];const cut=[];for(let k=0;k<G.length-1;k++){const a=G[k][1],b=G[k+1][0],cl=lc.slice(a,b);if(!cl.length)continue;cut.push(cl.length===1||/^(th|sh|ch|ph|wh)$/.test(cl)?a:/^(th|sh|ch|ph|wh)/.test(cl.slice(-2))&&cl.length>2?b-2:a+1)}
+const P=[];let q=0;cut.forEach(c=>{P.push(core.slice(q,c));q=c});P.push(core.slice(q));const out=P.filter(Boolean).map((t,k,A)=>t+(k<A.length-1?'-':''));out[0]=m[1]+out[0];out[out.length-1]+=m[3];return out}
+function vAuto(V1,t1,tn){const key=x=>String(x).toLowerCase().replace(/[^a-z]/g,''),T=[];t1.forEach((l,li)=>l.split(/\s+/).filter(Boolean).forEach(w=>T.push({k:key(w),li})));
+const sl=V1.map(w=>Object.assign({},w,{li:-1}));let j=0;T.forEach(t=>{let acc='';while(j<sl.length&&acc.length<t.k.length){acc+=key(sl[j].w);sl[j].li=t.li;j++}});
+const out=sl.filter(w=>w.li<0).map(w=>({g:w.g,L:w.L,w:w.w}));   /* after verse 1's words (a chorus) = the same for every verse */
+tn.forEach((line,li)=>{const K=sl.filter(w=>w.li===li);if(!K.length)return;let W=line.split(/\s+/).filter(Boolean).map(vSyl),P=()=>W.reduce((a,b)=>a+b.length,0);
+while(P()>K.length){let bi=-1;W.forEach((p,k)=>{if(p.length>1&&(bi<0||p.length>W[bi].length))bi=k});if(bi<0)break;const p=W[bi],a=p.pop();p[p.length-1]=p[p.length-1].replace(/-$/,'')+a}
+let pcs=W.flat();if(pcs.length>K.length)pcs=pcs.slice(0,K.length-1).concat(pcs.slice(K.length-1).join(' '));
+pcs.forEach((t,k)=>{const last=k===pcs.length-1,e=last?K[K.length-1]:K[k];out.push({g:K[k].g,L:+(e.g+e.L-K[k].g).toFixed(6),w:t})})});
+return out.sort((p,q)=>p.g-q.g)}
+function vHead(){const el=document.getElementById('se-vt'),ok=DOC.versesOk||[];if(el)el.innerHTML=VS.map((_,k)=>'<button type="button" class="tb vt'+(k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('');
+const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew',VER>1&&!ok.includes(VER));
+const b=document.getElementById('se-okm');if(b&&VS.length>1){const left=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));b.textContent=!left.length?'Approve melody':ok.includes(VER)?'Go to verse '+left[0]:left.length===1?'Approve melody':'Approve verse '+VER}}
+function vGo(v){if(v===VER||!VS[v-1])return;if(PL)stopPlay();VW[VER]=wNow();VER=v;wPlace(VW[v]);hist=[];lastSig=sig();draw();vHead()}
+function vOk(){const ok=(DOC.versesOk||[]).slice();if(!ok.includes(VER))ok.push(VER);ok.sort((a,b)=>a-b);DOC.versesOk=ok;const left=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));flush();if(!left.length){approve();return}vGo(left[0])}
 function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CS=(VIEW||doc.step||1)>=2;CM=true;cPick=null;   /* (Oct 20, Chris: 'stop limiting my tools by what I'm checking') CS = chords step; CM = the chord row, on EVERY step */
 cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
-OKD=CS?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'));
-fromDoc(doc);sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
-const top=CS?'<div class="setop"><h1>'+esc(doc.name)+'</h1><span class="selvp" id="se-lvp"></span><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"></button>').join('')+'</span><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb go" data-se="okc" id="se-okc"></button></div>'
-:'<div class="setop"><h1>'+esc(doc.name)+'</h1><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>';
+OKD=CS?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'))&&!scVersesLeft(doc);
+fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();const wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++)VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}
+sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
+const vt=VS.length>1?'<span class="selv" id="se-vt"></span>':'';const top=CS?'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<span class="selvp" id="se-lvp"></span><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"></button>').join('')+'</span><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb go" data-se="okc" id="se-okc"></button></div>'
+:'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" id="se-okm" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>';
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CS?'All chords':'Melody')+' approved</div>':'')+top
 +'<div id="se-hint">'+(CS?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
 R=document.getElementById('se-rows');H=document.getElementById('se-hint');INS=document.getElementById('se-ins');ED=document.getElementById('se-ed');PB=document.getElementById('se-play');setMeter(MT);
-bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();if(CM){lvSync();cHead()}draw();scPLoad(melody().map(n=>n.mid))}
+bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();if(CM){lvSync();cHead()}draw();vHead();scPLoad(melody().map(n=>n.mid))}
 /* chords step header: tabs (tick = approved, the one being checked is the only one you can change), toggles, approve label. Fixed widths: nothing shifts */
 function cHead(){const cur=CUR();document.querySelectorAll('#songchk [data-se="lv"]').forEach(b=>{const k=b.dataset.lv;b.innerHTML=(DOC[LOK[k]]?'&#10003; ':'')+LNM[k];b.classList.toggle('on',k===LVK)});
 const lp=document.getElementById('se-lvp');if(lp)lp.textContent='Chords: '+LNM[LVK]+(LVK===cur?'':' (view)');
@@ -1893,8 +1918,8 @@ if((e.key==='Backspace'||e.key==='Delete')&&cPick&&CED()){e.stopPropagation();e.
 function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
 function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
-document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
-const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CS},get crow(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},get startAt(){return startAt},firstOpen:()=>firstOpen(),draw:()=>draw()};
+document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok'){if(VS.length>1&&!CS){const ok=DOC.versesOk||[];if(ok.includes(VER)){const l=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));if(l.length)vGo(l[0]);else approve()}else vOk()}else approve()}else if(x.dataset.se==='ver')vGo(+x.dataset.v);else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
+const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CS},get ver(){return VER},get verses(){return VS},vAuto,vSyl,vGo,get crow(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},get startAt(){return startAt},firstOpen:()=>firstOpen(),draw:()=>draw()};
 })();
 /* (Oct 17, Chris: "i just want the lyric box with numbers on top") CHORDS STEP = ONE TEXT BOX. Each song row = a chord line above its
    lyric line (rows without words show the melody numbers instead). A chord sounds on the word under its first letter. One level is
@@ -2100,7 +2125,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v179</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v180</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4646,11 +4671,17 @@ const SGCOLS = ["Lyrics", "Melody", "Level 1", "Level 2", "Level 3", "Band", "Ca
 const SGLIVE = ["twinkletwinklelittlestar", "jesuslovesme", "maryhadalittlelamb"];   /* = PP_SONG_OK in the Lab (twinkle, jesusloves, mary) */
 const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
 const sgKey = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
+/* (Oct 20, Chris) MELODY UNDER EVERY VERSE: verses = the 'Verse N:' blocks of the song's lyrics text; versesOk = verses he approved (old approvals = verse 1) */
+function scVerses(sc){ const out = []; let cur = null; String(sc && sc.lyricsText || "").split("\n").forEach(l => { const t = l.trim();
+  if (/^verse\s*\d+\s*:?$/i.test(t)){ cur = []; out.push(cur); return; } if (/^(chorus|refrain|bridge|tag|ending|intro|outro)\b[^a-z]*:?$/i.test(t)){ cur = null; return; } if (cur && t) cur.push(t); }); return out; }
+function scVersesOk(sc){ return Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []; }
+function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); if (n < 2) return 0; let k = 0; for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; return k; }
 function sgCells(x){ const sc = x.sc, live = SGLIVE.includes(x.k);
   if (live) return SGCOLS.map((t, i) => ({c: i === 3 || i === 4 ? "" : "ok"}));   /* (Oct 20, Chris) the live songs: he approved everything EXCEPT Level 2 and Level 3 */
   const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
   if (sc && sc.lyricsOK) C[0] = {c: "ok", id: sc.id, lyr: 1}; else if (sc && sc.lyricsText && !sc.lyricsFix) C[0] = {c: "chk", id: sc.id, lyr: 1}; else if (sc && sc.lyricsFix) C[0] = {c: "fx", ak: fmAck("songcheck", sc.id)}; else if (plan) C[0] = {c: "mk"};   /* (Oct 20, Chris: Lyrics = step one) his words list -> his Approve on the Lyrics check */
-  if (sc && sc.melodyOK) C[1] = {c: "ok", id: sc.orig ? sc.id : "", v: 1}; else if (sc && sc.orig) C[1] = {c: "chk", id: sc.id, v: 1}; else if (plan) C[1] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
+  if (sc && sc.melodyOK && sc.orig && scVersesLeft(sc)) C[1] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[1] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
+  else if (sc && sc.orig) C[1] = {c: "chk", id: sc.id, v: 1}; else if (plan) C[1] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
   const LV = ["chordsOK", "mediumOK", "hardOK"];
   LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && sc.melodyOK; if (sc && sc[f]) C[2 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[2 + j] = {c: "chk", id: sc.id, v: 2}; });
   if (sc && sc.chordsOK) C[5] = {c: "mk"};   /* (Oct 20, Chris) Level 1 approved = the band can start: Level 2 + 3 never block Band, Cards, Lesson, Final check (they are added later) */
