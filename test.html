@@ -2057,7 +2057,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v155</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v156</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2127,7 +2127,7 @@ const byOrder = (a,b)=>(a.order??99)-(b.order??99) || String(a.added).localeComp
 // (Oct 7) Chris: three sorts, A to Z is the default ("More" always last); one tap cycles A to Z -> Most important -> Quickest first
 let sortBy = (() => { try { return localStorage.getItem("fd-sort4") || "az"; } catch { return "az"; } })();
 const azName = x => typeof x === "string" ? x : Array.isArray(x) ? (typeof x[1] === "string" ? x[1] : "") : String(x.short || x.title || x.name || x.n || "");
-const byAZ = (a, b) => (azName(a) === "More") - (azName(b) === "More") || azName(a).localeCompare(azName(b), undefined, {sensitivity: "base"});
+const byAZ = (a, b) => (azName(a) === "More") - (azName(b) === "More") || azName(a).localeCompare(azName(b), undefined, {sensitivity: "base", numeric: true});   /* Oct 19 (Chris): L10 after L9, not before L2 */
 const minsKey = x => +x.mins || 9999;
 // (Oct 7) Chris: Most important = CHORES first, ordered by their due/ship date (songs etc. ship on different days); then the rest by day, importance
 const byImp = (a, b) => (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || String(a.due || a.date || "9999").localeCompare(String(b.due || b.date || "9999")) || (a.imp ?? 3) - (b.imp ?? 3) || byOrder(a, b);
