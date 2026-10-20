@@ -1703,7 +1703,8 @@ const home=bars[drag.home.bi];home.notes.splice(home.notes.indexOf(q),1);const d
 const raw=P.f*N+(P.i-(drag.lastI??P.i))*N,dir=raw>(drag.lastRaw??raw)?1:raw<(drag.lastRaw??raw)?-1:(drag.dir||0);drag.dir=dir;drag.lastRaw=P.f*N;drag.lastI=P.i;
 let ns=Math.max(dst.a||0,Math.min(dst.n-1,dir>0?Math.floor(P.f*N+0.7):dir<0?Math.ceil(P.f*N-0.7):Math.round(P.f*N)));   /* the outline snaps a little AHEAD of the box */
 /* no pushing (Chris, v59): a box drops only into empty space; over another box it stays home */
-let ok=ns+q.l<=dst.n&&!dst.notes.some(o=>!o.w===!q.w&&ns<o.s+o.l&&o.s<ns+q.l);q.s=ns;
+const same=dst.notes.filter(o=>!o.w===!q.w),free=!same.some(o=>o.s<=ns&&ns<o.s+o.l),room=Math.min(dst.n,...same.filter(o=>o.s>ns).map(o=>o.s))-ns;   /* (Oct 20, Chris) a box too long for the gap it is dropped into SHRINKS to fit (start spot empty = it lands, never stops to resize by hand) */
+let ok=free&&room>=1;if(ok&&q.l>room)q.l=room;q.s=ns;
 if(ok)dst.notes.push(q);else{bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})})}
 bars.forEach(b=>(b.notes||[]).sort((a,c)=>a.s-c.s));
 const sig=JSON.stringify(bars.map(b=>(b.notes||[]).map(x=>[x.id,x.s,x.l])));if(sig===drag.sig)return;drag.sig=sig;
@@ -2088,7 +2089,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v171</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v172</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
