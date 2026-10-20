@@ -1089,7 +1089,7 @@ function scGridDoc(doc){ if (!doc.lines || !doc.lines.length) return; const M = 
   ["words"].concat(Object.values(SCLV).map(v => v[1])).forEach(f => { if (doc[f]) doc[f] = re(doc[f]); });
   doc.lines = re(doc.lines); }
 /* (Oct 16, Chris) every song has 3 chord levels; the chords step says plainly which one he is checking. Easy = field chords (what the Lab reads), Medium/Hard own fields, start as a copy of Easy */
-const SCLV = {easy: ["Easy", "chords"], medium: ["Medium", "chordsMedium"], hard: ["Hard", "chordsHard"]};
+const SCLV = {easy: ["Level 1", "chords"], medium: ["Level 2", "chordsMedium"], hard: ["Level 3", "chordsHard"]};   /* Chris (Oct 20): Level 1 / 2 / 3 everywhere */
 let scLv = "easy";
 function scSetLv(k){ if (!SCLV[k] || k === scLv) return; clearTimeout(scTimer); scSync(); const C = scClone(scChords); scDoc[SCLV[scLv][1]] = C;
   if (scId) db.collection("songcheck").doc(scId).update({[SCLV[scLv][1]]: C, updated: new Date().toISOString()}).catch(() => {});
@@ -2057,7 +2057,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v158</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v159</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4624,7 +4624,7 @@ function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice(
   const byT = {}; songsLive().concat(songs || []).forEach(x => { byT[nm(x.title)] = x; });
   let ao = false; try { ao = localStorage.getItem("fd-allsongs") === "1"; } catch {}
   const tk = (v, ok) => `<i style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-weight:800;font-size:13px;color:${v ? (ok ? "#1FA598" : "#B9B4AA") : "var(--line,#D8D2C4)"}">${v ? "\u2713" : "\u2013"}</i>`;
-  const RH = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span style="display:flex;gap:4px">${["Easy","Med","Hard","Rng"].map(t => `<i style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted,#8A9099)">${t.slice(0,4)}</i>`).join("")}</span></div>`;
+  const RH = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span style="display:flex;gap:4px">${["L1","L2","L3","Rng"].map(t => `<i style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted,#8A9099)">${t.slice(0,4)}</i>`).join("")}</span></div>`;
   const arow = x => { const lab = byT[nm(x.t)], ok = !!(lab && (lab.step || 0) >= n);
     return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.t)}${x.x ? " \u{1F384}" : ""}${lab ? ` <span style="font-size:11px;font-weight:700;color:var(--muted,#8A9099)">in Lab</span>` : ""}</b><span style="display:flex;gap:4px">${tk(x.e, ok)}${tk(x.m, ok)}${tk(x.h, ok)}${tk(x.r, ok)}</span></div>`; };
   const allSec = SL.length ? `<button type="button" class="chc${ao ? " rowon" : ""}" data-allsongs="1" style="text-align:left"><b>All songs (${SL.length})</b><span>chords found: grey = not approved yet, teal = you approved</span></button><div class="replist" style="${ao ? "" : "display:none"}">${RH}${SL.map(arow).join("")}</div>` : "";
