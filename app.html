@@ -1636,14 +1636,16 @@ if(t.classList.contains('g')){save();const g=+t.dataset.gap;bars.splice(g,0,nb()
 if(t.closest('[data-add]')){save();bars.push(nb());sel=[bars.length-1];draw();hint('Added a bar');return}
 const nt=t.closest('.nt');if(nt&&!t.closest('input')){const bi=+nt.dataset.nb,ni=+nt.dataset.nn,bb=bars[bi],q=bb.notes[ni];
 if(t.classList.contains('ne')){save();const sd=t.classList.contains('l')?'L':'R',srt=bb.notes.filter(o=>!o.w===!q.w).sort((a,b)=>a.s-b.s),qi=srt.indexOf(q),nb2=sd==='R'?srt[qi+1]:srt[qi-1];drag={k:'nsize',bi,ni,q,side:sd,nb:nb2,nbS:nb2&&nb2.s,nbE:nb2&&nb2.s+nb2.l};document.body.style.cursor='ew-resize';return}
-if(e.shiftKey){const k=noteSel.indexOf(q);if(k<0)noteSel.push(q);else noteSel.splice(k,1);notePick=null;light();return}
+/* (Oct 20, Chris) like every program: Shift+click = everything between the last click and this one (numbers OR lyrics, across bars); Windows/Ctrl+click = add or take off one */
+if(e.shiftKey){const all=[];bars.forEach(B=>(B.notes||[]).filter(o=>!o.w===!q.w).sort((x,y)=>x.s-y.s).forEach(o=>all.push(o)));const an=SE.anchor&&all.includes(SE.anchor)?SE.anchor:noteSel.find(o=>all.includes(o))||q,a=all.indexOf(an),z=all.indexOf(q);noteSel=all.slice(Math.min(a,z),Math.max(a,z)+1);notePick=null;light();hint(noteSel.length+' box'+(noteSel.length===1?'':'es')+' picked');return}
+if(e.metaKey||e.ctrlKey){const k=noteSel.indexOf(q);if(k<0)noteSel.push(q);else noteSel.splice(k,1);SE.anchor=q;notePick=null;light();hint(noteSel.length+' box'+(noteSel.length===1?'':'es')+' picked');return}
 if(noteSel.length>1&&noteSel.includes(q)){save();drag={k:'ngroup',x0:e.clientX,orig:noteSel.map(x=>({q:x,bi:bars.findIndex(b=>(b.notes||[]).includes(x)),s:x.s})),bw:nt.parentNode.getBoundingClientRect().width};return}
-noteSel=[q];const was=notePick&&notePick.b===bb.id&&notePick.n===ni;notePick={b:bb.id,n:ni};sel=[];startAt=null;pastePos=null;
+noteSel=[q];SE.anchor=q;const was=notePick&&notePick.b===bb.id&&notePick.n===ni;notePick={b:bb.id,n:ni};sel=[];startAt=null;pastePos=null;
 const nr=nt.getBoundingClientRect();drag={k:'nmove',bi,ni,q,was,x0:e.clientX,y0:e.clientY,ox:e.clientX-nr.left,oy:e.clientY-nr.top,w:nr.width,h:nr.height,moved:false};light();return}
 if(t.closest('input'))return;
 if(t.classList.contains('e')&&t.dataset.j==='lead'){drag={k:'lead'};document.body.style.cursor='ew-resize';return}
 if(t.classList.contains('e')){drag={k:'size',j:+t.dataset.j,side:t.dataset.side};document.body.style.cursor='ew-resize';return}
-notePick=null;const b=t.closest('.b[data-i]');if(b){const i=+b.dataset.i,rr=b.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();k=Math.max(bb.a||0,Math.min(bb.n-1,k));const was=sel.length===1&&sel[0]===i&&!e.shiftKey;if(t.classList.contains('t'))startAt={i,k:bb.a||0,whole:true};   /* top strip = the whole bar, no beat */if(PL){stopPlay();setTimeout(startPlay,0)}if(e.shiftKey&&sel.length){const a=Math.min(lo(),i),z=Math.max(hi(),i);sel=[];for(let q=a;q<=z;q++)sel.push(q);draw();return}if(!t.classList.contains('t')){startAt={i,k};if(t.classList.contains('ln')||t.classList.contains('ly')){noteSel=[];notePick=null;drag={k:'band',x0:e.clientX,y0:e.clientY}}light();return}   /* number / lyric lanes: only set where Play starts */
+notePick=null;const b=t.closest('.b[data-i]');if(b){const i=+b.dataset.i,rr=b.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();k=Math.max(bb.a||0,Math.min(bb.n-1,k));const was=sel.length===1&&sel[0]===i&&!e.shiftKey;if(t.classList.contains('t'))startAt={i,k:bb.a||0,whole:true};   /* top strip = the whole bar, no beat */if(PL){stopPlay();setTimeout(startPlay,0)}if(e.shiftKey&&sel.length){const a=Math.min(lo(),i),z=Math.max(hi(),i);sel=[];for(let q=a;q<=z;q++)sel.push(q);draw();return}if((e.metaKey||e.ctrlKey)&&t.classList.contains('t')){const k=sel.indexOf(i);if(k<0)sel.push(i);else sel.splice(k,1);sel.sort((x,y)=>x-y);draw();hint(sel.length+' bar'+(sel.length===1?'':'s')+' picked');return}   /* (Oct 20, Chris) Windows/Ctrl+click a bar number = add or take off one bar */if(!t.classList.contains('t')){startAt={i,k};if(t.classList.contains('ln')||t.classList.contains('ly')){noteSel=[];notePick=null;drag={k:'band',x0:e.clientX,y0:e.clientY}}light();return}   /* number / lyric lanes: only set where Play starts */
 pastePos=(e.clientX-rr.left)/rr.width<.5?i:i+1;if(!sel.includes(i))sel=[i];drag={k:'move',x0:e.clientX,y0:e.clientY,moved:false,was,ox:e.clientX-rr.left,oy:e.clientY-rr.top,w:rr.width,h:rr.height};light();return}
 sel=[];startAt=null;pastePos=null;draw()});
 ED.addEventListener('dblclick',e=>{const T=document.elementFromPoint(e.clientX,e.clientY)||e.target;
@@ -2077,7 +2079,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v176</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v177</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
