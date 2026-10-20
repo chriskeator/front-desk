@@ -916,7 +916,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .sfw{display:none}
 /* (Oct 14, Chris) phone: the Songs column labels show the whole word at 45 degrees (computer keeps full words flat) */
 @media (max-width:999px){ #list .tn .sblk{height:46px!important;position:relative;overflow:visible}#list .tn .sblk .sab{display:none}#list .tn .sblk .sfw{display:block;position:absolute;left:5px;bottom:2px;transform-origin:0 100%;transform:rotate(-45deg);white-space:nowrap;font-size:11px;letter-spacing:0} }
-@media (min-width:1000px){ #list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
+@media (min-width:1000px){ #list .songgrid .sname{flex:0 0 200px!important}#list .songgrid .srow .sblk .sfw{font-size:11.5px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
 </style>
 
 <div id="pop"></div>
@@ -2047,7 +2047,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v162</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v163</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4576,49 +4576,51 @@ function homeShorts(){
     + sec("Scheduled", S, x => row(x.title, md(x.date), 6, null))
     + sec("Posted this week", P, x => row(x.title, md(x.date), 7, false)) + `</div></div>`; }
 document.addEventListener("click", e => { const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
-function homeSongs(){ const ST = SSTEPS(), n = ST.length, L = songsLive().slice().sort((a, b) => (b.step || 0) - (a.step || 0) || String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title));
-  if (!L.length) return "";
+/* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
+   (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
+   Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
+   NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songs + db songcheck, matched by name. */
+const SGCOLS = ["Lyrics", "Melody", "Level 1", "Level 2", "Level 3", "Band", "Cards", "Lesson", "Final check"], SGAB = ["Ly", "Me", "L1", "L2", "L3", "Bd", "Cd", "Ls", "Fn"];
+const SGLIVE = ["twinkletwinklelittlestar", "jesuslovesme", "maryhadalittlelamb"];   /* = PP_SONG_OK in the Lab (twinkle, jesusloves, mary) */
+const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
+const sgKey = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
+function sgCells(x){ const sc = x.sc, live = SGLIVE.includes(x.k);
+  if (live) return SGCOLS.map(() => ({c: "ok"}));
+  const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
+  if (sc && sc.lyricsOK) C[0] = {c: "ok"}; else if (plan) C[0] = {c: "mk"};   /* lyrics: Grok + Muse list, then his approve */
+  if (sc && sc.melodyOK) C[1] = {c: "ok"}; else if (sc) C[1] = {c: "chk", id: sc.id, v: 1}; else if (plan) C[1] = {c: "mk"};
+  const LV = ["chordsOK", "mediumOK", "hardOK"];
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && sc.melodyOK; if (sc && sc[f]) C[2 + j] = {c: "ok"}; else if (prev) C[2 + j] = {c: "chk", id: sc.id, v: 2}; });
+  if (sc && sc.hardOK) C[5] = {c: "mk"};   /* all 3 levels approved: Cadence sets up the band */
+  return C; }
+function sgUniverse(){ if (scBoard === null) fdScLoad();
+  const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
+  ((stats.find(x => x.id === "songlist") || {}).songs || []).forEach(x => add(x.t, {xm: !!x.x}));
+  (songs || []).filter(x => !x.removed).forEach(x => add(x.title, {sg: x, title: x.title}));
+  (scBoard || []).forEach(r => add(r.name, {sc: r}));
+  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title), cells: sgCells(u)})); }
+function sgRow(x){ const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
+  const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
+  return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => {
+    const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
+    const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">Approved</span>` : q.c === "chk" ? `<span class="sfw">Check</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : "";
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${q.c === "chk" ? ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${q.c === "chk" ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+function homeSongs(only){
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
-  const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${ST.map(t => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${esc(SABBR(t))}</span><span class="sfw">${esc(String(t).replace(/^Starter\s+/i, "").split(/\s+/)[0].replace(/^\w/, c => c.toUpperCase()))}</span></i>`).join("")}</span></div>`;
-  /* (Oct 16, Chris) like Shorts: the gold box says Check and opens that song's check page (db 'songcheck', matched by name) */
-  if (scBoard === null) fdScLoad();
-  const scn = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
-  const scAny = x => (scBoard || []).find(r => scn(r.name) === scn(x.title)), scFor = x => { const r = scAny(x); return r && r.status !== "approved" ? r : null; };
-  /* board step Melody -> check page step 1, Starter chords -> step 2 */
-  /* (Oct 16, Chris) SAME look as Shorts: teal = Approved, gold = Check (his turn), light gold = Making (Cadence's turn) */
-  const NXT = ["Your turn: paste lyrics", "Cadence: melody", "Your turn: OK chords", "Band: you pick instruments", "Cadence: cards", "Cadence: lesson", "Your turn: final check"];
-  const turn = x => { const k = Math.min(x.step || 0, n); return k >= n ? "" : scFor(x) || /^(Your turn|Band: you)/.test(NXT[k] || "") ? "you" : "cadence"; };
-  const row = (x, sub) => { const k = Math.min(x.step || 0, n), sc = scFor(x), sa = scAny(x), tu = turn(x);
-    return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${ST.map((t, i) => { const v = /^melody/i.test(t) ? 1 : /^(starter\s+)?chords/i.test(t) ? 2 : 0, ck = i === k && sc, ok = i < k && sa && v, cl = ck || ok, mk = i === k && tu === "cadence"; return `<i class="sblk" title="${esc(t)}"${cl ? ` data-songchk="${esc((sc || sa).id)}"${ok ? ` data-scview="${v}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:${ok ? "#fff" : "#3a2a00"};${cl ? "cursor:pointer;" : ""}background:${i < k ? "#1FA598" : mk ? "#FBEFD0" : i === k ? "#E8B53A" : "transparent"};border:1.5px solid ${i < k ? "#1FA598" : i === k ? "#E8B53A" : "var(--line,#D8D2C4)"}">${i < k ? `<span class="sfw" style="color:#fff;font-weight:600">Approved</span>` : mk ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : i === k ? `<span class="sfw">Check</span>` : ""}</i>`; }).join("")}</span></div>`; };
-  /* (Oct 14, Chris) Christmas folder inside Songs: the Nov 1 songs, each with Chris's next step + day from his "Songs:" to-dos */
-  const XM = /christmas|silent night|o come, all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
-  /* (Oct 15, Chris) like Shorts: header = how many need his check + how many are approved and scheduled for their Lab release */
-  const DONE = L.filter(x => (x.step || 0) >= n).sort((a, b) => String(a.release || "~").localeCompare(String(b.release || "~")));
-  const X = L.filter(x => XM.test(x.title) && (x.step || 0) < n), O = L.filter(x => !XM.test(x.title));
-  const TT = (allTasks && allTasks.length ? allTasks : tasks).filter(t => !t.done && !t.removed && /^Songs:/.test(t.title || "") && t.date).sort((a, b) => a.date.localeCompare(b.date));
-  const md = d => { const p = String(d).slice(5, 10).split("-"); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
-  const key = x => x.title.toLowerCase().replace(/^the /, "").replace(/[^a-z ]/g, "").split(" ").slice(0, 2).join(" ");
-  const nextFor = x => { const t = TT.find(t => t.title.toLowerCase().replace(/[^a-z ]/g, "").includes(key(x))); return t ? (/final check/i.test(t.title) ? "Final check" : "Approve chords + instruments") + " · " + md(t.date) : ((x.step || 0) >= n ? "Done" : nextStep(x)); };
-  /* (Oct 14, Chris) no sub-folder: two sections he scrolls. Christmas (Nov 1) + the next 10 to release, each song with its next step */
-  const NX = ["Your turn: paste lyrics", "Cadence: melody", "Your turn: OK chords", "Band: you pick instruments", "Cadence: cards", "Cadence: lesson", "Your turn: final check"];
-  const nextStep = x => { const k = Math.min(x.step || 0, n); return (k >= n ? "Done" : (NX[k] || ST[k])) + (x.release ? " \u00b7 out " + md(x.release) : ""); };
-  const NOW = O.filter(x => (x.step || 0) < n).sort((a, b) => String(a.release || "~").localeCompare(String(b.release || "~")) || (b.step || 0) - (a.step || 0)).slice(0, 10);
+  const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SGCOLS.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SGAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
+  const U = sgUniverse(), byK = new Map(U.map(x => [x.k, x]));
+  const ord = (a, b) => (b.cells.some(q => q.c === "chk") - a.cells.some(q => q.c === "chk")) || b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title);
+  /* inside a song-check task: the same template, only its songs */
+  if (only){ const W = only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
+    return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(sgRow).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
+  const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
+  const X = rest.filter(x => x.xm && (x.sc || x.sg)).sort(ord), W = rest.filter(x => !x.xm && (x.sc || x.sg)).sort(ord), N = rest.filter(x => !(x.sc || x.sg)).sort((a, b) => a.title.localeCompare(b.title));
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
-  const secX = X.length ? label("\u{1F384} Christmas \u00b7 Nov 1", X.length) + head + X.map(x => row(x, nextFor(x))).join("") : "";
-  const secN = NOW.length ? label("Next to release", NOW.length) + head + NOW.map(x => row(x, nextStep(x))).join("") : "";
-  const secS = DONE.length ? label("Scheduled", DONE.length) + head + DONE.map(x => row(x, x.release ? "Lab release " + md(x.release) : "Approved \u00b7 no release day yet")).join("") : "";
-  const mine = X.concat(NOW).filter(x => turn(x) === "you").length;   /* (Oct 16) header counts the gold Check boxes, like Shorts */
-  /* (Oct 14, Chris) All songs (the full public domain list) at the bottom, closed until tapped. Ticks: grey = found by Grok/Muse, not approved; teal = Chris approved (song passed his final check) */
-  const SL = ((stats.find(x => x.id === "songlist") || {}).songs || []).slice().sort((a, b) => (a.mine || 0) - (b.mine || 0) || a.t.localeCompare(b.t));
-  const nm = t => String(t).toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
-  const byT = {}; songsLive().concat(songs || []).forEach(x => { byT[nm(x.title)] = x; });
+  const sec = (t, L) => L.length ? label(t, L.length) + head + L.map(sgRow).join("") : "";
   let ao = false; try { ao = localStorage.getItem("fd-allsongs") === "1"; } catch {}
-  const tk = (v, ok) => `<i style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-weight:800;font-size:13px;color:${v ? (ok ? "#1FA598" : "#B9B4AA") : "var(--line,#D8D2C4)"}">${v ? "\u2713" : "\u2013"}</i>`;
-  const RH = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span style="display:flex;gap:4px">${["L1","L2","L3","Rng"].map(t => `<i style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted,#8A9099)">${t.slice(0,4)}</i>`).join("")}</span></div>`;
-  const arow = x => { const lab = byT[nm(x.t)], ok = !!(lab && (lab.step || 0) >= n);
-    return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.t)}${x.x ? " \u{1F384}" : ""}${lab ? ` <span style="font-size:11px;font-weight:700;color:var(--muted,#8A9099)">in Lab</span>` : ""}</b><span style="display:flex;gap:4px">${tk(x.e, ok)}${tk(x.m, ok)}${tk(x.h, ok)}${tk(x.r, ok)}</span></div>`; };
-  const allSec = SL.length ? `<button type="button" class="chc${ao ? " rowon" : ""}" data-allsongs="1" style="text-align:left"><b>All songs (${SL.length})</b><span>chords found: grey = not approved yet, teal = you approved</span></button><div class="replist" style="${ao ? "" : "display:none"}">${RH}${SL.map(arow).join("")}</div>` : "";
-  return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check \u00b7 ${DONE.length} scheduled</i></span></h4><div class="chgrid">${secX}${secN}${secS}${allSec}</div></div>`; }
+  const secN = N.length ? `<button type="button" class="chc${ao ? " rowon" : ""}" data-allsongs="1" style="text-align:left"><b>Not started (${N.length})</b><span>every other song on the list</span></button><div class="replist" style="${ao ? "" : "display:none"}">${head}${N.map(sgRow).join("")}</div>` : "";
+  const mine = U.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
+  return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${sec("\u{1F384} Christmas · Nov 1", X)}${sec("In the works", W)}${sec("Live in the Lab", live)}${secN}</div></div>`; }
 document.addEventListener("click", e => { const b = e.target.closest("[data-allsongs]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   const box = b.nextElementSibling, open = box && box.style.display === "none"; if (box) box.style.display = open ? "" : "none"; b.classList.toggle("rowon", !!open);
   try { localStorage.setItem("fd-allsongs", open ? "1" : "0"); } catch {} }, true);
@@ -4768,7 +4770,7 @@ function lvBar(t){ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
 // (Oct 7) Chris: every to-do has a Go button that opens where the work happens; the Front Desk stays on this to-do
 function goBtn(t){
   if (t.shortcheck) return `<div class="revlist"><button type="button" class="tb go gobtn" data-shortchk="${esc(t.id)}">Start checking</button></div>`;   /* (Oct 15) Chris: one Shorts check session */
-  if (Array.isArray(t.songcheck) && t.songcheck.length) return `<div class="revlist">${t.songcheck.map(([id, nm]) => `<button type="button" class="tb go gobtn" data-songchk="${esc(id)}">${esc(nm)}</button>`).join("")}</div>`;   /* (Oct 15) Chris: song check page */
+  if (Array.isArray(t.songcheck) && t.songcheck.length) return homeSongs(t.songcheck);   /* (Oct 20, Chris) the ONE song template, only this task's songs (no plain song buttons ever) */
   // (Oct 7) Chris: things to check (review items / lesson links) sit right inside the open to-do, all the same size
   if (t.review){ const items = revItems(t); return `<div class="revlist"><p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }
   // (Oct 8) Chris: one flat list in Lab order (top to bottom = the flow of the chapter); things marked Good drop off
