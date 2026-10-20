@@ -1090,6 +1090,7 @@ function scLoad(doc){ scGridDoc(doc); scDoc = doc; scLv = "easy"; scBar = null; 
 async function scOpen(id, view){
   const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return;
   const d = s.data(); if ((view ? +view : d.step || 1) === 1){ scGridDoc(d); scId = null; window.SE.open(id, view, d); return; }
+  scGridDoc(d); scId = null; window.SE.open(id, view, d); return;   /* (Oct 20, Chris) chords step = the melody template again: melody on top, words, chords to drag, Play, a check per row, one level at a time */
   if (window.CT){ window.CT.open(id, view, d); return; }   /* (Oct 17, Chris) chords step = one text box, chord numbers above the words */   /* (Oct 16 night, Chris hated the editor chords card: chords step back on the old page) */   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
   scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
@@ -1558,6 +1559,7 @@ let CLIPN=null,CLIPK=null;
 /* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
    (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
 let CM=false,LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
+const RKF=()=>CM?'rowsOk_'+LF[LVK]:'rowsOk';   /* (Oct 20, Chris) row checks: melody has its own, each chords level has its own */
 const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM&&LVK===CUR(),lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
 const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
@@ -1577,7 +1579,7 @@ for(let r=0;r<IR;r++){const row=['sp'];for(let c=0;c<per;c++){const k=r*per+c-(I
 for(let r=0;r<Math.max(1,Math.ceil((B.length-z0)/per));r++){const row=['sp'];for(let c=0;c<per;c++){const i=z0+r*per+c;if(i<B.length)row.push(i);else break}PLAN.push(row)}   /* (Oct 16, Chris) no '+ new bar' box: double-click a bar number adds one */
 if(P1)PLAN[0][0]=0;{const la0=pv&&pv.leadA!=null?pv.leadA:leadA;if(PLAN[0][0]==='sp'&&la0<N)PLAN[0][0]='lead'}
 /* (Oct 16, Chris) a check mark at the right of every row: tap = this row is good, the whole row turns green (doc.rowsOk, saved at once) */
-const OKS=(DOC&&DOC.rowsOk)||[];const SEEN=new Set();   /* (Oct 16, Chris: dragging one box moved boxes on bars 7, 9, 10) copied bars shared box ids: every box gets its own */
+const OKS=(DOC&&DOC[RKF()])||[];const SEEN=new Set();   /* (Oct 16, Chris: dragging one box moved boxes on bars 7, 9, 10) copied bars shared box ids: every box gets its own */
 PLAN.forEach((cells,pr)=>{const rk=pr<IR?'i'+pr:'b'+((pr-IR)*per+1),row=document.createElement('div');row.className='row'+(OKS.includes(rk)?' ok':'');row.dataset.rk=rk;while(cells.length<per+1)cells.push('sp');cells.forEach(v=>{
 if(v==='sp'){const e=document.createElement('div');e.className='sp';row.appendChild(e);return}
 if(v==='lead'){const L=document.createElement('div');L.className='b lead';L.dataset.lead=1;const la=pv&&pv.leadA!=null?pv.leadA:leadA;
@@ -1621,7 +1623,7 @@ else if(t.classList.contains('e'))hint(t.dataset.side==='L'?'Drag: move where th
 else if(t.closest('[data-add]'))hint('Click: add a bar at the end (a new row starts by itself)');
 else if(t.classList.contains('b')||t.classList.contains('k')||t.classList.contains('t')){const i=+t.closest('.b').dataset.i;if(isNaN(i)){hint('');return}hint(t.classList.contains('t')?(sel.includes(i)&&sel.length>1?'Drag: move the picked bars':'Drag: move '+lab(i)):'Click: pick '+lab(i)+' and start Play here. Drag across bars: pick a section.')}
 else hint('Click empty space: unpick')});
-ED.addEventListener('click',e=>{const k=e.target.closest&&e.target.closest('.rok');if(!k||!DOC)return;const rk=k.dataset.rok,L=DOC.rowsOk=(DOC.rowsOk||[]).slice(),i=L.indexOf(rk);if(i<0)L.push(rk);else L.splice(i,1);k.parentNode.classList.toggle('ok',i<0);if(i<0&&startAt&&k.parentNode.querySelector('.b[data-i="'+startAt.i+'"]')){startAt=null;light()}if(DID)db.collection('songcheck').doc(DID).update({rowsOk:L,updated:new Date().toISOString()}).catch(()=>{})});
+ED.addEventListener('click',e=>{const k=e.target.closest&&e.target.closest('.rok');if(!k||!DOC)return;const rk=k.dataset.rok,F=RKF(),L=DOC[F]=(DOC[F]||[]).slice(),i=L.indexOf(rk);if(i<0)L.push(rk);else L.splice(i,1);k.parentNode.classList.toggle('ok',i<0);if(i<0&&startAt&&k.parentNode.querySelector('.b[data-i="'+startAt.i+'"]')){startAt=null;light()}if(DID){const now=new Date().toISOString();seSeen=now;seMine.add(now);db.collection('songcheck').doc(DID).update({[F]:L,updated:now}).catch(()=>{})}});
 ED.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.rok'))return;
 /* (Oct 20, Chris) a green check LOCKS its row: nothing in it can be picked, dragged or edited; a click there only sets where Play starts */
 {const lr=e.target.closest&&e.target.closest('.row.ok'),lb=lr&&e.target.closest('.b[data-i]');if(lr){if(e.button===0&&lb){const i=+lb.dataset.i,rr=lb.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();startAt={i,k:Math.max(bb.a||0,Math.min(bb.n-1,k))};sel=[];noteSel=[];notePick=null;if(PL){stopPlay();setTimeout(startPlay,0)}light()}hint('Approved row: locked. Tap its check mark to unlock.');return}}if(drag||ED.querySelector('.ghost'))cancelDrag();setTimeout(()=>{if(drag&&drag.k!=='band')document.documentElement.dataset.drag=(drag.k==='size'||drag.k==='nsize'||drag.k==='lead')?'size':'grab'},0);if(e.button!==0)return;try{window.focus()}catch(x){}const t=e.target;
@@ -1796,18 +1798,23 @@ notes.forEach(n=>{const w=words.find(x=>Math.abs(x.g-n.g)<1e-6);n.w=w?w.w:''});
 const key=g=>I?(g<0?0:1+Math.floor(g/B+1e-9)):Math.floor(g/B+1e-9),keys=[...new Set(notes.map(n=>key(n.g)))].sort((p,q)=>p-q);
 const at=g=>{const k=key(g);let x=keys.indexOf(k);if(x<0){x=keys.filter(q=>q<k).length-1;if(x<0)x=0}return x};
 const grp=L=>{const out=keys.map(()=>[]);if(!keys.length)return out;L.forEach(b=>out[at(b.g)].push(b));out.forEach(l=>l.sort((p,q)=>p.g-q.g));return out};
-const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};
+const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};['chordsMediumEdited','chordsHardEdited'].forEach(f=>{if(DOC[f])P[f]=DOC[f]});
 ['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(DOC[f])).forEach(f=>{const C=[];bars.forEach((b,i)=>((b.ch||{})[f]||[]).forEach(c=>C.push({g:G(i,c.s),L:r6(c.l/U),k:c.k,cont:c.cont})));C.sort((p,q)=>p.g-q.g);
 const out=[];C.forEach(c=>{const p=out[out.length-1];if(c.cont&&p&&p.k===c.k&&Math.abs(p.g+p.L-c.g)<1e-6)p.L=r6(p.L+c.L);else out.push({g:c.g,L:c.L,k:c.k})});P[f]=grp(out)});
 return P}
 function sig(){return JSON.stringify([bars.map(b=>[b.n,b.a||0,(b.notes||[]).map(q=>[q.s,q.l,q.d,q.o||0,q.w?1:0]),b.ch||0]),leadA,zi()])}
 function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;lastSig=s;clearTimeout(saveT);saveT=setTimeout(flush,500)}
-function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;const P=toDoc();Object.assign(DOC,P);SE.saves++;
-db.collection('songcheck').doc(DID).update(Object.assign({},P,{updated:new Date().toISOString()})).catch(()=>{})}
+/* (Oct 20, Chris: "when closing out of it" his open editor saved its old copy over Cadence's newer fix) never overwrite a song that changed
+   since this editor loaded it: compare the db's 'updated' with the one this editor last saw; changed = do not save, say so */
+let seSeen=null,seMine=new Set();
+function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;const P=toDoc();Object.assign(DOC,P);SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
+db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
+ if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
+ seSeen=now;seMine.add(now);return db.collection('songcheck').doc(id).update(Object.assign({},P,{updated:now}))}).catch(()=>{})}
 /* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
 function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
-function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;VIEW=view?+view:null;CM=(VIEW||doc.step||1)>=2;cPick=null;cDrag=null;
+function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CM=(VIEW||doc.step||1)>=2;cPick=null;cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
 OKD=CM?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'));
 fromDoc(doc);sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
@@ -1816,7 +1823,7 @@ const top=CM?'<div class="setop"><h1>'+esc(doc.name)+'</h1><span class="selvp" i
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CM?'All chords':'Melody')+' approved</div>':'')+top
 +'<div id="se-hint">'+(CM?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
 R=document.getElementById('se-rows');H=document.getElementById('se-hint');INS=document.getElementById('se-ins');ED=document.getElementById('se-ed');PB=document.getElementById('se-play');setMeter(MT);
-bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();if(CM)cHead();draw();scPLoad(melody().map(n=>n.mid))}
+bindED();PB.addEventListener('click',()=>{PL?stopPlay():startPlay()});ON=true;lastSig=sig();if(CM){lvSync();cHead()}draw();scPLoad(melody().map(n=>n.mid))}
 /* chords step header: tabs (tick = approved, the one being checked is the only one you can change), toggles, approve label. Fixed widths: nothing shifts */
 function cHead(){const cur=CUR();document.querySelectorAll('#songchk [data-se="lv"]').forEach(b=>{const k=b.dataset.lv;b.innerHTML=(DOC[LOK[k]]?'&#10003; ':'')+LNM[k];b.classList.toggle('on',k===LVK)});
 const lp=document.getElementById('se-lvp');if(lp)lp.textContent='Chords: '+LNM[LVK]+(LVK===cur?'':' (view)');
@@ -1824,8 +1831,10 @@ document.querySelector('#songchk .secard').classList.toggle('ro',!CED());
 const m=document.querySelector('#songchk [data-se="mon"]'),c=document.querySelector('#songchk [data-se="con"]');if(m){m.textContent=MON?'Melody on':'Melody off';m.classList.toggle('on',MON)}if(c){c.textContent=CON?'Chords on':'Chords off';c.classList.toggle('on',CON)}
 const ok=document.getElementById('se-okc');if(ok){ok.textContent=cur?'Approve '+LNM[cur]+' chords':'All approved';ok.disabled=!cur||LVK!==cur}}
 /* after any chord change: lengths run to the next chord, and a chord rings on into the next bars until a new one starts */
+/* (Oct 20, Chris) Level 2 = Level 1 until Level 2 is edited; Level 3 = Level 2 until Level 3 is edited (doc.chordsMediumEdited / chordsHardEdited) */
+function lvSync(){if(!DOC)return;const cp=x=>JSON.parse(JSON.stringify(x||[]));bars.forEach(b=>{b.ch=b.ch||{};if(!DOC.chordsMediumEdited)b.ch.chordsMedium=cp(b.ch.chords);if(!DOC.chordsHardEdited)b.ch.chordsHard=cp(b.ch.chordsMedium)})}
 function renorm(){const f=LF[LVK];let prev=null;bars.forEach(b=>{b.ch=b.ch||{};const L=b.ch[f]=(b.ch[f]||[]).filter(c=>!c.cont&&(String(c.k).trim()!==''||c.nw));L.sort((x,y)=>x.s-y.s);const a=b.a||0;
-if(prev&&!(L[0]&&L[0].s<=a))L.unshift({s:a,l:1,k:prev,cont:true});L.forEach((c,j)=>{const nx=L[j+1];c.l=Math.max(1,(nx?nx.s:b.n)-c.s)});if(L.length)prev=L[L.length-1].k})}
+if(prev&&!(L[0]&&L[0].s<=a))L.unshift({s:a,l:1,k:prev,cont:true});L.forEach((c,j)=>{const nx=L[j+1];c.l=Math.max(1,(nx?nx.s:b.n)-c.s)});if(L.length)prev=L[L.length-1].k});if(CED()&&LVK!=='easy'){const F=LF[LVK]+'Edited';DOC[F]=DOC[F]||new Date().toISOString()}lvSync()}
 function cAt(bd,x){const i=+bd.dataset.i,rr=bd.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(x-rr.left)/rr.width))*S());return {i,k:Math.max(bb.a||0,Math.min(bb.n-1,k))}}
 function cAll(){const out=[];bars.forEach((b,i)=>((b.ch||{})[LF[LVK]]||[]).forEach(c=>{if(!c.cont)out.push({i,c})}));return out}
 function editChord(c){const i=bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c));const el=[...R.querySelectorAll('.chd')].find(e=>+e.dataset.cb===i&&e.style.left===(c.s/S()*100)+'%');if(!el)return;
@@ -2056,7 +2065,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v168</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v169</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
