@@ -1821,7 +1821,7 @@ const placeT=t=>{for(;;){let base=0;for(let i=0;i<bars.length;i++){const b=bars[
 const span=(g,L,mk)=>{let t=Math.round(g*U+Z),e=Math.round((g+L)*U+Z);if(e<=t)e=t+1;let first=true,guard=0;while(t<e&&guard++<400){const P=placeT(t),b=bars[P.i],l=Math.min(e-t,b.n-P.s);if(l<=0)break;mk(b,P.s,l,first);first=false;t+=l}};
 notes.forEach(n=>span(n.g,n.L,(b,s,l,f)=>b.notes.push(f?{s,l,d:SCDEG[((n.m%12)+12)%12],o:Math.floor((n.m-60)/12),x:{c:n.c||[]}}:{s,l,d:'-',o:0})));
 words.forEach(w=>span(w.g,w.L,(b,s,l,f)=>{if(f)b.notes.push({s,l,d:String(w.w||''),o:0,w:1})}));
-LV.forEach(f=>doc[f].flat().filter(Boolean).forEach(c=>span(c.g,c.L,(b,s,l,fi)=>{b.ch=b.ch||{};(b.ch[f]=b.ch[f]||[]).push({s,l,k:c.k,cont:!fi})})));
+LV.map(f=>{const cs=doc[f].flat().filter(Boolean).map(c=>Object.assign({},c)).sort((p,q)=>p.g-q.g);cs.forEach((c,i)=>{const nx=cs[i+1];if(nx&&nx.g>c.g&&c.g+c.L>nx.g)c.L=+(nx.g-c.g).toFixed(6)});return cs}).forEach((cs,fi0)=>{const f=LV[fi0];cs.forEach(c=>span(c.g,c.L,(b,s,l,fi)=>{b.ch=b.ch||{};(b.ch[f]=b.ch[f]||[]).push({s,l,k:c.k,cont:!fi})}))});   /* (Oct 20) a chord held past the next chord's start (Row Your Boat intro 1, L10) is cut at the next chord: overlaps can't be shown */
 bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s));leadA=doc.lead!=null?doc.lead:N-SB}
 function toDoc(){const N=S(),M=DOC.meter||4,U=N/M,B=4*M,I=!!DOC.intro,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6);
 const G=(i,s)=>r6((st[i]-(bars[i].a||0)+s-Z)/U);
@@ -1870,13 +1870,13 @@ function renorm(){const f=LF[LVK];let prev=null;bars.forEach(b=>{b.ch=b.ch||{};c
 if(prev&&!(L[0]&&L[0].s<=a))L.unshift({s:a,l:1,k:prev,cont:true});L.forEach((c,j)=>{const nx=L[j+1];c.l=Math.max(1,(nx?nx.s:b.n)-c.s)});if(L.length)prev=L[L.length-1].k});if(CED()&&LVK!=='easy'){const F=LF[LVK]+'Edited';DOC[F]=DOC[F]||new Date().toISOString()}lvSync()}
 function cAt(bd,x){const i=+bd.dataset.i,rr=bd.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(x-rr.left)/rr.width))*S());return {i,k:Math.max(bb.a||0,Math.min(bb.n-1,k))}}
 function cAll(){const out=[];bars.forEach((b,i)=>((b.ch||{})[LF[LVK]]||[]).forEach(c=>{if(!c.cont)out.push({i,c})}));return out}
-function editChord(c){const i=bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c));const el=[...R.querySelectorAll('.chd')].find(e=>+e.dataset.cb===i&&e.style.left===(c.s/S()*100)+'%');if(!el)return;
+function editChord(c){const i=bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c));const el=[...R.querySelectorAll('.chd')].find(e=>+e.dataset.cb===i&&Math.abs(parseFloat(e.style.left)-c.s/S()*100)<0.01);if(!el)return;
 const inp=document.createElement('input');inp.id='se-cin';inp.value=c.nw?'':c.k;el.textContent='';el.appendChild(inp);el.classList.add('ed');inp.focus();inp.select();
 const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.trim();if(ok&&v){c.k=v;delete c.nw}else if(ok||c.nw){const L=lvl(bars[i]);if(!ok&&!c.nw)return draw();if(c.nw||!v)L.splice(L.indexOf(c),1)}renorm();if(ON)draw()};
 inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false);
 if(e.key==='Tab'){e.preventDefault();const A=cAll(),k=A.findIndex(x=>x.c===c),nx=A[k+(e.shiftKey?-1:1)];done(true);if(nx&&lvl(bars[nx.i]).includes(nx.c)){cPick=nx.c;save();editChord(nx.c)}}});inp.addEventListener('blur',()=>done(true))}
 window.addEventListener('pointerdown',e=>{if(!ON||!CM||e.button!==0)return;const t=e.target;if(!t.closest||!t.closest('#se-ed')||t.closest('.rok')||t.closest('input'))return;e.stopPropagation();
-const cd=t.closest('.chd');if(cd&&CED()){const i=+cd.dataset.cb,c=((bars[i].ch||{})[LF[LVK]]||[]).find(x=>!x.cont&&cd.style.left===(x.s/S()*100)+'%');if(c){cPick=c;R.querySelectorAll('.chd').forEach(x=>x.classList.toggle('cp',x===cd));cDrag={i,c,el:cd,x0:e.clientX,moved:false};document.documentElement.dataset.drag='grab'}return}
+const cd=t.closest('.chd');if(cd&&CED()){const i=+cd.dataset.cb,c=((bars[i].ch||{})[LF[LVK]]||[]).find(x=>!x.cont&&Math.abs(parseFloat(cd.style.left)-x.s/S()*100)<0.01)/* (Oct 20, Chris: the 2nd 5 in a 3/4 bar could not be clicked) a number match, not a text match: the browser rounds 66.666...% */;if(c){cPick=c;R.querySelectorAll('.chd').forEach(x=>x.classList.toggle('cp',x===cd));cDrag={i,c,el:cd,x0:e.clientX,moved:false};document.documentElement.dataset.drag='grab'}return}
 cPick=null;R.querySelectorAll('.chd.cp').forEach(x=>x.classList.remove('cp'));const bd=t.closest('.b[data-i]');if(bd){startAt=cAt(bd,e.clientX);if(PL){stopPlay();setTimeout(startPlay,0)}light()}},true);
 window.addEventListener('pointermove',e=>{if(!cDrag)return;if(!cDrag.moved&&Math.abs(e.clientX-cDrag.x0)<4)return;cDrag.moved=true;const bd=[...R.querySelectorAll('.b[data-i]')].find(x=>{const r=x.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<r.right&&e.clientY>=r.top-30&&e.clientY<r.bottom+10});if(!bd)return;   /* by position: the drag cursor lock turns hit-testing off */
 const P=cAt(bd,e.clientX);cDrag.to=P;if(cDrag.el.parentNode!==bd)bd.appendChild(cDrag.el);cDrag.el.style.left=(P.k/S()*100)+'%'},true);
@@ -2098,7 +2098,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v177</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v178</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
