@@ -1562,7 +1562,8 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 (function(){
 let ON = false, DOC = null, DID = null, VIEW = null, OKD = false, lastSig = null, saveT = null;
 let MT=4,BT=4,SB=4;const FINE=false;const Q=()=>FINE?1:SB;const S=()=>BT*SB;let id=0;const nb=n=>({id:++id,m:false,a:0,n:n||S()});
-function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?2:3;const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+'/4'}
+function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?4:3;   /* (Oct 20, Chris: Happy Birthday's dotted rhythm) 3/4 snaps to 16ths like 4/4 (was 8ths) */
+const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+'/4'}
 let CLIPN=null,CLIPK=null;
 /* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
    (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
@@ -1786,7 +1787,7 @@ function fromDoc(doc){setMeter(doc.meter||4);const N=S(),M=doc.meter||4,U=N/M;id
 const notes=(doc.lines||[]).flat().filter(Boolean),words=Array.isArray(doc.words)?doc.words.flat().filter(Boolean):notes.filter(n=>n.w).map(n=>({g:n.g,L:n.L,w:n.w}));
 const LV=['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(doc[f])),allG=notes.map(n=>n.g).concat(words.map(w=>w.g),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g)));
 const ends=notes.map(n=>n.g+n.L).concat(words.map(w=>w.g+w.L),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g+c.L)));
-let meta,z;if(Array.isArray(doc.bars)&&doc.bars.length&&doc.zero!=null){meta=doc.bars.map(b=>({n:b.n,a:b.a||0}));z=Math.max(0,Math.min(doc.zero,meta.length-1))}
+let meta,z;if(Array.isArray(doc.bars)&&doc.bars.length&&doc.zero!=null){const sv=doc.spb||(M===3?2:M===4?4:3),sk=SB/sv;meta=doc.bars.map(b=>({n:Math.round(b.n*sk),a:Math.round((b.a||0)*sk)}));z=Math.max(0,Math.min(doc.zero,meta.length-1));if(sk!==1&&doc.lead!=null)doc.lead=Math.round(doc.lead*sk)}   /* (Oct 20) bars saved before 3/4 went to 16ths: scale them (doc.spb = steps per beat they were saved in) */
 else{const mn=Math.min(0,...allG),B0=Math.floor(mn/M+1e-9)*M,mx=ends.length?Math.max(...ends):M,cnt=Math.max(1,Math.ceil((mx-B0)/M-1e-9));meta=[];for(let i=0;i<cnt;i++)meta.push({n:N,a:0});z=Math.round(-B0/M);
 if(z>0&&allG.length)meta[0].a=Math.max(0,Math.min(N-1,Math.round((Math.min(...allG)-B0)*U)))}   /* the song's first bar starts where its first note is (a pickup) */
 bars=meta.map(m=>Object.assign(nb(m.n),{a:m.a,notes:[]}));zeroId=bars[z].id;zeroIdx=z;
@@ -1805,7 +1806,7 @@ notes.forEach(n=>{const w=words.find(x=>Math.abs(x.g-n.g)<1e-6);n.w=w?w.w:''});
 const key=g=>I?(g<0?0:1+Math.floor(g/B+1e-9)):Math.floor(g/B+1e-9),keys=[...new Set(notes.map(n=>key(n.g)))].sort((p,q)=>p-q);
 const at=g=>{const k=key(g);let x=keys.indexOf(k);if(x<0){x=keys.filter(q=>q<k).length-1;if(x<0)x=0}return x};
 const grp=L=>{const out=keys.map(()=>[]);if(!keys.length)return out;L.forEach(b=>out[at(b.g)].push(b));out.forEach(l=>l.sort((p,q)=>p.g-q.g));return out};
-const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),zero:z,lead:leadA};
+const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};
 ['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(DOC[f])).forEach(f=>{const C=[];bars.forEach((b,i)=>((b.ch||{})[f]||[]).forEach(c=>C.push({g:G(i,c.s),L:r6(c.l/U),k:c.k,cont:c.cont})));C.sort((p,q)=>p.g-q.g);
 const out=[];C.forEach(c=>{const p=out[out.length-1];if(c.cont&&p&&p.k===c.k&&Math.abs(p.g+p.L-c.g)<1e-6)p.L=r6(p.L+c.L);else out.push({g:c.g,L:c.L,k:c.k})});P[f]=grp(out)});
 return P}
@@ -2065,7 +2066,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v161</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v162</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
