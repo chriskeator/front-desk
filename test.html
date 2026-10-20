@@ -1288,11 +1288,11 @@ function scPLoad(ms){ if (window.DESK_TEST) return Promise.resolve(); let dc = n
   .then(b => (dc = dc || new AudioContext()).decodeAudioData(b)).then(buf => { scPB[x] = buf; }).catch(() => { delete scPQ[x]; }))).then(() => { if (dc) dc.close().catch(() => {}); }); }
 /* (Oct 15) Chris: approve-sound = Lab song-card sound. Same as piano-engine.js playHandAt: peak 0.68, 12ms rise, "long" ring
    (full 0.25s, fade tc 1.1s, silent by 4.5s), the next melody note cuts it (tc 0.03, gone 0.14s later) */
-function scPiano(c, s, d, m, v, cut){ const x = scPNear(m), buf = scPB[x]; if (!buf) return scEP(c, s, d, m, .3);
+function scPiano(c, s, d, m, v, cut, dst){ const x = scPNear(m), buf = scPB[x]; if (!buf) return scEP(c, s, d, m, .3);
   const src = c.createBufferSource(), g = c.createGain(), P = .68 * (v == null ? 1 : v); src.buffer = buf; src.playbackRate.value = 2 ** ((m - x) / 12);
   g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(P, s + .012); g.gain.setTargetAtTime(.0001, s + .25, 1.1); g.gain.linearRampToValueAtTime(0, s + 4.5);
   let end = s + 4.5; if (cut != null && cut < end){ g.gain.cancelScheduledValues(cut); g.gain.setTargetAtTime(.0001, cut, .03); end = cut + .14; }
-  src.connect(g).connect(c.destination); src.start(s); src.stop(end); }
+  src.connect(g).connect(dst || c.destination); src.start(s); src.stop(end); }
 /* the Lab click: square tick 1400 (bar) / 1000, nudged 18ms late to meet the piano sample's attack (piano-engine.js CLICK_DELAY) */
 function scClick(c, s, acc){ s += .018; const o = c.createOscillator(), g = c.createGain(); o.type = "square"; o.frequency.value = acc ? 1400 : 1000;
   g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(acc ? .18 : .12, s + .002); g.gain.exponentialRampToValueAtTime(.0001, s + .045);
@@ -1312,7 +1312,7 @@ function scParse(k){ if (SCBASS[k]) return [SCBASS[k], SCTRI[k]];
   const root = 48 + r, tri = iv.map(x => root + x), bp = m[5] ? (SCDG[m[5]] + acc(m[4]) + 12) % 12 : r;
   return [36 + bp, tri]; }
 const scChordNotes = k => { const P = scParse(k); return P ? [P[0]].concat(P[1]) : []; };
-function scChordAt(c, s, cut, k){ const P = scParse(k); if (!P) return; scPiano(c, s, 0, P[0], .55, cut); P[1].forEach(m => scPiano(c, s, 0, m, .32, cut)); }
+function scChordAt(c, s, cut, k, dst){ const P = scParse(k); if (!P) return; scPiano(c, s, 0, P[0], .55, cut, dst); P[1].forEach(m => scPiano(c, s, 0, m, .32, cut, dst)); }
 function scChordBeep(k){ if (window.DESK_TEST) return; scPLoad(scChordNotes(k)).then(() => { try { const c = new AudioContext(); scChordAt(c, c.currentTime + .02, c.currentTime + 1, k); setTimeout(() => c.close(), 1500); } catch {} }); }
 /* (Oct 16, Chris) Mute bar: Play skips the silent beats of a muted bar (notes inside it still play). scWarp = song beat -> play beat */
 function scToggleMute(s){ const m = (scDoc.muted || []).filter(x => Math.abs(x - s) > 1e-9); if (m.length === (scDoc.muted || []).length) m.push(s); scDoc.muted = m.sort((p, q) => p - q); scBar = null; scSaveSoon(); scAll(); }
@@ -1572,7 +1572,7 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 (function(){
 let ON = false, DOC = null, DID = null, VIEW = null, OKD = false, lastSig = null, saveT = null;
 let MT=4,BT=4,SB=4;const FINE=false;const Q=()=>FINE?1:SB;const S=()=>BT*SB;let id=0;const nb=n=>({id:++id,m:false,a:0,n:n||S()});
-function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?4:3;   /* (Oct 20, Chris: Happy Birthday's dotted rhythm) 3/4 snaps to 16ths like 4/4 (was 8ths) */
+let GR=null;function setMeter(m,g){MT=m;GR=g===undefined?GR:g;BT=m===4?4:m===3?3:2;SB=GR||(m===4?4:m===3?4:3);   /* (Oct 20, Chris: Row Your Boat) doc.grid = steps per beat wins: 3 = triplets in each quarter */   /* (Oct 20, Chris: Happy Birthday's dotted rhythm) 3/4 snaps to 16ths like 4/4 (was 8ths) */
 const el=document.getElementById('se-meter');if(el)el.textContent=m===6?'6/8':m+'/4'}
 let CLIPN=null,CLIPK=null;
 /* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
@@ -1783,7 +1783,8 @@ const a0=startAt&&startAt.i===from&&bars[from]?Math.max(bars[from].a||0,startAt.
 for(let i=from;i<bars.length;i++){const b=bars[i];if(b.m)continue;const a=i===from?a0:b.a||0;seg.push({i,a,n:b.n,t});t+=(b.n-a)*step}
 if(!seg.length){stopPlay();hint('Nothing to play');return}
 PL={seg,t0,end:t,step,N,nodes:[],ac};
-const sounding=mel.filter(n=>n.t+n.len>P0&&(!CM||MON));if(CM&&CON)seg.forEach(g=>{if(g.i==='lead')return;((bars[g.i].ch||{})[LF[LVK]]||[]).forEach(c=>{const s0=Math.max(c.s,g.a),e0=c.s+c.l;if(e0>s0)scChordAt(AC,g.t+(s0-g.a)*step,g.t+(e0-g.a)*step,c.k)})});sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e)});
+const sounding=mel.filter(n=>n.t+n.len>P0);   /* (Oct 20, Chris: 'neither button mutes') melody + chords always scheduled into their own volume; Melody off / Chords off turn it down LIVE */
+const mg=AC.createGain(),cg=AC.createGain();mg.gain.value=(!CM||MON)?1:0;cg.gain.value=CON?1:0;mg.connect(AC.destination);cg.connect(AC.destination);PL.mg=mg;PL.cg=cg;if(CM)seg.forEach(g=>{if(g.i==='lead')return;((bars[g.i].ch||{})[LF[LVK]]||[]).forEach(c=>{const s0=Math.max(c.s,g.a),e0=c.s+c.l;if(e0>s0)scChordAt(AC,g.t+(s0-g.a)*step,g.t+(e0-g.a)*step,c.k,cg)})});sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e,mg)});
 seg.forEach(g=>{for(let k=g.a;k<g.n;k++)if(k%SB===0||k===g.a)click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead')});
 hint('Playing at '+bpm+' BPM'+(from?' from '+lab(from):''));requestAnimationFrame(tick)}
 function stopPlay(){if(!PL)return;const ac=PL.ac;PL=null;try{ac&&ac.close()}catch(x){}if(AC===ac)AC=null;document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());if(PB)PB.innerHTML='&#9654; Play'}
@@ -1794,7 +1795,7 @@ const sc=ED.parentNode,r=el.getBoundingClientRect(),sr=sc.getBoundingClientRect(
 ph.style.left=(Math.min(st,g.n)/PL.N*100)+'%'}
 requestAnimationFrame(tick)}
 /* ---- db doc <-> bars ---- */
-function fromDoc(doc){setMeter(doc.meter||4);const N=S(),M=doc.meter||4,U=N/M;id=0;
+function fromDoc(doc){setMeter(doc.meter||4,doc.grid||null);const N=S(),M=doc.meter||4,U=N/M;id=0;
 const notes=(doc.lines||[]).flat().filter(Boolean),words=Array.isArray(doc.words)?doc.words.flat().filter(Boolean):notes.filter(n=>n.w).map(n=>({g:n.g,L:n.L,w:n.w}));
 const LV=['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(doc[f])),allG=notes.map(n=>n.g).concat(words.map(w=>w.g),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g)));
 const ends=notes.map(n=>n.g+n.L).concat(words.map(w=>w.g+w.L),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g+c.L)));
@@ -1877,7 +1878,7 @@ if(e.key==='Backspace'||e.key==='Delete'||e.key==='ArrowUp'||e.key==='ArrowDown'
 function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
 function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
-document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead()}else if(x.dataset.se==='con'){CON=!CON;cHead()}else if(x.dataset.se==='close')scClose()});
+document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
 const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},get startAt(){return startAt},firstOpen:()=>firstOpen(),draw:()=>draw()};
 })();
 /* (Oct 17, Chris: "i just want the lyric box with numbers on top") CHORDS STEP = ONE TEXT BOX. Each song row = a chord line above its
@@ -2084,7 +2085,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v169</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v170</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
