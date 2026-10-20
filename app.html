@@ -1464,7 +1464,9 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 /* (Oct 16, Chris: "you can't even read the words") lyric boxes show plain words, one piece of text, never one letter per 16th */
 /* (Oct 16, Chris: "they weren't in boxes, just on the line") lyrics = plain words on the line: no box, no border; a word may run past its spot */
 #songchk .nt.w{background:transparent!important;border-color:transparent!important;overflow:visible}
-#songchk .nt.w,#songchk .nt.w:hover,#songchk .nt.w.np{border-color:transparent!important;pointer-events:none;cursor:default}   /* (Oct 16 7pm, Chris) melody step: lyrics = plain read-only words (no pick, drag, edit) */
+#songchk .nt.w,#songchk .nt.w:hover,#songchk .nt.w.np{border-color:transparent!important;cursor:grab}   /* (Oct 16 7pm, Chris) melody step: lyrics are never typed here. (Oct 20, Chris: 'the lyrics cannot move to the new phrasing') words DRAG again, onto the new notes */
+#songchk .nt.w:hover .tx,#songchk .nt.w.np .tx{background:var(--se-hov);border-radius:4px}
+#songchk .row.ok .nt.w{cursor:default}
 #songchk .nt.w .tx{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;white-space:nowrap;padding-left:4px}
 #songchk .nt.slot{background:transparent;border:1px dashed var(--se-line2)}
 #songchk .nt.slot>*{visibility:hidden}
@@ -1609,8 +1611,10 @@ else if(t.classList.contains('e'))hint(t.dataset.side==='L'?'Drag: move where th
 else if(t.closest('[data-add]'))hint('Click: add a bar at the end (a new row starts by itself)');
 else if(t.classList.contains('b')||t.classList.contains('k')||t.classList.contains('t')){const i=+t.closest('.b').dataset.i;if(isNaN(i)){hint('');return}hint(t.classList.contains('t')?(sel.includes(i)&&sel.length>1?'Drag: move the picked bars':'Drag: move '+lab(i)):'Click: pick '+lab(i)+' and start Play here. Drag across bars: pick a section.')}
 else hint('Click empty space: unpick')});
-ED.addEventListener('click',e=>{const k=e.target.closest&&e.target.closest('.rok');if(!k||!DOC)return;const rk=k.dataset.rok,L=DOC.rowsOk=(DOC.rowsOk||[]).slice(),i=L.indexOf(rk);if(i<0)L.push(rk);else L.splice(i,1);k.parentNode.classList.toggle('ok',i<0);if(DID)db.collection('songcheck').doc(DID).update({rowsOk:L,updated:new Date().toISOString()}).catch(()=>{})});
-ED.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.rok'))return;if(drag||ED.querySelector('.ghost'))cancelDrag();setTimeout(()=>{if(drag&&drag.k!=='band')document.documentElement.dataset.drag=(drag.k==='size'||drag.k==='nsize'||drag.k==='lead')?'size':'grab'},0);if(e.button!==0)return;try{window.focus()}catch(x){}const t=e.target;
+ED.addEventListener('click',e=>{const k=e.target.closest&&e.target.closest('.rok');if(!k||!DOC)return;const rk=k.dataset.rok,L=DOC.rowsOk=(DOC.rowsOk||[]).slice(),i=L.indexOf(rk);if(i<0)L.push(rk);else L.splice(i,1);k.parentNode.classList.toggle('ok',i<0);if(i<0&&startAt&&k.parentNode.querySelector('.b[data-i="'+startAt.i+'"]')){startAt=null;light()}if(DID)db.collection('songcheck').doc(DID).update({rowsOk:L,updated:new Date().toISOString()}).catch(()=>{})});
+ED.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('.rok'))return;
+/* (Oct 20, Chris) a green check LOCKS its row: nothing in it can be picked, dragged or edited; a click there only sets where Play starts */
+{const lr=e.target.closest&&e.target.closest('.row.ok'),lb=lr&&e.target.closest('.b[data-i]');if(lr){if(e.button===0&&lb){const i=+lb.dataset.i,rr=lb.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();startAt={i,k:Math.max(bb.a||0,Math.min(bb.n-1,k))};sel=[];noteSel=[];notePick=null;if(PL){stopPlay();setTimeout(startPlay,0)}light()}hint('Approved row: locked. Tap its check mark to unlock.');return}}if(drag||ED.querySelector('.ghost'))cancelDrag();setTimeout(()=>{if(drag&&drag.k!=='band')document.documentElement.dataset.drag=(drag.k==='size'||drag.k==='nsize'||drag.k==='lead')?'size':'grab'},0);if(e.button!==0)return;try{window.focus()}catch(x){}const t=e.target;
 if(t.classList.contains('g')){save();const g=+t.dataset.gap;bars.splice(g,0,nb());sel=[g];draw();hint('Added a bar');return}
 if(t.closest('[data-add]')){save();bars.push(nb());sel=[bars.length-1];draw();hint('Added a bar');return}
 const nt=t.closest('.nt');if(nt&&!t.closest('input')){const bi=+nt.dataset.nb,ni=+nt.dataset.nn,bb=bars[bi],q=bb.notes[ni];
@@ -1627,7 +1631,8 @@ pastePos=(e.clientX-rr.left)/rr.width<.5?i:i+1;if(!sel.includes(i))sel=[i];drag=
 sel=[];startAt=null;pastePos=null;draw()});
 ED.addEventListener('dblclick',e=>{const T=document.elementFromPoint(e.clientX,e.clientY)||e.target;
 if(T.classList.contains('t')&&T.parentNode.dataset.i!=null){const i=+T.parentNode.dataset.i;save();bars.splice(i+1,0,nb());sel=[i+1];startAt=null;flip(()=>draw());hint('Added a bar after '+lab(i));return}
-if(T.closest('.gr'))return;const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.contains('w'));if(lw)return;   /* (Oct 16 7pm, Chris) lyrics are read-only on the melody step */
+if(T.closest('.gr')||T.closest('.row.ok'))return;   /* (Oct 20) locked row */
+const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.contains('w'));if(lw)return;   /* (Oct 16 7pm, Chris) lyrics are read-only on the melody step */
 const nt=T.closest('.nt');if(nt){editNote(+nt.dataset.nb,+nt.dataset.nn);return}
 const b=T.closest('.b[data-i]');if(!b||T.classList.contains('t')||T.classList.contains('e'))return;const i=+b.dataset.i,bb=bars[i],r=b.getBoundingClientRect(),N=S();
 let st=Math.floor((e.clientX-r.left)/r.width*N);st=Math.max(bb.a||0,Math.min(bb.n-1,st));bb.notes=bb.notes||[];if(bb.notes.some(o=>!o.w===!lw&&st>=o.s&&st<o.s+o.l))return;
@@ -1718,6 +1723,7 @@ if(l<=0||(b.notes||[]).some(o=>!o.w===!c.w&&o.s<sl+l&&sl<o.s+o.l)){miss++;return
 noteSel=added;notePick=null;draw();hint('Pasted '+put+' box'+(put===1?'':'es')+(miss?'; '+miss+' did not fit past the end of the song':''));return}
 if(mod&&(e.code==='KeyC'||String(e.key).toLowerCase()==='c')){stop();if(!sel.length){hint('Pick a bar first, then copy');return}e.preventDefault();CLIPK='b';CLIP=[...sel].sort((a,b)=>a-b).map(i=>JSON.parse(JSON.stringify({m:bars[i].m,a:bars[i].a||0,n:bars[i].n,notes:bars[i].notes||[],ch:bars[i].ch})));light();hint('Copied '+CLIP.length+' bar'+(CLIP.length>1?'s':'')+'. Click where it goes, then Windows+V');return}
 if(mod&&(e.code==='KeyV'||String(e.key).toLowerCase()==='v')){stop();if(!CLIP){hint('Nothing copied yet');return}e.preventDefault();const pos=pastePos!=null?pastePos:sel.length?lo():bars.length;save();const add=CLIP.map(b=>{const c=JSON.parse(JSON.stringify(b));(c.notes||[]).forEach(q=>{q.id=++id});return {...c,id:++id}});bars.splice(pos,0,...add);sel=add.map((_,k)=>pos+k);startAt=null;pastePos=null;flip(()=>draw());hint('Pasted; the bars after it moved ahead');return}
+{const pw=notePick&&((bars.find(x=>x.id===notePick.b)||{notes:[]}).notes[notePick.n]||{}).w;if((pw||noteSel.some(q=>q.w))&&(e.key==='Backspace'||e.key==='Delete'||e.key==='ArrowUp'||e.key==='ArrowDown')){e.preventDefault();hint('Words only move here (drag them); they are never deleted or typed on the melody step');return}}   /* (Oct 20) lyric words drag again, nothing else */
 if(noteSel.length>1&&e.key==='Backspace'){stop();e.preventDefault();save();bars.forEach(b=>{if(b.notes)b.notes=b.notes.filter(q=>!noteSel.includes(q))});noteSel=[];notePick=null;draw();hint('Deleted');return}
 if(notePick&&(e.key==='Backspace'||e.key==='ArrowUp'||e.key==='ArrowDown')){const bi=bars.findIndex(x=>x.id===notePick.b);if(bi>=0){stop();e.preventDefault();save();const bb=bars[bi];if(e.key==='ArrowUp'||e.key==='ArrowDown'){const q=bb.notes[notePick.n];q.o=Math.max(-1,Math.min(1,(q.o||0)+(e.key==='ArrowUp'?1:-1)));notePick={b:bb.id,n:bars[bi].notes.indexOf(q)};hint(q.o<0?'Low octave (dot under)':q.o>0?'High octave (dot over)':'Middle octave')}else{bb.notes.splice(notePick.n,1);notePick=null;hint('Note deleted')}draw();return}}
 if(e.key==='Backspace'&&sel.length){stop();e.preventDefault();save();bars=bars.filter((_,i)=>!sel.includes(i));sel=[];draw();hint('Deleted');return}
@@ -1736,9 +1742,11 @@ bars.forEach((b,i)=>{const g0=st[i]-(b.a||0);(b.notes||[]).filter(q=>!q.w).sort(
 if(isHold(q)){if(last&&last.t+last.len===g0+q.s)last.len+=Math.min(q.l,b.n-q.s);return}
 const T=toks(q);T.forEach((t,k)=>{const end=Math.min(k+1<T.length?T[k+1].at:q.s+q.l,b.n);if(end<=t.at)return;
 last={t:g0+t.at,len:end-t.at,mid:60+DEG[t.m[2]]+(/[b♭]/.test(t.m[1])?-1:/[#♯]/.test(t.m[1])?1:0)+12*(q.o||0),q,one:T.length===1&&k===0};out.push(last)})})});return out}
+/* (Oct 20, Chris) Play starts at the first row that is not approved yet (0 = the top when every row is approved) */
+function firstOpen(){const r=[...R.querySelectorAll('.row')].find(x=>!x.classList.contains('ok')&&x.querySelector('.b[data-i]'));return r?+r.querySelector('.b[data-i]').dataset.i:0}
 async function startPlay(){if(!ON)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(x){hint('Sound is blocked here');return}
 const ac=AC,mel=melody();PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop';await scPLoad(mel.map(n=>n.mid).concat(CM?bars.flatMap(b=>((b.ch||{})[LF[LVK]]||[]).flatMap(c=>scChordNotes(c.k))):[]));if(!PL||PL.ac!==ac)return;
-const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,t0=AC.currentTime+0.1,seg=[],st=starts();let t=t0;const from=startAt?startAt.i:sel.length?lo():0;
+const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,t0=AC.currentTime+0.1,seg=[],st=starts();let t=t0;const from=startAt?startAt.i:sel.length?lo():firstOpen();
 if(!from&&leadA<N){seg.push({i:'lead',a:leadA,n:N,t});t+=(N-leadA)*step}
 const a0=startAt&&startAt.i===from&&bars[from]?Math.max(bars[from].a||0,startAt.k):bars[from]?bars[from].a||0:0,P0=bars[from]?st[from]+a0-(bars[from].a||0):0,tS=t;
 for(let i=from;i<bars.length;i++){const b=bars[i];if(b.m)continue;const a=i===from?a0:b.a||0;seg.push({i,a,n:b.n,t});t+=(b.n-a)*step}
@@ -1832,7 +1840,7 @@ function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(sav
 scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
 function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
 document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok')approve();else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead()}else if(x.dataset.se==='con'){CON=!CON;cHead()}else if(x.dataset.se==='close')scClose()});
-const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},draw:()=>draw()};
+const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},get startAt(){return startAt},firstOpen:()=>firstOpen(),draw:()=>draw()};
 })();
 /* (Oct 17, Chris: "i just want the lyric box with numbers on top") CHORDS STEP = ONE TEXT BOX. Each song row = a chord line above its
    lyric line (rows without words show the melody numbers instead). A chord sounds on the word under its first letter. One level is
@@ -2038,7 +2046,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v159</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v160</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
