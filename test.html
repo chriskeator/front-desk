@@ -1527,6 +1527,9 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .b.lead .t{cursor:default}
 #songchk .sp{visibility:hidden}
 #songchk .row{grid-template-columns:repeat(5,minmax(0,1fr)) 40px}
+.stuckbox{margin:0}.stuckbox>summary{list-style:none;cursor:pointer}.stuckbox>summary::-webkit-details-marker{display:none}
+.stuckpill{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 16px;border-radius:999px;background:#B3261E;color:#fff;font-weight:800;font-size:15px}
+.stucklist{margin-top:8px;border:1.5px solid #B3261E;border-radius:12px;overflow:hidden}.stuckrow{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-top:1px solid var(--line,#e5e0d6)}.stuckrow:first-child{border-top:0}.stuckrow span{font-size:13px;opacity:.75}
 #songchk .rok{align-self:center;justify-self:end;width:32px;height:32px;margin-left:8px;border-radius:50%;border:1.5px solid var(--se-line2);background:var(--se-card);color:var(--se-mute);font:700 16px/1 inherit;cursor:pointer;padding:0}
 #songchk .row.ok .rok{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
 #songchk .row.ok>.b:not(.lead){background:#e2f4e8}
@@ -2085,7 +2088,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v170</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v171</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2786,7 +2789,7 @@ function morningScreen(seg){
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}<button type="button" class="tpill folbtn" data-goto="money" data-msub2="fol">Followers</button>${labTestPill()}</span></div>
-    <div class="mgrid"><div class="mleft">${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
+    <div class="mgrid"><div class="mleft">${homeStuck()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
@@ -2798,6 +2801,10 @@ function morningScreen(seg){
     </div></div>
   </div>`;
 }
+/* (Oct 20, Chris + GPT) FIX MONITOR: one red "N stuck" pill on Home from stats/fixmonitor.red (launchd fix-monitor/fixmon.py); hidden at 0; tap = the list (workflow, title, why, age) */
+function homeStuck(){ const fm = stats.find(x => x.id === "fixmonitor") || {}, R = Array.isArray(fm.red) ? fm.red : []; if (!R.length) return "";
+  const age = t => { const h = (Date.now() - Date.parse(t || "")) / 36e5; return !isFinite(h) ? "" : h < 24 ? Math.max(1, Math.round(h)) + "h" : Math.round(h / 24) + "d"; };
+  return `<details class="stuckbox"><summary><span class="stuckpill">${R.length} stuck</span></summary><div class="stucklist">${R.map(r => `<div class="stuckrow"><b>${esc(r.title || r.label || "")}</b><span>${esc([r.workflow, r.why, age(r.since)].filter(Boolean).join(" · "))}</span></div>`).join("")}</div></details>`; }
 // (Oct 7) Chris: on the phone Home has no funnel (it lives in Money Map); under the to-dos = the projects he's working on now
 // (Oct 7) Chris: under Today on Home = a "This week" folder (rest of the week, Mon-Sun) and a "This month" folder (after this week)
 function homeLater(){
