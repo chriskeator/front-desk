@@ -1566,7 +1566,7 @@ function setMeter(m){MT=m;BT=m===4?4:m===3?3:2;SB=m===4?4:m===3?2:3;const el=doc
 let CLIPN=null,CLIPK=null;
 /* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
    (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
-let CM=false,LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Easy',medium:'Medium',hard:'Hard'};
+let CM=false,LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
 const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM&&LVK===CUR(),lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
 const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
@@ -1865,7 +1865,7 @@ const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(
    lyric line (rows without words show the melody numbers instead). A chord sounds on the word under its first letter. One level is
    checked at a time (Easy, then Medium, then Hard); the other tabs show their chords to compare (read only). Picture: Front Desk/Chords as text - picture (Oct 16).html */
 (function(){
-const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Easy',medium:'Medium',hard:'Hard'};
+const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
 let ID=null,D=null,LV='easy',TOK=[],ORIG={},LAST={},saveT=null,AC=null,PLAY=null;
 const r6=x=>+(+x).toFixed(6),cur=()=>LVS.find(k=>!(D&&D[LOK[k]]))||null;
 function tokens(){ return scLines.map((l,i)=>{ const W=(scWords[i]||[]).filter(w=>String(w.w||'').trim()).slice().sort((a,b)=>a.g-b.g);
@@ -2065,7 +2065,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v160</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v161</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
