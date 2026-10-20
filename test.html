@@ -1938,7 +1938,7 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 @media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
 #shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:#000}
 /* (Oct 17, Chris) a row's V1 · Ready / Checks pill sits at the row's bottom right, the same spot on every row */
-#list .chc:has(.ltag),#pop .chc:has(.ltag){position:relative}#list .chc .ltag,#pop .chc .ltag{position:absolute;right:14px;bottom:11px;margin:0!important}#list .chc:has(.ltag)>span,#pop .chc:has(.ltag)>span{padding-right:120px}
+#list .chc:has(.ltag),#pop .chc:has(.ltag){position:relative}#list .chc .ltag,#pop .chc .ltag{position:absolute;right:14px;bottom:11px;margin:0!important}#list .chc:has(.ltag)>span,#pop .chc:has(.ltag)>span{padding-right:120px}#list .chc.shiprow .ltag,#pop .chc.shiprow .ltag{position:static;margin-left:6px!important}/* Oct 20 Chris: on Ships rows the pill sat on the red ship date: keep it inline after the title */
 #songchk .ctcard{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80vw,1100px);max-width:calc(100vw - 32px);height:min(88vh,860px);box-sizing:border-box;background:var(--card,#fff);border-radius:18px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;z-index:61;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 #songchk .cth{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}#songchk .cth .t{font:600 19px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 #songchk .ctlvp{width:140px;font-size:12px;font-weight:600;color:var(--teal-ink,#1f6f66)}#songchk .ctlvs{display:inline-flex;gap:4px}#songchk .ctlvs .tb{width:96px}
@@ -2057,7 +2057,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v156</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v157</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
