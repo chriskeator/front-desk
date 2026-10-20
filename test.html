@@ -1494,7 +1494,7 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 #songchk .b .k{top:22px!important;bottom:auto!important;height:20px}
 #songchk .b .k.sub{top:32px!important;height:10px}
 #songchk .nt{top:46px!important;bottom:auto!important;height:30px}
-#songchk .e{top:0!important;bottom:auto!important;height:22px}
+#songchk .e{top:0!important;bottom:auto!important;height:22px}#songchk .b.lead .e{top:0!important;bottom:0!important;height:auto!important;width:14px;margin-left:-7px}/* Oct 20 Chris: the lead-in edge drags from its whole height, not only the 22px top strip */
 html[data-drag] #songchk .b .gr,html[data-drag] #songchk .b .ln,html[data-drag] #songchk .b .ly{background:transparent!important}
 html[data-drag] #songchk .b[data-i]:not(.s){background-color:var(--se-card)!important}
 html[data-drag] #songchk .nt:hover{background:var(--se-goldbg)}
@@ -1744,7 +1744,7 @@ if(mod&&(String(e.key).toLowerCase()==='z'||e.code==='KeyZ')){stop();e.preventDe
 addEventListener('resize',()=>{if(ON&&!drag)draw()});
 /* PLAY: the desk's real piano (scPiano, the Lab samples) for the numbers, the prototype's click on every beat */
 let PL=null,AC=null;
-function click(t,hi){const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.08)}
+function click(t,hi){t+=.018;/* Oct 20 Chris: "metronome not lining up with the piano, a hair off": same 18ms nudge as the Lab (piano-engine CLICK_DELAY) so the tick meets the sample's attack */const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.08)}
 /* where each bar starts on the song's clock (16ths), bars back to back */
 function starts(){const st=[];let T=0;bars.forEach(b=>{st.push(T);T+=b.n-(b.a||0)});st.push(T);return st}
 const isHold=q=>!q.w&&/^\s*-+\s*$/.test(String(q.d));
@@ -2057,7 +2057,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v157</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v158</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
