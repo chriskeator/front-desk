@@ -2132,7 +2132,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v192</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v193</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2869,7 +2869,13 @@ function homeLater(){
 // (Oct 10) Chris: each Cadence task shows where it stands, in words AND a colour (edge + dot)
 function cadStatus(t){ if (reviews.some(r => r.group === t.id && r.status === "fix")) return ["Fix sent", "#E07A45"];
   if (t.handoff === "review") return ["Ready to check", "#1FA598"];
-  if (t.handoff === "cadence" || t.handoff === "teach") return ["In progress", "#E8B53A"];
+  if (t.handoff === "cadence" || t.handoff === "teach"){
+    /* (Oct 20, Chris) the pill tells the truth: 'In progress' only while a queue row naming this task is working; else the task's own progress text */
+    if ((queueRows || []).some(q => q.status === "working" && ((q.ref || "").indexOf(t.id) >= 0 || (q.title || "").indexOf(t.id) >= 0))) return ["In progress", "#E8B53A"];
+    const pg = String(t.progress || "").trim().toLowerCase();
+    if (pg.indexOf("waiting") === 0) return ["Waiting on you", "#7A8FD6"];
+    if (pg.indexOf("queued") === 0) return ["Queued", "#9AA3AD"];
+  }
   return ["Not started", "#B9BEC5"]; }
 /* (Oct 13) Chris: automations report themselves. Red/gold cards on top of Home = a job missed, failed or to-dos look stale; tap = details in place */
 function healthLine(){ const h = stats.find(x => x.id === "health") || {}; if (!h.checkedAt) return "";
@@ -2904,7 +2910,7 @@ function homeCadence(){
   const L0 = tasks.filter(t => !t.done && !t.removed && withCad(t) && !t.test);   /* (Oct 13) only 100%-Cadence work, plus work handed back for his check */
   const L1 = sortBy === "time" ? L0.slice().sort((a, b) => (+a.cmins || 9999) - (+b.cmins || 9999) || byImp(a, b)) : sortL(L0);
   /* (Oct 13, Chris) group by status: needs him first, then not started, in progress at the bottom; the chosen sort stays inside each group */
-  const rank = t => ({"Ready to check": 0, "Fix sent": 1, "Not started": 2, "In progress": 3})[cadStatus(t)[0]] ?? 2;
+  const rank = t => ({"Ready to check": 0, "Fix sent": 1, "Waiting on you": 2, "Not started": 3, "Queued": 3, "In progress": 4})[cadStatus(t)[0]] ?? 3;
   const L = L1.map((t, i) => [t, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
   const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}" data-cad="1"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
   return `<div class="msec" style="--cc:#0F766E"><h4>Cadence tasks <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("") || '<span class="tn">Nothing for Cadence right now.</span>'}</div></div>`;
