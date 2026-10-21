@@ -927,6 +927,8 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 /* (Oct 14, Chris) phone: the Songs column labels show the whole word at 45 degrees (computer keeps full words flat) */
 @media (max-width:999px){ #list .tn .sblk{height:46px!important;position:relative;overflow:visible}#list .tn .sblk .sab{display:none}#list .tn .sblk .sfw{display:block;position:absolute;left:5px;bottom:2px;transform-origin:0 100%;transform:rotate(-45deg);white-space:nowrap;font-size:11px;letter-spacing:0} }
 @media (min-width:1000px){ #list .songgrid .sname{flex:0 0 200px!important}#list .songgrid .srow .sblk .sfw{font-size:11.5px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
+.qrow .qd{display:none}
+@media (min-width:1000px){.qrow .qd{display:inline-block}.qrow .qt2{display:block}.qrow .qpill,.qrow .qt{display:none!important}.qrow{gap:24px!important;padding:11px 20px!important}}
 </style>
 
 <div id="pop"></div>
@@ -2130,7 +2132,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v189</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v190</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4662,7 +4664,12 @@ function homeQueue(){
   /* (Oct 20, Chris) ONE pill on the left = status + job stacked; no Top button (press and hold a row, drag it where it goes); title gets the room */
   const pill = (t, job, bg, fg) => `<span class="qpill" style="flex:0 0 auto;width:74px;text-align:center;padding:3px 6px;border-radius:12px;line-height:1.15;background:${bg};color:${fg}"><b style="display:block;font-size:12px">${t}</b>${job ? `<span style="display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75">${esc(job)}</span>` : ""}</span>`;
   const st = q => q.status === "working" ? pill("Working", q.job, "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", q.job, "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", q.job, "#F6D6D3", "#B3261E") : pill("Done", q.job, "#DDF1E5", "#2E7D4F");
-  const row = q => `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}<b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span>${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E">${esc(q.why)}</span>` : ""}</b></div>`;
+  /* (Oct 20, Chris) DESKTOP: spread out in columns (status | job | title | (count) | time), nothing wraps; phone keeps the one stacked pill */
+  const sp = t => { const m = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(t || ""); return m ? [m[1], m[2]] : [t || "", ""]; };
+  const tm = q => { const t = q.status === "working" ? q.startedAt : q.addedAt; if (!t) return ""; const d = new Date(t); return (q.status === "working" ? "started " : "added ") + d.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}); };
+  const dp = (t, bg, fg) => `<span class="qd" style="flex:0 0 auto;width:96px;text-align:center;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg}">${t}</span>`;
+  const dst = q => q.status === "working" ? dp("Working", "#1FA598", "#fff") : q.status === "queued" ? dp(q.retry ? "Retrying" : "Queued", "#EFEBE3", "#5C5A55") : dp("Stuck", "#F6D6D3", "#B3261E");
+  const row = q => { const [tt, pc] = sp(q.title); return `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}${dst(q)}<span class="qd" style="flex:0 0 auto;width:90px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)">${esc(q.job || "")}</span><b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span class="qt" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span><span class="qd qt2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tt)}</span>${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E">${esc(q.why)}</span>` : ""}</b><span class="qd" style="flex:0 0 auto;width:110px;font-size:13px;color:var(--muted,#8A9099);white-space:nowrap">${esc(pc)}</span><span class="qd" style="flex:0 0 auto;width:120px;text-align:right;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap">${esc(tm(q))}</span></div>`; };
   const n = W.length + U.length;
   /* (Oct 20, Chris "Ask me every time"): Shorts renders wait for night unless Chris taps Run now (sets dayOk on each waiting one) */
   const NK = {"words-make": 1, "final-make": 1}, hr = new Date().getHours(), NW = hr >= 6 ? U.filter(q => NK[q.kind] && !q.dayOk) : [];
