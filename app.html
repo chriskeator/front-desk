@@ -2148,7 +2148,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v205</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v206</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5029,6 +5029,11 @@ function goBtn(t){
     return `<div class="revlist">${LL.map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labShort(labRef(l.url, l.label || "Link")), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }).join("")}</div>`; }
   const u = safeUrl(t.url) && t.url !== FDURL ? t.url : "";
   return u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : ""; }
+/* (Oct 21, Chris: "changed without my approval") the Shorts / Songs Today rows open that board's OWN existing folder on Home (column checklist), no pop-up, no Open first, no % bar */
+const WAITFOLD = {"t-wait-shorts": "Shorts", "t-wait-songs": "Songs"};
+function waitFolderGo(k){ openOne[oneKey()] = k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {} collapsed.delete(k); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
+  const h = [...document.querySelectorAll("#list .msec > h4[data-ck]")].find(x => x.dataset.ck === k); if (h) h.scrollIntoView({block: "start"}); }
+document.addEventListener("click", e => { const b = e.target.closest("[data-tlinks]"); if (!b || !WAITFOLD[b.dataset.tlinks] || !b.closest("#list")) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); waitFolderGo(WAITFOLD[b.dataset.tlinks]); }, true);
 document.addEventListener("click", e => { const b = e.target.closest("[data-waitgo]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.waitgo === "shorts") return shOpen(null);
   const w = waitLive({wait: "songs"}), q = w && w.first; if (!q) return; if (q.lyr) lyrOpen(q.id); else scOpen(q.id, q.v); }, true);   /* (Oct 20 night) opens the board at the FIRST item waiting */
