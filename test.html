@@ -1599,6 +1599,9 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .nsnap{top:40px;height:24px}
 #songchk .secard.cm .b{height:126px}#songchk .secard.cm .b .cr{top:68px;height:28px}#songchk .secard.cm .b .ly{top:96px}#songchk .secard.cm .nt.w{top:99px!important}
 #songchk .secard .chd{top:71px;height:22px;font:700 14px/20px var(--se-font)}
+/* (Oct 21, Chris: 'broke again') ONE CARD SIZE: fixed height (sized for intro + 4 rows + tag row = 6 rows) and a reserved scrollbar gutter, so fewer rows = empty space at the bottom, never a smaller card, and the grid never shifts sideways between verses/songs/steps. Check: desk-songcard-test.js */
+#songchk .secard{height:min(780px,calc(100vh - 24px))}#songchk .secard.cm{height:min(940px,calc(100vh - 24px))}
+#songchk .secard .sescroll{flex:1 1 0;scrollbar-gutter:stable}
 #songchk .nt.ghost,#songchk .nt.w.ghost{top:var(--gy,0px)!important}
 #songchk .secard .chd:hover{background:var(--se-cgbg)}
 #songchk .secard .chd.cp{background:var(--se-cgpk)}
@@ -1620,6 +1623,7 @@ html[data-drag="size"] *{cursor:ew-resize!important}
    their bar (b.ch) so they move with it; a note held over the bar line continues as a '-' box (hold). doc.bars/zero/lead keep the bar shapes.
    Every change saves (0.5s debounce). Proven by desk-songcheck-test.js. */
 (function(){
+let TAGM = false, TSTASH = null;   /* (Oct 21, Chris) END TAG: DOC.tag = bars/melody/words/chords of a tag that plays ONCE, after the LAST verse; DOC.tagOk = his approve. TAGM = the editor is showing the tag (the song's bars wait in TSTASH) */
 let ON = false, DOC = null, DID = null, VIEW = null, OKD = false, lastSig = null, saveT = null;
 let MT=4,BT=4,SB=4;const FINE=false;const Q=()=>FINE?1:SB;const S=()=>BT*SB;let id=0;const nb=n=>({id:++id,m:false,a:0,n:n||S()});
 let GR=null;function setMeter(m,g){MT=m;GR=g===undefined?GR:g;BT=m===4?4:m===3?3:2;SB=GR||(m===4?4:m===3?4:3);   /* (Oct 20, Chris: Row Your Boat) doc.grid = steps per beat wins: 3 = triplets in each quarter */   /* (Oct 20, Chris: Happy Birthday's dotted rhythm) 3/4 snaps to 16ths like 4/4 (was 8ths) */
@@ -1872,12 +1876,12 @@ bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s));leadA=doc.lead!=null?doc.lead:N-SB
 function toDoc(){const N=S(),M=DOC.meter||4,U=N/M,B=4*M,I=!!DOC.intro,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6);
 const G=(i,s)=>r6((st[i]-(bars[i].a||0)+s-Z)/U);
 const notes=melody().map(n=>({g:r6((n.t-Z)/U),L:r6(n.len/U),m:n.mid,w:'',c:n.one&&n.q.x&&n.q.x.c?JSON.parse(JSON.stringify(n.q.x.c)):[]}));
-const wcur=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>wcur.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));const words=VER>1&&VW[1]?JSON.parse(JSON.stringify(VW[1])):wcur;
+const wcur=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>wcur.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));const words=VER>1&&VW[1]&&!TAGM?JSON.parse(JSON.stringify(VW[1])):wcur;
 notes.forEach(n=>{const w=words.find(x=>Math.abs(x.g-n.g)<1e-6);n.w=w?w.w:''});
 const key=g=>I?(g<0?0:1+Math.floor(g/B+1e-9)):Math.floor(g/B+1e-9),keys=[...new Set(notes.map(n=>key(n.g)))].sort((p,q)=>p-q);
 const at=g=>{const k=key(g);let x=keys.indexOf(k);if(x<0){x=keys.filter(q=>q<k).length-1;if(x<0)x=0}return x};
 const grp=L=>{const out=keys.map(()=>[]);if(!keys.length)return out;L.forEach(b=>out[at(b.g)].push(b));out.forEach(l=>l.sort((p,q)=>p.g-q.g));return out};
-const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};['chordsMediumEdited','chordsHardEdited'].forEach(f=>{if(DOC[f])P[f]=DOC[f]});if(VS.length>1){const o={};for(let v=2;v<=VS.length;v++)o[v]=v===VER?wcur:(VW[v]||[]);P.wordsV=o;if(DOC.versesOk)P.versesOk=DOC.versesOk}
+const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),spb:SB,zero:z,lead:leadA};['chordsMediumEdited','chordsHardEdited'].forEach(f=>{if(DOC[f])P[f]=DOC[f]});if(VS.length>1&&!TAGM){const o={};for(let v=2;v<=VS.length;v++)o[v]=v===VER?wcur:(VW[v]||[]);P.wordsV=o;if(DOC.versesOk)P.versesOk=DOC.versesOk}
 ['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(DOC[f])).forEach(f=>{const C=[];bars.forEach((b,i)=>((b.ch||{})[f]||[]).forEach(c=>C.push({g:G(i,c.s),L:r6(c.l/U),k:c.k,cont:c.cont})));C.sort((p,q)=>p.g-q.g);
 const out=[];C.forEach(c=>{const p=out[out.length-1];if(c.cont&&p&&p.k===c.k&&Math.abs(p.g+p.L-c.g)<1e-6)p.L=r6(p.L+c.L);else out.push({g:c.g,L:c.L,k:c.k})});P[f]=grp(out)});
 return P}
@@ -1886,12 +1890,15 @@ function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;last
 /* (Oct 20, Chris: "when closing out of it" his open editor saved its old copy over Cadence's newer fix) never overwrite a song that changed
    since this editor loaded it: compare the db's 'updated' with the one this editor last saw; changed = do not save, say so */
 let seSeen=null,seMine=new Set();
-function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;const P=toDoc();Object.assign(DOC,P);SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
+function tagPick(P){const o={meter:DOC.meter||4};['lines','words','bars','spb','zero','lead','chords','chordsMedium','chordsHard'].forEach(f=>{if(P[f]!=null)o[f]=P[f]});return o}
+function tagSave(){if(TAGM)DOC.tag=tagPick(toDoc())}
+function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
+function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
 db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
  if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
  seSeen=now;seMine.add(now);return db.collection('songcheck').doc(id).update(Object.assign({},P,{updated:now}))}).catch(()=>{})}
 /* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
-function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
+function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
 /* (Oct 20, Chris) verse tabs: same numbers, each verse its own words. Verse 1 = doc.words; verse 2+ = doc.wordsV[n] (flat {g,L,w});
    a verse never saved yet is placed by syllables onto verse 1's word spots (gold until he approves that verse) */
@@ -1910,18 +1917,20 @@ while(P()>K.length){let bi=-1;W.forEach((p,k)=>{if(p.length>1&&(bi<0||p.length>W
 let pcs=W.flat();if(pcs.length>K.length)pcs=pcs.slice(0,K.length-1).concat(pcs.slice(K.length-1).join(' '));
 pcs.forEach((t,k)=>{const last=k===pcs.length-1,e=last?K[K.length-1]:K[k];out.push({g:K[k].g,L:+(e.g+e.L-K[k].g).toFixed(6),w:t})})});
 return out.sort((p,q)=>p.g-q.g)}
-function vHead(){const el=document.getElementById('se-vt'),ok=DOC.versesOk||[];if(el)el.innerHTML=VS.map((_,k)=>'<button type="button" class="tb vt'+(k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('');
-const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew',VER>1&&!ok.includes(VER));
-const b=document.getElementById('se-okm');if(b&&VS.length>1){const left=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));b.textContent=!left.length?'Approve melody':ok.includes(VER)?'Go to verse '+left[0]:left.length===1?'Approve melody':'Approve verse '+VER}}
-function vGo(v){if(v===VER||!VS[v-1])return;if(PL)stopPlay();VW[VER]=wNow();VER=v;wPlace(VW[v]);hist=[];lastSig=sig();draw();vHead()}
-function vOk(){const ok=(DOC.versesOk||[]).slice();if(!ok.includes(VER))ok.push(VER);ok.sort((a,b)=>a-b);DOC.versesOk=ok;const left=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));flush();if(!left.length){approve();return}vGo(left[0])}
+function vLeft(){const ok=DOC.versesOk||[],o=VS.length>1?VS.map((_,k)=>k+1).filter(v=>!ok.includes(v)):[];if(DOC.tag&&!DOC.tagOk)o.push('tag');return o}
+function vHead(){const el=document.getElementById('se-vt'),ok=DOC.versesOk||[];if(el)el.innerHTML=VS.map((_,k)=>'<button type="button" class="tb vt'+(!TAGM&&k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('')+(DOC.tag?'<button type="button" class="tb vt'+(TAGM?' on':'')+'" data-se="ver" data-v="tag">'+(DOC.tagOk?'&#10003; ':'')+'Tag</button>':'');
+const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew',TAGM?!DOC.tagOk:VER>1&&!ok.includes(VER));
+const b=document.getElementById('se-okm');if(b&&(VS.length>1||DOC.tag)){const left=vLeft(),isOk=TAGM?!!DOC.tagOk:ok.includes(VER),nm=l=>l==='tag'?'the tag':'verse '+l;b.textContent=!left.length?'Approve melody':isOk?'Go to '+nm(left[0]):left.length===1?'Approve melody':'Approve '+(TAGM?'the tag':'verse '+VER)}}
+function vGo(v){if(v==='tag'){if(TAGM||!DOC.tag)return;if(PL)stopPlay();VW[VER]=wNow();TSTASH={bars,leadA,zeroId,zeroIdx,id};TAGM=true;sel=[];noteSel=[];cPick=null;fromDoc(Object.assign({meter:DOC.meter,grid:DOC.grid},DOC.tag));hist=[];lastSig=sig();draw();vHead();return}
+if(!VS[v-1]||(!TAGM&&v===VER))return;if(PL)stopPlay();if(TAGM){tagOut();sel=[];noteSel=[];cPick=null}else VW[VER]=wNow();VER=v;wPlace(VW[v]);hist=[];lastSig=sig();draw();vHead()}
+function vOk(){if(TAGM){tagSave();DOC.tagOk=new Date().toISOString()}else{const ok=(DOC.versesOk||[]).slice();if(!ok.includes(VER))ok.push(VER);ok.sort((a,b)=>a-b);DOC.versesOk=ok}const left=vLeft();flush();if(!left.length){approve();return}vGo(left[0])}
 function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CS=(VIEW||doc.step||1)>=2;CM=CS;cPick=null;   /* CS = chords step; CM = the chord row: chords step ONLY (Oct 20 later, Chris: 'When I'm checking the melody, I don't also want to check the chords. One at a time.'); melody/bar/word tools still work on the chords step */
 cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
 OKD=CS?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'))&&!scVersesLeft(doc);
-fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();const wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++)VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}
+TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();const wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++)VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}
 sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
-const vt=VS.length>1?'<span class="selv" id="se-vt"></span>':'';const top=CS?'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<span class="selvp" id="se-lvp"></span><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"></button>').join('')+'</span><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb go" data-se="okc" id="se-okc"></button></div>'
+const vt=(VS.length>1||doc.tag)?'<span class="selv" id="se-vt"></span>':'';const top=CS?'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<span class="selvp" id="se-lvp"></span><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"></button>').join('')+'</span><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb go" data-se="okc" id="se-okc"></button></div>'
 :'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<button type="button" class="mt play" id="se-play">&#9654; Play</button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" id="se-okm" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>';
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CS?'All chords':'Melody')+' approved</div>':'')+top
 +'<div id="se-hint">'+(CS?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
@@ -1959,10 +1968,10 @@ save();const c={s:P.k,l:1,k:'',nw:1};L.push(c);renorm();cPick=c;draw();editChord
 window.addEventListener('keydown',e=>{if(!ON||!CM)return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const k=String(e.key).toLowerCase(),mod=e.metaKey||e.ctrlKey;
 if((e.key==='Backspace'||e.key==='Delete')&&cPick&&CED()){e.stopPropagation();e.preventDefault();save();const i=bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(cPick));if(i>=0){const L=lvl(bars[i]);L.splice(L.indexOf(cPick),1)}cPick=null;renorm();draw();hint('Chord removed');return}
 },true);   /* (Oct 20, Chris) the melody is NOT locked on the chords step: every other key goes on to the melody tools */
-function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;const P=toDoc();Object.assign(DOC,P);
+function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
-function seClose(){if(!ON)return;stopPlay();if(saveT)flush();if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
-document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok'){if(VS.length>1&&!CS){const ok=DOC.versesOk||[];if(ok.includes(VER)){const l=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));if(l.length)vGo(l[0]);else approve()}else vOk()}else approve()}else if(x.dataset.se==='ver')vGo(+x.dataset.v);else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
+function seClose(){if(!ON)return;stopPlay();if(saveT)flush();TAGM=false;TSTASH=null;if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
+document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok'){if((VS.length>1||DOC.tag)&&!CS){const isOk=TAGM?!!DOC.tagOk:(DOC.versesOk||[]).includes(VER);if(isOk){const l=vLeft();if(l.length)vGo(l[0]);else approve()}else vOk()}else approve()}else if(x.dataset.se==='ver')vGo(x.dataset.v==='tag'?'tag':+x.dataset.v);else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
 const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CS},get ver(){return VER},get verses(){return VS},vAuto,vSyl,vGo,get crow(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},get startAt(){return startAt},firstOpen:()=>firstOpen(),draw:()=>draw()};
 })();
 /* (Oct 17, Chris: "i just want the lyric box with numbers on top") CHORDS STEP = ONE TEXT BOX. Each song row = a chord line above its
@@ -2176,7 +2185,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v208</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v209</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4844,7 +4853,7 @@ const sgKey = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[
 function scVerses(sc){ const out = []; let cur = null; String(sc && sc.lyricsText || "").split("\n").forEach(l => { const t = l.trim();
   if (/^verse\s*\d+\s*:?$/i.test(t)){ cur = []; out.push(cur); return; } if (/^(chorus|refrain|bridge|tag|ending|intro|outro)\b[^a-z]*:?$/i.test(t)){ cur = null; return; } if (cur && t) cur.push(t); }); return out; }
 function scVersesOk(sc){ return Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []; }
-function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); if (n < 2) return 0; let k = 0; for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; return k; }
+function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; if (sc && sc.tag && !sc.tagOk) k++; return k; }   /* the end tag counts as one more thing to approve */
 function sgCells(x){ const sc = x.sc, live = SGLIVE.includes(x.k);
   if (live) return SGCOLS.map((t, i) => ({c: i === 3 || i === 4 ? "" : "ok"}));   /* (Oct 20, Chris) the live songs: he approved everything EXCEPT Level 2 and Level 3 */
   const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
@@ -5144,7 +5153,7 @@ function taskDetail(t){
   const bt = (attr, l, go) => `<button type="button" class="tb${go ? " go" : ""}" ${attr}>${l}</button>`;
   const [cd, ca] = checkCount(t), isToday = t.date && t.date <= plus(0);
   return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
-    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
+    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
