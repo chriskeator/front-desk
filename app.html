@@ -727,6 +727,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kthumb img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;object-position:top}
 .kyn{display:flex;gap:6px}.kyn .tb{flex:1;min-width:0;min-height:44px}
 .tb.gold{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.askq{display:flex;flex-direction:column;gap:8px;min-width:0}.askq .askt{margin:0;overflow-wrap:anywhere}.askq .kpics{grid-template-columns:1fr}.askq .kthumb img{aspect-ratio:auto;max-height:60vh;object-fit:contain;object-position:center}.askq .steps,.askq .ksteps{margin:0}
 .kfix{width:100%;box-sizing:border-box;font:inherit;font-size:14px;min-height:56px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--card);color:var(--ink)}
 .ksteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.ksteps li{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.35;min-width:0}.ksteps li i{font-style:normal;flex:0 0 22px;text-align:center}
 .kbig{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;cursor:zoom-out}.kbig img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
@@ -1860,7 +1861,8 @@ notes.forEach(n=>span(n.g,n.L,(b,s,l,f)=>b.notes.push(f?{s,l,d:SCDEG[((n.m%12)+1
 words.forEach(w=>span(w.g,w.L,(b,s,l,f)=>{if(f)b.notes.push({s,l,d:String(w.w||''),o:0,w:1})}));
 LV.map(f=>{const cs=doc[f].flat().filter(Boolean).map(c=>Object.assign({},c)).sort((p,q)=>p.g-q.g);cs.forEach((c,i)=>{const nx=cs[i+1];if(nx&&nx.g>c.g&&c.g+c.L>nx.g)c.L=+(nx.g-c.g).toFixed(6)});return cs}).forEach((cs,fi0)=>{const f=LV[fi0];cs.forEach(c=>span(c.g,c.L,(b,s,l,fi)=>{b.ch=b.ch||{};(b.ch[f]=b.ch[f]||[]).push({s,l,k:c.k,cont:!fi})}))});   /* (Oct 20) a chord held past the next chord's start (Row Your Boat intro 1, L10) is cut at the next chord: overlaps can't be shown */
 bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s));leadA=doc.lead!=null?doc.lead:N-SB}
-function toDoc(){const N=S(),M=DOC.meter||4,U=N/M,B=4*M,I=!!DOC.intro,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6);
+/* (Oct 21, Chris deleted every tag bar) no bars = no tag, never a crash */
+function toDoc(){if(!bars.length)return{lines:[],words:[],bars:[],spb:SB,zero:0,lead:leadA};const N=S(),M=DOC.meter||4,U=N/M,B=4*M,I=!!DOC.intro,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6);
 const G=(i,s)=>r6((st[i]-(bars[i].a||0)+s-Z)/U);
 const notes=melody().map(n=>({g:r6((n.t-Z)/U),L:r6(n.len/U),m:n.mid,w:'',c:n.one&&n.q.x&&n.q.x.c?JSON.parse(JSON.stringify(n.q.x.c)):[]}));
 const wcur=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>wcur.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));const words=VER>1&&VW[1]&&!TAGM?JSON.parse(JSON.stringify(VW[1])):wcur;
@@ -1878,7 +1880,7 @@ function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;last
    since this editor loaded it: compare the db's 'updated' with the one this editor last saw; changed = do not save, say so */
 let seSeen=null,seMine=new Set();
 function tagPick(P){const o={meter:DOC.meter||4};['lines','words','bars','spb','zero','lead','chords','chordsMedium','chordsHard'].forEach(f=>{if(P[f]!=null)o[f]=P[f]});return o}
-function tagSave(){if(TAGM)DOC.tag=tagPick(toDoc())}
+function tagSave(){if(TAGM)DOC.tag=bars.length?tagPick(toDoc()):null}
 function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
 function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
 db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
@@ -2190,7 +2192,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v213</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v214</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2293,7 +2295,16 @@ const sortPop = () => popTop("Sort") + `<div class="llist">${SORTS.map(([k, l]) 
 const tmBox = m => m ? `<span class="tm">${fmtMins(m)}</span>` : "";
 /* (Oct 20 night, Chris) ONE TODAY ROW PER BOARD THAT WAITS ON HIM (db tasks t-wait-*, kept by desk-wait-rows.py every 30 min): recounted live here, so the row shrinks and vanishes the moment the last item is approved */
 const waitBusy = new Set();   /* (Oct 21, Chris) a board that was just submitted is reloading: its Today row is hidden until the fresh count lands, never a stale '0 to check' */
+/* (Oct 21, Chris) QUESTIONS FOR YOU: every open ask (task kind review/yesno/go, heldOffToday) lives in ONE Today row t-wait-asks, never its own Today row; the row opens the FIRST ask, answering shows the next */
+const askSkip = [];
+function askList(){ const L = tasks.filter(x => x.heldOffToday && !x.done && !x.removed && x.kind).sort((a, b) => (a.imp || a.rank || 9) - (b.imp || b.rank || 9) || (a.order || 0) - (b.order || 0));
+  const sk = askSkip.filter(id => L.some(x => x.id === id)); if (sk.length >= L.length) askSkip.length = 0;
+  return L.filter(x => !askSkip.includes(x.id)).concat(askSkip.map(id => L.find(x => x.id === id)).filter(Boolean)); }
+function asksHTML(){ const L = askList(), a = L[0]; if (!a) return `<p class="note">Nothing waiting.</p>`;
+  const done = a.kind === "go" ? `<div class="kyn"><button type="button" class="tb go" data-kans="done|${esc(a.id)}">Done</button></div>` : "";
+  return `<div class="askq" data-askof="${esc(a.id)}"><p class="tn">${esc([a.project, L.length + (L.length === 1 ? " question" : " questions") + " left"].filter(Boolean).join(" \u00b7 "))}</p><p class="askt"><b>${esc(a.short || a.title)}</b></p>${a.note ? `<p class="tn">${esc(String(a.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${kindHTML(a)}${done}${L.length > 1 ? `<div class="kyn"><button type="button" class="tb" data-asknext="1">Next</button></div>` : ""}</div>`; }
 function waitLive(t){
+  if (t.wait === "asks"){ const L = askList(); return {n: L.length, first: L[0], title: "Questions for you: " + L.length}; }
   if (waitBusy.has(t.wait)) return null;
   if (t.wait === "songs"){ if (scBoard === null) return null; const L = sgUniverse().filter(x => !SGLIVE.includes(x.k)); let n = 0, first = null;
     L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => x.cells.forEach(q => { if (q.c === "chk" && q.id){ n++; if (!first) first = q; } }));
@@ -2301,7 +2312,7 @@ function waitLive(t){
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
   return null; }
-const todayTasks = () => tasks.filter(t=>t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; }).sort(byOrder);
+const todayTasks = () => tasks.filter(t=>!t.heldOffToday && t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; }).sort(byOrder);
 const laterTasks = () => tasks.filter(t=>!t.date && (showDone ? t.done : !t.done)).sort(byOrder);
 const nextTasks = () => tasks.filter(t=>t.date && t.date>plus(7) && t.date<=plus(14) && (showDone ? t.done : !t.done)).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
 const listFor = s => { const one = oneThing(); const L = s === "todo" ? todayTasks() : s === "week" ? weekTasks() : s === "next" ? nextTasks() : laterTasks(); const S = sortL(L); return deskish() && one && !showDone ? S.filter(t => t.id !== one.id) : S; };
@@ -2444,6 +2455,7 @@ function taskPop(t){
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", fmtMins(t.mins)].filter(Boolean).join(" · ");
   const whyIn = `${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
+  if (t.wait === "asks") return popTop(esc(t.title)) + asksHTML() + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
   if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t);
   if (!isDesktop() && list && list.trim()) return popTop(esc(t.title)) + list + `<details class="whyd"><summary>What it's for</summary><div class="why">${whyIn}</div></details>` + acts;
   return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + acts + list;
@@ -5083,13 +5095,18 @@ function kindHTML(t){
     return (u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : "") + (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : ""); }
   if (k === "yesno") return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="yes|${esc(t.id)}">Yes</button><button type="button" class="tb" data-kans="no|${esc(t.id)}">No</button></div>`;
   return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="good|${esc(t.id)}">Looks good</button><button type="button" class="tb gold" data-kans="fix|${esc(t.id)}">Fix</button></div><textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>`; }
-document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-kbig], [data-kans]"); if (!b) return;
+document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-kbig], [data-kans], [data-asknext]"); if (!b) return;
+  if (b.dataset.asknext){ const a = askList()[0]; if (a){ const i = askSkip.indexOf(a.id); if (i >= 0) askSkip.splice(i, 1); askSkip.push(a.id); } render(); return; }
   if (b.dataset.kbig){ const o = document.createElement("div"); o.className = "kbig"; o.innerHTML = `<img src="${esc(b.dataset.kbig)}" alt="">`; o.addEventListener("click", () => o.remove()); document.body.appendChild(o); return; }
   const [ans, id] = b.dataset.kans.split("|"), t = allTasks.find(x => x.id === id); if (!t || !db) return; let note = "";
   if (ans === "fix"){ const ta = document.querySelector(`[data-kfix="${CSS.escape(id)}"]`); note = ta ? ta.value.trim() : ""; if (!note){ if (ta) ta.focus(); return; } }
   b.disabled = true; const now = new Date().toISOString(), upd = {answer: ans, answeredAt: now, done: true, doneAt: now, heard: false}; if (note) upd.fixNote = note;
-  try { await db.collection("tasks").doc(id).update(upd); Object.assign(t, upd); if (openLinks === id) openLinks = null; if ($("pop") && $("pop").innerHTML) closePop(); taskOpen = null; saveTaskOpen(); render(); } catch { b.disabled = false; } });
+  try { await db.collection("tasks").doc(id).update(upd); Object.assign(t, upd);
+    if (ans === "fix" && t.heldOffToday){ const qi = "q-" + Math.random().toString(36).slice(2, 12); db.collection("queue").doc(qi).set({kind: "ask", ref: "ask/" + qi, key: now, title: ("Fix: " + (t.short || t.title)).slice(0, 70), job: "desk", lane: "desk", status: "queued", order: 0, addedAt: now, tries: 0, model: "sonnet", limit: 45, extra: {detail: "Chris asked for a fix on '" + (t.short || t.title) + "' (task " + id + "): " + note + " When fixed, set that task done:false, clear answer + fixNote, heard:true so it comes back in Questions for you."}}).catch(() => {}); }
+    const ak = !!t.heldOffToday && askList().length > 0;
+    if (ak){ render(); } else { if (openLinks === id || t.heldOffToday) openLinks = null; if ($("pop") && $("pop").innerHTML) closePop(); taskOpen = null; saveTaskOpen(); render(); } } catch { b.disabled = false; } });
 function goBtn(t){
+  if (t.wait === "asks") return asksHTML();
   if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked"); return `<div class="revlist"><p class="tn">${items.length} drafts to check</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
   if (t.wait === "songs" || t.wait === "shorts") return `<div class="revlist"><button type="button" class="tb go gobtn" data-waitgo="${t.wait}">Open first</button></div>`;
   if (t.shortcheck) return `<div class="revlist"><button type="button" class="tb go gobtn" data-shortchk="${esc(t.id)}">Start checking</button></div>`;   /* (Oct 15) Chris: one Shorts check session */
