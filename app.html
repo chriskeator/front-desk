@@ -702,8 +702,8 @@ a.tb.rs-fixed{flex-direction:column}
  .sublist > .trow > .chc{border-top:0!important;padding-left:50px!important}
 }
 .pc3 > .tdy2{position:static;transform:none;flex:none;margin-right:2px;border:1px solid #1FA598;background:transparent;color:#1FA598;font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:7px 11px;cursor:pointer}
-.tdetail{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px 34px;background:var(--card);border-top:1px solid var(--line)}
-.sublist .tdetail{padding-left:50px}
+.tdetail{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line)}
+.sublist .tdetail{padding-left:12px}
 .tdetail b{font-size:12px;color:var(--muted)}.tdetail p{margin:0;font-size:14px;line-height:1.4}.tdetail .tn{font-size:12px}
 .rowon > .chc,.rowon.chc{background:var(--card)!important}
 .tdbtns{display:flex;flex-wrap:nowrap;gap:6px}.tdbtns .tb{flex:1 1 0;min-width:0;padding:8px 4px;white-space:nowrap;text-align:center}
@@ -731,6 +731,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .revlist .tb,#pop .tb[class*="rs-"]{display:flex;flex-direction:column;align-items:flex-start;width:100%;box-sizing:border-box;text-align:left;text-decoration:none}
 /* (Oct 8) Chris: every check item is the SAME height, with or without the small "check again" line */
 .revlist .tb{min-height:48px;justify-content:center}
+.revlist .tb .rsl{display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* (Oct 20) one line each, equal side margins */
 .lvchip{display:inline-block;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--lc);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
 /* (Oct 7) Chris (2nd time): titles ALWAYS wrap before the time / Today button. Last rule wins over every row style above. */
 #list .chc:has(.tmr),#pop .chc:has(.tmr){padding-right:84px!important}
@@ -2134,7 +2135,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v200</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v201</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2304,12 +2305,13 @@ let autoJobs = [], autoRuns = [], alerts = [], openAlert = null, autoOpen = fals
 let reviews = [], openRev = null, revFix = false, popCap = null, popPg = 0;
 const revItems = t => t && t.review ? reviews.filter(r => r.group === t.review).sort((a, b) => (a.order ?? 99) - (b.order ?? 99)) : [];
 const RS = {unchecked: "none", none: "none", fix: "fix", good: "good", fixed: "fixed"};
-const rsBtn = (s, label, attrs, tag) => `<${tag || "button"} ${tag === "a" ? "" : 'type="button"'} class="tb rs-${RS[s] || "none"}" ${attrs}>${esc(label)}${RSW[RS[s]] ? `<span class="rsw">${RSW[RS[s]]}</span>` : ""}</${tag || "button"}>`;
+const rsBtn = (s, label, attrs, tag) => `<${tag || "button"} ${tag === "a" ? "" : 'type="button"'} class="tb rs-${RS[s] || "none"}" ${attrs}><span class="rsl">${esc(label)}</span>${RSW[RS[s]] ? `<span class="rsw">${RSW[RS[s]]}</span>` : ""}</${tag || "button"}>`;
 // (Oct 9) Chris: colour alone isn't enough; say it in words. Approved items leave the list (he never wants to see them again)
 const RSW = {fix: "Fix pending", fixed: "Fixed, check again", good: "Approved \u2713"};
 const revOpen = items => items.filter(r => RS[r.status] !== "good");
 const revShown = (items, f) => { const L = revOpen(items); return L.length ? L.map(f) : [`<p class="tn">All approved \u2713</p>`]; };
 // (Oct 8) Chris: every Lab fix says exactly where it is: "Ch 5 · L3 · Learn 1" (card) or "Test 4" (question), then what changed
+function labShort(x){ return String(x).replace(/^Ch \d+ · (L\d+) · (?:Lesson|Song): /, "$1 ").replace(/^Test Ch \d+ (L\d+): /, "$1 "); }
 function labRef(url, label){ const lab = stats.find(x => x.id === "lab"), m = String(url || "").match(/[?&]go=([^&]+)/); if (!lab || !m) return label;
   const id = decodeURIComponent(m[1]), card = (String(url).match(/[?&]card=(\d+)/) || [])[1], q = (String(url).match(/[?&]q=(\d+)/) || [])[1];
   (lab.chapters || []).forEach((c, ci) => (c.lessons || []).forEach((L, li) => { if (L.id === id) m.ref = `Ch ${ci + 1} · L${li + 1} · ` + (card ? "Learn " + card : q ? "Test " + q : "Lesson"); }));
@@ -4997,7 +4999,7 @@ function goBtn(t){
   if (t.review){ const items = revItems(t); return `<div class="revlist"><p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }
   // (Oct 8) Chris: one flat list in Lab order (top to bottom = the flow of the chapter); things marked Good drop off
   if (tLinks(t).length){ const LL = tLinks(t).slice().sort(labCmp).filter(l => labStatusOf(l.url) !== "good"); if (!LL.length) return `<p class="note">Everything here is marked Good.</p>`;
-    return `<div class="revlist">${LL.map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labRef(l.url, l.label || "Link"), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }).join("")}</div>`; }
+    return `<div class="revlist">${LL.map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labShort(labRef(l.url, l.label || "Link")), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }).join("")}</div>`; }
   const u = safeUrl(t.url) && t.url !== FDURL ? t.url : "";
   return u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : ""; }
 document.addEventListener("click", e => { const b = e.target.closest("[data-waitgo]"); if (!b) return; e.preventDefault(); e.stopPropagation();
