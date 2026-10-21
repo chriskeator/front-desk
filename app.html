@@ -1359,7 +1359,7 @@ async function scApprove(){
   /* (Oct 16, Chris) Approve = back to the list AT ONCE with the song's row closed and its pill saying Submitted;
      Cadence turns it to Fixing when she starts, Ready when it's his turn again. The db writes follow (proven by desk-songcheck-test.py) */
   if (t){ t.scState = "submitted"; t.scAt = now; }
-  waitBusy.add("songs"); scClose(); closePop(); taskOpen = null; saveTaskOpen(); render();
+  waitBusy.add("songs"); scClose(); render();   /* (Oct 21, Chris) Approve = back to the SAME open board he came from (its row stays open), never the Home list */
   if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
   const SC0 = db.collection("songcheck").doc(id), SC = {update: o => { scLocal(id, o); return SC0.update(o); }}, done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
   try {
@@ -2227,7 +2227,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v221</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v222</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
