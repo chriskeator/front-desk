@@ -1558,6 +1558,21 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .secard .chd{position:absolute;top:84px;height:28px;box-sizing:border-box;padding:0 0 0 3px;border:1px solid var(--se-cg);border-radius:4px;background:var(--se-cgbg);color:var(--se-ink);font:700 15px/26px var(--se-font);z-index:5;cursor:grab;white-space:nowrap;overflow:hidden}
 #songchk .secard .chd.cont{pointer-events:none;color:var(--se-mute)}
 #songchk .secard.cm .b{height:154px}#songchk .secard.cm .b .ly{top:116px}#songchk .secard.cm .nt.w{top:120px!important}#songchk .secard.cm .b .cr{position:absolute;left:0;right:0;top:80px;height:36px;border-top:1px solid var(--se-line);cursor:copy}   /* (Oct 20, Chris) order: melody, chords, words */
+/* (Oct 20 night, Chris: "every song + every verse the same smaller size") ONE SIZE: shorter bars so intro + every row fits without scrolling; verse 1 (intro row) = verse 2+ size. Melody bar 98px, chords step 126px (one extra chord row); same on every song and verse tab. */
+#songchk .row{margin-bottom:8px}
+#songchk .b{height:98px}
+#songchk .b .t,#songchk .e{height:20px!important}#songchk .g{height:20px}
+#songchk .b .off,#songchk .b .offl,#songchk .st{top:20px}
+#songchk .b .gr{top:20px;height:16px}
+#songchk .b .ln{top:36px;height:32px}
+#songchk .b .ly{top:68px}
+#songchk .b .k{top:20px!important;height:16px}#songchk .b .k.sub{top:28px!important;height:8px}
+#songchk .nt{top:40px!important;height:24px}
+#songchk .nt.w{top:71px!important;height:24px}
+#songchk .nsnap{top:40px;height:24px}
+#songchk .secard.cm .b{height:126px}#songchk .secard.cm .b .cr{top:68px;height:28px}#songchk .secard.cm .b .ly{top:96px}#songchk .secard.cm .nt.w{top:99px!important}
+#songchk .secard .chd{top:71px;height:22px;font:700 14px/20px var(--se-font)}
+#songchk .nt.ghost,#songchk .nt.w.ghost{top:var(--gy,0px)!important}
 #songchk .secard .chd:hover{background:var(--se-cgbg)}
 #songchk .secard .chd.cp{background:var(--se-cgpk)}
 #songchk .secard .chd input{width:46px;height:18px;border:0;outline:none;background:transparent;font:inherit;color:inherit;padding:0}
@@ -2134,7 +2149,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v187</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v188</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
