@@ -2331,7 +2331,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v233</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v234</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4883,7 +4883,7 @@ const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/
 const FMA = {received: ["Received", "#ECEAE4", "#5B5648"], waiting: ["Received", "#ECEAE4", "#5B5648"], working: ["Fixing", "#FBEFD0", "#8A6508"], retrying: ["Retrying", "#FBEFD0", "#8A6508"], failed: ["Stuck", "#FBE2DC", "#B4362A"]};
 function fmAck(coll, id){ const a = ((stats.find(x => x.id === "fixmonitor") || {}).ack || {})[coll]; return a && id && a[id] ? FMA[a[id]] || null : null; }
 const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
-function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
+function labTag(t){ const scs = t && !t.done && (scFixingTitle(t) ? "fixing" : SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
   if (scs){ const [w, bg, fg] = (scs !== "ready" && fmAck("tasks", t.id)) || SCTAG[scs]; return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
   /* (Oct 17, Chris + ChatGPT) a Lab ship task shows the full ship checks for the EXACT Test version (stats/labchecks, lab-checks-status.py):
      Passed (green), Passed* = only failures Chris approved (green), Running (grey), Failed / Not run (red). Missing = Not run. */
@@ -5050,6 +5050,8 @@ function scGone(sc){ const g = new Set(Array.isArray(sc && sc.versesGone) ? sc.v
   return [...g]; }
 function scVersesOk(sc){ return (Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []).concat(scGone(sc)); }
 function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; if (sc && sc.tag && !sc.tagOk) k++; return k; }   /* the end tag counts as one more thing to approve */
+function scFixKeys(sc){ return sc && sc.fixing && typeof sc.fixing === "object" ? Object.keys(sc.fixing).filter(k => sc.fixing[k]) : []; }
+function scFixingTitle(t){ return !!(t && Array.isArray(t.songcheck) && (scBoard || []).some(r => scFixKeys(r).length && t.songcheck.some(p => sgKey(p && p[1] || p) === sgKey(r.name)))); }
 function sgCells(x){ const sc = x.sc, live = SGLIVE.includes(x.k);
   if (live) return SGCOLS.map((t, i) => ({c: i === 3 || i === 4 ? "" : "ok"}));   /* (Oct 20, Chris) the live songs: he approved everything EXCEPT Level 2 and Level 3 */
   const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
@@ -5060,6 +5062,8 @@ function sgCells(x){ const sc = x.sc, live = SGLIVE.includes(x.k);
   const LV = ["chordsOK", "mediumOK", "hardOK"];
   LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && sc.melodyOK; if (sc && sc[f]) C[2 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[2 + j] = {c: "chk", id: sc.id, v: 2}; });
   if (sc && sc.chordsOK) C[5] = {c: "mk"};   /* (Oct 20, Chris) Level 1 approved = the band can start: Level 2 + 3 never block Band, Cards, Lesson, Final check (they are added later) */
+  const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
+  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "L1" ? 2 : k === "L2" ? 3 : k === "L3" ? 4 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 1 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
   return C; }
 function sgUniverse(){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -5071,8 +5075,8 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
   const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
   return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => {
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
-    const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FDE8E4") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#D85A30") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
-    const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">Approved</span>` : q.c === "chk" ? `<span class="sfw">Check</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:#B23B17;font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
+    const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
+    const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">Approved</span>` : q.c === "chk" ? `<span class="sfw">Check</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
     return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
