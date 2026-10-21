@@ -951,6 +951,9 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 @media (min-width:1000px){ #list .songgrid .sname{flex:0 0 200px!important}#list .songgrid .srow .sblk .sfw{font-size:11.5px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
 .qrow .qd{display:none}
 @media (min-width:1000px){.qrow .qd{display:inline-block}.qrow .qt2{display:block}.qrow .qpill,.qrow .qt{display:none!important}.qrow{gap:24px!important;padding:11px 20px!important}}
+/* (Oct 21) one-row folder: the lone row is hidden, its view is shown directly */
+#list .msec.one1 > .chgrid > .mrow{display:none!important}
+#list .msec.one1 > .chgrid{display:none!important}
 </style>
 
 <div id="pop"></div>
@@ -2154,7 +2157,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v201</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v202</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2880,7 +2883,8 @@ function morningScreen(seg){
   </div>`;
 }
 /* (Oct 20, Chris + GPT) FIX MONITOR: one red "N stuck" pill on Home from stats/fixmonitor.red (launchd fix-monitor/fixmon.py); hidden at 0; tap = the list (workflow, title, why, age) */
-function homeStuck(){ const fm = stats.find(x => x.id === "fixmonitor") || {}, R = Array.isArray(fm.red) ? fm.red : []; if (!R.length) return "";
+/* (Oct 21, Chris) no red pill on Home: anything stuck shows as a Stuck row in the Queue folder */
+function homeStuck(){ const fm = stats.find(x => x.id === "fixmonitor") || {}, R = Array.isArray(fm.red) ? fm.red : []; if (!R.length || true) return "";
   const age = t => { const h = (Date.now() - Date.parse(t || "")) / 36e5; return !isFinite(h) ? "" : h < 24 ? Math.max(1, Math.round(h)) + "h" : Math.round(h / 24) + "d"; };
   return `<details class="stuckbox"><summary><span class="stuckpill">${R.length} stuck</span></summary><div class="stucklist">${R.map(r => `<div class="stuckrow"><b>${esc(r.title || r.label || "")}</b><span>${esc([r.workflow, r.why, age(r.since)].filter(Boolean).join(" · "))}</span></div>`).join("")}</div></details>`; }
 // (Oct 7) Chris: on the phone Home has no funnel (it lives in Money Map); under the to-dos = the projects he's working on now
@@ -4240,7 +4244,16 @@ function applyCollapse(){
     if (!h.querySelector("i") && !h.querySelector(".ccount")){ const n = [...box.children].filter(c => c !== h && !c.classList.contains("tn")).reduce((a, c) => a + (c.classList.contains("chgrid") || c.classList.contains("pills") ? c.children.length : 1), 0); h.insertAdjacentHTML("beforeend", ` <i class="ccount">${n}</i>`); }
     box.classList.toggle("collapsed", phone() && box.closest("#list") && box.classList.contains("msec") ? key !== oneOpen() : collapsed.has(key));
   });
+  oneItemOpen();
   applyFocus();
+}
+/* (Oct 21, Chris) NEVER a folder with ONE row inside: an open folder whose only row is an in-place opener (Usage > Claude use) shows that row's view at once; the lone row is hidden (CSS .one1). A sub-list only with 2+ rows. */
+function oneItemOpen(){
+  document.querySelectorAll("#list .msec:not(.collapsed) > .chgrid").forEach(g => {
+    const rows = [...g.children].filter(c => c.matches("button.mrow")), box = g.parentElement;
+    const one = rows.length === 1 && g.children.length === 1;
+    box.classList.toggle("one1", one);
+    if (one && !rows[0].classList.contains("rowon") && !box.dataset.one1T){ box.dataset.one1T = "1"; setTimeout(() => { delete box.dataset.one1T; if (box.isConnected && !box.classList.contains("collapsed") && !rows[0].classList.contains("rowon") && rows[0].isConnected) rows[0].click(); }, 0); } });
 }
 document.addEventListener("click", e => { const h = e.target.closest("[data-pickcat]"); if (!h) return; const c = h.dataset.pickcat; pickCat = pickCat === c ? "" : c; if (pickingProj && !openLinks) refreshDetail(); else renderPop(); });
 document.addEventListener("click", e => { const h = e.target.closest("[data-icatopen]"); if (!h || e.target.closest("button,a")) return; const c = h.dataset.icatopen;
