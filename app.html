@@ -934,6 +934,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .fdscroll::-webkit-scrollbar{display:none}
 #list .fdscroll > *{flex-shrink:0}
 #list::before{content:"";display:block;flex:none;height:var(--kp,0px);margin-bottom:-8px}
+#list .fdgap.fdclone{overflow:hidden;opacity:1}
 #list .fdgap{display:block!important;flex:none;padding:0;margin:0;border:0;pointer-events:none} #list > .fdgap{margin-bottom:-8px}   /* (Oct 18) the blank gap a closed thing leaves for one glide (keepPos) */
 #list.kpglide::before{transition:height .35s ease}
 #list::after{content:"";display:block;flex:none;height:var(--kb,0px);margin-top:-8px}
@@ -1360,7 +1361,7 @@ async function scApprove(){
   if (t){ t.scState = "submitted"; t.scAt = now; }
   waitBusy.add("songs"); scClose(); closePop(); taskOpen = null; saveTaskOpen(); render();
   if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
-  const SC0 = db.collection("songcheck").doc(id), SC = {update: o => { scLocal(id, o); render(); return SC0.update(o); }}, done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
+  const SC0 = db.collection("songcheck").doc(id), SC = {update: o => { scLocal(id, o); return SC0.update(o); }}, done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
   try {
     if (st === 2 && lv !== "easy"){ await SC.update({[SCLV[lv][1]]: C, [lv + "OK"]: now, updated: now}); return done(); }   /* Medium / Hard: own approval, the Easy flow and the task stay as they are */
     if (scView && (scView < (D.step || 1) || D.status === "approved")){ await SC.update({lines: L, words: W, [st === 1 ? "chords" : SCLV[lv][1]]: C, [st === 1 ? "melodyOK" : lv === "easy" ? "chordsOK" : lv + "OK"]: now, updated: now}); return done(); }
@@ -1882,9 +1883,8 @@ let seSeen=null,seMine=new Set();
 function tagPick(P){const o={meter:DOC.meter||4};['lines','words','bars','spb','zero','lead','chords','chordsMedium','chordsHard'].forEach(f=>{if(P[f]!=null)o[f]=P[f]});return o}
 function tagSave(){if(TAGM)DOC.tag=bars.length?tagPick(toDoc()):null}
 function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
-/* (Oct 21, Chris: approved, still said Check) every song save/approve patches the board row on screen AT ONCE; the db write follows */
-function scLocal(id,o){try{[scBoard,fdScOld].forEach(B=>{const r=(B||[]).find(x=>x.id===id);if(r)Object.assign(r,o)})}catch(e){}}
-function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
+function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;if(!TAGM&&!bars.length){if(H){H.textContent='Not saved: a song needs its melody. To remove a verse, use Delete verse.';H.style.color='#B3261E'}return}   /* (Oct 21, Chris: deleting verse 2 bars wiped verse 1) never save an empty melody */
+let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
 db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
  const ap={};['versesOk','tagOk'].forEach(f=>{if(P[f]!=null)ap[f]=P[f]});
  if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(Object.keys(ap).length){scLocal(id,ap);seSeen=now;seMine.add(now);db.collection('songcheck').doc(id).update(Object.assign(ap,{updated:now})).catch(()=>{})}   /* (Oct 21) a helper changed the song while it was open: his approvals still save (they only add ticks) */if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
@@ -1894,7 +1894,7 @@ function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;tagOut();const P
 scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
 /* (Oct 20, Chris) verse tabs: same numbers, each verse its own words. Verse 1 = doc.words; verse 2+ = doc.wordsV[n] (flat {g,L,w});
    a verse never saved yet is placed by syllables onto verse 1's word spots (gold until he approves that verse) */
-function wNow(){const N=S(),M=DOC.meter||4,U=N/M,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6),out=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>out.push({g:r6((st[i]-(b.a||0)+q.s-Z)/U),L:r6(q.l/U),w:String(q.d)})));return out.sort((p,q)=>p.g-q.g)}
+function wNow(){if(!bars.length)return[];const N=S(),M=DOC.meter||4,U=N/M,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0),r6=x=>+x.toFixed(6),out=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>out.push({g:r6((st[i]-(b.a||0)+q.s-Z)/U),L:r6(q.l/U),w:String(q.d)})));return out.sort((p,q)=>p.g-q.g)}
 function wPlace(list){const N=S(),M=DOC.meter||4,U=N/M,st=starts(),z=zi(),Z=st[z]-(bars[z].a||0);bars.forEach(b=>b.notes=(b.notes||[]).filter(q=>!q.w));
 (list||[]).forEach(w=>{let t=Math.round(w.g*U+Z),e=Math.round((w.g+w.L)*U+Z);if(e<=t)e=t+1;let i=bars.findIndex((b,k)=>t>=st[k]&&t<st[k+1]);if(i<0)return;const b=bars[i],s0=(b.a||0)+t-st[i];b.notes.push({s:s0,l:Math.max(1,Math.min(e-t,b.n-s0)),d:String(w.w),o:0,w:1})});bars.forEach(b=>b.notes.sort((p,q)=>p.s-q.s))}
 function vSyl(w){const m=/^([^A-Za-z]*)(.*?)([^A-Za-z]*)$/.exec(w),core=m[2],lc=core.toLowerCase();if(!core)return [w];const G=[];let r=/[aeiouy]+/g,x;while((x=r.exec(lc)))G.push([x.index,x.index+x[0].length]);
@@ -1924,8 +1924,8 @@ return '<div class="wcl '+(red?'r':'y')+(done?' d':'')+'"><span class="wcd"></sp
 function wcSave(){const now=new Date().toISOString();seSeen=now;seMine.add(now);db.collection('songcheck').doc(DID).update({wordsCheck:DOC.wordsCheck,updated:now}).catch(()=>{})}
 function wcKeep(k){const f=wcFlags()[k];if(!f)return;f.kept=true;wcSave();wcPanel()}
 function wcUse(k){const f=wcFlags()[k],L=wcLocate()[k],W=wcWords();if(!f||!Array.isArray(f.fixWords)||L.at<0||L.at+f.fixWords.length>W.length)return;f.fixWords.forEach((w,j)=>{W[L.at+j].q.d=String(w)});f.fixed=true;wcSave();draw();wcPanel()}
-function vLeft(){const ok=DOC.versesOk||[],o=VS.length>1?VS.map((_,k)=>k+1).filter(v=>!ok.includes(v)):[];if(DOC.tag&&!DOC.tagOk)o.push('tag');return o}
-function vHead(){const el=document.getElementById('se-vt'),ok=DOC.versesOk||[];if(el)el.innerHTML=VS.map((_,k)=>'<button type="button" class="tb vt'+(!TAGM&&k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('')+(DOC.tag?'<button type="button" class="tb vt'+(TAGM?' on':'')+'" data-se="ver" data-v="tag">'+(DOC.tagOk?'&#10003; ':'')+'Tag</button>':'');
+function vLeft(){const ok=(DOC.versesOk||[]).concat(scGone(DOC)),o=VS.length>1?VS.map((_,k)=>k+1).filter(v=>!ok.includes(v)):[];if(DOC.tag&&!DOC.tagOk)o.push('tag');return o}
+function vHead(){const el=document.getElementById('se-vt'),ok=DOC.versesOk||[],gn=scGone(DOC);if(el)el.innerHTML=VS.map((_,k)=>gn.includes(k+1)?'':'<button type="button" class="tb vt'+(!TAGM&&k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('')+(DOC.tag?'<button type="button" class="tb vt'+(TAGM?' on':'')+'" data-se="ver" data-v="tag">'+(DOC.tagOk?'&#10003; ':'')+'Tag</button>':'')+(!TAGM&&VER>1?'<button type="button" class="tb" data-se="vdel">Delete verse '+VER+'</button>':'');
 const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew',TAGM?!DOC.tagOk:VER>1&&!ok.includes(VER));
 const b=document.getElementById('se-okm');if(b&&(VS.length>1||DOC.tag)){const left=vLeft(),isOk=TAGM?!!DOC.tagOk:ok.includes(VER),nm=l=>l==='tag'?'the tag':'verse '+l;b.textContent=!left.length?'Approve melody':isOk?'Go to '+nm(left[0]):left.length===1?'Approve melody':'Approve '+(TAGM?'the tag':'verse '+VER)}wcPanel()}
 function vGo(v){if(v==='tag'){if(TAGM||!DOC.tag)return;if(PL)stopPlay();VW[VER]=wNow();TSTASH={bars,leadA,zeroId,zeroIdx,id};TAGM=true;sel=[];noteSel=[];cPick=null;fromDoc(Object.assign({meter:DOC.meter,grid:DOC.grid},DOC.tag));hist=[];lastSig=sig();draw();vHead();return}
@@ -1980,7 +1980,7 @@ if((e.key==='Backspace'||e.key==='Delete')&&cPick&&CED()){e.stopPropagation();e.
 function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
 function seClose(){if(!ON)return;stopPlay();if(saveT)flush();TAGM=false;TSTASH=null;if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
-document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok'){if((VS.length>1||DOC.tag)&&!CS){const isOk=TAGM?!!DOC.tagOk:(DOC.versesOk||[]).includes(VER);if(isOk){const l=vLeft();if(l.length)vGo(l[0]);else approve()}else if(wcBlock()){wcPanel(true)}else vOk()}else approve()}else if(x.dataset.se==='wcuse')wcUse(+x.dataset.k);else if(x.dataset.se==='wckeep')wcKeep(+x.dataset.k);else if(x.dataset.se==='ver')vGo(x.dataset.v==='tag'?'tag':+x.dataset.v);else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='lock'){if(LVK==='easy')return;if(PL)stopPlay();const F=LF[LVK]+'Edited';DOC[F]=DOC[F]?null:new Date().toISOString();lvSync();cHead();draw();clearTimeout(saveT);flush()}else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
+document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok'){if((VS.length>1||DOC.tag)&&!CS){const isOk=TAGM?!!DOC.tagOk:(DOC.versesOk||[]).includes(VER);if(isOk){const l=vLeft();if(l.length)vGo(l[0]);else approve()}else if(wcBlock()){wcPanel(true)}else vOk()}else approve()}else if(x.dataset.se==='wcuse')wcUse(+x.dataset.k);else if(x.dataset.se==='wckeep')wcKeep(+x.dataset.k);else if(x.dataset.se==='ver')vGo(x.dataset.v==='tag'?'tag':+x.dataset.v);else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='vdel'){if(VER<2)return;if(PL)stopPlay();const v=VER,g=Array.isArray(DOC.versesGone)?DOC.versesGone.slice():[];if(!g.includes(v))g.push(v);DOC.versesGone=g;const now=new Date().toISOString();seSeen=now;seMine.add(now);scLocal(DID,{versesGone:g});db.collection('songcheck').doc(DID).update({versesGone:g,updated:now}).catch(()=>{});vGo(1);VW[v]=[];vHead();cHead&&0}else if(x.dataset.se==='lock'){if(LVK==='easy')return;if(PL)stopPlay();const F=LF[LVK]+'Edited';DOC[F]=DOC[F]?null:new Date().toISOString();lvSync();cHead();draw();clearTimeout(saveT);flush()}else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
 const SE=window.SE={open:seOpen,close:seClose,toDoc,flush,melody,saves:0,get on(){return ON},get bars(){return bars},get sel(){return sel},get notePick(){return notePick},get hist(){return hist},get leadA(){return leadA},get doc(){return DOC},get cm(){return CS},get ver(){return VER},get verses(){return VS},vAuto,vSyl,vGo,get crow(){return CM},get lv(){return LVK},get cur(){return CUR()},get cPick(){return cPick},get cDrag(){return cDrag},get startAt(){return startAt},firstOpen:()=>firstOpen(),draw:()=>draw()};
 })();
 /* (Oct 17, Chris: "i just want the lyric box with numbers on top") CHORDS STEP = ONE TEXT BOX. Each song row = a chord line above its
@@ -2227,7 +2227,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v219</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v220</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4241,9 +4241,9 @@ function fdGlide(L, gaps, K, S, Sf, done){ const t0 = performance.now(), ease = 
       gaps.forEach(g => g.el.remove()); if (K) kpSet(L, 0); L.scrollTop = Math.max(0, s0 - rem); }
     else { gaps.forEach(g => g.el.remove()); if (K) kpSet(L, 0); L.scrollTop = Sf; }
     L.dataset.lst = L.scrollTop; L._fitT = setTimeout(() => { L._fitting = false; }, 60); if (done) done(); };
-  const step = now => { if (over) return; if (Math.abs(L.scrollTop - last) > 2) return fin(); const k = Math.min(1, (now - t0) / 260), e = ease(k);
+  const step = now => { if (over) return; if (Math.abs(L.scrollTop - last) > 2) return fin(); const k = Math.max(0, Math.min(1, (now - t0) / 260)), e = ease(k);   /* (Oct 21) a frame stamped before t0 gave a negative k = the gap grew a few px first */
     if (k >= 1) return fin();
-    gaps.forEach(g => { g.el.style.height = g.h * (1 - e) + "px"; }); if (K) kpSet(L, K * (1 - e));
+    gaps.forEach(g => { g.el.style.height = g.h * (1 - e) + "px"; if (g.el.classList.contains("fdclone")) g.el.style.opacity = String(1 - e); }); if (K) kpSet(L, K * (1 - e));
     L.scrollTop = S + (Sf - S) * e; last = L.scrollTop; L.dataset.lst = L.scrollTop; requestAnimationFrame(step); };
   requestAnimationFrame(step); setTimeout(fin, 600); }   /* frames can stall (app in the background): the glide always finishes */
 function keepPos(el, fn, opening){
@@ -4251,6 +4251,11 @@ function keepPos(el, fn, opening){
   jcClear();
   const key = [...el.attributes].filter(a => a.name.startsWith("data-")).map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join(""), tag = el.tagName.toLowerCase();
   const wasStuck = (el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el)).classList.contains("stuck");
+  /* (Oct 21, Chris) computer folders: remember where the list was before the first folder opened (close glides back there) and, on close, keep a copy of the open folder to shrink into its header */
+  const dFold = el.tagName === "H4" && isDesktop() && !!el.closest("#list .msec"); let snap = null, boxH0 = 0;
+  if (dFold){ const bx0 = el.parentElement; if (opening){ if (!L.querySelector(".msec:not(.collapsed) > h4[data-ck]")) L._preOpen = L.scrollTop; }
+    else if (!bx0.classList.contains("collapsed")){ boxH0 = bx0.getBoundingClientRect().height; snap = document.createElement("div"); snap.className = "fdsnap"; snap.setAttribute("aria-hidden", "true"); snap.style.width = bx0.getBoundingClientRect().width + "px";
+      [...bx0.children].forEach(c => { if (c !== el){ const n = c.cloneNode(true); n.removeAttribute("id"); n.querySelectorAll("[id]").forEach(x => x.removeAttribute("id")); snap.appendChild(n); } }); } }
   let before = el.getBoundingClientRect().top; const parts = fdParts(L, before); fdUnlock(L);   /* (Oct 18) 'before' = where Chris SEES it, measured before the unlock (an unlock near the end of the list can shift the page) */ kbSet(L, 0); fn();   /* old room below is re-measured from scratch each time */
   if (!el.isConnected && key){ const vis = [...L.querySelectorAll(tag + key)].filter(x => x.getClientRects().length); el = vis[0] || el; }   /* re-rendered: find the same header again */
   if (!el.isConnected){ return; }
@@ -4270,6 +4275,9 @@ function keepPos(el, fn, opening){
        close = the tapped row stays (room below if needed), except when the whole list fits on the screen: back to the top.
        No hidden room above (kp) is ever left behind (it made the next close jump). */
     const gaps = fdGaps(L, parts);
+    if (snap){ const bx1 = el.parentElement, hh = boxH0 - bx1.getBoundingClientRect().height;   /* the folder's own body: a copy stays under the header and shrinks into it */
+      if (hh > 1){ const g = document.createElement("div"); g.className = "fdgap fdclone"; g.style.height = hh + "px"; g.appendChild(snap); bx1.appendChild(g);   /* inside the closed box (its margins stay exact) */
+        const hx = hh + (boxH0 - bx1.getBoundingClientRect().height); g.style.height = hx + "px"; gaps.push({el: g, h: hx}); } }   /* measured: the box is exactly as tall as the open folder was, whatever gaps its layout adds */
     let K = +L.dataset.kp || 0; if (K && L.scrollTop >= K){ const s0 = L.scrollTop; kpSet(L, 0); L.scrollTop = s0 - K; K = 0; }   /* old hidden room above: dropped where nothing shows */
     if (!opening) L._pinHold = true;   /* folder headers do not re-pin in the middle of the glide (they jumped in over the closed row) */
     const rb = el.tagName === "H4" ? el.closest(".msec") : (el.closest(".trow,.pc3") || el), up = before - el.getBoundingClientRect().top;
@@ -4280,13 +4288,14 @@ function keepPos(el, fn, opening){
     L.scrollTop = want; L.scrollTop += el.getBoundingClientRect().top - before; L.dataset.lst = L.scrollTop; stickUpdate();
     const S = L.scrollTop, G = K + gaps.reduce((t, g) => t + g.h, 0), LT = L.getBoundingClientRect().top + L.clientTop, LB = LT + L.clientHeight;
     let Sf = S >= G ? S - G : S, lock = false, toTop = false;   /* room above for all of it: the tapped row stays; not enough: only it and the rows below glide up (never both ways at once) */
-    if (opening && !isDesktop()){ const r = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el), nx = r.nextElementSibling, isB = nx && nx.matches(".tdetail,.sublist,.mbody,.replist");
+    if (opening && (!isDesktop() || dFold)){ const r = el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el), nx = r.nextElementSibling, isB = nx && nx.matches(".tdetail,.sublist,.mbody,.replist");
       const bx = el.tagName === "H4" ? el.closest(".msec") : isB ? nx : r, nat0 = el.tagName === "H4" ? bx.getBoundingClientRect().top : isB ? nx.getBoundingClientRect().top - r.offsetHeight : r.getBoundingClientRect().top, bot0 = bx.getBoundingClientRect().bottom;
       /* the folder header stays pinned over the top of the list while a row in it is open: a row that fits must fit BELOW it (it was parked under it, then the header popped away) */
       const fh = el.tagName === "H4" ? null : el.closest(".msec") && el.closest(".msec").querySelector(":scope > h4"), FH = fh ? fh.offsetHeight : 0;
       const at = (y, sf) => y - G - (sf - S), fits = bot0 - nat0 <= L.clientHeight - FH - 4;
       if (fits){ if (at(bot0, Sf) > LB + 0.5) Sf += at(bot0, Sf) - LB + 4; }
       else { Sf += at(nat0, Sf) - LT; lock = true; L._pinHold = true; stickUpdate(); } }   /* taller: the folder header scrolls away with the list (no pinned header popping off at the end) */
+    else if (!opening && dFold && L._preOpen != null && !L.querySelector(".msec:not(.collapsed) > h4[data-ck]")){ Sf = L._preOpen; L._preOpen = null; if (L.scrollHeight - G - (+L.dataset.kb || 0) <= L.clientHeight + 0.5){ Sf = 0; toTop = true; } }   /* closed: the list glides back to where it was before the folder opened */
     else if (L.scrollHeight - G - (+L.dataset.kb || 0) <= L.clientHeight + 0.5){ Sf = 0; toTop = true; }
     else if (outer && outer[0].tagName === "H4"){ const mr = outer[1].getBoundingClientRect(), nt = mr.top - G - (Sf - S);   /* closed inside an open folder that now fits: the same one glide shows its top (no lock + second glide = the 65px snap) */
       if (mr.height <= L.clientHeight + 0.5 && nt < LT - 0.5) Sf = Math.max(0, Sf - (LT - nt)); }
@@ -4786,6 +4795,8 @@ let shBoard = null, scBoard = null;
 /* (Oct 18) a board refresh keeps showing the old board until the new one is here (setting it to [] first drew an empty board, then the full one = flicker) */
 let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null;
 function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); waitBusy.delete("shorts"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; waitBusy.delete("shorts"); }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
+/* (Oct 21, Chris: approved, still said Check) every song save/approve patches the board row on screen AT ONCE; the db write follows. Global: the song editor calls it too */
+function scLocal(id, o){ try { [scBoard, fdScOld].forEach(B => { const r = (B || []).find(x => x.id === id); if (r) Object.assign(r, o); }); } catch (e) {} }
 function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())); waitBusy.delete("songs"); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; waitBusy.delete("songs"); }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
 /* (Oct 20, Chris: "if there's a bunch of things in queue, I don't have to ask you what you're working on ... drag things to the top")
@@ -4910,8 +4921,18 @@ const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the
 const sgKey = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
 /* (Oct 20, Chris) MELODY UNDER EVERY VERSE: verses = the 'Verse N:' blocks of the song's lyrics text; versesOk = verses he approved (old approvals = verse 1) */
 function scVerses(sc){ const out = []; let cur = null; String(sc && sc.lyricsText || "").split("\n").forEach(l => { const t = l.trim();
-  if (/^verse\s*\d+\s*:?$/i.test(t)){ cur = []; out.push(cur); return; } if (/^(chorus|refrain|bridge|tag|ending|intro|outro)\b[^a-z]*:?$/i.test(t)){ cur = null; return; } if (cur && t) cur.push(t); }); return out; }
-function scVersesOk(sc){ return Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []; }
+  if (/^verse\s*\d+\s*:?$/i.test(t)){ cur = []; out.push(cur); return; } if (/^(chorus|refrain|bridge|tag|ending|intro|outro)\b[^a-z]*:?$/i.test(t)){ cur = null; return; } if (cur && t) cur.push(t); });
+  return out; }
+/* (Oct 21, Chris: Happy Birthday + Row Row Row) a verse whose words are ALL already sung in verse 1's notes is not a new verse,
+   and Delete verse (versesGone) removes one: gone verses show no tab and count as done. Numbers never shift (wordsV keys stay) */
+function scGone(sc){ const g = new Set(Array.isArray(sc && sc.versesGone) ? sc.versesGone : []), V = scVerses(sc);
+  const nw = x => String(x || "").toLowerCase().replace(/-\s+/g, "").replace(/[^a-z' ]/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
+  const placed = new Set(nw(["words", "lines", "orig"].flatMap(f => Array.isArray(sc && sc[f]) ? sc[f].flat() : []).map(w => w && w.w || "").join(" ")));
+  const f0 = ["words", "lines", "orig"].find(f => Array.isArray(sc && sc[f]) && sc[f].length), n1 = f0 ? nw(sc[f0].flat().map(w => w && w.w || "").join(" ")).length : 0, v1n = V[0] ? nw(V[0].join(" ")).length : 0;
+  const whole = v1n && n1 >= 3 * v1n;   /* verse 1's notes already sing 3x verse 1's words = the whole song is laid out in verse 1 (Silent Night, Row Row Row, Hark, O Come, We Wish You): no other verse tabs */
+  if (placed.size) V.forEach((v, i) => { if (i && (whole || nw(v.join(" ")).filter(w => placed.has(w)).length >= 0.9 * nw(v.join(" ")).length)) g.add(i + 1); });
+  return [...g]; }
+function scVersesOk(sc){ return (Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []).concat(scGone(sc)); }
 function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; if (sc && sc.tag && !sc.tagOk) k++; return k; }   /* the end tag counts as one more thing to approve */
 function sgCells(x){ const sc = x.sc, live = SGLIVE.includes(x.k);
   if (live) return SGCOLS.map((t, i) => ({c: i === 3 || i === 4 ? "" : "ok"}));   /* (Oct 20, Chris) the live songs: he approved everything EXCEPT Level 2 and Level 3 */
