@@ -1360,7 +1360,7 @@ async function scApprove(){
   if (t){ t.scState = "submitted"; t.scAt = now; }
   waitBusy.add("songs"); scClose(); closePop(); taskOpen = null; saveTaskOpen(); render();
   if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
-  const SC = db.collection("songcheck").doc(id), done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
+  const SC0 = db.collection("songcheck").doc(id), SC = {update: o => { scLocal(id, o); render(); return SC0.update(o); }}, done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
   try {
     if (st === 2 && lv !== "easy"){ await SC.update({[SCLV[lv][1]]: C, [lv + "OK"]: now, updated: now}); return done(); }   /* Medium / Hard: own approval, the Easy flow and the task stay as they are */
     if (scView && (scView < (D.step || 1) || D.status === "approved")){ await SC.update({lines: L, words: W, [st === 1 ? "chords" : SCLV[lv][1]]: C, [st === 1 ? "melodyOK" : lv === "easy" ? "chordsOK" : lv + "OK"]: now, updated: now}); return done(); }
@@ -1882,10 +1882,13 @@ let seSeen=null,seMine=new Set();
 function tagPick(P){const o={meter:DOC.meter||4};['lines','words','bars','spb','zero','lead','chords','chordsMedium','chordsHard'].forEach(f=>{if(P[f]!=null)o[f]=P[f]});return o}
 function tagSave(){if(TAGM)DOC.tag=bars.length?tagPick(toDoc()):null}
 function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
+/* (Oct 21, Chris: approved, still said Check) every song save/approve patches the board row on screen AT ONCE; the db write follows */
+function scLocal(id,o){try{[scBoard,fdScOld].forEach(B=>{const r=(B||[]).find(x=>x.id===id);if(r)Object.assign(r,o)})}catch(e){}}
 function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
 db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
- if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
- seSeen=now;seMine.add(now);return db.collection('songcheck').doc(id).update(Object.assign({},P,{updated:now}))}).catch(()=>{})}
+ const ap={};['versesOk','tagOk'].forEach(f=>{if(P[f]!=null)ap[f]=P[f]});
+ if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(Object.keys(ap).length){scLocal(id,ap);seSeen=now;seMine.add(now);db.collection('songcheck').doc(id).update(Object.assign(ap,{updated:now})).catch(()=>{})}   /* (Oct 21) a helper changed the song while it was open: his approvals still save (they only add ticks) */if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
+ seSeen=now;seMine.add(now);scLocal(id,Object.assign({},P,{updated:now}));return db.collection('songcheck').doc(id).update(Object.assign({},P,{updated:now}))}).catch(()=>{})}
 /* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
 function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=VIEW;scLv='easy';scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=DOC.chords?scClone(DOC.chords):scChordsFrom(scLines,scRg);scApprove()}
@@ -2224,7 +2227,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v218</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v219</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
