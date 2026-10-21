@@ -1585,7 +1585,7 @@ let CLIPN=null,CLIPK=null;
 /* (Oct 16 night, Chris) CHORDS STEP = this same editor: gold chord markers on the beat row, numbers + words locked, ONE level checked at a time
    (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
 let CM=false,CS=false,VER=1,VS=[],VW={},LVK='easy',cPick=null,cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
-const RKF=()=>CS?'rowsOk_'+LF[LVK]:'rowsOk';   /* (Oct 20, Chris) row checks: melody has its own, each chords level has its own */
+const RKF=()=>CS?'rowsOk_'+LF[LVK]:VER>1?'rowsOk_v'+VER:'rowsOk';   /* (Oct 20, Chris) verse 2+ rows start unchecked: each verse has its own row checks */   /* (Oct 20, Chris) row checks: melody has its own, each chords level has its own */
 const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM&&LVK===CUR(),lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
 const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
@@ -1600,10 +1600,11 @@ function draw(pv){const B=pv&&pv.C?pv.C:pv&&pv.leadA!=null?bars:pv||bars,N=S(),p
    left to right; every row = 4 bars. A partial bar before the first full bar (the pickup, e.g. "A-" before "way") sits in column 1;
    whole intro bars sit right-aligned in columns 2-5 of the row(s) above bar 1's row. */
 const z0=(()=>{const k=B.findIndex(b=>b.id===zeroId||(b.src!=null&&b.src===zeroId));return k>=0?k:Math.min(zi(),B.length)})();
-const P1=z0>0&&B[0]&&(B[0].a||0)>0?1:0,F=z0-P1,IR=Math.ceil(F/per),PLAN=[];
-for(let r=0;r<IR;r++){const row=['sp'];for(let c=0;c<per;c++){const k=r*per+c-(IR*per-F);row.push(k>=0?P1+k:'sp')}PLAN.push(row)}
+const P1=z0>0&&B[0]&&(B[0].a||0)>0?1:0,F=z0-P1,PLAN=[];let IR=Math.ceil(F/per);
+const sings=b=>(b.notes||[]).some(q=>q.w&&String(q.d).trim()),VH=VER>1&&B===bars;   /* (Oct 20, Chris) no intro before verse 2+: an intro bar shows on those tabs only if this verse sings in it (a pickup word) */
+for(let r=0;r<IR;r++){const row=['sp'];for(let c=0;c<per;c++){const k=r*per+c-(IR*per-F);row.push(k>=0&&!(VH&&!sings(B[P1+k]))?P1+k:'sp')}if(!(VH&&row.every(x=>x==='sp')))PLAN.push(row)}IR=PLAN.length;
 for(let r=0;r<Math.max(1,Math.ceil((B.length-z0)/per));r++){const row=['sp'];for(let c=0;c<per;c++){const i=z0+r*per+c;if(i<B.length)row.push(i);else break}PLAN.push(row)}   /* (Oct 16, Chris) no '+ new bar' box: double-click a bar number adds one */
-if(P1)PLAN[0][0]=0;{const la0=pv&&pv.leadA!=null?pv.leadA:leadA;if(PLAN[0][0]==='sp'&&la0<N)PLAN[0][0]='lead'}
+if(P1&&!(VH&&!sings(B[0])))PLAN[0][0]=0;if(!VH||IR){const la0=pv&&pv.leadA!=null?pv.leadA:leadA;if(PLAN[0][0]==='sp'&&la0<N)PLAN[0][0]='lead'}
 /* (Oct 16, Chris) a check mark at the right of every row: tap = this row is good, the whole row turns green (doc.rowsOk, saved at once) */
 const OKS=(DOC&&DOC[RKF()])||[];const SEEN=new Set();   /* (Oct 16, Chris: dragging one box moved boxes on bars 7, 9, 10) copied bars shared box ids: every box gets its own */
 PLAN.forEach((cells,pr)=>{const rk=pr<IR?'i'+pr:'b'+((pr-IR)*per+1),row=document.createElement('div');row.className='row'+(OKS.includes(rk)?' ok':'');row.dataset.rk=rk;while(cells.length<per+1)cells.push('sp');cells.forEach(v=>{
@@ -1788,7 +1789,7 @@ if(isHold(q)){if(last&&last.t+last.len===g0+q.s)last.len+=Math.min(q.l,b.n-q.s);
 const T=toks(q);T.forEach((t,k)=>{const end=Math.min(k+1<T.length?T[k+1].at:q.s+q.l,b.n);if(end<=t.at)return;
 last={t:g0+t.at,len:end-t.at,mid:60+DEG[t.m[2]]+(/[b♭]/.test(t.m[1])?-1:/[#♯]/.test(t.m[1])?1:0)+12*(q.o||0),q,one:T.length===1&&k===0};out.push(last)})})});return out}
 /* (Oct 20, Chris) Play starts at the first row that is not approved yet (0 = the top when every row is approved) */
-function firstOpen(){const r=[...R.querySelectorAll('.row')].find(x=>!x.classList.contains('ok')&&x.querySelector('.b[data-i]'));return r?+r.querySelector('.b[data-i]').dataset.i:0}
+function firstOpen(){const r=[...R.querySelectorAll('.row')].find(x=>!x.classList.contains('ok')&&x.querySelector('.b[data-i]'));const f=R.querySelector('.b[data-i]');return r?+r.querySelector('.b[data-i]').dataset.i:f?+f.dataset.i:0}
 async function startPlay(){if(!ON)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(x){hint('Sound is blocked here');return}
 const ac=AC,mel=melody();PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop';await scPLoad(mel.map(n=>n.mid).concat(CM?bars.flatMap(b=>((b.ch||{})[LF[LVK]]||[]).flatMap(c=>scChordNotes(c.k))):[]));if(!PL||PL.ac!==ac)return;
 const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,t0=AC.currentTime+0.1,seg=[],st=starts();let t=t0;const from=startAt?startAt.i:sel.length?lo():firstOpen();
@@ -2125,7 +2126,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const k = shShow(r) === "hands" ? "handsFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v180</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v181</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
