@@ -552,6 +552,7 @@ a.tb.rs-fixed{flex-direction:column}
 .mcg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
 .mcd{position:relative;height:40px;border:1px solid var(--line);border-radius:8px;background:var(--card);font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
 .mcd b{font-size:14px}.mcd i{font-style:normal;font-size:10.5px;color:var(--muted);font-weight:700}
+.waitmv{display:flex;justify-content:flex-end;margin:2px 0 6px}.waitmv .tb{font-size:12px;padding:6px 14px}
 .mcd:disabled{opacity:.3;cursor:default}.mcd.tdy{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}.mcd.cur{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}.mcd.cur i{color:var(--teal-ink)}
 /* Morning screen (Oct 4) */
 .morning{gap:12px}
@@ -1356,9 +1357,9 @@ async function scApprove(){
   /* (Oct 16, Chris) Approve = back to the list AT ONCE with the song's row closed and its pill saying Submitted;
      Cadence turns it to Fixing when she starts, Ready when it's his turn again. The db writes follow (proven by desk-songcheck-test.py) */
   if (t){ t.scState = "submitted"; t.scAt = now; }
-  scClose(); closePop(); taskOpen = null; saveTaskOpen(); render();
+  waitBusy.add("songs"); scClose(); closePop(); taskOpen = null; saveTaskOpen(); render();
   if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
-  const SC = db.collection("songcheck").doc(id), done = () => { scBoard = null; render(); }, lv = scLv;
+  const SC = db.collection("songcheck").doc(id), done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
   try {
     if (st === 2 && lv !== "easy"){ await SC.update({[SCLV[lv][1]]: C, [lv + "OK"]: now, updated: now}); return done(); }   /* Medium / Hard: own approval, the Easy flow and the task stay as they are */
     if (scView && (scView < (D.step || 1) || D.status === "approved")){ await SC.update({lines: L, words: W, [st === 1 ? "chords" : SCLV[lv][1]]: C, [st === 1 ? "melodyOK" : lv === "easy" ? "chordsOK" : lv + "OK"]: now, updated: now}); return done(); }
@@ -2116,7 +2117,7 @@ async function shOpen(tid, rid, view){
   shWait = all.filter(r => !r.handsFileId && !r.handsFail && !r.status).length;
   shRows = all.filter(r => r.handsFileId).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
   shTask = tid || null; const j = rid ? shRows.findIndex(r => r.id === rid) : -1, k = shRows.findIndex(shStep); shI = j >= 0 ? j : k < 0 ? shRows.length : k; shDraw(); }
-function shClose(){ shView = null; shOne = false; shRows = null; document.getElementById("shortchk").innerHTML = ""; shBoard = null; if (tab === "today") render(); }
+function shClose(){ shView = null; shOne = false; shRows = null; document.getElementById("shortchk").innerHTML = ""; shBoard = null; waitBusy.add("shorts"); if (tab === "today") render(); fdShLoad(); }
 const shWide = () => matchMedia("(min-width:1000px)").matches;
 function shDraw(){
   const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh">${shOne ? "<span></span>" : `<span class="scpill">${c}</span>`}<button type="button" class="tb" data-shx="close">Close</button></div>`;
@@ -2189,7 +2190,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v212</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v213</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2291,14 +2292,16 @@ addEventListener("scroll", sortMenuOff, true);
 const sortPop = () => popTop("Sort") + `<div class="llist">${SORTS.map(([k, l]) => lrow(`data-sortby="${k}"`, l, sortBy === k, "")).join("")}</div>` + lfoot('data-sortpick=""');   // (Oct 7) Chris: inside the section header, right side; one tap switches
 const tmBox = m => m ? `<span class="tm">${fmtMins(m)}</span>` : "";
 /* (Oct 20 night, Chris) ONE TODAY ROW PER BOARD THAT WAITS ON HIM (db tasks t-wait-*, kept by desk-wait-rows.py every 30 min): recounted live here, so the row shrinks and vanishes the moment the last item is approved */
+const waitBusy = new Set();   /* (Oct 21, Chris) a board that was just submitted is reloading: its Today row is hidden until the fresh count lands, never a stale '0 to check' */
 function waitLive(t){
+  if (waitBusy.has(t.wait)) return null;
   if (t.wait === "songs"){ if (scBoard === null) return null; const L = sgUniverse().filter(x => !SGLIVE.includes(x.k)); let n = 0, first = null;
     L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => x.cells.forEach(q => { if (q.c === "chk" && q.id){ n++; if (!first) first = q; } }));
     return {n, first, title: "Songs: " + n + " to check"}; }
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
   return null; }
-const todayTasks = () => tasks.filter(t=>t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return true; t.title = t.short = w.title; return w.n > 0; }).sort(byOrder);
+const todayTasks = () => tasks.filter(t=>t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; }).sort(byOrder);
 const laterTasks = () => tasks.filter(t=>!t.date && (showDone ? t.done : !t.done)).sort(byOrder);
 const nextTasks = () => tasks.filter(t=>t.date && t.date>plus(7) && t.date<=plus(14) && (showDone ? t.done : !t.done)).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
 const listFor = s => { const one = oneThing(); const L = s === "todo" ? todayTasks() : s === "week" ? weekTasks() : s === "next" ? nextTasks() : laterTasks(); const S = sortL(L); return deskish() && one && !showDone ? S.filter(t => t.id !== one.id) : S; };
@@ -4735,8 +4738,8 @@ function labTag(t){ const scs = t && !t.done && (SCTAG[t.scState] ? t.scState : 
 let shBoard = null, scBoard = null;
 /* (Oct 18) a board refresh keeps showing the old board until the new one is here (setting it to [] first drew an empty board, then the full one = flicker) */
 let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null;
-function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
-function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
+function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); waitBusy.delete("shorts"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; waitBusy.delete("shorts"); }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
+function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())); waitBusy.delete("songs"); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; waitBusy.delete("songs"); }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
 /* (Oct 20, Chris: "if there's a bunch of things in queue, I don't have to ask you what you're working on ... drag things to the top")
    QUEUE folder: every submit (db 'queue', launchd com.wpa.desk-queue starts a helper per lane). Working first, then Queued in order, Stuck, Done today.
@@ -5021,7 +5024,10 @@ function addLvChips(){ if (phone()) return rowB(); document.querySelectorAll("#l
 function openFor(t){ if (!t.added) return ""; const d = Math.floor((Date.parse(plus(0) + "T12:00:00") - Date.parse(String(t.added).slice(0, 10) + "T12:00:00")) / 864e5); return d <= 0 ? "open today" : d === 1 ? "open 1 day" : "open " + d + " days"; }
 function checkCount(t){ if (!t) return [0, 0]; const st = t.review ? revItems(t).map(r => r.status) : tLinks(t).map(l => labStatusOf(l.url)); return [st.filter(x => x === "good").length, st.length]; }
 function checksLeft(t){ if (!t) return 0; if (t.review) return revItems(t).filter(r => r.status !== "good").length; return tLinks(t).filter(l => labStatusOf(l.url) !== "good").length; }
-function addTodayBtns(){ addLvChips(); if (phone()) return;
+/* (Oct 21, Chris) every Today row has Move: the Shorts / Songs board rows jump straight to their board, so Move sits right under the row (hides the row until the date picked) */
+function addWaitMove(){ document.querySelectorAll("#list [data-tlinks]").forEach(b => { const id = b.dataset.tlinks; if ((id !== "t-wait-shorts" && id !== "t-wait-songs") || !b.closest("#list")) return; const c = b.closest(".trow") || b.closest(".pc3") || b;
+  if (c.nextElementSibling && c.nextElementSibling.classList.contains("waitmv")) return; c.insertAdjacentHTML("afterend", `<div class="waitmv"><button type="button" class="tb" data-move="${esc(id)}">Move</button></div>`); }); }
+function addTodayBtns(){ addWaitMove(); addLvChips(); if (phone()) return;
   document.querySelectorAll("#list .chc[data-tlinks], #list .chc[data-ideaopen], #pop .plist .chc[data-tlinks], #list .pc3t[data-tlinks]").forEach(b => {
     if (b.parentElement.classList.contains("trow") || (b.classList.contains("pc3t") && b.parentElement.querySelector(".tdy"))) return;
     let attr = "";
@@ -5162,7 +5168,7 @@ function taskDetail(t){
   const bt = (attr, l, go) => `<button type="button" class="tb${go ? " go" : ""}" ${attr}>${l}</button>`;
   const [cd, ca] = checkCount(t), isToday = t.date && t.date <= plus(0);
   return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
-    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
+    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait || t.kind ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
