@@ -474,6 +474,15 @@ a.tb.rs-fixed{flex-direction:column}
 @media all{ .labrow .labdots{display:none} .labrow{grid-template-columns:1fr;padding:6px 10px} .labrow b{font-size:14px} .labboard > .tn{font-size:12px} .labbtns .tb{padding:5px 8px} }
 .supd{text-transform:none;letter-spacing:0;font-weight:600}
 /* to-do pills (Chris, Oct 4): small like the Today tab button, several per row, wrapping */
+.nightc{display:flex;flex-direction:column;gap:8px;margin:6px 0;min-width:0}
+.nightg{display:flex;flex-direction:column;gap:3px;min-width:0}
+.nightp{align-self:flex-start;max-width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:13.5px;border-radius:999px;padding:5px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nightp i{font-style:normal;display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--muted);color:#FFFFFF;font-size:12px;line-height:18px;text-align:center}
+.nightp.ok i{background:var(--teal);color:var(--teal-ink)}
+.nightp.gold i{background:var(--gold);color:#FFFFFF}
+.nightp.red{border-color:var(--red);background:var(--red-soft)}
+.nightp.red i{background:var(--red);color:#FFFFFF}
+.nightl{font-size:13px;color:var(--ink);padding-left:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pills{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
 .tpill{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;font-size:13.5px;border-radius:999px;padding:7px 13px;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:36px}
 .tpill .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:#FFFFFF;font-size:12px;line-height:18px;text-align:center}
@@ -2158,7 +2167,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v203</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v204</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2408,7 +2417,7 @@ function taskPop(t){
   else if (tLinks(t).length) list = popPaged(tLinks(t).map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labRef(l.url, l.label || "Link"), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }));
   // (Oct 7) Chris: Open shows what the to-do is FOR (why, project, when it was added), so he remembers what we talked about
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", fmtMins(t.mins)].filter(Boolean).join(" · ");
-  const whyIn = `${t.note ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
+  const whyIn = `${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
   if (!isDesktop() && list && list.trim()) return popTop(esc(t.title)) + list + `<details class="whyd"><summary>What it's for</summary><div class="why">${whyIn}</div></details>` + acts;
   return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + acts + list;
@@ -4712,23 +4721,23 @@ const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled",
 function homeQueue(){
   const Q = queueRows || [], day = Date.now() - 86400000, ts = x => Date.parse(x || "") || 0;
   const W = Q.filter(q => q.status === "working"), U = Q.filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)),
-        S = Q.filter(q => q.status === "stuck"), D = Q.filter(q => q.status === "done" && ts(q.doneAt) > day).sort((a, b) => ts(b.doneAt) - ts(a.doneAt));
-  if (!W.length && !U.length && !S.length) return "";   /* (Oct 20, Chris) done rows never show */
+        S = Q.filter(q => q.status === "stuck" && !(q.extra && q.extra.rescueOf) && (!q.rescueId || q.rescueFailed)), G = Q.filter(q => q.status === "waiting-chris"), D = Q.filter(q => q.status === "done" && ts(q.doneAt) > day).sort((a, b) => ts(b.doneAt) - ts(a.doneAt));
+  if (!W.length && !U.length && !S.length && !G.length) return "";   /* (Oct 20, Chris) done rows never show */
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   /* (Oct 20, Chris) ONE pill on the left = status + job stacked; no Top button (press and hold a row, drag it where it goes); title gets the room */
   const pill = (t, job, bg, fg) => `<span class="qpill" style="flex:0 0 auto;width:74px;text-align:center;padding:3px 6px;border-radius:12px;line-height:1.15;background:${bg};color:${fg}"><b style="display:block;font-size:12px">${t}</b>${job ? `<span style="display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75">${esc(job)}</span>` : ""}</span>`;
-  const st = q => q.status === "working" ? pill("Working", q.job, "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", q.job, "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", q.job, "#F6D6D3", "#B3261E") : pill("Done", q.job, "#DDF1E5", "#2E7D4F");
+  const st = q => q.status === "working" ? pill("Working", q.job, "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", q.job, "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", q.job, "#F6D6D3", "#B3261E") : q.status === "waiting-chris" ? pill("Waiting", q.job, "#E4E4E2", "#6B6B68") : pill("Done", q.job, "#DDF1E5", "#2E7D4F");
   /* (Oct 20, Chris) DESKTOP: spread out in columns (status | job | title | (count) | time), nothing wraps; phone keeps the one stacked pill */
   const sp = t => { const m = /^(.*?)\s*\(([^)]*)\)\s*$/.exec(t || ""); return m ? [m[1], m[2]] : [t || "", ""]; };
   const tm = q => { const t = q.status === "working" ? q.startedAt : q.addedAt; if (!t) return ""; const d = new Date(t); return (q.status === "working" ? "started " : "added ") + d.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}); };
   const dp = (t, bg, fg) => `<span class="qd" style="flex:0 0 auto;width:96px;text-align:center;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg}">${t}</span>`;
-  const dst = q => q.status === "working" ? dp("Working", "#1FA598", "#fff") : q.status === "queued" ? dp(q.retry ? "Retrying" : "Queued", "#EFEBE3", "#5C5A55") : dp("Stuck", "#F6D6D3", "#B3261E");
-  const row = q => { const [tt, pc] = sp(q.title); return `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}${dst(q)}<span class="qd" style="flex:0 0 auto;width:90px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)">${esc(q.job || "")}</span><b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span class="qt" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span><span class="qd qt2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tt)}</span>${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E">${esc(q.why)}</span>` : ""}</b><span class="qd" style="flex:0 0 auto;width:110px;font-size:13px;color:var(--muted,#8A9099);white-space:nowrap">${esc(pc)}</span><span class="qd" style="flex:0 0 auto;width:120px;text-align:right;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap">${esc(tm(q))}</span></div>`; };
+  const dst = q => q.status === "working" ? dp("Working", "#1FA598", "#fff") : q.status === "queued" ? dp(q.retry ? "Retrying" : "Queued", "#EFEBE3", "#5C5A55") : q.status === "waiting-chris" ? dp("Waiting", "#E4E4E2", "#6B6B68") : dp("Stuck", "#F6D6D3", "#B3261E");
+  const row = q => { const [tt, pc] = sp(q.title); return `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}${dst(q)}<span class="qd" style="flex:0 0 auto;width:90px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)">${esc(q.job || "")}</span><b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span class="qt" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span><span class="qd qt2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tt)}</span>${(q.status === "stuck" || q.status === "waiting-chris") && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:${q.status === "stuck" ? "#B3261E" : "var(--muted,#8A9099)"}">${esc(q.why)}</span>` : ""}</b><span class="qd" style="flex:0 0 auto;width:110px;font-size:13px;color:var(--muted,#8A9099);white-space:nowrap">${esc(pc)}</span><span class="qd" style="flex:0 0 auto;width:120px;text-align:right;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap">${esc(tm(q))}</span></div>`; };
   const n = W.length + U.length;
   /* (Oct 20, Chris "Ask me every time"): Shorts renders wait for night unless Chris taps Run now (sets dayOk on each waiting one) */
   const NK = {"words-make": 1, "final-make": 1}, hr = new Date().getHours(), NW = hr >= 6 ? U.filter(q => NK[q.kind] && !q.dayOk) : [];
   const ask = NW.length ? `<div class="qrow" style="${RS};background:#F0C75A22"><span style="flex:1;min-width:0;font-size:14px;line-height:1.3">${NW.length} Shorts render${NW.length > 1 ? "s" : ""} wait for tonight<span style="display:block;font-size:12px;color:var(--muted,#8A9099)">Running now slows your Mac while you work</span></span><button type="button" class="tpill" data-qdayok="1" style="flex:0 0 auto;background:#F0C75A;color:#3a2a00;font-weight:700">Run now</button></div>` : "";
-  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length} waiting${S.length ? " · " + S.length + " stuck" : ""}</i></span></h4><div class="chgrid qlist">${ask}${W.concat(U, S).map(row).join("")}</div></div>`; }
+  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length} waiting${S.length ? " · " + S.length + " stuck" : ""}${G.length ? " · " + G.length + " waiting on you" : ""}</i></span></h4><div class="chgrid qlist">${ask}${W.concat(U, S, G).map(row).join("")}</div></div>`; }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qdayok]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   (queueRows || []).filter(q => q.status === "queued" && (q.kind === "words-make" || q.kind === "final-make") && !q.dayOk).forEach(q => { q.dayOk = true; db.collection("queue").doc(q.id).update({dayOk: true}).catch(() => {}); });
   liveRender(); }, true);
@@ -5089,12 +5098,14 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
     Object.assign(t, upd); }
   editOpen = null; edDraft = {}; edSwap(id); const L = $("list"); if (L) L._edST = null;
   document.querySelectorAll(`#list [data-tlinks="${CSS.escape(id)}"] > b`).forEach(x => { if (!x.children.length) x.textContent = t.short || t.title; }); });   /* the row title changes right away, nothing moves */
+// (Oct 21, Chris) 'Last night' card: lastnight.py writes t.night = [{h, n, c, items}]; pills + short one-line labels, no prose
+function nightHTML(t){ return `<div class="nightc">${(t.night || []).map(g => `<div class="nightg"><span class="nightp ${esc(g.c || "grey")}">${esc(g.h)}<i>${Number(g.n) || 0}</i></span>${(g.items || []).map(x => `<div class="nightl">${esc(x)}</div>`).join("")}</div>`).join("")}</div>`; }
 function taskDetail(t){
   if (editOpen === t.id) return editHTML(t);
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", t.date ? (t.date < plus(0) ? "late, from " : "") + dayLabel(t.date) : "no day yet"].filter(Boolean).join(" · ");
   const bt = (attr, l, go) => `<button type="button" class="tb${go ? " go" : ""}" ${attr}>${l}</button>`;
   const [cd, ca] = checkCount(t), isToday = t.date && t.date <= plus(0);
-  return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.note ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
+  return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
     ${t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
