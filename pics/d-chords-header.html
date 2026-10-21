@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chords header picker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Figtree:wght@400;600;700;800&display=swap">
+<style>
+.L{--bg:#FFFDF8;--card:#FFFFFF;--ink:#2A2F34;--muted:#6B7280;--line:#E8E2D4;--teal:#0F766E;--tink:#FFFFFF;--gold:#D19A12;--soft:#EEF6F5;--play:#2A2F34}
+.D{--bg:#171B1E;--card:#21272B;--ink:#F1EEE6;--muted:#A3A9AE;--line:#343B40;--teal:#1FA598;--tink:#0B1714;--gold:#D19A12;--soft:#1E2E2C;--play:#F1EEE6}
+body{margin:0;padding:16px;background:#8a8a8a;font-family:Figtree,system-ui,sans-serif}
+h2{color:#fff;font:700 18px Figtree;margin:18px 0 8px}
+.pair{display:flex;gap:14px;flex-wrap:wrap}
+.m{flex:1 1 640px;background:var(--bg);color:var(--ink);border-radius:14px;padding:14px;border:1px solid var(--line)}
+.lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:nowrap}
+.t{font:600 19px Fraunces,Georgia,serif;margin-right:auto;white-space:nowrap}
+.b{border:1px solid var(--line);background:var(--soft);color:var(--ink);border-radius:10px;padding:8px 12px;font:700 13px Figtree;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.b.on{background:var(--teal);color:var(--tink);border-color:var(--teal)}
+.b.ok{color:var(--teal)}
+.b.on.ok{color:var(--tink)}
+.play{background:var(--play);color:var(--bg);border-radius:999px;padding:8px 14px;font:700 13px Figtree;white-space:nowrap}
+.go{background:var(--teal);color:var(--tink);border-radius:10px;padding:9px 14px;font:700 13px Figtree;white-space:nowrap}
+.ic{font-size:12px}
+.sw{display:flex;border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px;flex:1}
+.sw div{flex:1;text-align:center;padding:8px 0;border-radius:9px;font:700 13px Figtree;color:var(--muted);display:flex;justify-content:center;gap:6px}
+.sw div.on{background:var(--teal);color:var(--tink)}
+.tg{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:15px;background:var(--card)}
+.tg.on{background:var(--soft);border-color:var(--teal)}
+.grid{margin-top:12px;height:46px;border:1px dashed var(--line);border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:12px}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+</style></head><body><h2>A (redo) · Levels + Approve on top, sound + Play at the bottom</h2><div class="pair"><div class="m L"><div class="lbl">Light</div><div class="row"><span class="t">Joyful, Joyful</span>
+  <span class="b ok">✓ Level 1 <span class="ic">🔓</span></span><span class="b on">Level 2 <span class="ic">🔒</span></span><span class="b">Level 3 <span class="ic">🔓</span></span>
+  <span class="go">Approve Level 2</span></div>
+  <div class="grid" style="height:120px">song bars · rows you ticked ✓ are skipped by Play</div>
+  <div class="row" style="justify-content:center;margin-top:12px"><span class="b on">Melody on</span><span class="b on">Chords on</span><span class="play">▶ Play</span></div></div><div class="m D"><div class="lbl">Dark</div><div class="row"><span class="t">Joyful, Joyful</span>
+  <span class="b ok">✓ Level 1 <span class="ic">🔓</span></span><span class="b on">Level 2 <span class="ic">🔒</span></span><span class="b">Level 3 <span class="ic">🔓</span></span>
+  <span class="go">Approve Level 2</span></div>
+  <div class="grid" style="height:120px">song bars · rows you ticked ✓ are skipped by Play</div>
+  <div class="row" style="justify-content:center;margin-top:12px"><span class="b on">Melody on</span><span class="b on">Chords on</span><span class="play">▶ Play</span></div></div></div>
+<p style="color:#fff;font-size:13px">🔒 on a Level = it keeps its chords when a lower level changes (tap to switch) · no verse tabs on chords · Play starts at the first row you have not ticked.</p></body></html>
