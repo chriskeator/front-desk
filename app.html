@@ -935,6 +935,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 /* (Oct 21) one-row folder: the lone row is hidden, its view is shown directly */
 #list .msec.one1 > .chgrid > .mrow{display:none!important}
 #list .msec.one1 > .chgrid{display:none!important}
+.usg .fpers{gap:6px!important}
 </style>
 
 <div id="pop"></div>
@@ -2138,7 +2139,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v202</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v203</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
