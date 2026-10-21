@@ -2115,7 +2115,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v184</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v185</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4644,10 +4644,10 @@ function homeQueue(){
         S = Q.filter(q => q.status === "stuck"), D = Q.filter(q => q.status === "done" && ts(q.doneAt) > day).sort((a, b) => ts(b.doneAt) - ts(a.doneAt));
   if (!W.length && !U.length && !S.length && !D.length) return "";
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
-  const pill = (t, bg, fg) => `<span class="qpill" style="flex:0 0 auto;min-width:74px;text-align:center;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg}">${t}</span>`;
-  const st = q => q.status === "working" ? pill("Working", "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", "#F6D6D3", "#B3261E") : pill("Done", "#DDF1E5", "#2E7D4F");
-  const job = q => q.job ? `<span style="flex:0 0 auto;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099);min-width:48px">${esc(q.job)}</span>` : "";
-  const row = q => `<div class="qrow" data-qrow="${esc(q.id)}"${q.status === "queued" ? ' draggable="true"' : ""} style="${RS}">${st(q)}${job(q)}<b style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(q.title || "")}${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E;white-space:normal">${esc(q.why)}</span>` : ""}</b>${q.status === "queued" && U[0] && U[0].id !== q.id ? `<button type="button" class="tpill" data-qtop="${esc(q.id)}" style="flex:0 0 auto">Top</button>` : ""}</div>`;
+  /* (Oct 20, Chris) ONE pill on the left = status + job stacked; no Top button (press and hold a row, drag it where it goes); title gets the room */
+  const pill = (t, job, bg, fg) => `<span class="qpill" style="flex:0 0 auto;width:74px;text-align:center;padding:3px 6px;border-radius:12px;line-height:1.15;background:${bg};color:${fg}"><b style="display:block;font-size:12px">${t}</b>${job ? `<span style="display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75">${esc(job)}</span>` : ""}</span>`;
+  const st = q => q.status === "working" ? pill("Working", q.job, "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", q.job, "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", q.job, "#F6D6D3", "#B3261E") : pill("Done", q.job, "#DDF1E5", "#2E7D4F");
+  const row = q => `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}<b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span>${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E">${esc(q.why)}</span>` : ""}</b></div>`;
   const n = W.length + U.length;
   return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length} waiting${S.length ? " · " + S.length + " stuck" : ""}</i></span></h4><div class="chgrid qlist">${W.concat(U, S, D).map(row).join("")}</div></div>`; }
 function qMove(id, beforeId){ const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -4655,15 +4655,26 @@ function qMove(id, beforeId){ const U = (queueRows || []).filter(q => q.status =
   let o = !cur ? (U.length ? (U[U.length - 1].order || 0) + 1 : 0) : prev ? ((prev.order || 0) + (cur.order || 0)) / 2 : (cur.order || 0) - 1;
   if (prev && prev.id === id) return; const me = U.find(q => q.id === id); if (me) me.order = o;
   db.collection("queue").doc(id).update({order: o}).catch(() => {}); liveRender(); }
-document.addEventListener("click", e => { const b = e.target.closest("[data-qtop]"); if (!b) return; e.preventDefault(); e.stopPropagation();
-  const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)); if (U[0]) qMove(b.dataset.qtop, U[0].id); }, true);
+/* (Oct 20, Chris) press and hold a queued row (0.35 s), drag it up/down, let go = it lands there (phone + computer) */
 let qDrag = null;
-document.addEventListener("dragstart", e => { const r = e.target.closest && e.target.closest('.qrow[draggable="true"]'); if (!r) return; qDrag = r.dataset.qrow; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", qDrag); } catch (x) {} });
-document.addEventListener("dragover", e => { if (qDrag && e.target.closest && e.target.closest(".qrow")) e.preventDefault(); });
-document.addEventListener("drop", e => { if (!qDrag) return; const r = e.target.closest && e.target.closest(".qrow"); const id = qDrag; qDrag = null; if (!r || r.dataset.qrow === id) return; e.preventDefault();
-  const tgt = (queueRows || []).find(q => q.id === r.dataset.qrow); if (!tgt || tgt.status !== "queued") { const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)); if (U[0]) qMove(id, U[0].id); return; }
-  qMove(id, tgt.id); });
-document.addEventListener("dragend", () => { qDrag = null; });
+document.addEventListener("pointerdown", e => { const r = e.target.closest && e.target.closest(".qrow.qdrag"); if (!r || e.button > 0) return;
+  const d = {id: r.dataset.qrow, el: r, y0: e.clientY, x0: e.clientX, on: false, pid: e.pointerId};
+  d.t = setTimeout(() => { d.on = true; r.style.position = "relative"; r.style.zIndex = 5; r.style.background = "var(--card,#2a2d31)"; r.style.boxShadow = "0 4px 14px rgba(0,0,0,.35)"; try { navigator.vibrate && navigator.vibrate(15); } catch (x) {} }, 350);
+  qDrag = d; });
+document.addEventListener("pointermove", e => { const d = qDrag; if (!d) return;
+  if (!d.on) { if (Math.abs(e.clientY - d.y0) > 8 || Math.abs(e.clientX - d.x0) > 8) { clearTimeout(d.t); qDrag = null; } return; }
+  fdPress = true; clearTimeout(fdPressT); fdPressT = setTimeout(fdRelease, 4000);
+  d.el.style.transform = `translateY(${e.clientY - d.y0}px)`; d.y = e.clientY; });
+document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest(".qrow.qdrag")) e.preventDefault(); });
+document.addEventListener("touchmove", e => { if (qDrag && qDrag.on) e.preventDefault(); }, {passive: false});
+const qEnd = e => { const d = qDrag; qDrag = null; if (!d) return; clearTimeout(d.t); if (!d.on) return;
+  d.el.style.transform = ""; d.el.style.boxShadow = ""; d.el.style.zIndex = ""; d.el.style.background = "";
+  if (e && e.type === "pointercancel") return; e && e.preventDefault && e.preventDefault();
+  const y = d.y == null ? d.y0 : d.y, U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0));
+  const rows = [...document.querySelectorAll(".qrow.qdrag")].filter(r => r !== d.el);
+  const before = rows.find(r => { const b = r.getBoundingClientRect(); return y < b.top + b.height / 2; });
+  if (before) qMove(d.id, before.dataset.qrow); else if (U.length && U[U.length - 1].id !== d.id) qMove(d.id, null); };
+document.addEventListener("pointerup", qEnd); document.addEventListener("pointercancel", qEnd);
 function homeShorts(){
   if (shBoard === null) fdShLoad();
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
