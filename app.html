@@ -2115,7 +2115,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v185</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v186</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4649,7 +4649,13 @@ function homeQueue(){
   const st = q => q.status === "working" ? pill("Working", q.job, "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", q.job, "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", q.job, "#F6D6D3", "#B3261E") : pill("Done", q.job, "#DDF1E5", "#2E7D4F");
   const row = q => `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}<b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span>${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E">${esc(q.why)}</span>` : ""}</b></div>`;
   const n = W.length + U.length;
-  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length} waiting${S.length ? " · " + S.length + " stuck" : ""}</i></span></h4><div class="chgrid qlist">${W.concat(U, S, D).map(row).join("")}</div></div>`; }
+  /* (Oct 20, Chris "Ask me every time"): Shorts renders wait for night unless Chris taps Run now (sets dayOk on each waiting one) */
+  const NK = {"words-make": 1, "final-make": 1}, hr = new Date().getHours(), NW = hr >= 6 ? U.filter(q => NK[q.kind] && !q.dayOk) : [];
+  const ask = NW.length ? `<div class="qrow" style="${RS};background:#F0C75A22"><span style="flex:1;min-width:0;font-size:14px">${NW.length} Shorts render${NW.length > 1 ? "s" : ""} wait for tonight</span><button type="button" class="tpill" data-qdayok="1" style="flex:0 0 auto;background:#F0C75A;color:#3a2a00;font-weight:700">Run now</button></div>` : "";
+  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length} waiting${S.length ? " · " + S.length + " stuck" : ""}</i></span></h4><div class="chgrid qlist">${ask}${W.concat(U, S, D).map(row).join("")}</div></div>`; }
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qdayok]"); if (!b) return; e.preventDefault(); e.stopPropagation();
+  (queueRows || []).filter(q => q.status === "queued" && (q.kind === "words-make" || q.kind === "final-make") && !q.dayOk).forEach(q => { q.dayOk = true; db.collection("queue").doc(q.id).update({dayOk: true}).catch(() => {}); });
+  liveRender(); }, true);
 function qMove(id, beforeId){ const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0));
   const i = U.findIndex(q => q.id === beforeId), prev = i > 0 ? U[i - 1] : null, cur = U[i];
   let o = !cur ? (U.length ? (U[U.length - 1].order || 0) + 1 : 0) : prev ? ((prev.order || 0) + (cur.order || 0)) / 2 : (cur.order || 0) - 1;
