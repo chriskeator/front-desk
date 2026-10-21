@@ -1580,6 +1580,8 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .b{height:98px}
 #songchk .b .t,#songchk .e{height:20px!important}#songchk .g{height:20px}
 #songchk .b .off,#songchk .b .offl,#songchk .st{top:20px}
+/* (Oct 21, Chris) the grey hatched part of a short bar (pickup / lead-in bar) drags: open or close it, snaps to beats; .eh = full-height grab strip on the hatch edge */
+#songchk .b .off,#songchk .b .offl{pointer-events:auto!important;cursor:ew-resize}#songchk .b .eh{position:absolute;top:20px;bottom:0;width:12px;cursor:ew-resize;z-index:3;touch-action:none}#songchk .b .eh[data-side="L"]{margin-left:-12px}
 #songchk .b .gr{top:20px;height:16px}
 #songchk .b .ln{top:36px;height:32px}
 #songchk .b .ly{top:68px}
@@ -1640,7 +1642,7 @@ let SNAP=null,CM=false,CS=false,VER=1,VS=[],VW={},LVK='easy',cPick=null,chSel=[]
 const RKF=()=>CS?'rowsOk_'+LF[LVK]:VER>1?'rowsOk_v'+VER:'rowsOk';   /* (Oct 20, Chris) verse 2+ rows start unchecked: each verse has its own row checks */   /* (Oct 20, Chris) row checks: melody has its own, each chords level has its own */
 const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM,lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
-const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
+const save=()=>{startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
 const hint=t=>{if(H)H.textContent=t};const lo=()=>sel.length?Math.min(...sel):-1,hi=()=>sel.length?Math.max(...sel):-1;
 const FR={0:'',0.25:'¼',0.5:'½',0.75:'¾'};
 function len(n){if(MT===6)return n+' eighth'+(n===1?'':'s');const b=n/SB,w=Math.floor(b),f=b-w;return (w||'')+(FR[f]!=null?FR[f]:'')+' beat'+(b===1?'':'s')}
@@ -1669,7 +1671,7 @@ const i=v;
 const b=B[i],d=document.createElement('div');d.className='b'+(drag&&drag.ids&&drag.ids.has(b.id)?' slot':sel.includes(i)?' s':'')+(b.m?' m':'');d.dataset.i=i;d.dataset.id=b.id;
 const a0=b.a||0,num=drag&&drag.k==='move'&&drag.moved?bars.findIndex(x=>x.id===(b.src||b.id)):i;let h='<div class="t">'+lab(num)+(b.n-a0<N?' · '+len(b.n-a0):'')+(b.m?' · muted':'')+'</div>';
 for(let k=1;k<N;k++)h+='<div class="k'+(k%SB?' sub':'')+'" style="left:'+(k/N*100)+'%"></div>';
-if(b.n<N)h+='<div class="off" style="width:'+((N-b.n)/N*100)+'%"></div>';if(a0>0)h+='<div class="offl" style="width:'+(a0/N*100)+'%"></div>';
+if(b.n<N)h+='<div class="off" data-side="R" data-j="'+i+'" style="width:'+((N-b.n)/N*100)+'%"></div><div class="eh" data-side="R" data-j="'+i+'" style="left:'+(b.n/N*100)+'%"></div>';if(a0>0)h+='<div class="offl" data-side="L" data-j="'+i+'" style="width:'+(a0/N*100)+'%"></div><div class="eh" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div>';
 h+='<div class="e" data-side="L" data-j="'+i+'" style="left:'+(a0/N*100)+'%"></div><div class="e" data-side="R" data-j="'+i+'" style="left:calc('+(b.n/N*100)+'% - 5px)"></div>';
 if(CLIP&&pastePos===i)h+='<div class="pp" style="left:-2px"></div>';if(CLIP&&pastePos===i+1&&i===B.length-1)h+='<div class="pp" style="right:-2px"></div>';(b.notes||[]).forEach((q,ni)=>{const pk=(notePick&&notePick.b===b.id&&notePick.n===ni)||noteSel.includes(q);if(!q.id||SEEN.has(q.id))q.id=++id;SEEN.add(q.id);h+='<div class="nt'+(q.w?' w':'')+(drag&&drag.k==='nmove'&&drag.moved&&drag.q===q?' slot':pk?' np':'')+'" data-qid="'+q.id+'" data-nb="'+i+'" data-nn="'+ni+'" style="left:'+(q.s/N*100)+'%;width:'+(q.l/N*100)+'%"><div class="ne l"></div><span class="tx '+(q.o<0?'lo':q.o>0?'hi':'')+'">'+(q.w?String(q.d).replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'):[...String(q.d)].map(c=>'<i style="width:'+(100/q.l)+'%">'+(c===' '?' ':c.replace(/[<&]/g,x=>x==='<'?'&lt;':'&amp;'))+'</i>').join(''))+'</span><div class="ne r"></div></div>'});
 h+='<div class="gr"></div><div class="ln"></div><div class="ly"></div>';if(CM){h+='<div class="cr"></div>';((b.ch||{})[LF[LVK]]||[]).forEach(c=>{h+='<div class="chd'+(c.cont?' cont':'')+(cPick===c||chSel.includes(c)?' cp':'')+'" data-cb="'+i+'" style="left:'+(c.s/N*100)+'%;width:'+(c.l/N*100)+'%">'+(c.cont?'&ndash;':esc(c.k)+'<div class="ne l"></div><div class="ne r"></div>')+'</div>'})}   /* (Oct 20, Chris) chords = gold blocks like the melody blocks, in their own row UNDER the melody; held over a bar line = a '-' block */if(startAt&&startAt.i===i&&!startAt.whole)h+='<div class="st" style="left:'+(startAt.k/N*100)+'%"></div>';
@@ -1701,6 +1703,7 @@ if(t.closest&&t.closest('.row.ok')&&!t.closest('.rok')){hint('Approved row: lock
 if(CM&&t.closest&&t.closest('.chd')&&!CED()){hint('View only: this level is not the one being checked, so its chords cannot change.');return}
 if(t.closest&&t.closest('.chd')){hint(t.classList.contains('ne')?'Drag: stretch this chord':'Click: pick. Drag: move. Drag an edge: stretch. Double-click: type. Delete: remove.');return}
 if(t.classList.contains('g'))hint('Click: add a new bar here');
+else if(t.classList.contains('off')||t.classList.contains('offl')||t.classList.contains('eh'))hint('Drag the grey part: open or close this short bar (snaps to beats). Then double-click the new space to add a box.');
 else if(t.classList.contains('e')&&t.dataset.j==='lead')hint('Drag: make the lead-in longer or shorter (snaps to '+(BT===4?'16th notes':'8th notes')+')');
 else if(t.classList.contains('e'))hint(t.dataset.side==='L'?'Drag: move where this bar starts (snaps to '+(BT===4?'16th notes':'8th notes')+')':'Drag: shrink or grow this bar (snaps to '+(BT===4?'16th notes':'8th notes')+'); past the next bar adds bars');
 else if(t.closest('[data-add]'))hint('Click: add a bar at the end (a new row starts by itself)');
@@ -1722,6 +1725,7 @@ noteSel=[q];chSel=[];SE.anchor=q;const was=notePick&&notePick.b===bb.id&&notePic
 const nr=nt.getBoundingClientRect();drag={k:'nmove',bi,ni,q,was,x0:e.clientX,y0:e.clientY,ox:e.clientX-nr.left,oy:e.clientY-nr.top,w:nr.width,h:nr.height,moved:false};light();return}
 if(t.closest('input'))return;
 if(t.classList.contains('e')&&t.dataset.j==='lead'){drag={k:'lead'};document.body.style.cursor='ew-resize';return}
+if(t.classList.contains('off')||t.classList.contains('offl')||t.classList.contains('eh')){drag={k:'size',j:+t.dataset.j,side:t.dataset.side,hatch:1};document.body.style.cursor='ew-resize';return}
 if(t.classList.contains('e')){drag={k:'size',j:+t.dataset.j,side:t.dataset.side};document.body.style.cursor='ew-resize';return}
 notePick=null;const b=t.closest('.b[data-i]');if(b){const i=+b.dataset.i,rr=b.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();k=Math.max(bb.a||0,Math.min(bb.n-1,k));const was=sel.length===1&&sel[0]===i&&!e.shiftKey;if(t.classList.contains('t'))startAt={i,k:bb.a||0,whole:true};   /* top strip = the whole bar, no beat */if(PL){stopPlay();setTimeout(startPlay,0)}if(e.shiftKey&&sel.length){const a=Math.min(lo(),i),z=Math.max(hi(),i);sel=[];for(let q=a;q<=z;q++)sel.push(q);draw();return}if((e.metaKey||e.ctrlKey)&&t.classList.contains('t')){const k=sel.indexOf(i);if(k<0)sel.push(i);else sel.splice(k,1);sel.sort((x,y)=>x-y);draw();hint(sel.length+' bar'+(sel.length===1?'':'s')+' picked');return}   /* (Oct 20, Chris) Windows/Ctrl+click a bar number = add or take off one bar */if(!t.classList.contains('t')){startAt={i,k};noteSel=[];chSel=[];cPick=null;notePick=null;drag={k:'band',x0:e.clientX,y0:e.clientY};   /* (Oct 21, Chris) a drag across empty space picks every box it touches: numbers, words, chords, any bar */light();return}   /* number / lyric lanes: only set where Play starts */
 pastePos=(e.clientX-rr.left)/rr.width<.5?i:i+1;if(!sel.includes(i))sel=[i];drag={k:'move',x0:e.clientX,y0:e.clientY,moved:false,was,ox:e.clientX-rr.left,oy:e.clientY-rr.top,w:rr.width,h:rr.height};light();return}
@@ -1731,7 +1735,7 @@ if(T.classList.contains('t')&&T.parentNode.dataset.i!=null){const i=+T.parentNod
 if(T.closest('.gr')||T.closest('.row.ok'))return;   /* (Oct 20) locked row */
 const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.contains('w'));   /* (Oct 20, Chris: "edit text the same way I edit chords") double-click a word = type over it, on the melody AND chords steps (one song doc: a change shows on both); double-click an empty lyric spot = a new word */
 const nt=T.closest('.nt');if(nt){editNote(+nt.dataset.nb,+nt.dataset.nn);return}
-const b=T.closest('.b[data-i]');if(!b||T.classList.contains('t')||T.classList.contains('e'))return;const i=+b.dataset.i,bb=bars[i],r=b.getBoundingClientRect(),N=S();
+const b=T.closest('.b[data-i]');if(!b||T.classList.contains('t')||T.classList.contains('e')||T.classList.contains('off')||T.classList.contains('offl')||T.classList.contains('eh'))return;const i=+b.dataset.i,bb=bars[i],r=b.getBoundingClientRect(),N=S();
 let st=Math.floor((e.clientX-r.left)/r.width*N);st=Math.max(bb.a||0,Math.min(bb.n-1,st));bb.notes=bb.notes||[];if(bb.notes.some(o=>!o.w===!lw&&st>=o.s&&st<o.s+o.l))return;
 const nx=bb.notes.filter(o=>!o.w===!lw&&o.s>st).reduce((a,o)=>Math.min(a,o.s),bb.n);const l=Math.min(S()/(DOC.meter||4),nx-st);   /* (Oct 21, Chris) a new box = 1 beat where he clicked, never the whole gap; he stretches it */if(l<1)return;
 const prev=lw?null:bars.slice(0,i+1).flatMap(x=>(x.notes||[]).filter(o=>!o.w&&!/^\s*-+\s*$/.test(String(o.d)))).pop();save();const q={s:st,l,d:lw?'':prev?prev.d:'1',o:lw?0:prev?prev.o||0:0};if(lw)q.w=1;bb.notes.push(q);bb.notes.sort((a,b)=>a.s-b.s);const ni=bb.notes.indexOf(q);notePick={b:bb.id,n:ni};sel=[];draw();editNote(i,ni)});
@@ -1783,6 +1787,8 @@ const ok=tgt.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.q.l<=B.
 const oc=drag.oc||[],tc=oc.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {c:o.c,bi,s:g-bi*N}}),mvc=new Set(oc.map(o=>o.c)),okc=tc.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.c.l<=B.n&&!lvlOf(B).some(o=>!o.cont&&!mvc.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.c.l)&&!tc.some(u=>u!==t&&u.bi===t.bi&&t.s<u.s+u.c.l&&u.s<t.s+t.c.l)});if(!ok||!okc)return;
 drag.d=d;drag.orig.forEach(o=>{bars.forEach(b=>{if(b.notes){const k=b.notes.indexOf(o.q);if(k>=0)b.notes.splice(k,1)}})});tgt.forEach(t=>{t.q.s=t.s;const B=bars[t.bi];B.notes=B.notes||[];B.notes.push(t.q)});if(oc.length){oc.forEach(o=>{bars.forEach(b=>{const L=lvlOf(b),k=L.indexOf(o.c);if(k>=0)L.splice(k,1)})});tc.forEach(t=>{t.c.s=t.s;lvl(bars[t.bi]).push(t.c)})}bars.forEach(b=>(b.notes||[]).sort((x,y)=>x.s-y.s));draw();hint('Moving '+(tgt.length+tc.length)+' boxes')}
 else if(drag.k==='lead'){const el=R.querySelector('.b.lead');if(!el)return;const r=el.getBoundingClientRect(),N=S();let a=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N);a=Math.max(0,Math.min(N,a));drag.a=a;draw({leadA:a});hint(a>=N?'Let go: no lead-in':'Let go: lead-in = '+len(N-a))}
+else if(drag.k==='size'&&drag.hatch){const el=R.querySelector('.b[data-i="'+drag.j+'"]');if(!el)return;const r=el.getBoundingClientRect(),N=S(),q=Q(),C=bars.map(b=>({...b})),b=C[drag.j];let f=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N/q)*q;
+if(drag.side==='R')b.n=Math.max((b.a||0)+q,Math.min(N,f));else b.a=Math.max(0,Math.min(b.n-q,f));drag.P={C,sel:[drag.j],msg:'Let go: '+lab(drag.j)+' = '+len(b.n-(b.a||0))};const keep=sel;sel=[drag.j];draw(C);sel=keep;hint(drag.P.msg)}
 else if(drag.k==='size'){const P=spot(e.clientX,e.clientY);if(!P)return;const Q=sizeTo(P,drag.j,drag.side);drag.P=Q;const keep=sel;sel=Q.sel;draw(Q.C);sel=keep;hint(Q.msg)}});
 function gStart(e,bw){save();drag={k:'ngroup',x0:e.clientX,bw,orig:noteSel.map(x=>({q:x,bi:bars.findIndex(b=>(b.notes||[]).includes(x)),s:x.s})),oc:chSel.map(c=>({c,bi:bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c)),s:c.s}))}}
 function cancelDrag(){if(drag&&drag.orig)bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})});delete document.documentElement.dataset.drag;ED.querySelectorAll('.ghost').forEach(x=>x.remove());drag=null;document.body.style.cursor='';showIns(null);draw()}
@@ -1793,7 +1799,7 @@ else if(D.k==='move'&&D.moved){draw()}
 else if(D.k==='nmove'&&!D.moved&&D.was){notePick=null;light()}
 else if(D.k==='nmove'&&!D.moved){light()}
 else if(D.k==='nmove'||D.k==='nsize'){if(D.gh)D.gh.remove();const bi=bars.findIndex(b=>(b.notes||[]).includes(D.q));if(D.q&&bi>=0)notePick={b:bars[bi].id,n:bars[bi].notes.indexOf(D.q)};draw()}
-else if((D.k==='pick'||D.k==='move')&&D.was&&!D.moved){if(PL)stopPlay();sel=[];startAt=null;pastePos=null;light();hint('Unpicked')}
+else if((D.k==='pick'||D.k==='move')&&D.was&&!D.moved){sel=[];startAt=null;pastePos=null;light();hint('Unpicked')}
 else if(D.k==='ngroup'){if(D.oc&&D.oc.length)renorm();draw()}
 else if(D.k==='lead'&&D.a!=null){save();leadA=D.a;draw()}
 else if(D.k==='size'&&D.P){save();bars=D.P.C;sel=D.P.sel;draw()}else if((D.k==='move'&&!D.moved)||D.k==='band')light();else draw()});
@@ -1833,8 +1839,8 @@ if((e.key==='Backspace'||e.key==='Delete')&&sel.length){stop();e.preventDefault(
 if(mod&&(String(e.key).toLowerCase()==='z'||e.code==='KeyZ')){stop();e.preventDefault();if(!hist.length){hint('Nothing to undo');return}const o=JSON.parse(hist.pop());bars=o.bars;sel=o.sel;if(o.leadA!=null)leadA=o.leadA;draw();hint('Back one step')}},true);
 addEventListener('resize',()=>{if(ON&&!drag)draw()});
 /* PLAY: the desk's real piano (scPiano, the Lab samples) for the numbers, the prototype's click on every beat */
-let PL=null,AC=null;
-function click(t,hi){t+=.018;/* Oct 20 Chris: "metronome not lining up with the piano, a hair off": same 18ms nudge as the Lab (piano-engine CLICK_DELAY) so the tick meets the sample's attack */const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.08)}
+let PL=null,AC=null,KG=null,rpT=null,rpBusy=false;
+function click(t,hi){t+=.018;/* Oct 20 Chris: "metronome not lining up with the piano, a hair off": same 18ms nudge as the Lab (piano-engine CLICK_DELAY) so the tick meets the sample's attack */const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(KG&&KG.context===AC?KG:AC.destination);o.start(t);o.stop(t+0.08)}
 /* where each bar starts on the song's clock (16ths), bars back to back */
 function starts(){const st=[];let T=0;bars.forEach(b=>{st.push(T);T+=b.n-(b.a||0)});st.push(T);return st}
 const isHold=q=>!q.w&&/^\s*-+\s*$/.test(String(q.d));
@@ -1847,21 +1853,27 @@ const T=toks(q);T.forEach((t,k)=>{const end=Math.min(k+1<T.length?T[k+1].at:q.s+
 last={t:g0+t.at,len:end-t.at,mid:60+DEG[t.m[2]]+(/[b♭]/.test(t.m[1])?-1:/[#♯]/.test(t.m[1])?1:0)+12*(q.o||0),q,one:T.length===1&&k===0};out.push(last)})})});return out}
 /* (Oct 20, Chris) Play starts at the first row that is not approved yet (0 = the top when every row is approved) */
 function firstOpen(){const r=[...R.querySelectorAll('.row')].find(x=>!x.classList.contains('ok')&&x.querySelector('.b[data-i]'));const f=R.querySelector('.b[data-i]');return r?+r.querySelector('.b[data-i]').dataset.i:f?+f.dataset.i:0}
-async function startPlay(){if(!ON)return;try{AC=new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(x){hint('Sound is blocked here');return}
-const ac=AC,mel=melody();PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop';await scPLoad(mel.map(n=>n.mid).concat(CM?bars.flatMap(b=>((b.ch||{})[LF[LVK]]||[]).flatMap(c=>scChordNotes(c.k))):[]));if(!PL||PL.ac!==ac)return;
-const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,t0=AC.currentTime+0.1,seg=[],st=starts();let t=t0;const okSet=new Set([...R.querySelectorAll('.row.ok .b[data-i]')].map(x=>+x.dataset.i)),selOpen=sel.filter(j=>!okSet.has(j)),from=startAt?startAt.i:selOpen.length?Math.min(...selOpen):firstOpen();   /* (Oct 21, Chris) Play starts at the first row he has NOT ticked: picked bars inside ticked rows never count */
-if(!from&&leadA<N){seg.push({i:'lead',a:leadA,n:N,t});t+=(N-leadA)*step}
-const a0=startAt&&startAt.i===from&&bars[from]?Math.max(bars[from].a||0,startAt.k):bars[from]?bars[from].a||0:0,P0=bars[from]?st[from]+a0-(bars[from].a||0):0,tS=t;
+async function startPlay(lv){if(!ON)return;const OLD=lv?PL:null;if(lv&&!OLD)return;let NA;try{NA=new (window.AudioContext||window.webkitAudioContext)();NA.resume()}catch(x){hint('Sound is blocked here');return}
+if(!lv)AC=NA;const ac=NA,mel=melody();if(!lv){PL={seg:[],nodes:[],ac,wait:true};PB.innerHTML='&#9632; Stop'}await scPLoad(mel.map(n=>n.mid).concat(CM?bars.flatMap(b=>((b.ch||{})[LF[LVK]]||[]).flatMap(c=>scChordNotes(c.k))):[]));if(lv){if(PL!==OLD||!ON){try{ac.close()}catch(x){}return}AC=ac}else if(!PL||PL.ac!==ac)return;
+const N=S(),bpm=(DOC&&DOC.bpm)||100,step=MT===6?60/bpm/2:60/bpm/SB,dl=lv?Math.max(.02,(lv.deadline-performance.now())/1000):.1,t0=AC.currentTime+dl,seg=[],st=starts();let t=t0;const okSet=new Set([...R.querySelectorAll('.row.ok .b[data-i]')].map(x=>+x.dataset.i)),selOpen=sel.filter(j=>!okSet.has(j)),SA=lv||startAt,from=lv?Math.max(0,Math.min(lv.i,bars.length-1)):SA?SA.i:selOpen.length?Math.min(...selOpen):firstOpen();   /* (Oct 21, Chris) Play starts at the first row he has NOT ticked: picked bars inside ticked rows never count */
+if(!lv&&!from&&leadA<N){seg.push({i:'lead',a:leadA,n:N,t});t+=(N-leadA)*step}
+const a0=SA&&SA.i===from&&bars[from]?Math.max(bars[from].a||0,Math.min(bars[from].n-1,SA.k)):bars[from]?bars[from].a||0:0,P0=bars[from]?st[from]+a0-(bars[from].a||0):0,tS=t;
 for(let i=from;i<bars.length;i++){const b=bars[i];if(b.m)continue;const a=i===from?a0:b.a||0;seg.push({i,a,n:b.n,t});t+=(b.n-a)*step}
 if(!seg.length){stopPlay();hint('Nothing to play');return}
-PL={seg,t0,end:t,step,N,nodes:[],ac};
+if(lv){const ot=OLD.ac.currentTime+dl;[OLD.mg,OLD.cg,OLD.kg].forEach(g=>{try{g&&g.gain.setValueAtTime(0,ot)}catch(x){}});setTimeout(()=>{try{OLD.ac.close()}catch(x){}},dl*1000+500)}   /* old plan goes quiet exactly where the new one takes over */
+PL={seg,t0,end:t,step,N,nodes:[],ac};{const kg=AC.createGain();kg.connect(AC.destination);KG=kg;PL.kg=kg}
 const sounding=mel.filter(n=>n.t+n.len>P0);   /* (Oct 20, Chris: 'neither button mutes') melody + chords always scheduled into their own volume; Melody off / Chords off turn it down LIVE */
 const mg=AC.createGain(),cg=AC.createGain();mg.gain.value=(!CM||MON)?1:0;cg.gain.value=CON?1:0;mg.connect(AC.destination);cg.connect(AC.destination);PL.mg=mg;PL.cg=cg;if(CM){const EV=[];seg.forEach(g=>{if(g.i==='lead')return;((bars[g.i].ch||{})[LF[LVK]]||[]).forEach(c=>{const s0=Math.max(c.s,g.a),e0=c.s+c.l;if(e0>s0)EV.push({t:g.t+(s0-g.a)*step,en:g.t+(Math.min(e0,g.n)-g.a)*step,k:c.k,cont:!!c.cont&&s0===c.s})})});EV.sort((a,b)=>a.t-b.t);   /* (Oct 20, Chris: 'I hear a chord on beat 1 of bar 2 but there is none') a chord held over the bar line RINGS ON: only a written chord (or the one sounding where Play starts) strikes */
 const ST=EV.filter((e,j)=>!e.cont||j===0);ST.forEach((e,j)=>{let en=e.en;for(let q=EV.indexOf(e)+1;q<EV.length&&EV[q].cont&&Math.abs(EV[q].t-en)<1e-4;q++)en=EV[q].en;scChordAt(AC,e.t,ST[j+1]?Math.min(en,ST[j+1].t):en,e.k,cg)})   /* rings for its own length, not until the next chord */}sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e,mg)});
 seg.forEach(g=>{for(let k=g.a;k<g.n;k++)if(k%SB===0||k===g.a)click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead')});
-hint('Playing at '+bpm+' BPM'+(from?' from '+lab(from):''));requestAnimationFrame(tick)}
-function stopPlay(){if(!PL)return;const ac=PL.ac;PL=null;try{ac&&ac.close()}catch(x){}if(AC===ac)AC=null;document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());if(PB)PB.innerHTML='&#9654; Play'}
-function tick(){if(!PL||!AC||!PL.end)return;const now=AC.currentTime;if(now>=PL.end){stopPlay();hint('Done');return}
+if(lv){if(!OLD.end)requestAnimationFrame(tick)}else{hint('Playing at '+bpm+' BPM'+(from?' from '+lab(from):''));requestAnimationFrame(tick)}}
+/* (Oct 21, Chris) edit while playing: rebuild the plan from the next 16th after the playhead, same song clock, no stop */
+function liveReplan(){clearTimeout(rpT);rpT=setTimeout(async()=>{if(!ON||!PL||!PL.end||!PL.seg.length)return;if(rpBusy){liveReplan();return}
+const P=PL,now=P.ac.currentTime;let gi=0;P.seg.forEach((x,j)=>{if(x.t<=now)gi=j});let g=P.seg[gi],q=Math.ceil(g.a+Math.max(0,(now-g.t)/P.step)+.2/P.step),i,k,at;
+if(g.i==='lead'||q>=g.n){const ns=P.seg[gi+1];if(!ns)return;i=ns.i;k=ns.a;at=ns.t}else{i=g.i;k=q;at=g.t+(q-g.a)*P.step}
+rpBusy=true;try{await startPlay({i,k,deadline:performance.now()+(at-now)*1000})}finally{rpBusy=false}},60)}
+function stopPlay(){if(!PL)return;clearTimeout(rpT);const ac=PL.ac;PL=null;try{ac&&ac.close()}catch(x){}if(AC===ac)AC=null;document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());if(PB)PB.innerHTML='&#9654; Play'}
+function tick(){if(!PL||!PL.ac||!PL.end)return;const now=PL.ac.currentTime;if(now>=PL.end){stopPlay();hint('Done');return}
 let g=PL.seg[0];for(const x of PL.seg)if(x.t<=now)g=x;const st=g.a+Math.max(0,(now-g.t)/PL.step);
 const el=g.i==='lead'?R.querySelector('.b.lead'):R.querySelector('.b[data-i="'+g.i+'"]');if(el){let ph=el.querySelector('.ph');if(!ph){document.querySelectorAll('#songchk .ph').forEach(x=>x.remove());ph=document.createElement('div');ph.className='ph';el.appendChild(ph);
 const sc=ED.parentNode,r=el.getBoundingClientRect(),sr=sc.getBoundingClientRect();if(r.bottom>sr.bottom)sc.scrollTop+=r.bottom-sr.bottom+8;else if(r.top<sr.top)sc.scrollTop-=sr.top-r.top+8}   /* keep the playing bar in view */
@@ -1897,7 +1909,7 @@ const P={lines:grp(notes),words:grp(words),bars:bars.map(b=>({n:b.n,a:b.a||0})),
 const out=[];C.forEach(c=>{const p=out[out.length-1];if(c.cont&&p&&p.k===c.k&&Math.abs(p.g+p.L-c.g)<1e-6)p.L=r6(p.L+c.L);else out.push({g:c.g,L:c.L,k:c.k})});P[f]=grp(out)});
 return P}
 function sig(){return JSON.stringify([bars.map(b=>[b.n,b.a||0,(b.notes||[]).map(q=>[q.s,q.l,q.d,q.o||0,q.w?1:0]),b.ch||0]),leadA,zi()])}
-function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;lastSig=s;clearTimeout(saveT);saveT=setTimeout(flush,500)}
+function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;lastSig=s;if(PL)liveReplan();   /* (Oct 21, Chris) an edit while the song plays never stops it: the not-yet-played part is re-planned from the playhead */clearTimeout(saveT);saveT=setTimeout(flush,500)}
 /* (Oct 20, Chris: "when closing out of it" his open editor saved its old copy over Cadence's newer fix) never overwrite a song that changed
    since this editor loaded it: compare the db's 'updated' with the one this editor last saw; changed = do not save, say so */
 let seSeen=null,seMine=new Set();
@@ -2279,7 +2291,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v229</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v230</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
