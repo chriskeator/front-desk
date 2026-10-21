@@ -1733,7 +1733,7 @@ const lw=!!T.closest('.ly')||(T.closest('.nt')&&T.closest('.nt').classList.conta
 const nt=T.closest('.nt');if(nt){editNote(+nt.dataset.nb,+nt.dataset.nn);return}
 const b=T.closest('.b[data-i]');if(!b||T.classList.contains('t')||T.classList.contains('e'))return;const i=+b.dataset.i,bb=bars[i],r=b.getBoundingClientRect(),N=S();
 let st=Math.floor((e.clientX-r.left)/r.width*N);st=Math.max(bb.a||0,Math.min(bb.n-1,st));bb.notes=bb.notes||[];if(bb.notes.some(o=>!o.w===!lw&&st>=o.s&&st<o.s+o.l))return;
-const nx=bb.notes.filter(o=>!o.w===!lw&&o.s>st).reduce((a,o)=>Math.min(a,o.s),bb.n);st=bb.notes.filter(o=>!o.w===!lw&&o.s+o.l<=st).reduce((a,o)=>Math.max(a,o.s+o.l),bb.a||0);const l=nx-st;   /* fill the whole empty space */if(l<1)return;
+const nx=bb.notes.filter(o=>!o.w===!lw&&o.s>st).reduce((a,o)=>Math.min(a,o.s),bb.n);const l=Math.min(S()/(DOC.meter||4),nx-st);   /* (Oct 21, Chris) a new box = 1 beat where he clicked, never the whole gap; he stretches it */if(l<1)return;
 const prev=lw?null:bars.slice(0,i+1).flatMap(x=>(x.notes||[]).filter(o=>!o.w&&!/^\s*-+\s*$/.test(String(o.d)))).pop();save();const q={s:st,l,d:lw?'':prev?prev.d:'1',o:lw?0:prev?prev.o||0:0};if(lw)q.w=1;bb.notes.push(q);bb.notes.sort((a,b)=>a.s-b.s);const ni=bb.notes.indexOf(q);notePick={b:bb.id,n:ni};sel=[];draw();editNote(i,ni)});
 }
 window.addEventListener('pointermove',e=>{if(!ON||!drag)return;
@@ -1751,10 +1751,10 @@ const el=[...R.querySelectorAll('.b[data-id]')].find(x=>qx>=x.offsetLeft&&qx<x.o
 const g=k>=drag.g?k+1:k;if(g===drag.g)return;const m=el.offsetWidth*.12;if(k>=drag.g?qx<el.offsetLeft+m&&qy<el.offsetTop+el.offsetHeight&&qy>=el.offsetTop&&el.offsetTop===R.querySelector('.b.slot').offsetTop:qx>el.offsetLeft+el.offsetWidth-m&&el.offsetTop===R.querySelector('.b.slot').offsetTop)return;drag.at=performance.now();drag.g=g;
 const P=drag.others.slice();P.splice(g,0,...drag.items);const keep=sel;sel=[];flip(()=>draw(P));sel=keep;ED.appendChild(drag.gh);hint(drag.copy?'Let go: copy here':'Let go: move here')}
 else if(drag.k==='nsize'){const bb=bars[drag.bi],q=drag.q,o=drag.nb,el=R.querySelector('.b[data-i="'+drag.bi+'"]'),r=el.getBoundingClientRect(),N=S(),st=Math.round((e.clientX-r.left-el.clientLeft)/el.clientWidth*N);
-if(drag.side==='R'){let end=Math.max(q.s+1,Math.min(bb.n,st));if(o){end=Math.min(end,drag.nbE-1);o.s=Math.max(drag.nbS,end);o.l=drag.nbE-o.s}q.l=end-q.s}
-else{const end=q.s+q.l;let ns=Math.max(bb.a||0,Math.min(end-1,st));if(o){ns=Math.max(ns,drag.nbS+1);o.l=Math.min(drag.nbE,ns)-o.s}q.s=ns;q.l=end-ns}
+if(drag.side==='R'){const lim=o?drag.nbS:bb.n;let end=Math.max(q.s+1,Math.min(lim,st));q.l=end-q.s}   /* (Oct 21, Chris) stretch stops at the neighbour's edge, never changes it */
+else{const end=q.s+q.l;let ns=Math.max(o?drag.nbE:(bb.a||0),Math.min(end-1,st));q.s=ns;q.l=end-ns}
 [q,o].forEach(x=>{if(!x)return;const ne=R.querySelector('.nt[data-qid="'+x.id+'"]');if(ne){ne.style.left=(x.s/N*100)+'%';ne.style.width=(x.l/N*100)+'%'}});   /* resize the boxes themselves: no rebuild, no flash */
-hint(o&&(drag.side==='R'?o.s>drag.nbS:o.s+o.l<drag.nbE)?'The next block gets shorter':'Block: '+len(q.l))}
+hint('Block: '+len(q.l))}
 else if(drag.k==='nmove'){if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<3)return;const er=ED.getBoundingClientRect(),q=drag.q,N=S();
 if(!drag.moved){drag.moved=true;save();drag.orig=bars.map(b=>(b.notes||[]).map(x=>({q:x,s:x.s,l:x.l})));drag.home={bi:bars.findIndex(b=>(b.notes||[]).includes(q)),s:q.s};
 const src=R.querySelector('.nt[data-qid="'+q.id+'"]');const gh=src.cloneNode(true);gh.classList.remove('np');gh.classList.add('ghost');gh.style.width=drag.w+'px';gh.style.height=drag.h+'px';gh.style.margin='0';ED.appendChild(gh);drag.gh=gh;src.classList.add('slot')}
@@ -1768,10 +1768,8 @@ let ns=Math.max(dst.a||0,Math.min(dst.n-1,dir>0?Math.floor(P.f*N+0.7):dir<0?Math
 /* (v59 'no pushing' replaced Oct 20: the dragged box wins, the crowded box shrinks; nothing ever moves to another spot) */
 /* (Oct 20, Chris, 2nd: "whatever I'm dragging overrides whatever I'm putting it on") the dragged box lands where it is dropped and the box it crowds SHRINKS:
    a box starting before it ends where it starts; a box starting under it starts where it ends. Only a box with the very same start, or one it covers whole, stays put (then the dragged box stops short of it). */
-const same=dst.notes.filter(o=>!o.w===!q.w);let ok=!same.some(o=>o.s===ns);
-if(ok){let L=Math.min(q.l,dst.n-ns);
-same.forEach(o=>{if(o.s>ns&&o.s<ns+L&&o.s+o.l<=ns+L)L=o.s-ns});   /* never swallow a whole box */
-q.s=ns;q.l=L;same.forEach(o=>{const e=o.s+o.l;if(o.s<ns&&e>ns)o.l=ns-o.s;else if(o.s>ns&&o.s<ns+L){o.s=ns+L;o.l=e-o.s}})}
+const same=dst.notes.filter(o=>!o.w===!q.w);let ok=true;const L=Math.min(q.l,dst.n-ns);ok=!same.some(o=>o!==q&&o.s<ns+L&&ns<o.s+o.l);   /* (Oct 21, Chris) a drop on a taken spot is refused: the box snaps back, nothing is shrunk */
+if(ok){q.s=ns;q.l=L}else hint('That spot is taken');
 if(ok)dst.notes.push(q);else{bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})})}
 bars.forEach(b=>(b.notes||[]).sort((a,c)=>a.s-c.s));
 const sig=JSON.stringify(bars.map(b=>(b.notes||[]).map(x=>[x.id,x.s,x.l])));if(sig===drag.sig)return;drag.sig=sig;
@@ -1803,7 +1801,7 @@ const DEG={'1':0,'2':2,'3':4,'4':5,'5':7,'6':9,'7':11};
 function editNote(bi,ni){const el=R.querySelector('.nt[data-nb="'+bi+'"][data-nn="'+ni+'"]');if(!el)return;const q=bars[bi].notes[ni],sp=el.querySelector('span');if(!sp){const ex=el.querySelector('input');if(ex)ex.focus();return}   /* (Oct 21) clicked again while open: just focus the open box, never a crash */const inp=document.createElement('input');inp.id='se-nin';inp.value=q.d;sp.replaceWith(inp);
 const cv=document.createElement('canvas').getContext('2d');cv.font='400 12px ui-monospace, Menlo, monospace';const cw=cv.measureText('0').width,stp=el.clientWidth/q.l;el.classList.add('ed');Object.assign(inp.style,{letterSpacing:q.w?'0px':Math.max(0,stp-cw)+'px',textIndent:'1px',outline:'none',width:(el.clientWidth+stp*2)+'px',background:'transparent'});   /* same font and size as the box: nothing grows */   /* one character = one 16th, like graph paper */
 inp.focus();inp.select();
-const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.replace(/\s+$/,'');if(ok){if(v.trim()){q.d=v;const B=bars[bi];let room=B.n-q.s;B.notes.forEach(o=>{if(o!==q&&!o.w===!q.w&&o.s>q.s)room=Math.min(room,o.s-q.s)});if(!q.w)q.l=Math.max(q.l,Math.min(room,v.length))}else{const L=bars[bi].notes,k=L.indexOf(q);if(k>=0)L.splice(k,1);notePick=null}}if(ON)draw()};
+const done=ok=>{if(inp.done)return;inp.done=1;const v=inp.value.replace(/\s+$/,'');if(ok){if(v.trim()){q.d=v;const B=bars[bi];let room=B.n-q.s;B.notes.forEach(o=>{if(o!==q&&!o.w===!q.w&&o.s>q.s)room=Math.min(room,o.s-q.s)});}   /* (Oct 21, Chris) typing never changes the box size */else{const L=bars[bi].notes,k=L.indexOf(q);if(k>=0)L.splice(k,1);notePick=null}}if(ON)draw()};
 inp.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')done(true);if(e.key==='Escape')done(false);
 if(e.key==='Tab'){e.preventDefault();   /* (Oct 16 night, Chris) Tab = save and jump to the NEXT number box (Shift+Tab = back), no mouse */
 const all=[];bars.forEach(B=>(B.notes||[]).filter(o=>!!o.w===!!q.w).sort((x,y)=>x.s-y.s).forEach(o=>all.push(o)));const k=all.indexOf(q),nx=all[k+(e.shiftKey?-1:1)];
@@ -2281,7 +2279,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v227</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v228</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
