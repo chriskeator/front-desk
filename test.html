@@ -2151,7 +2151,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v195</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v196</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4238,8 +4238,10 @@ document.addEventListener("click", e => { const h = e.target.closest("[data-icat
 let fdMiss = null;
 document.addEventListener("pointerdown", e => { const h = e.target.closest && e.target.closest("#list .msec > h4[data-ck]"); if (!h || e.target.closest("button,a")) return;
   const m = fdMiss = {k: h.dataset.ck, x: e.clientX, y: e.clientY, t: Date.now(), ok: false, up: null, type: e.pointerType};
-  setTimeout(() => { if (m.ok || fdMiss !== m) return; try { db.collection("alerts").doc("missed-click-" + m.t).set({kind: "missed-click", at: new Date().toISOString(), folder: m.k, type: m.type,
+  setTimeout(() => { if (m.ok || fdMiss !== m || m.cancel) return; try { db.collection("alerts").doc("missed-click-" + m.t).set({kind: "missed-click", at: new Date().toISOString(), folder: m.k, type: m.type,
     moved: m.up ? Math.round(Math.hypot(m.up.x - m.x, m.up.y - m.y)) : null, gotUp: !!m.up, under: m.up ? m.up.under : "", dragOn: !!(fDrag && fDrag.on), fJust, heard: false}).catch(() => {}); } catch {} }, 1000); }, true);
+// (Oct 20) a swipe that scrolls the page ends in pointercancel, not a tap: not a missed click (all 9 alerts were this)
+document.addEventListener("pointercancel", () => { if (fdMiss) fdMiss.cancel = true; }, true);
 document.addEventListener("pointerup", e => { if (!fdMiss || fdMiss.up) return; const el = document.elementFromPoint(e.clientX, e.clientY); fdMiss.up = {x: e.clientX, y: e.clientY, under: el ? (el.tagName + "." + [...el.classList].join(".")).slice(0, 80) : ""}; }, true);
 document.addEventListener("click", e => { const h = e.target.closest("[data-ck]"); if (!h || e.target.closest("button,a")) return;
   const k = h.dataset.ck;
