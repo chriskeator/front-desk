@@ -851,6 +851,8 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .cnotes{display:flex;flex-direction:column;gap:4px}.cnotes p small{display:block;font-size:11px;color:var(--muted)}
 /* (Oct 10) Chris: Money per app lives on the Front Desk (Money Map > Social and website), any period */
 .mpa{display:flex;flex-direction:column;gap:8px}
+/* (Oct 20 night, Chris phone screenshot) USAGE folder fits every phone: border-box rows, nothing wider than its box, switch buttons share the row */
+.usg,.usg *{box-sizing:border-box;min-width:0}.usg{max-width:100%;overflow:hidden}.usg .mprow{width:100%;max-width:100%}.usg .fpers{overflow:visible!important}.usg .fpers button{flex:1 1 0!important;min-width:0}.usg .tn{white-space:normal;overflow-wrap:anywhere}
 .mpseg{display:flex;gap:2px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}
 .mpseg button{flex:1 1 auto;min-width:0;border:0;border-radius:9px;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:12px;letter-spacing:-.2px;min-height:34px;padding:4px 3px;white-space:nowrap;cursor:pointer}
 .mpseg button.on{background:var(--ink);color:var(--bg)}
@@ -2132,7 +2134,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v198</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v199</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4733,7 +4735,7 @@ function homeUsage(){
   const groups = (W.groups || []).map(g => row(g.name, g.cost, g.pct, GC[g.group] || "#8A9099", Math.round(g.pct) + "%")).join("");
   const top = (W.top || []).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "#8A9099", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))).join("");
   const vs = uPer === "now" && U.lastWeekCost ? " · last week " + usd(U.lastWeekCost) : "";
-  return `<div class="msec" style="--cc:#D19A12"><h4>Usage <span class="hr"><i>${usd(U.weekCost || 0)} this week</i></span></h4><div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button></div>${uOpen ? `<div class="mbody today1 mpa"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API-price dollars from ccusage, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}</div>`; }
+  return `<div class="msec" style="--cc:#D19A12"><h4>Usage <span class="hr"><i>${usd(U.weekCost || 0)} this week</i></span></h4><div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button></div>${uOpen ? `<div class="mbody today1 mpa usg"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API value (Max plan, not billed): ccusage dollars at API prices, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}</div>`; }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-uper],[data-uopen]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.uopen) uOpen = !uOpen; else uPer = b.dataset.uper; liveRender(); }, true);
 function homeShorts(){
