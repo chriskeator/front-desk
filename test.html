@@ -1873,14 +1873,14 @@ const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew
 const b=document.getElementById('se-okm');if(b&&VS.length>1){const left=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));b.textContent=!left.length?'Approve melody':ok.includes(VER)?'Go to verse '+left[0]:left.length===1?'Approve melody':'Approve verse '+VER}}
 function vGo(v){if(v===VER||!VS[v-1])return;if(PL)stopPlay();VW[VER]=wNow();VER=v;wPlace(VW[v]);hist=[];lastSig=sig();draw();vHead()}
 function vOk(){const ok=(DOC.versesOk||[]).slice();if(!ok.includes(VER))ok.push(VER);ok.sort((a,b)=>a-b);DOC.versesOk=ok;const left=VS.map((_,k)=>k+1).filter(v=>!ok.includes(v));flush();if(!left.length){approve();return}vGo(left[0])}
-function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CS=(VIEW||doc.step||1)>=2;CM=true;cPick=null;   /* (Oct 20, Chris: 'stop limiting my tools by what I'm checking') CS = chords step; CM = the chord row, on EVERY step */
+function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CS=(VIEW||doc.step||1)>=2;CM=CS;cPick=null;   /* CS = chords step; CM = the chord row: chords step ONLY (Oct 20 later, Chris: 'When I'm checking the melody, I don't also want to check the chords. One at a time.'); melody/bar/word tools still work on the chords step */
 cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
 OKD=CS?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'))&&!scVersesLeft(doc);
 fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();const wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++)VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}
 sel=[];hist=[];drag=null;startAt=null;pastePos=null;notePick=null;noteSel=[];CLIP=null;
 const vt=VS.length>1?'<span class="selv" id="se-vt"></span>':'';const top=CS?'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<span class="selvp" id="se-lvp"></span><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"></button>').join('')+'</span><button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb go" data-se="okc" id="se-okc"></button></div>'
-:'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<button type="button" class="mt play" id="se-play">&#9654; Play</button><button type="button" class="tb setg" data-se="mon"></button><button type="button" class="tb setg" data-se="con"></button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" id="se-okm" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>';
+:'<div class="setop"><h1>'+esc(doc.name)+'</h1>'+vt+'<button type="button" class="mt play" id="se-play">&#9654; Play</button><span id="se-meter"></span><button type="button" class="tb '+(OKD?'okd':'go')+'" id="se-okm" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button></div>';
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CS?'All chords':'Melody')+' approved</div>':'')+top
 +'<div id="se-hint">'+(CS?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div></div>';
 R=document.getElementById('se-rows');H=document.getElementById('se-hint');INS=document.getElementById('se-ins');ED=document.getElementById('se-ed');PB=document.getElementById('se-play');setMeter(MT);
@@ -2134,7 +2134,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v182</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v183</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2288,7 +2288,8 @@ function ideaPop(){
     : `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-ideaadd="${esc(i.id)}">${had ? "Added (change day)" : "Add"}</button><button type="button" class="tb" data-ideadel="${esc(i.id)}">Remove</button></div>`;
   return popTop(esc(i.title)) + `<p class="tn">${esc([i.category || "Other", fmtMins(i.mins), i.source || ""].filter(Boolean).join(" · "))}</p>` + (i.note ? `<div class="revbody">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">Open link</a>` : esc(i.note).replace(/\n/g, "<br>")}</div>` : "") + acts;
 }
-let songs = [], songSteps = [], requests = [];   // requests (Oct 9): viewer song/tutorial requests {title, asks, who, platform, last, note}   // (Oct 8) Chris: Projects > Worship Piano Lab > Songs, each song moves through steps
+let songs = [], songSteps = [], requests = [], queueRows = [];   /* queueRows (Oct 20, Chris): db 'queue' = every submit, worked by launchd com.wpa.desk-queue */
+   // requests (Oct 9): viewer song/tutorial requests {title, asks, who, platform, last, note}   // (Oct 8) Chris: Projects > Worship Piano Lab > Songs, each song moves through steps
 let skills = [], restOpen = false, restPick = null, perPick = null, icatPick = false;   // (Oct 4) Projects: the 'Not working on now' pop-up
 const tLinks = t => (Array.isArray(t.links) ? t.links : []).filter(l => l && safeUrl(l.url));
 let autoJobs = [], autoRuns = [], alerts = [], openAlert = null, autoOpen = false;   /* (Oct 13) safety net: new desk only (Supabase docs) */
@@ -2840,6 +2841,7 @@ function morningScreen(seg){
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
     ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
     ${homeLater()}
+    ${homeQueue()}
     ${homeShorts()}
     ${homeSongs()}
     ${homeProjects()}
@@ -4652,6 +4654,35 @@ let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null;
 function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
 function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
+/* (Oct 20, Chris: "if there's a bunch of things in queue, I don't have to ask you what you're working on ... drag things to the top")
+   QUEUE folder: every submit (db 'queue', launchd com.wpa.desk-queue starts a helper per lane). Working first, then Queued in order, Stuck, Done today.
+   Drag a queued row (computer) or tap Top (phone) = it goes next (writes 'order'). */
+function homeQueue(){
+  const Q = queueRows || [], day = Date.now() - 86400000, ts = x => Date.parse(x || "") || 0;
+  const W = Q.filter(q => q.status === "working"), U = Q.filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)),
+        S = Q.filter(q => q.status === "stuck"), D = Q.filter(q => q.status === "done" && ts(q.doneAt) > day).sort((a, b) => ts(b.doneAt) - ts(a.doneAt));
+  if (!W.length && !U.length && !S.length && !D.length) return "";
+  const RS = "display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
+  const pill = (t, bg, fg) => `<span class="qpill" style="flex:0 0 auto;min-width:74px;text-align:center;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;background:${bg};color:${fg}">${t}</span>`;
+  const st = q => q.status === "working" ? pill("Working", "#1FA598", "#fff") : q.status === "queued" ? pill(q.retry ? "Retrying" : "Queued", "#EFEBE3", "#5C5A55") : q.status === "stuck" ? pill("Stuck", "#F6D6D3", "#B3261E") : pill("Done", "#DDF1E5", "#2E7D4F");
+  const job = q => q.job ? `<span style="flex:0 0 auto;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099);min-width:48px">${esc(q.job)}</span>` : "";
+  const row = q => `<div class="qrow" data-qrow="${esc(q.id)}"${q.status === "queued" ? ' draggable="true"' : ""} style="${RS}">${st(q)}${job(q)}<b style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(q.title || "")}${q.status === "stuck" && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:#B3261E;white-space:normal">${esc(q.why)}</span>` : ""}</b>${q.status === "queued" && U[0] && U[0].id !== q.id ? `<button type="button" class="tpill" data-qtop="${esc(q.id)}" style="flex:0 0 auto">Top</button>` : ""}</div>`;
+  const n = W.length + U.length;
+  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length} waiting${S.length ? " · " + S.length + " stuck" : ""}</i></span></h4><div class="chgrid qlist">${W.concat(U, S, D).map(row).join("")}</div></div>`; }
+function qMove(id, beforeId){ const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0));
+  const i = U.findIndex(q => q.id === beforeId), prev = i > 0 ? U[i - 1] : null, cur = U[i];
+  let o = !cur ? (U.length ? (U[U.length - 1].order || 0) + 1 : 0) : prev ? ((prev.order || 0) + (cur.order || 0)) / 2 : (cur.order || 0) - 1;
+  if (prev && prev.id === id) return; const me = U.find(q => q.id === id); if (me) me.order = o;
+  db.collection("queue").doc(id).update({order: o}).catch(() => {}); liveRender(); }
+document.addEventListener("click", e => { const b = e.target.closest("[data-qtop]"); if (!b) return; e.preventDefault(); e.stopPropagation();
+  const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)); if (U[0]) qMove(b.dataset.qtop, U[0].id); }, true);
+let qDrag = null;
+document.addEventListener("dragstart", e => { const r = e.target.closest && e.target.closest('.qrow[draggable="true"]'); if (!r) return; qDrag = r.dataset.qrow; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", qDrag); } catch (x) {} });
+document.addEventListener("dragover", e => { if (qDrag && e.target.closest && e.target.closest(".qrow")) e.preventDefault(); });
+document.addEventListener("drop", e => { if (!qDrag) return; const r = e.target.closest && e.target.closest(".qrow"); const id = qDrag; qDrag = null; if (!r || r.dataset.qrow === id) return; e.preventDefault();
+  const tgt = (queueRows || []).find(q => q.id === r.dataset.qrow); if (!tgt || tgt.status !== "queued") { const U = (queueRows || []).filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)); if (U[0]) qMove(id, U[0].id); return; }
+  qMove(id, tgt.id); });
+document.addEventListener("dragend", () => { qDrag = null; });
 function homeShorts(){
   if (shBoard === null) fdShLoad();
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
@@ -5412,6 +5443,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("ideas", ["added","desc"], v => ideas = v.filter(x => !x.removed));   // (Oct 7) Remove hides, kept for the archive
   live("skills", ["order","asc"], v => skills = v);
   live("songs", ["order","asc"], v => songs = v);
+  live("queue", ["order","asc"], v => queueRows = v);
   live("requests", ["asks","desc"], v => requests = v.flatMap(r => Array.isArray(r.list) ? r.list.map((x, i) => ({id: r.id + "-" + i, ...x})) : [r]));   // (Oct 9) a doc with list[] = a whole scan
   live("songsteps", ["order","asc"], v => songSteps = v);
   /* (Oct 11) Lab links: 313 videos, so this one reads up to 400 rows (live() stops at 300) */
