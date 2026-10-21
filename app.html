@@ -1638,7 +1638,7 @@ let CLIPN=null,CLIPK=null,CLIPC=null;
    (Easy, then Medium, then Hard); the tabs show the other levels to compare (view only). */
 let SNAP=null,CM=false,CS=false,VER=1,VS=[],VW={},LVK='easy',cPick=null,chSel=[],cDrag=null,MON=true,CON=true;const LVS=['easy','medium','hard'],LF={easy:'chords',medium:'chordsMedium',hard:'chordsHard'},LOK={easy:'chordsOK',medium:'mediumOK',hard:'hardOK'},LNM={easy:'Level 1',medium:'Level 2',hard:'Level 3'};
 const RKF=()=>CS?'rowsOk_'+LF[LVK]:VER>1?'rowsOk_v'+VER:'rowsOk';   /* (Oct 20, Chris) verse 2+ rows start unchecked: each verse has its own row checks */   /* (Oct 20, Chris) row checks: melody has its own, each chords level has its own */
-const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM&&LVK===CUR(),lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
+const CUR=()=>LVS.find(k=>!(DOC&&DOC[LOK[k]]))||null,CED=()=>CM,lvl=b=>{b.ch=b.ch||{};return b.ch[LF[LVK]]=b.ch[LF[LVK]]||[]};let bars=[],sel=[],hist=[],drag=null,leadA=12,startAt=null,pastePos=null,notePick=null,CLIP=null,noteSel=[],zeroId=null,zeroIdx=0;
 let R=null,H=null,INS=null,ED=null,PB=null;
 const save=()=>{if(PL)stopPlay();startAt=null;pastePos=null;hist.push(JSON.stringify({bars,sel,BT,leadA}));if(hist.length>80)hist.shift()};
 const hint=t=>{if(H)H.textContent=t};const lo=()=>sel.length?Math.min(...sel):-1,hi=()=>sel.length?Math.max(...sel):-1;
@@ -1971,7 +1971,7 @@ function cHead(){const cur=CUR();document.querySelectorAll('#songchk [data-se="l
 /* (Oct 21, Chris) LOCK per level, in the level button: Unlocked = every chord change made in a level below is mirrored into this level from now on (unlocking copies nothing); Locked = never changes when a lower level changes */
 document.querySelector('#songchk .secard').classList.toggle('ro',!CED());
 const m=document.querySelector('#songchk [data-se="mon"]'),c=document.querySelector('#songchk [data-se="con"]');if(m){m.textContent=MON?'Melody on':'Melody off';m.classList.toggle('on',MON)}if(c){c.textContent=CON?'Chords on':'Chords off';c.classList.toggle('on',CON)}
-const ok=document.getElementById('se-okc');if(ok){ok.textContent=cur?'Approve '+LNM[cur]+' chords':'All approved';ok.disabled=!cur||LVK!==cur}}
+const ok=document.getElementById('se-okc');if(ok){ok.textContent='Approve '+LNM[LVK]+' chords';ok.disabled=false}}
 /* after any chord change: lengths run to the next chord, and a chord rings on into the next bars until a new one starts */
 /* (Oct 20, Chris) Level 2 = Level 1 until Level 2 is edited; Level 3 = Level 2 until Level 3 is edited (doc.chordsMediumEdited / chordsHardEdited) */
 const SNAPSIG=(b,f)=>JSON.stringify((((b.ch||{})[f])||[]).filter(c=>!c.cont).map(c=>[c.s,c.l,String(c.k).trim(),c.nw?1:0]));
@@ -1982,11 +1982,14 @@ L.forEach(c=>{c.l=Math.max(1,Math.min(c.l||1,b.n-c.s))});L.forEach((c,j)=>{const
 const out=L.slice();if(reach&&old){const l=Math.min(old.l||1,(L[0]?L[0].s:b.n)-a);if(l>=1){old.s=a;old.l=l;old.k=reach;old.cont=true;out.unshift(old)}}
 b.ch[f]=out;const last=out.reduce((m,c)=>!m||c.s+c.l>=m.s+m.l?c:m,null);reach=last&&last.s+last.l>=b.n?last.k:null})}
 /* (Oct 21, Chris) LOCK = follow from now on, per bar: a chord change made in a level (add/move/rename/delete in a bar) is copied, for just the bars that changed, into every UNLOCKED level above it. Unlocking alone copies nothing. Only a level with NO chords at all gets a full copy (new songs). Chords are one set for every verse. */
+/* (Oct 21, Chris) every level is editable any time; changing an approved level puts its board cell back to Check */
+function chBack(k){const f=LOK[k];if(!DOC||!DOC[f])return;DOC[f]=null;const now=new Date().toISOString();seSeen=now;seMine.add(now);scLocal(DID,{[f]:null,updated:now});db.collection('songcheck').doc(DID).update({[f]:null,updated:now}).catch(()=>{});cHead()}
 function lvSync(){if(!DOC)return;const cp=x=>JSON.parse(JSON.stringify(x||[])),F=LVS.map(k=>LF[k]),has=f=>bars.some(b=>((b.ch||{})[f]||[]).some(c=>!c.cont));bars.forEach(b=>{b.ch=b.ch||{}});
 for(let j=1;j<F.length;j++)if(!has(F[j])&&has(F[j-1])){bars.forEach(b=>{b.ch[F[j]]=cp(b.ch[F[j-1]])});renormF(F[j])}
 if(!SNAP){snapTake();return}
 const chg=F.map(f=>bars.filter(b=>SNAP[f][b.id]!==undefined?SNAPSIG(b,f)!==SNAP[f][b.id]:SNAPSIG(b,f)!=='[]'));
-for(let j=0;j<F.length-1;j++)if(chg[j].length)for(let h=j+1;h<F.length;h++){if(DOC[F[h]+'Edited'])continue;chg[j].forEach(b=>{b.ch[F[h]]=cp(b.ch[F[j]])});renormF(F[h])}
+for(let j=0;j<F.length-1;j++)if(chg[j].length)for(let h=j+1;h<F.length;h++){if(DOC[F[h]+'Edited'])continue;chg[j].forEach(b=>{b.ch[F[h]]=cp(b.ch[F[j]])});renormF(F[h]);chBack(LVS[h])}
+LVS.forEach((k,j)=>{if(chg[j].length)chBack(k)})
 snapTake()}
 function renorm(){renormF(LF[LVK]);lvSync()}
 function cAt(bd,x){const i=+bd.dataset.i,rr=bd.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(x-rr.left)/rr.width))*S());return {i,k:Math.max(bb.a||0,Math.min(bb.n-1,k))}}
@@ -2028,7 +2031,7 @@ if(mod&&k==='v'&&CLIPK==='c'&&CLIPC){e.stopPropagation();e.preventDefault();if(!
 CLIPC.forEach(c=>{const T=P+c.t;for(let x=0;x<bars.length;x++){if(T>=st[x]&&T<st[x+1]){const b=bars[x],sl=T-(st[x]-(b.a||0)),l=Math.min(c.l,b.n-sl);if(l<1)break;const L=lvl(b);for(let y=L.length-1;y>=0;y--)if(!L[y].cont&&L[y].s>=sl&&L[y].s<sl+l)L.splice(y,1);const q={s:sl,l,k:c.k};L.push(q);added.push(q);put++;break}}});
 renorm();chSel=added;cPick=null;draw();hint('Pasted '+put+' chord'+(put===1?'':'s'));return}
 },true);   /* (Oct 20, Chris) the melody is NOT locked on the chords step: every other key goes on to the melody tools */
-function approveC(){const lv=CUR();if(!ON||!lv||LVK!==lv)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
+function approveC(){const lv=LVK;if(!ON||!lv)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
 scId=DID;scDoc=DOC;scView=2;scLv=lv;scLines=scClone(P.lines);scRanges();scWords=scClone(P.words);scFixWords();scChords=scClone(P[LF[lv]]||[]);scApprove()}
 function seClose(){if(!ON)return;stopPlay();if(saveT)flush();TAGM=false;TSTASH=null;if(drag){delete document.documentElement.dataset.drag;drag=null;document.body.style.cursor=''}ON=false;R=H=INS=ED=PB=null;DID=null}
 document.addEventListener('click',e=>{if(!ON)return;const x=e.target.closest&&e.target.closest('#songchk [data-se]');if(!x)return;if(x.dataset.se==='ok'){if((VS.length>1||DOC.tag)&&!CS){const isOk=TAGM?!!DOC.tagOk:(DOC.versesOk||[]).includes(VER);if(isOk){const l=vLeft();if(l.length)vGo(l[0]);else approve()}else if(wcBlock()){wcPanel(true)}else vOk()}else approve()}else if(x.dataset.se==='wcuse')wcUse(+x.dataset.k);else if(x.dataset.se==='wckeep')wcKeep(+x.dataset.k);else if(x.dataset.se==='ver')vGo(x.dataset.v==='tag'?'tag':+x.dataset.v);else if(x.dataset.se==='okc')approveC();else if(x.dataset.se==='vdel'){if(VER<2)return;if(PL)stopPlay();const v=VER,g=Array.isArray(DOC.versesGone)?DOC.versesGone.slice():[];if(!g.includes(v))g.push(v);DOC.versesGone=g;const now=new Date().toISOString();seSeen=now;seMine.add(now);scLocal(DID,{versesGone:g});db.collection('songcheck').doc(DID).update({versesGone:g,updated:now}).catch(()=>{});vGo(1);VW[v]=[];vHead();cHead&&0}else if(x.dataset.se==='lk'){const k=x.dataset.lv;if(!k||k==='easy')return;e.stopPropagation();const F=LF[k]+'Edited';DOC[F]=DOC[F]?null:new Date().toISOString();cHead();clearTimeout(saveT);flush()}else if(x.dataset.se==='lv'){if(PL)stopPlay();LVK=x.dataset.lv;cPick=null;chSel=[];cHead();draw()}else if(x.dataset.se==='mon'){MON=!MON;cHead();if(PL&&PL.mg)PL.mg.gain.setTargetAtTime(MON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='con'){CON=!CON;cHead();if(PL&&PL.cg)PL.cg.gain.setTargetAtTime(CON?1:0,PL.ac.currentTime,.01)}else if(x.dataset.se==='close')scClose()});
@@ -2278,7 +2281,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v226</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v227</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
