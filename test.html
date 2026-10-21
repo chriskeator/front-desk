@@ -2176,7 +2176,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v207</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v208</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4777,7 +4777,7 @@ const qEnd = e => { const d = qDrag; qDrag = null; if (!d) return; clearTimeout(
   if (before) qMove(d.id, before.dataset.qrow); else if (U.length && U[U.length - 1].id !== d.id) qMove(d.id, null); };
 document.addEventListener("pointerup", qEnd); document.addEventListener("pointercancel", qEnd);
 /* (Oct 20, Chris Oct 15 t-1016-usage-tracker) USAGE folder: Claude use this week vs last week. Data: db stats/usage, written hourly by usage-to-desk.py (ccusage, API-price dollars; the real % of the cap only shows on Claude's Usage screen). Week = Fri 6pm to Fri 6pm. */
-let uPer = "now", uOpen = false;
+let uPer = "now", uOpen = false, uDay = "", uGrp = "";
 function homeUsage(){
   const U = stats.find(x => x.id === "usage"); if (!U || !U.groups) return "";
   const W = uPer === "last" && U.last ? U.last : U, tot = W.weekCost || 0, max = Math.max(1, ...(W.days || []).map(d => d.cost));
@@ -4785,13 +4785,18 @@ function homeUsage(){
   const usd = v => "$" + Math.round(v).toLocaleString();
   const pb = (k, l) => `<button type="button" class="small${uPer === k ? " on" : ""}" data-uper="${k}">${l}</button>`;
   const row = (n, v, p, c, sub) => `<div class="mprow" style="cursor:default"><span class="mpn">${esc(n)}</span><span class="mpv">${usd(v)}</span>${mpBar(p, 100, c)}<span class="mps">${sub}</span></div>`;
-  const dayRows = (W.days || []).map(d => `<div class="mprow" style="cursor:default"><span class="mpn">${esc(d.day)}</span><span class="mpv">${usd(d.cost)}</span>${mpBar(d.cost, max, "#1FA598")}<span class="mps"></span></div>`).join("");
-  const groups = (W.groups || []).map(g => row(g.name, g.cost, g.pct, GC[g.group] || "#8A9099", Math.round(g.pct) + "%")).join("");
+  const sub1 = (L, c) => L.length ? `<div class="udet" style="display:grid;gap:6px;padding:4px 0 4px 10px;border-left:3px solid ${c}">${L.join("")}</div>` : "";
+  const items = (L, g) => (L || []).filter(t => !g || t.group === g).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "#8A9099", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : "")));
+  const dayRows = (W.days || []).map(d => { const k = uPer + d.date, on = uDay === k;
+    const inner = on ? `<div class="udet" style="display:grid;gap:6px;padding:4px 0 6px 10px;border-left:3px solid #1FA598"><h5 style="margin:2px 0">Who used it</h5>${(d.groups || []).map(g => row(g.name, g.cost, g.pct, GC[g.group] || "#8A9099", Math.round(g.pct) + "%")).join("") || '<span class="tn">Nothing this day</span>'}<h5 style="margin:2px 0">Biggest</h5>${items(d.top).join("")}</div>` : "";
+    return `<button type="button" class="mprow${on ? " on" : ""}" data-uday="${esc(k)}"><span class="mpn">${esc(d.day)}</span><span class="mpv">${usd(d.cost)}</span>${mpBar(d.cost, max, "#1FA598")}<span class="mps">${on ? "tap to close" : ""}</span></button>${inner}`; }).join("");
+  const groups = (W.groups || []).map(g => { const k = uPer + g.group, on = uGrp === k, L = (W.top || []).filter(t => t.group === g.group);
+    return `<button type="button" class="mprow${on ? " on" : ""}" data-ugrp="${esc(k)}"><span class="mpn">${esc(g.name)}</span><span class="mpv">${usd(g.cost)}</span>${mpBar(g.pct, 100, GC[g.group] || "#8A9099")}<span class="mps">${Math.round(g.pct)}%${on ? " · tap to close" : ""}</span></button>${on ? sub1(L.slice(0, 10).map(t => row(t.name, t.cost, g.cost ? 100 * t.cost / g.cost : 0, GC[t.group] || "#8A9099", Math.round(g.cost ? 100 * t.cost / g.cost : 0) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))), GC[g.group] || "#8A9099") : ""}`; }).join("");
   const top = (W.top || []).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "#8A9099", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))).join("");
   const vs = uPer === "now" && U.lastWeekCost ? " · last week " + usd(U.lastWeekCost) : "";
   return `<div class="msec" style="--cc:#D19A12"><h4>Usage <span class="hr"><i>${usd(U.weekCost || 0)} this week</i></span></h4><div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button></div>${uOpen ? `<div class="mbody today1 mpa usg"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API value (Max plan, not billed): ccusage dollars at API prices, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}</div>`; }
-document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-uper],[data-uopen]"); if (!b) return; e.preventDefault(); e.stopPropagation();
-  if (b.dataset.uopen) uOpen = !uOpen; else uPer = b.dataset.uper; liveRender(); }, true);
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-uper],[data-uopen],[data-uday],[data-ugrp]"); if (!b) return; e.preventDefault(); e.stopPropagation();
+  if (b.dataset.uopen) uOpen = !uOpen; else if (b.dataset.uday) { uDay = uDay === b.dataset.uday ? "" : b.dataset.uday; uGrp = ""; } else if (b.dataset.ugrp) { uGrp = uGrp === b.dataset.ugrp ? "" : b.dataset.ugrp; uDay = ""; } else { uPer = b.dataset.uper; uDay = uGrp = ""; } liveRender(); }, true);
 function homeShorts(){
   if (shBoard === null) fdShLoad();
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
