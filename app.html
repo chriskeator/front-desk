@@ -2091,7 +2091,7 @@ function tgSync(){octSync();const m=document.querySelector('#songchk [data-se="m
 function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CS=(VIEW||doc.step||1)>=2;CM=CS;cPick=null;   /* CS = chords step; CM = the chord row: chords step ONLY (Oct 20 later, Chris: 'When I'm checking the melody, I don't also want to check the chords. One at a time.'); melody/bar/word tools still work on the chords step */
 cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
-OKD=CS?!CUR():!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved'))&&!scVersesLeft(doc);
+OKD=CS?!CUR():(VIEW===1?!!doc.melodyOK:!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved')))&&!scVersesLeft(doc);   /* (Oct 22, Chris) the melody board says Approved ONLY when melodyOK is saved (a stale step/status showed Approved, so his Approve tap saved nothing) */
 TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();VM={1:mNow()};const lvv=doc.linesV||{},wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++){VM[v]=Array.isArray(lvv[v])&&lvv[v].length?JSON.parse(JSON.stringify(lvv[v])):null;VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}}
 sel=[];hist=[];drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
 const SF=seFrame(doc),top=SF.top;
@@ -2449,7 +2449,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v273</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v274</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
