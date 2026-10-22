@@ -1367,7 +1367,7 @@ function scPiano(c, s, d, m, v, cut, dst){ const x = scPNear(m), buf = scPB[x]; 
   src.connect(g).connect(dst || c.destination); src.start(s); src.stop(end); }
 /* the Lab click: square tick 1400 (bar) / 1000, nudged 18ms late to meet the piano sample's attack (piano-engine.js CLICK_DELAY) */
 /* (Oct 22, Chris) click schedule: [beatPosition, level] level true/2 = strong, 1 = medium, 0 = soft; grid 3 songs click every triplet (beat 1 strong, other beats medium, triplets 2 and 3 soft), others only on the beat */
-function scClickTimes(s0, e0, D){ const out = [], M = D.meter, tri = D.grid === 3, mod = b => ((b % M) + M) % M;
+function scClickTimes(s0, e0, D){ const out = [], M = D.meter, tri = false,   /* (Oct 22, Chris: "the click is a triplet, it needs to be just the quarter note") every song clicks quarter notes; grid 3 only changes the note grid */ mod = b => ((b % M) + M) % M;
   for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++){ if (!tri){ out.push([b, mod(b) === 0]); continue; }
     for (let j = 0; j < 3; j++){ const x = b + j / 3; if (x >= s0 - 1e-9 && x < e0 - 1e-9) out.push([x, j ? 0 : mod(b) === 0 ? 2 : 1]); } }
   return out; }
@@ -2470,7 +2470,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v281</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v282</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5460,6 +5460,7 @@ function sgUniverse(){ if (scBoard === null) fdScLoad();
   ((stats.find(x => x.id === "songlist") || {}).songs || []).forEach(x => add(x.t, {xm: !!x.x}));
   (songs || []).filter(x => !x.removed).forEach(x => add(x.title, {sg: x, title: x.title}));
   (scBoard || []).forEach(r => add(r.name, {sc: r}));
+  const gone = new Set((songs || []).filter(x => x.removed).map(x => sgKey(x.title))); gone.forEach(k => { const u = U.get(k); if (u && !u.sg) U.delete(k); });   /* (Oct 22, Chris: Ode to Joy came back) a song he removed stays off the board, whatever old list or row still names it */
   return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas */
 function sgRow(x){ const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
