@@ -1971,7 +1971,7 @@ let lastRS=null,lastWT={};
 /* (Oct 21, Chris) lyrics change only when the WORDS change: text of every word box in order, lowercase, hyphens/spaces/punctuation dropped; moving a word or splitting syllables keeps lyricsOK */
 function wtxt(){const a=[];bars.forEach(b=>(b.notes||[]).filter(q=>q.w).slice().sort((p,q)=>p.s-q.s).forEach(q=>a.push(String(q.d))));return a.join('').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'')}
 function wmap(){const o={};o[RSV()]=wtxt();return o}
-function rowUnok(){if(!DOC)return;const V=RSV(),cur=rsig(),prev=lastRS||{};lastRS=Object.assign({},prev,cur);const wt0=lastWT[V],wt1=wtxt();lastWT[V]=wt1;const tChg=wt0===undefined?true:wt0!==wt1;(window.__wt=window.__wt||[]).push([V,wt0,wt1]);if(!Object.keys(prev).some(k=>k.indexOf(V)===0))return;
+function rowUnok(){if(!DOC)return;const V=RSV(),cur=rsig(),prev=lastRS||{};lastRS=Object.assign({},prev,cur);const wt0=lastWT[V],wt1=wtxt();lastWT[V]=wt1;const tChg=wt0===undefined?true:wt0!==wt1;if(!Object.keys(prev).some(k=>k.indexOf(V)===0))return;
 let nChg=false,wChg=false,anyChg=false;const chIds=new Set();Object.keys(cur).forEach(k=>{const p=prev[k],c=cur[k];if(!p){anyChg=true;nChg=true;chIds.add(k);return}if(p.n!==c.n){nChg=true;chIds.add(k)}if(p.w!==c.w){wChg=true;chIds.add(k)}if(p.c!==c.c)chIds.add(k)});
 Object.keys(prev).forEach(k=>{if(k.indexOf(V)===0&&!cur[k]){anyChg=true;nChg=true}});
 if(!chIds.size&&!nChg&&!wChg&&!anyChg)return;
@@ -2378,7 +2378,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v248</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v249</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4521,7 +4521,9 @@ document.addEventListener("click", e => { const h = e.target.closest("[data-ck]"
   if (phone() && h.closest("#list .msec")){ const opening = oneOpen() !== k; if (opening && oneOpen()) scrollStack = scrollStack.slice(0, 1); if (opening && !oneOpen()) scrollStack = []; if (!opening) scrollStack = scrollStack.slice(0, 1); return keepPos(h, () => { openOne[oneKey()] = oneOpen() === k ? "" : k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {}
     // (Oct 7) Chris: opening or closing a folder closes everything inside it (project lists, to-do details)
     taskOpen = null; saveTaskOpen(); subOpen = new Set(); try { localStorage.setItem("fd-subopen", "[]"); } catch {}
-    mRow = ""; saveMRow(); document.querySelectorAll("#list .tdetail, #list .sublist, #list .mbody").forEach(x => x.remove()); document.querySelectorAll("#list .rowon, #list .subon").forEach(x => x.classList.remove("rowon", "subon")); applyCollapse(); applyFocus(); }, opening); }   // (Oct 8) blur in the same moment it opens
+    mRow = ""; saveMRow(); document.querySelectorAll("#list .tdetail, #list .sublist:not([data-sgfoldbody]), #list .mbody").forEach(x => x.remove()); document.querySelectorAll("#list .rowon, #list .subon").forEach(x => x.classList.remove("rowon", "subon"));
+    /* (Oct 21) Songs board folder bodies are part of the board: close them, never remove them (removing left the folders with nothing to open) */
+    document.querySelectorAll("#list [data-sgfoldbody]").forEach(x => { x.style.display = "none"; }); try { localStorage.setItem("fd-songfolder", ""); } catch {} applyCollapse(); applyFocus(); }, opening); }   // (Oct 8) blur in the same moment it opens
   collapsed.has(k) ? collapsed.delete(k) : collapsed.add(k); try { localStorage.setItem("fd-collapsed", JSON.stringify([...collapsed])); } catch {} applyCollapse(); });
 // (Oct 7) Chris: move any folder by pressing and holding its header, then dragging. Order is kept per screen on this device.
 const fKey = box => { const h = box.querySelector(":scope > h4"); return h ? ((h.childNodes[0] && h.childNodes[0].textContent) || h.textContent).trim().slice(0, 40) : ""; };
