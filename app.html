@@ -104,6 +104,23 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .seg{display:flex;gap:4px}
 .seg button{border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-weight:700;font-size:13px;border-radius:999px;padding:4px 10px;cursor:pointer;white-space:nowrap}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+/* (Oct 21) Social card on Home */
+.socbody{display:flex;flex-direction:column;gap:10px;padding:10px 12px 12px;min-width:0;box-sizing:border-box}
+.socper{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}.socl{font-weight:800;font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.socbtns{display:flex;gap:4px;flex:none}.socbtns .small{font-size:12px;padding:3px 8px;white-space:nowrap}.socbtns .small.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.socdate{position:relative;display:inline-flex;align-items:center;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;font-weight:700}
+.socdate input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.socsw{display:flex;width:100%;gap:0;border:1px solid var(--line);border-radius:999px;overflow:hidden}.socsw button{flex:1 1 0;min-width:0;border:0;border-radius:0;padding:6px 4px;font-size:13px}
+.soccols{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0}
+.soccol{display:none;flex-direction:column;gap:8px;min-width:0}.soccol.pick{display:flex}
+.soctop{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--soft,#EEF6F5);border:1px solid var(--line);border-radius:12px;padding:10px 8px;color:var(--ink);font:inherit;cursor:pointer;min-width:0}
+.socname{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.socbig{font-size:28px;line-height:1.1;color:var(--ink)}.soctop small{font-size:12px;color:var(--muted);text-align:center}
+.socrows{display:flex;flex-direction:column;gap:6px;min-width:0}
+.socrow{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n v" "t t" "s s";gap:3px 8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);font:inherit;text-align:left;cursor:pointer;min-width:0}
+.socn{grid-area:n;display:flex;align-items:center;gap:6px;min-width:0}.socn em{font-style:normal;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socn .picon{flex:none;width:18px;height:18px;margin:0}
+.socv{grid-area:v;font-size:15px;white-space:nowrap}.soct{grid-area:t;display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.soct i{display:block;height:6px;border-radius:3px;background:var(--teal)}
+.socrow small{grid-area:s;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socrow small.up{color:#4A7F37}.socrow small.dn{color:var(--red,#B42318)}
+@media (min-width:1000px){.socsw{display:none}.soccols{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.soccol{display:flex}}
 .task{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
 .task.isdone .tt{text-decoration:line-through;color:var(--muted)}
 .task:not(.isdone):not(.isidea){touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
@@ -2345,7 +2362,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v241</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v242</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3078,6 +3095,7 @@ function morningScreen(seg){
     ${homeQueue()}
     ${homeUsage()}
     ${homeShorts()}
+    ${homeSocial()}
     ${homeSongs()}
     ${homeProjects()}
     ${homeCadence()}
@@ -4989,6 +5007,69 @@ const qEnd = e => { const d = qDrag; qDrag = null; if (!d) return; clearTimeout(
 document.addEventListener("pointerup", qEnd); document.addEventListener("pointercancel", qEnd);
 /* (Oct 20, Chris Oct 15 t-1016-usage-tracker) USAGE folder: Claude use this week vs last week. Data: db stats/usage, written hourly by usage-to-desk.py (ccusage, API-price dollars; the real % of the cap only shows on Claude's Usage screen). Week = Fri 6pm to Fri 6pm. */
 let uPer = "now", uOpen = false, uDay = "", uGrp = "";
+/* (Oct 21, Chris approved, task t-1010-drill-down) SOCIAL CARD on Home: Followers / Views / Site clicks, 5 apps each, periods 1D 7D MTD YTD Custom (start date only, through today).
+   Data: sales_daily days[].fol / .soc (followers, views per app), social stats (GA4 visits + traced sales per app). No data = "not connected yet", never a fake number. The tap on a column / app is a placeholder for the next level (still being designed). */
+const SOCAPPS = ["YouTube", "Facebook", "Instagram", "TikTok", "X"], SOCCOLS = [["fol", "Followers"], ["vw", "Views"], ["clk", "Site clicks"]];
+let socPer = (() => { try { return localStorage.getItem("fd-socper") || "7"; } catch { return "7"; } })(), socFrom = (() => { try { return localStorage.getItem("fd-socfrom") || ""; } catch { return ""; } })(),
+  socCol = (() => { try { return localStorage.getItem("fd-soccol") || "fol"; } catch { return "fol"; } })();
+function socRange(){
+  const T = azToday(), y0 = T.slice(0, 4); let from, to = T, lbl;
+  if (socPer === "1"){ from = to = addD(T, -1); lbl = sShort(from); }
+  else if (socPer === "mtd"){ from = T.slice(0, 7) + "-01"; lbl = "Month to date"; }
+  else if (socPer === "ytd"){ from = y0 + "-01-01"; lbl = "Year to date"; }
+  else if (socPer === "custom" && socFrom && socFrom <= T){ from = socFrom; lbl = sShort(from) + " to today"; }
+  else { from = addD(T, -6); lbl = "Last 7 days"; }
+  const n = dDiff(from, to) + 1; return {from, to, pf: addD(from, -n), pt: addD(from, -1), lbl};
+}
+function socData(){
+  const sd = SD(), S = SOC(), R = socRange(), out = {R, fol: {}, vw: {}, clk: {}, folTot: 0, vwTot: 0, clkRev: 0, clkN: 0, clkOrd: 0};
+  const key = {fol: "fol", vw: "soc"};
+  const days = sd ? sDays(sd, R.from, R.to) : [], prv = sd ? sDays(sd, R.pf, R.pt) : [];
+  for (const a of SOCAPPS){
+    for (const c of ["fol", "vw"]){
+      const k = key[c], have = L => L.filter(x => x && x[k] && x[k][a] != null), g = have(days), b = have(prv);
+      if (!g.length){ out[c][a] = {none: true}; continue; }
+      const gs = g.reduce((t, x) => t + x[k][a], 0), bs = b.reduce((t, x) => t + x[k][a], 0);
+      const r = b.length && b.length >= prv.length / 2 && bs ? ((gs / g.length) - (bs / b.length)) / Math.abs(bs / b.length) : null;
+      out[c][a] = {v: gs, r, tot: c === "fol" && sd.followers ? sd.followers[a] : null};
+      out[c === "fol" ? "folTot" : "vwTot"] += gs; }
+  }
+  if (S && S.days){ const cur = mpAgg(S, R.from, R.to), prv2 = mpAgg(S, R.pf, R.pt), ok = cur.days > 0;
+    SOCAPPS.forEach(a => { const i = S.src.indexOf(a);
+      if (i < 0 || !ok){ out.clk[a] = {none: true}; return; }
+      out.clk[a] = {v: cur.vis[i], rev: cur.rev[i], ord: cur.ord[i]}; out.clkN += cur.vis[i]; out.clkRev += cur.rev[i]; out.clkOrd += cur.ord[i]; }); }
+  else SOCAPPS.forEach(a => out.clk[a] = {none: true});
+  return out;
+}
+function homeSocial(){
+  const D = socData(), R = D.R, anyData = c => SOCAPPS.some(a => !D[c][a].none);
+  const pb = (k, l) => `<button type="button" class="small${socPer === k ? " on" : ""}" data-socper="${k}">${l}</button>`;
+  const cust = `<label class="small socdate${socPer === "custom" ? " on" : ""}">Custom<input type="date" data-socfrom max="${azToday()}" value="${esc(socFrom)}" aria-label="Start date, through today"></label>`;
+  const sgn = n => (n >= 0 ? "+" : "") + n.toLocaleString();
+  const chg = r => r == null ? "" : Math.abs(r) < 0.05 ? "about the same" : (r > 0 ? "▲ " : "▼ ") + Math.round(Math.abs(r) * 100) + "%";
+  const chgc = r => r == null || Math.abs(r) < 0.05 ? "" : r > 0 ? "up" : "dn";
+  const col = ([c, name]) => {
+    const rows = SOCAPPS.map(a => ({a, d: D[c][a]})), max = Math.max(1, ...rows.map(x => x.d.none ? 0 : x.d.v));
+    let big, small, bigc = "";
+    if (c === "fol"){ big = anyData("fol") ? sgn(D.folTot) : "-"; small = anyData("fol") ? "new followers" : "not connected yet"; }
+    else if (c === "vw"){ big = anyData("vw") ? D.vwTot.toLocaleString() : "-"; small = anyData("vw") ? "views" : "not connected yet"; }
+    else { big = anyData("clk") ? usd(D.clkRev) : "-"; small = anyData("clk") ? `${D.clkN.toLocaleString()} clicks · ${D.clkOrd} sale${D.clkOrd === 1 ? "" : "s"}` : "not connected yet"; }
+    const rowH = ({a, d}) => { let val, sub = "", cc = "";
+      if (d.none){ val = "-"; sub = "not connected yet"; }
+      else if (c === "fol"){ val = sgn(d.v); sub = chg(d.r) || (d.tot != null ? d.tot.toLocaleString() + " total" : ""); cc = chgc(d.r); }
+      else if (c === "vw"){ val = d.v.toLocaleString(); sub = chg(d.r); cc = chgc(d.r); }
+      else { val = usd(d.rev); sub = `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"}`; }
+      return `<button type="button" class="socrow" data-socapp="${c}:${a}" title="${a}"><span class="socn">${pIcon(a)}<em>${a}</em></span><b class="socv">${val}</b><span class="soct"><i style="width:${d.none ? 0 : Math.max(d.v > 0 || d.rev > 0 ? 3 : 0, Math.round((c === "clk" ? d.rev || 0 : d.v) / (c === "clk" ? Math.max(1, ...rows.map(x => x.d.none ? 0 : x.d.rev)) : max) * 100))}%"></i></span><small class="${cc}">${esc(sub)}</small></button>`; };
+    return `<div class="soccol${socCol === c ? " pick" : ""}" data-soccolbox="${c}"><button type="button" class="soctop" data-soccolgo="${c}"><span class="socname">${name}</span><b class="socbig">${big}</b><small>${esc(small)}</small></button><div class="socrows">${rows.map(rowH).join("")}</div></div>`; };
+  return `<div class="msec" style="--cc:#0F766E"><h4>Social</h4><div class="socbody"><div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}${cust}</span></div>
+    <span class="seg socsw" role="group" aria-label="Which numbers">${SOCCOLS.map(([c, n]) => `<button type="button" data-socsw="${c}" aria-pressed="${socCol === c}">${n}</button>`).join("")}</span>
+    <div class="soccols">${SOCCOLS.map(col).join("")}</div></div></div>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-socper],[data-socsw]"); if (!b) return;
+  if (b.dataset.socper){ socPer = b.dataset.socper; try { localStorage.setItem("fd-socper", socPer); } catch {} } else { socCol = b.dataset.socsw; try { localStorage.setItem("fd-soccol", socCol); } catch {} }
+  render(); });
+document.addEventListener("change", e => { const i = e.target.closest && e.target.closest("[data-socfrom]"); if (!i || !i.value) return;
+  socFrom = i.value; socPer = "custom"; try { localStorage.setItem("fd-socfrom", socFrom); localStorage.setItem("fd-socper", socPer); } catch {} render(); });
 function homeUsage(){
   const U = stats.find(x => x.id === "usage"); if (!U || !U.groups) return "";
   const W = uPer === "last" && U.last ? U.last : U, tot = W.weekCost || 0, max = Math.max(1, ...(W.days || []).map(d => d.cost));
