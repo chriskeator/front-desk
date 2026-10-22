@@ -2373,7 +2373,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v245</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v246</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5215,16 +5215,18 @@ function homeSongs(only){
   if (only){ const W = only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(sgRow).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
   const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
-  /* (Oct 21, Chris) SONGS BOARD = 4 FOLDERS: Christmas (Nov 1 list), Church songs, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
+  /* (Oct 21, Chris) SONGS BOARD = 5 FOLDERS: Christmas (Nov 1 list), Church songs, Kids, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
   const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
   const isCh = x => SGCH.has(x.k) || (!x.sg && x.sc && /hymns|sunday/i.test(x.sc.group || ""));
-  const inXm = x => x.xm, hasSg = x => !!x.sg;
-  const fX = U.filter(inXm).sort(ord), fC = U.filter(x => !inXm(x) && hasSg(x) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !hasSg(x)).sort(ord);
+  /* (Oct 21, Chris) KIDS folder: nursery and children's songs that are not church songs (fixed id set, like SGCH) */
+  const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
+  const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
+  const fX = U.filter(inXm).sort(ord), fK = U.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !isKid(x) && !hasSg(x)).sort(ord);
   let sfo = ""; try { sfo = localStorage.getItem("fd-songfolder") || ""; } catch {}
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0), on = sfo === key;
-    return `<button type="button" class="chc${on ? " rowon" : ""}" data-sgfold="${key}" style="text-align:left"><b>${t} (${L.length})</b><span>${g ? g + " to check" : sub}</span></button><div class="replist" data-sgfoldbody="${key}" style="${on ? "" : "display:none"}">${head}${L.map(sgRow).join("")}</div>`; };
+    return `<div class="pc3${on ? " subon" : ""}"><button type="button" class="pc3t" data-sgfold="${key}"><b>${t} (${L.length})</b><span>${g ? g + " to check" : sub}</span></button></div><div class="sublist" data-sgfoldbody="${key}" style="${on ? "" : "display:none"}">${head}${L.map(sgRow).join("")}</div>`; };   /* the desk's own subfolder template: .pc3 row (arrow when open) + .sublist body, same as the project folders */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
-  const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("nonch", "Non-church songs", "kids and folk", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
+  const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
   const mine = U.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   const CR = (scBoard || []).filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
@@ -5232,10 +5234,10 @@ function homeSongs(only){
     return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:#FDE8E4;border:1.5px solid #B4362A;color:#B23B17" : "background:#FBEFD0;border:1.5px solid #E8B53A;color:#8A6508"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
   return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${secN}</div></div>`; }
 document.addEventListener("click", e => { const b = e.target.closest("[data-sgfold]"); if (!b) return; e.preventDefault(); e.stopPropagation();
-  const k = b.dataset.sgfold, body = b.nextElementSibling, open = !!body && body.style.display === "none";
-  document.querySelectorAll("[data-sgfold]").forEach(f => { const o = f === b && open; f.classList.toggle("rowon", o); if (f.nextElementSibling) f.nextElementSibling.style.display = o ? "" : "none"; });
+  const k = b.dataset.sgfold, pr0 = b.closest(".pc3") || b, body = pr0.nextElementSibling, open = !!body && body.style.display === "none";
+  document.querySelectorAll("[data-sgfold]").forEach(f => { const o = f === b && open, pr = f.closest(".pc3") || f, bd = pr.nextElementSibling; pr.classList.toggle("subon", o); if (bd && bd.dataset.sgfoldbody) bd.style.display = o ? "" : "none"; });
   try { localStorage.setItem("fd-songfolder", open ? k : ""); } catch {} }, true);
-function songsRefresh(){ document.querySelectorAll("#list .sublist").forEach(x => x.remove()); applySubOpen(); }
+function songsRefresh(){ document.querySelectorAll("#list .sublist:not([data-sgfoldbody])").forEach(x => x.remove()); applySubOpen(); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
 /* (Oct 11) Chris: LAB LINKS. Every ThriveCart video (db 'lablinks', one doc each) is linked, ready (a strong Lab match) or
@@ -5539,7 +5541,7 @@ document.addEventListener("click", e => {
   const row = b.closest(".pc3") || b, was = row.nextElementSibling && row.nextElementSibling.classList.contains("rowmenu");
   if (b.dataset.popproj){ e.preventDefault(); e.stopPropagation(); rowMenuOff(); const n = b.dataset.popproj;
     const was = subOpen.has(n); return keepPos(row, () => { subOpen = new Set(was ? [] : [n]); taskOpen = null; document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); try { localStorage.setItem("fd-subopen", JSON.stringify([...subOpen])); } catch {}
-    document.querySelectorAll("#list .sublist").forEach(x => x.remove()); applySubOpen(); addTodayBtns(); applyTaskOpen(); }, !was); }
+    document.querySelectorAll("#list .sublist:not([data-sgfoldbody])").forEach(x => x.remove()); applySubOpen(); addTodayBtns(); applyTaskOpen(); }, !was); }
   if (b.dataset.tlinks && b.closest("#list .tdetail")){ e.preventDefault(); e.stopPropagation(); const id = b.dataset.tlinks, opening = taskKid !== id; return keepPos(b, () => { taskKid = opening ? id : null; refreshDetail(); }, opening); }
   if (b.dataset.tlinks && b.closest("#list")){ e.preventDefault(); e.stopPropagation(); rowMenuOff(); const id = b.dataset.tlinks; taskKid = null;
     const c = b.closest(".trow") || b.closest(".pc3") || b, opening = taskOpen !== id;
