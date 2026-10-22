@@ -133,7 +133,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .soccols{display:grid;grid-template-columns:minmax(0,1fr);gap:10px;min-width:0}
 .soccol{display:none;flex-direction:column;gap:8px;min-width:0}.soccol.pick{display:flex}
 .soctop{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--soft,#EEF6F5);border:1px solid var(--line);border-radius:12px;padding:10px 8px;color:var(--ink);font:inherit;cursor:pointer;min-width:0}
-.socname{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.socbig{font-size:28px;line-height:1.1;color:var(--ink)}.soctop small{font-size:12px;color:var(--muted);text-align:center}
+.socname{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.socbig{font-size:28px;line-height:1.1;color:var(--ink)}.soctop small{font-size:12px;color:var(--muted);text-align:center}.soctop small.socsrc,.socsum small.socsrc{font-size:11px;opacity:.85;white-space:nowrap}
 .socrows{display:flex;flex-direction:column;gap:6px;min-width:0}
 .socrow{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n v" "t t" "s s";gap:3px 8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);font:inherit;text-align:left;cursor:pointer;min-width:0}
 .socn{grid-area:n;display:flex;align-items:center;gap:6px;min-width:0}.socn em{font-style:normal;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socn .picon{flex:none;width:18px;height:18px;margin:0}
@@ -2443,7 +2443,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v252</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v257</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4538,7 +4538,7 @@ function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   const boxes = [...document.querySelectorAll("#list .msec:not(.pfold)")], open = boxes.filter(b => !b.classList.contains("collapsed"));
   if (!open.length) return;
   boxes.forEach(b => { if (!open.includes(b)) b.classList.add("fdim"); });
-  const sub = document.querySelector("#list .msec:not(.collapsed):not(.pfold) .sublist");
+  const sub = document.querySelector("#list .msec:not(.collapsed):not(.pfold) .sublist:not([data-sgfoldbody])");   // (Oct 21, Chris: tapping a Songs folder blurred its siblings) Songs board folders are not a blur-the-others sub-list
   if (sub){ const row = sub.previousElementSibling, grid = sub.parentElement, box = sub.closest(".msec");
     [...grid.children].forEach(c => { if (c !== row && c !== sub) c.classList.add("fdim"); });
     const h = box && box.querySelector(":scope > h4"); if (h) h.classList.add("fdim"); }
@@ -5103,7 +5103,8 @@ document.addEventListener("pointerup", qEnd); document.addEventListener("pointer
 /* (Oct 20, Chris Oct 15 t-1016-usage-tracker) USAGE folder: Claude use this week vs last week. Data: db stats/usage, written hourly by usage-to-desk.py (ccusage, API-price dollars; the real % of the cap only shows on Claude's Usage screen). Week = Fri 6pm to Fri 6pm. */
 let uPer = "now", uOpen = false, uDay = "", uGrp = "";
 /* (Oct 21, Chris approved, task t-1010-drill-down) SOCIAL CARD on Home: Followers / Views / Site clicks, 5 apps each, periods 1D 7D MTD YTD Custom (start date only, through today).
-   Data: sales_daily days[].fol / .soc (followers, views per app), social stats (GA4 visits + traced sales per app). No data = "not connected yet", never a fake number. A column top or app row opens the Social pop-up (socPop, 3 levels). */
+   Data: sales_daily days[].fol / .soc (followers, views per app). Site clicks = ONLY social stats .ga4 (q-5253a10fa1, ga4-social.py hourly):
+   GA4 sessions / transactions / purchaseRevenue per app by session source; period buttons = GA4's exact totals, Custom = GA4 day rows added up. No data = "not connected yet", never a fake number. A column top or app row opens the Social pop-up (socPop, 3 levels). */
 const SOCAPPS = ["YouTube", "Facebook", "Instagram", "TikTok", "X"], SOCCOLS = [["fol", "Followers"], ["vw", "Views"], ["clk", "Site clicks"]];
 let socPer = (() => { try { return localStorage.getItem("fd-socper") || "7"; } catch { return "7"; } })(), socFrom = (() => { try { return localStorage.getItem("fd-socfrom") || ""; } catch { return ""; } })(),
   socCol = (() => { try { return localStorage.getItem("fd-soccol") || "fol"; } catch { return "fol"; } })();
@@ -5116,6 +5117,17 @@ function socRange(){
   else { from = addD(T, -6); lbl = "Last 7 days"; }
   const n = dDiff(from, to) + 1; return {from, to, pf: addD(from, -n), pt: addD(from, -1), lbl};
 }
+const GA4M = {video_description: "Long video", video: "Video link", pinned_comment: "Pinned comment", bio: "Bio", video_card: "Video card", shorts_description: "Shorts", comment: "Comment", referral: "youtube.com"};
+function ga4Agg(R){ /* GA4 Site clicks for the range: s/f = [[clicks, sales, $] x 5 apps] (session source / first user source), yt = YouTube clicks by medium */
+  const S = SOC(), G = S && S.ga4; if (!G || !G.periods) return null;
+  const P = G.periods[socPer];
+  if (P && P.from === R.from && P.to === R.to) return {G, s: P.s, f: P.f, yt: P.yt || {}, exact: true};
+  const z = () => G.apps.map(() => [0, 0, 0]), s = z(), f = z(), yt = {}, ad = (t, L) => L.forEach((x, i) => { t[i][0] += x[0]; t[i][1] += x[1]; t[i][2] += x[2]; });
+  for (const [d, L, y] of G.days) if (d >= R.from && d <= R.to){ ad(s, L); for (const [m, v] of Object.entries(y || {})) yt[m] = (yt[m] || 0) + v; }
+  for (const [d, L] of G.fdays || []) if (d >= R.from && d <= R.to) ad(f, L);
+  return {G, s, f, yt, exact: false}; }
+function ga4When(G){ const t = new Date(G.updated), o = {timeZone: "America/Phoenix"}, day = t.toLocaleDateString("en-CA", o) === azToday();
+  return "GA4 · updated " + (day ? "" : t.toLocaleDateString("en-US", {...o, month: "short", day: "numeric"}) + " ") + t.toLocaleTimeString("en-US", {...o, hour: "numeric", minute: "2-digit"}); }
 function socData(){
   const sd = SD(), S = SOC(), R = socRange(), out = {R, fol: {}, vw: {}, clk: {}, folTot: 0, vwTot: 0, clkRev: 0, clkN: 0, clkOrd: 0};
   const key = {fol: "fol", vw: "soc"};
@@ -5129,10 +5141,10 @@ function socData(){
       out[c][a] = {v: gs, r, tot: c === "fol" && sd.followers ? sd.followers[a] : null};
       out[c === "fol" ? "folTot" : "vwTot"] += gs; }
   }
-  if (S && S.days){ const cur = mpAgg(S, R.from, R.to), prv2 = mpAgg(S, R.pf, R.pt), ok = cur.days > 0;
-    SOCAPPS.forEach(a => { const i = S.src.indexOf(a);
-      if (i < 0 || !ok){ out.clk[a] = {none: true, lag: i >= 0}; return; }
-      out.clk[a] = {v: cur.vis[i], rev: cur.rev[i], ord: cur.ord[i]}; out.clkN += cur.vis[i]; out.clkRev += cur.rev[i]; out.clkOrd += cur.ord[i]; }); }
+  const A = ga4Agg(R); out.ga4 = A;
+  if (A) SOCAPPS.forEach(a => { const i = A.G.apps.indexOf(a), x = i < 0 ? null : A.s[i];
+      if (!x){ out.clk[a] = {none: true}; return; }
+      out.clk[a] = {v: x[0], rev: x[2], ord: x[1], f: A.f[i]}; out.clkN += x[0]; out.clkRev += x[2]; out.clkOrd += x[1]; });
   else SOCAPPS.forEach(a => out.clk[a] = {none: true});
   return out;
 }
@@ -5149,13 +5161,14 @@ function homeSocial(){
     if (c === "fol"){ big = anyData("fol") ? sgn(D.folTot) : "-"; small = anyData("fol") ? "new followers" : lagged("fol") ? "not in yet" : "not connected yet"; }
     else if (c === "vw"){ big = anyData("vw") ? D.vwTot.toLocaleString() : "-"; small = anyData("vw") ? "views" : lagged("vw") ? "not in yet" : "not connected yet"; }
     else { big = anyData("clk") ? usd(D.clkRev) : "-"; small = anyData("clk") ? `${D.clkN.toLocaleString()} clicks · ${D.clkOrd} sale${D.clkOrd === 1 ? "" : "s"}` : lagged("clk") ? "not in yet" : "not connected yet"; }
+    const src = c === "clk" && D.ga4 ? `<small class="socsrc">${esc(ga4When(D.ga4.G))}</small>` : "";
     const rowH = ({a, d}) => { let val, sub = "", cc = "";
       if (d.none){ val = "-"; sub = d.lag ? "not in yet" : "not connected yet"; }
       else if (c === "fol"){ val = sgn(d.v); sub = chg(d.r) || (d.tot != null ? d.tot.toLocaleString() + " total" : ""); cc = chgc(d.r); }
       else if (c === "vw"){ val = d.v.toLocaleString(); sub = chg(d.r); cc = chgc(d.r); }
       else { val = usd(d.rev); sub = `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"}`; }
       return `<button type="button" class="socrow" data-socapp="${c}:${a}" title="${a}"><span class="socn">${pIcon(a)}<em>${a}</em></span><b class="socv">${val}</b><span class="soct"><i style="width:${d.none ? 0 : Math.max(d.v > 0 || d.rev > 0 ? 3 : 0, Math.round((c === "clk" ? d.rev || 0 : d.v) / (c === "clk" ? Math.max(1, ...rows.map(x => x.d.none ? 0 : x.d.rev)) : max) * 100))}%"></i></span><small class="${cc}">${esc(sub)}</small></button>`; };
-    return `<div class="soccol${socCol === c ? " pick" : ""}" data-soccolbox="${c}"><button type="button" class="soctop" data-soccolgo="${c}"><span class="socname">${name}</span><b class="socbig">${big}</b><small>${esc(small)}</small></button><div class="socrows">${rows.map(rowH).join("")}</div></div>`; };
+    return `<div class="soccol${socCol === c ? " pick" : ""}" data-soccolbox="${c}"><button type="button" class="soctop" data-soccolgo="${c}"><span class="socname">${name}</span><b class="socbig">${big}</b><small>${esc(small)}</small>${src}</button><div class="socrows">${rows.map(rowH).join("")}</div></div>`; };
   return `<div class="msec" style="--cc:#0F766E"><h4>Social</h4><div class="socbody"><div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}${cust}</span></div>
     <span class="seg socsw" role="group" aria-label="Which numbers">${SOCCOLS.map(([c, n]) => `<button type="button" data-socsw="${c}" aria-pressed="${socCol === c}">${n}</button>`).join("")}</span>
     <div class="soccols">${SOCCOLS.map(col).join("")}</div></div></div>`;
@@ -5175,15 +5188,15 @@ function socPosts(a, R){ /* that app's Shorts with a number for the ranking metr
 }
 function socDays(c, a, R){ /* real per-day numbers for that app, best first */
   const out = [];
-  if (c === "clk"){ const S = SOC(), i = S && S.src ? S.src.indexOf(a) : -1; if (i < 0) return out;
-    for (const [d, v, , o] of S.days) if (d >= R.from && d <= R.to && v[i]) out.push({d, v: v[i], rev: o.filter(x => x[0] === i).reduce((t, x) => t + x[1], 0)}); }
+  if (c === "clk"){ const S = SOC(), G = S && S.ga4, i = G ? G.apps.indexOf(a) : -1; if (i < 0) return out;
+    for (const [d, L] of G.days) if (d >= R.from && d <= R.to && (L[i][0] || L[i][1])) out.push({d, v: L[i][0], rev: L[i][2]}); }
   else { const sd = SD(), k = c === "fol" ? "fol" : "soc"; if (!sd) return out;
     for (const x of sDays(sd, R.from, R.to)) if (x && x[k] && x[k][a] != null) out.push({d: x.d, v: x[k][a]}); }
   return out.sort((p, q) => (q.rev || 0) - (p.rev || 0) || q.v - p.v);
 }
-function socSales(a, R){ /* sales traced to that app: [{d, amt, prods}] */
-  const S = SOC(), i = S && S.src ? S.src.indexOf(a) : -1, out = []; if (i < 0) return out;
-  for (const [d, , , o] of S.days) if (d >= R.from && d <= R.to) for (const [s, amt, ps] of o) if (s === i) out.push({d, amt, prods: ps.map(p => S.prods[p] || "Other")});
+function socSales(a, R){ /* GA4 purchases whose session came from that app: [{d, amt, prods}] (prods = GA4 item names of that transaction) */
+  const S = SOC(), G = S && S.ga4, i = G ? G.apps.indexOf(a) : -1, out = []; if (i < 0) return out;
+  for (const [d, s, amt, , items] of G.sales || []) if (s === i && d >= R.from && d <= R.to) out.push({d, amt, prods: items && items.length ? items : ["Item not named in GA4"]});
   return out;
 }
 function socPop(){
@@ -5204,7 +5217,8 @@ function socPop(){
     const big = c === "fol" ? (any ? sgn(D.folTot) : "-") : c === "vw" ? (any ? D.vwTot.toLocaleString() : "-") : (any ? usd(D.clkRev) : "-");
     const small = !any ? "not connected yet" : c === "fol" ? "new followers" : c === "vw" ? "views" : `${D.clkN.toLocaleString()} clicks · ${D.clkOrd} sale${D.clkOrd === 1 ? "" : "s"}`;
     const max = Math.max(1, ...SOCAPPS.map(x => D[c][x].none ? 0 : c === "clk" ? D[c][x].rev : D[c][x].v));
-    body = `<div class="socsum"><b>${esc(big)}</b><small>${esc(small)}</small></div>` + hd("Tap an app") + `<div class="soclist">${SOCAPPS.map(x => { const d = D[c][x];
+    const g4 = c === "clk" && D.ga4 ? `<small class="socsrc">${esc(ga4When(D.ga4.G) + (D.ga4.exact ? "" : " · day rows added up"))}</small>` : "";
+    body = `<div class="socsum"><b>${esc(big)}</b><small>${esc(small)}</small>${g4}</div>` + hd("Tap an app") + `<div class="soclist">${SOCAPPS.map(x => { const d = D[c][x];
       const val = d.none ? "-" : c === "fol" ? sgn(d.v) : c === "vw" ? d.v.toLocaleString() : usd(d.rev);
       const sub = d.none ? nc(d) : c === "clk" ? `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"} · ${d.ord} sale${d.ord === 1 ? "" : "s"}` : d.tot != null ? d.tot.toLocaleString() + " total" : "";
       return row(`data-socgo="${x}"`, x, val, d.none ? 0 : c === "clk" ? d.rev : d.v, max, sub, pIcon(x)); }).join("")}</div>`;
@@ -5231,8 +5245,9 @@ function socPop(){
       L.push(hd("What they bought"));
       if (ps.length) ps.forEach(([p, o]) => L.push(row(`data-socgo="b:${esc(p)}"`, p, usd(o.amt), o.amt, max, `${o.n} sale${o.n === 1 ? "" : "s"}`)));
       else L.push(note("No sales", d.none ? nc(d) : "from " + a + " in this period"));
-      if (a === "YouTube" && S && S.days){ const ag = mpAgg(S, R.from, R.to), ys = S.ytk.map((n, i) => [n, ag.yt[i], i]).filter(x => x[1] > 0).sort((p, q) => q[1] - p[1]), m2 = Math.max(1, ...ys.map(x => x[1]));
-        if (ys.length){ L.push(hd("Where on YouTube they clicked")); ys.forEach(([n, v, i]) => L.push(row(`data-socgo="y:${i}"`, n, v.toLocaleString(), v, m2, `click${v === 1 ? "" : "s"}`))); } }
+      if (a === "YouTube" && D.ga4){ const ys = Object.entries(D.ga4.yt).filter(x => x[1] > 0).sort((p, q) => q[1] - p[1]), m2 = Math.max(1, ...ys.map(x => x[1]));
+        if (ys.length){ L.push(hd("Where on YouTube they clicked")); ys.forEach(([m, v]) => L.push(row(`data-socgo="y:${esc(m)}"`, GA4M[m] || m, v.toLocaleString(), v, m2, `click${v === 1 ? "" : "s"}`))); } }
+      if (d.f) L.push(note("By first visit (GA4 first user source):", `${usd(d.f[2])} · ${d.f[1]} sale${d.f[1] === 1 ? "" : "s"} · ${d.f[0].toLocaleString()} click${d.f[0] === 1 ? "" : "s"}`));
       L.push(note("Pages they landed on:", "not connected yet"));
     }
     if (!(P && P.rows.length) && c !== "clk"){
@@ -5249,20 +5264,20 @@ function socPop(){
         fact("YouTube views", s[4] == null ? "not connected yet" : kn(s[4]), s[4] == null), fact("TikTok views", s[5] == null ? "not connected yet" : kn(s[5]), s[5] == null),
         fact("Instagram likes", s[6] == null ? "not connected yet" : kn(s[6]), s[6] == null),
         fact(a + (a === "YouTube" ? " subscribers from it" : " followers from it"), a === "TikTok" ? "export needed" : "not connected yet", true)); }
-    else if (t === "d"){ const sd = SD(), x = sd ? sDays(sd, id, id)[0] : null, i = S && S.src ? S.src.indexOf(a) : -1, sx = S && S.days ? S.days.find(z => z[0] === id) : null;
+    else if (t === "d"){ const sd = SD(), x = sd ? sDays(sd, id, id)[0] : null, G = S && S.ga4, i = G ? G.apps.indexOf(a) : -1, gx = G && i >= 0 ? G.days.find(z => z[0] === id) : null;
       title = `${pIcon(a)}<span>${esc(a)} · ${esc(sDayLbl(id))}</span>`;
       const f = x && x.fol && x.fol[a] != null ? sgn(x.fol[a]) : null, v = x && x.soc && x.soc[a] != null ? x.soc[a].toLocaleString() : null;
-      const cl = sx && i >= 0 ? sx[1][i] : null, rv = sx && i >= 0 ? sx[3].filter(z => z[0] === i).reduce((s2, z) => s2 + z[1], 0) : null;
+      const cl = G && i >= 0 ? (gx ? gx[1][i][0] : 0) : null, rv = G && i >= 0 ? (gx ? gx[1][i][2] : 0) : null;
       F.push(fact("New followers", f ?? "not connected yet", f == null), fact("Views", v ?? "not connected yet", v == null),
         fact("Site clicks", cl == null ? "not connected yet" : cl.toLocaleString(), cl == null), fact("Sales", rv == null ? "not connected yet" : usd(rv), rv == null)); }
     else if (t === "b"){ title = `${pIcon(a)}<span>${esc(id)} · from ${esc(a)}</span>`;
       const L = socSales(a, R).filter(s => s.prods.includes(id));
       F.push(fact("Sales", L.length.toLocaleString()), fact("Money", usd(L.filter(s => s.prods[0] === id).reduce((s2, z) => s2 + z.amt, 0))));
       if (L.length) F.push(hd("Each sale"), ...L.sort((p, q) => q.d < p.d ? -1 : 1).map(s => fact(sDayLbl(s.d) + (s.prods.length > 1 ? " · with " + s.prods.filter(p => p !== id).join(", ") : ""), s.prods[0] === id ? usd(s.amt) : "in the same order"))); }
-    else { const i = +id, n = S.ytk[i]; title = `${pIcon(a)}<span>${esc(n)}</span>`;
-      const L = S.days.filter(z => z[0] >= R.from && z[0] <= R.to && z[2][i] > 0).sort((p, q) => q[2][i] - p[2][i]);
-      F.push(fact("Clicks", L.reduce((s2, z) => s2 + z[2][i], 0).toLocaleString()));
-      if (L.length) F.push(hd("Best days"), ...L.map(z => fact(sDayLbl(z[0]), z[2][i].toLocaleString()))); }
+    else { const G = S && S.ga4, m = id, n = GA4M[m] || m; title = `${pIcon(a)}<span>${esc(n)}</span>`;
+      const L = G ? G.days.filter(z => z[0] >= R.from && z[0] <= R.to && (z[2] || {})[m] > 0).sort((p, q) => q[2][m] - p[2][m]) : [];
+      F.push(fact("Clicks", (D.ga4 && D.ga4.yt[m] != null ? D.ga4.yt[m] : L.reduce((s2, z) => s2 + z[2][m], 0)).toLocaleString()));
+      if (L.length) F.push(hd("Best days"), ...L.map(z => fact(sDayLbl(z[0]), z[2][m].toLocaleString()))); }
     body = `<div class="soclist">${F.join("")}</div>`;
   }
   const back = st.length > 1 ? `<button type="button" class="tb" data-socback="1">Back</button>` : "";
