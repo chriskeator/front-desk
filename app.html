@@ -2331,7 +2331,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v234</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v235</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4321,7 +4321,7 @@ function fitBack(L, outer){
   glideBy(L, -s, () => { kbSet(L, 0); L.dataset.jct = L.scrollTop; setTimeout(() => { L._fitting = false; }, 50); }); }
 /* (Oct 18) what is open ABOVE the tapped row before a tap: each open to-do / list body and each open folder, with the row it hangs under
    (found again after a redraw by its data- key) and how far that row reaches down (to the next row) */
-const FDKEYS = ["data-tlinks", "data-popproj", "data-allsongs", "data-mrow", "data-repopen", "data-songopen", "data-ideaopen", "data-icatopen"];
+const FDKEYS = ["data-tlinks", "data-popproj", "data-allsongs", "data-sgfold", "data-mrow", "data-repopen", "data-songopen", "data-ideaopen", "data-icatopen"];
 function fdKeyOf(a){ const t = a.matches(FDKEYS.map(k => "[" + k + "]").join(",")) ? a : a.querySelector(FDKEYS.map(k => "[" + k + "]").join(",")); if (!t) return null;
   const k = FDKEYS.find(x => t.hasAttribute(x)); return `[${k}="${CSS.escape(t.getAttribute(k))}"]`; }
 function fdReach(a){ const n = a.nextElementSibling; return n && n.getClientRects().length ? n.getBoundingClientRect().top : a.parentElement.getBoundingClientRect().bottom; }
@@ -5103,20 +5103,26 @@ function homeSongs(only){
   if (only){ const W = only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(sgRow).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
   const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
-  const X = rest.filter(x => x.xm && ((x.sc && x.sc.orig) || x.sg)).sort(ord), W = rest.filter(x => !x.xm && ((x.sc && x.sc.orig) || x.sg)).sort(ord), N = rest.filter(x => !((x.sc && x.sc.orig) || x.sg)).sort((a, b) => a.title.localeCompare(b.title));
+  /* (Oct 21, Chris) SONGS BOARD = 4 FOLDERS: Christmas (Nov 1 list), Church songs, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
+  const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "theoldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
+  const isCh = x => SGCH.has(x.k) || (!x.sg && x.sc && /hymns|sunday/i.test(x.sc.group || ""));
+  const inXm = x => x.xm, hasSg = x => !!x.sg;
+  const fX = U.filter(inXm).sort(ord), fC = U.filter(x => !inXm(x) && hasSg(x) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !hasSg(x)).sort(ord);
+  let sfo = ""; try { sfo = localStorage.getItem("fd-songfolder") || ""; } catch {}
+  const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0), on = sfo === key;
+    return `<button type="button" class="chc${on ? " rowon" : ""}" data-sgfold="${key}" style="text-align:left"><b>${t} (${L.length})</b><span>${g ? g + " to check" : sub}</span></button><div class="replist" data-sgfoldbody="${key}" style="${on ? "" : "display:none"}">${head}${L.map(sgRow).join("")}</div>`; };
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
-  const sec = (t, L) => L.length ? label(t, L.length) + head + L.map(sgRow).join("") : "";
-  let ao = false; try { ao = localStorage.getItem("fd-allsongs") === "1"; } catch {}
-  const secN = N.length ? `<button type="button" class="chc${ao ? " rowon" : ""}" data-allsongs="1" style="text-align:left"><b>Not started (${N.length})</b><span>every other song on the list</span></button><div class="replist" style="${ao ? "" : "display:none"}">${head}${N.map(sgRow).join("")}</div>` : "";
+  const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("nonch", "Non-church songs", "kids and folk", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
   const mine = U.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   const CR = (scBoard || []).filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
   const secCR = CR.length ? label("Copyright check", CR.length) + CR.map(r => { const np = /^NOT/i.test(String(r.lyricsCheck).trim());
     return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:#FDE8E4;border:1.5px solid #B4362A;color:#B23B17" : "background:#FBEFD0;border:1.5px solid #E8B53A;color:#8A6508"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
-  return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${sec("\u{1F384} Christmas · Nov 1", X)}${sec("In the works", W)}${sec("Live in the Lab", live)}${secN}</div></div>`; }
-document.addEventListener("click", e => { const b = e.target.closest("[data-allsongs]"); if (!b) return; e.preventDefault(); e.stopPropagation();
-  const box = b.nextElementSibling, open = box && box.style.display === "none"; if (box) box.style.display = open ? "" : "none"; b.classList.toggle("rowon", !!open);
-  try { localStorage.setItem("fd-allsongs", open ? "1" : "0"); } catch {} }, true);
+  return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${secN}</div></div>`; }
+document.addEventListener("click", e => { const b = e.target.closest("[data-sgfold]"); if (!b) return; e.preventDefault(); e.stopPropagation();
+  const k = b.dataset.sgfold, body = b.nextElementSibling, open = !!body && body.style.display === "none";
+  document.querySelectorAll("[data-sgfold]").forEach(f => { const o = f === b && open; f.classList.toggle("rowon", o); if (f.nextElementSibling) f.nextElementSibling.style.display = o ? "" : "none"; });
+  try { localStorage.setItem("fd-songfolder", open ? k : ""); } catch {} }, true);
 function songsRefresh(){ document.querySelectorAll("#list .sublist").forEach(x => x.remove()); applySubOpen(); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
