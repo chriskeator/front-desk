@@ -192,7 +192,15 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk .lyrnote{font:14px inherit;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
 #lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:#FBEFD0;color:#8A6508}
 #lyrchk .btfl b.btap{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft,#EEF6F5);color:var(--teal,#0F766E);border:1.5px solid var(--teal,#0F766E)}#lyrchk[data-appr="1"] .bttx{background:var(--soft,#EEF6F5)}#lyrchk[data-appr="1"] [data-btx="fix"],#lyrchk[data-appr="1"] [data-btx="ok"],#lyrchk[data-appr="1"] .lyrnote{display:none}#lyrchk[data-appr="1"] .lyrbt{grid-template-columns:1fr}
-#lyrchk .lyrbt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
+#lyrchk .lyrbt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+/* (Oct 22, Chris: "apply that lock feature to everything") APPROVED = LOCKED: approved lyrics open read-only with Edit; Approve again locks them */
+#lyrchk[data-lock="1"] [data-lyrx="fix"],#lyrchk[data-lock="1"] [data-lyrx="ok"],#lyrchk[data-lock="1"] .lyrnote,#lyrchk:not([data-lock="1"]) [data-lyrx="unlock"]{display:none}#lyrchk[data-lock="1"] .lyrbt{grid-template-columns:1fr 1fr}#lyrchk[data-lock="1"] .lyrtx{background:var(--soft,#EEF6F5)}
+#songchk .secard.selock #se-ed{pointer-events:none}#songchk .secard.selock .sescroll{background:var(--soft,#EEF6F5)}
+/* (Oct 22, Chris) CHORD SHEET (Levels 1-3): chords above the words, every verse on one page; tap a chord to change it */
+#lyrchk .chsh{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}#lyrchk .chv{margin:0 0 16px}#lyrchk .chv h3{font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
+#lyrchk .chl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 9px;margin:0 0 8px}#lyrchk .chw{display:inline-flex;flex-direction:column;min-width:18px}#lyrchk .chw b{font-weight:500;font-size:16px;white-space:nowrap}
+#lyrchk .chc{min-height:22px;min-width:18px;font-weight:700;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 2px}#lyrchk .chi{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}#lyrchk .chi>span:first-child{font-size:13px;color:var(--muted);font-weight:700}
+#lyrchk[data-chlock="0"] .chc{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="0"] .chc:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .chc.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk[data-chlock="1"] .chsh{background:var(--soft,#EEF6F5);border-radius:10px;padding:8px}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
 :root{--hov:rgba(0,0,0,.07)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.09)}}
@@ -2016,7 +2024,7 @@ if(false&&!CM){
 }
 if(CM&&TAGM&&DOC.tagOk&&(nChg||wChg||chIds.size)){DOC.tagOk=null;up.tagOk=null}
 if(Object.keys(up).length&&DID){const now=new Date().toISOString();seSeen=now;seMine.add(now);up.updated=now;scLocal(DID,up);db.collection('songcheck').doc(DID).update(up).catch(()=>{});if(typeof vHead==='function'&&(!CM||TAGM))vHead();hint('Edited, so it is back to Check')}}
-function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;lastSig=s;rowUnok();if(PL)liveReplan();   /* (Oct 21, Chris) an edit while the song plays never stops it: the not-yet-played part is re-planned from the playhead */clearTimeout(saveT);saveT=setTimeout(flush,500)}
+function saveSoon(){if(!ON||!DID)return;const s=sig();if(s===lastSig)return;lastSig=s;if(!CS&&UNL.size)EDN=true;rowUnok();if(PL)liveReplan();   /* (Oct 21, Chris) an edit while the song plays never stops it: the not-yet-played part is re-planned from the playhead */clearTimeout(saveT);saveT=setTimeout(flush,500)}
 /* (Oct 20, Chris: "when closing out of it" his open editor saved its old copy over Cadence's newer fix) never overwrite a song that changed
    since this editor loaded it: compare the db's 'updated' with the one this editor last saw; changed = do not save, say so */
 let seSeen=null,seMine=new Set();
@@ -2024,7 +2032,7 @@ function tagPick(P){const o={meter:DOC.meter||4};['lines','words','bars','spb','
 function tagSave(){if(!TAGM)return;if(!bars.length){DOC.tag=null;return}const P=toDoc(),has=(P.lines||[]).flat().length>0||['chords','chordsMedium','chordsHard'].some(f=>(P[f]||[]).flat().length>0);DOC.tag=has?tagPick(P):null}   /* (Oct 21, Chris) every song has a Tag row: an empty one (one blank bar) saves nothing */
 function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
 function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;if(!TAGM&&!bars.length){if(H){H.textContent='Not saved: a song needs its melody. To remove a verse, use Delete verse.';H.style.color='#B3261E'}return}   /* (Oct 21, Chris: deleting verse 2 bars wiped verse 1) never save an empty melody */
-let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();
+let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();if(EDN){P.melodyEditedAt=now;DOC.melodyEditedAt=now;EDN=false}   /* (Oct 22, Chris) an edit to an approved melody sends the Player check back to gold */
 db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
  const ap={};['versesOk','tagOk'].forEach(f=>{if(P[f]!=null)ap[f]=P[f]});
  if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(Object.keys(ap).length){scLocal(id,ap);seSeen=now;seMine.add(now);db.collection('songcheck').doc(id).update(Object.assign(ap,{updated:now})).catch(()=>{})}   /* (Oct 21) a helper changed the song while it was open: his approvals still save (they only add ticks) */if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
@@ -2073,7 +2081,7 @@ function wcKeep(k){const f=wcFlags()[k];if(!f)return;f.kept=true;wcSave();wcPane
 function wcUse(k){const f=wcFlags()[k],L=wcLocate()[k],W=wcWords();if(!f||!Array.isArray(f.fixWords)||L.at<0||L.at+f.fixWords.length>W.length)return;f.fixWords.forEach((w,j)=>{W[L.at+j].q.d=String(w)});f.fixed=true;wcSave();draw();wcPanel()}
 function vLeft(){const ok=(DOC.versesOk||[]).concat(scGone(DOC)),o=VS.length>1?VS.map((_,k)=>k+1).filter(v=>!ok.includes(v)):[];if(DOC.tag&&!DOC.tagOk&&vNum()>=2)o.push('tag');return o}
 function vNum(){const gn=scGone(DOC);return VS.map((_,k)=>k+1).filter(v=>!gn.includes(v)).length}   /* (Oct 22, Chris) a one-verse song has its tag at the end of verse 1 (Lab rule 34d): no Tag tab, the stored tag is kept */
-function vHead(){const el=document.getElementById('se-vt'),ok=DOC.versesOk||[],gn=scGone(DOC);if(el)el.innerHTML=VS.map((_,k)=>gn.includes(k+1)?'':'<button type="button" class="tb vt'+(!TAGM&&k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('')+(vNum()>=2&&(TAGM||VS.map((_,k)=>k+1).filter(v=>!gn.includes(v)).every(v=>(DOC.versesOk||(DOC.melodyOK?[1]:[])).includes(v)))?'<button type="button" class="tb vt'+(TAGM?' on':'')+'" data-se="ver" data-v="tag" title="Tag (after the last verse only)">'+(DOC.tagOk&&DOC.tag?'&#10003; ':'')+'Tag</button>':'')+(!TAGM&&!CS&&VER>1?'<button type="button" class="tb" data-se="vdel">Delete verse '+VER+'</button>':'');
+function vHead(){setTimeout(seLockSync,0);const el=document.getElementById('se-vt'),ok=DOC.versesOk||[],gn=scGone(DOC);if(el)el.innerHTML=VS.map((_,k)=>gn.includes(k+1)?'':'<button type="button" class="tb vt'+(!TAGM&&k+1===VER?' on':'')+'" data-se="ver" data-v="'+(k+1)+'">'+(ok.includes(k+1)?'&#10003; ':'')+(k+1)+'</button>').join('')+(vNum()>=2&&(TAGM||VS.map((_,k)=>k+1).filter(v=>!gn.includes(v)).every(v=>(DOC.versesOk||(DOC.melodyOK?[1]:[])).includes(v)))?'<button type="button" class="tb vt'+(TAGM?' on':'')+'" data-se="ver" data-v="tag" title="Tag (after the last verse only)">'+(DOC.tagOk&&DOC.tag?'&#10003; ':'')+'Tag</button>':'')+(!TAGM&&!CS&&VER>1?'<button type="button" class="tb" data-se="vdel">Delete verse '+VER+'</button>':'');
 const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew',TAGM?!DOC.tagOk:VER>1&&!ok.includes(VER));
 const tl=document.getElementById('se-taglbl');if(tl)tl.textContent=TAGM?(DOC.tag?'Tag (after the last verse only)':'Tag (after the last verse only): empty. Copy bars from the song and paste here'):'';
 const b=document.getElementById('se-okm');if(b&&(VS.length>1||DOC.tag)){const left=vLeft(),isOk=TAGM?!!DOC.tagOk:ok.includes(VER),nm=l=>l==='tag'?'the tag':'verse '+l;b.textContent=!left.length?'Approve melody':isOk?'Go to '+nm(left[0]):left.length===1?'Approve melody':'Approve '+(TAGM?'the tag':'verse '+VER)}wcPanel()}
@@ -2081,6 +2089,17 @@ function vGo(v){if(v==='tag'){if(TAGM)return;VW[VER]=wNow();mKeep();TSTASH={bars
 if(!VS[v-1]||(!TAGM&&v===VER))return;if(TAGM){tagOut();sel=[];noteSel=[];chSel=[];cPick=null}else{VW[VER]=wNow();mKeep()}VER=v;mPlace(VM[v]||VM[1]);wPlace(VW[v]);hist=[];lastSig=sig();lastRS=rsig();lastWT=Object.assign({},lastWT,wmap());draw();vHead();if(CM)cHead();if(PL)liveReplan()}
 function tagTick(){tagSave();if(!DOC.tag){hint('The tag is empty: paste bars into it first');return}DOC.tagOk=new Date().toISOString();flush();vHead();cHead();hint('Tag ticked')}
 function vOk(){if(TAGM){tagSave();if(!DOC.tag){tagOut();const l=vLeft();if(!l.length){flush();approve();return}vGo(l[0]);return}DOC.tagOk=new Date().toISOString()}else{const ok=(DOC.versesOk||[]).slice();if(!ok.includes(VER))ok.push(VER);ok.sort((a,b)=>a-b);DOC.versesOk=ok}const left=vLeft();flush();if(!left.filter(l=>l!=='tag').length&&(!TAGM||!left.length)&&!DOC.melodyOK){approve();return}if(!left.length){approve();return}vGo(left[0])}   /* (Oct 22, Chris) Tag shows only once every verse is approved, and never holds up the Melody approve */
+/* (Oct 22, Chris: "apply that lock feature to everything") APPROVED MELODY = LOCKED: an approved verse (or the tag, or a one-verse song's melody) opens
+   read-only; 'Edit' unlocks it for this visit, 'Approve again' saves + locks it. Nothing else (no other column, script or helper) changes it (desk_db.py guard). */
+let UNL=new Set(),EDN=false;
+function seLkKey(){return TAGM?'tag':VER}
+function seLocked(){if(!ON||CS||!DOC)return false;const ok=TAGM?!!DOC.tagOk:(VS.length>1?(DOC.versesOk||[]).includes(VER):!!DOC.melodyOK);return ok&&!UNL.has(seLkKey())}
+function seLockSync(){const c=document.querySelector('#songchk .secard');if(!c||!ON)return;const L=seLocked(),un=!CS&&UNL.has(seLkKey());c.classList.toggle('selock',L);let b=document.getElementById('se-unl');
+ if(!b){const m=document.getElementById('se-okm');if(!m)return;b=document.createElement('button');b.type='button';b.className='tb';b.id='se-unl';m.parentNode.insertBefore(b,m)}
+ b.hidden=!(L||un);b.textContent=L?'Edit (locked)':'Approve again';b.classList.toggle('go',!L);if(L)hint('Approved and locked. Tap Edit to change it.')}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#se-unl');if(!b||!ON)return;e.preventDefault();e.stopPropagation();const k=seLkKey();
+ if(seLocked()){UNL.add(k);hint('Unlocked: change it, then tap Approve again.')}else{flush();UNL.delete(k);hint('Approved again and locked.')}seLockSync()},true);
+document.addEventListener('keydown',e=>{if(!seLocked())return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const mod=e.metaKey||e.ctrlKey;if(e.key===' '||e.key==='Escape'||(mod&&/^[ac]$/i.test(e.key)))return;e.preventDefault();e.stopPropagation();hint('Locked: tap Edit to change it.')},true);
 /* (Oct 21, Chris: 'why is this still the old template?') ONE header + footer for the melody AND chords steps, so they can never drift apart: song name (+ small meter) left, centre group (Levels on chords, Verse buttons on melody), Approve far right; bottom row Melody on / Chords on centred, Play far right. Check: desk-songcheck-test.js 'one frame' tests */
 function seFrame(doc){const mid=CS?'<span class="selv2"><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"><span class="lvn"></span>'+(k==='easy'?'':'<span class="lkb" role="button" tabindex="0" data-se="lk" data-lv="'+k+'"></span>')+'</button>').join('')+'</span><span class="selv" id="se-vt"></span></span>':'<span class="selv" id="se-vt"></span>';
 const right=CS?'<button type="button" class="tb go" data-se="okc" id="se-okc"></button>':'<button type="button" class="tb '+(OKD?'okd':'go')+'" id="se-okm" data-se="'+(OKD?'close':'ok')+'">'+(OKD?'&#10003; Approved':'Approve melody')+'</button>';
@@ -2094,7 +2113,7 @@ cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
 OKD=CS?!CUR():(VIEW===1?!!doc.melodyOK:!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved')))&&!scVersesLeft(doc);   /* (Oct 22, Chris) the melody board says Approved ONLY when melodyOK is saved (a stale step/status showed Approved, so his Approve tap saved nothing) */
 TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();VM={1:mNow()};const lvv=doc.linesV||{},wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++){VM[v]=Array.isArray(lvv[v])&&lvv[v].length?JSON.parse(JSON.stringify(lvv[v])):null;VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}}
-sel=[];hist=[];drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
+UNL=new Set();EDN=false;sel=[];hist=[];drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
 const SF=seFrame(doc),top=SF.top;
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CS?'All chords':'Melody')+' approved</div>':'')+top
 +'<div id="se-wc" hidden></div><div id="se-hint">'+(CS?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div>'+SF.bot+'</div>';
@@ -2450,7 +2469,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v276</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v277</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5421,13 +5440,16 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   else if (sc && sc.melodyOK && sc.orig && scVersesLeft(sc)) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
-  if (sc && sc.melodyOK && !scVersesLeft(sc)) C[3] = {c: sc.playerOK ? "ok" : "chk", id: sc.id, pl: 1};   /* (Oct 22, Chris) PLAYER: gold Check once the melody and every verse are approved; teal after his Approve (playerOK) */
+  if (sc && sc.melodyOK && !scVersesLeft(sc)) C[3] = {c: sc.playerOK && !(sc.melodyEditedAt && String(sc.melodyEditedAt) > String(sc.playerOK)) ? "ok" : "chk", id: sc.id, pl: 1};   /* (Oct 22, Chris) an edit to the approved melody = Check again */   /* (Oct 22, Chris) PLAYER: gold Check once the melody and every verse are approved; teal after his Approve (playerOK) */
   const LV = ["chordsOK", "mediumOK", "hardOK"], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK); if (sc && sc[f]) C[4 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[4 + j] = {c: "chk", id: sc.id, v: 2}; });
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK); if (sc && sc[f]) C[4 + j] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[4 + j] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; });   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */
   /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
   { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
-    const built = L => { const b = bt[L]; return b === true || !!(b && b.band && b.cards && b.lesson); }, lvOk = {L1: sc && sc.chordsOK, L2: sc && sc.mediumOK, L3: sc && sc.hardOK};
-    const todo = ["L1", "L2", "L3"].find(L => lvOk[L] && built(L) && !fo[L]), done = ["L3", "L2", "L1"].find(L => fo[L]);
+    /* (Oct 22, Chris) FINAL = the song preview player with the approved chords: gold 'Check L#' once song-preview-auto.py has put that level's
+       approval on the player (pvChords[L#] >= its OK); an approval newer than his Final OK (he edited + re-approved the level) = gold again */
+    const pv = sc && sc.pvChords && typeof sc.pvChords === "object" ? sc.pvChords : {}, lvOk = {L1: sc && sc.chordsOK, L2: sc && sc.mediumOK, L3: sc && sc.hardOK};
+    const ready = L => !!(lvOk[L] && pv[L] && String(pv[L]) >= String(lvOk[L])), heard = L => !!(fo[L] && String(fo[L]) >= String(lvOk[L]));
+    const todo = ["L1", "L2", "L3"].find(L => ready(L) && !heard(L)), done = ["L3", "L2", "L1"].find(L => lvOk[L] && heard(L));
     if (todo) C[7] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (done) C[7] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
   FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "L2" ? 5 : k === "L3" ? 6 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
@@ -5444,25 +5466,90 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
-  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}</b><span>Lyrics: fix any word, then Approve</span>${r.lyricsCheck ? `<span class="lyrcp">${esc(r.lyricsCheck)}</span>` : ""}</div><textarea class="lyrtx" spellcheck="false">${esc(r.lyricsText || "")}</textarea><input class="lyrnote" placeholder="Note for Cadence (only for Send fixes)"><div class="lyrbt"><button type="button" class="tb" data-lyrx="back">Back</button><button type="button" class="tb" data-lyrx="fix">Send fixes</button><button type="button" class="tb go" data-lyrx="ok">Approve</button></div></div>`;
+  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}</b><span>Lyrics: fix any word, then Approve</span>${r.lyricsCheck ? `<span class="lyrcp">${esc(r.lyricsCheck)}</span>` : ""}</div><textarea class="lyrtx" spellcheck="false">${esc(r.lyricsText || "")}</textarea><input class="lyrnote" placeholder="Note for Cadence (only for Send fixes)"><div class="lyrbt"><button type="button" class="tb" data-lyrx="back">Back</button><button type="button" class="tb" data-lyrx="unlock">Edit (locked)</button><button type="button" class="tb" data-lyrx="fix">Send fixes</button><button type="button" class="tb go" data-lyrx="ok">Approve</button></div></div>`;
+  if (r.lyricsOK){ o.dataset.lock = "1"; o.querySelector(".lyrtx").readOnly = true; }   /* (Oct 22, Chris) approved lyrics are locked: Edit, then Approve again */
   document.body.appendChild(o); }
 /* (Oct 21, Chris) FINAL CHECK: gold 'Check L#' opens the finished song on Test at that level; his Approve stores songcheck.finalOK[L#] (only a finalOK level may ship Live) */
 function fnOpen(id, lv){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.lv = lv;
-  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Final check, Level ${lv.slice(1)}: play every verse, the tag and the chords on Test</span></div><div class="lyrbt"><button type="button" class="tb" data-fnx="back">Back</button><button type="button" class="tb" data-fnx="open">Open on Test</button><button type="button" class="tb go" data-fnx="ok">Approve ${lv}</button></div></div>`;
+  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Final check: Open player, tap Level ${lv.slice(1)}, play it with the chords</span></div><div class="lyrbt"><button type="button" class="tb" data-fnx="back">Back</button><button type="button" class="tb" data-fnx="open">Open player</button><button type="button" class="tb go" data-fnx="ok">Approve ${lv}</button></div></div>`;
   document.body.appendChild(o); }
 document.addEventListener("click", async e => { const b = e.target.closest("[data-sgfinal]"); if (b){ e.preventDefault(); e.stopPropagation(); fnOpen(b.dataset.sgfinal, b.dataset.sglv); return; }
   const x = e.target.closest("[data-fnx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, lv = o && o.dataset.lv, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.fnx === "back") return lyrClose();
-  if (x.dataset.fnx === "open"){ window.open(deskLabTestUrl() + "?song=" + encodeURIComponent(r.name) + "&level=" + lv.slice(1), "_blank", "noopener"); return; }
+  if (x.dataset.fnx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + id), "_blank", "noopener"); return; }   /* (Oct 22, Chris) the song preview player, approved chords on it */
   const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo, updated: new Date().toISOString()};
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); lyrClose(); render(); }, true);
+/* (Oct 22, Chris: "it's probably just easier to see the song as a chord chart ... chords above the lyrics") CHORD SHEET = the Level 1/2/3 check.
+   Every verse on one page, the chord over the word it starts on (the chart is shared: a change shows in every verse). Tap a chord, type
+   (1 4 5 6m 1/5 57 ...; two chords on one word = '4 1'; empty = no chord), Approve. Approve copies the chart DOWN to every later level
+   Chris has NOT approved (Level 1 -> 2 and 3, Level 2 -> 3); an approved level is LOCKED: Edit, change, Approve again (only that level
+   changes; its Final goes back to Check). Fields: chords/chordsOK, chordsMedium/mediumOK, chordsHard/hardOK (RULES - Front Desk page, Oct 22). */
+const CHLV = {L1: ["chords", "chordsOK", "Level 1"], L2: ["chordsMedium", "mediumOK", "Level 2"], L3: ["chordsHard", "hardOK", "Level 3"]}, CHL = ["L1", "L2", "L3"];
+let chS = null;
+const chR6 = x => +(+x).toFixed(6);
+function chFlat(a){ return (a || []).flat().filter(c => c && c.k != null && String(c.k).trim() !== "").map(c => Object.assign({}, c)).sort((p, q) => p.g - q.g); }
+function chStart(r, lv){ for (let i = CHL.indexOf(lv); i >= 0; i--){ const L = chFlat(r[CHLV[CHL[i]][0]]); if (L.length) return L; } return []; }
+function chVerseWords(r, v){ const W = v === 1 ? (r.words || []).flat() : (r.wordsV && Array.isArray(r.wordsV[v]) ? r.wordsV[v] : []);
+  return W.filter(w => w && String(w.w || "").trim()).map(w => ({g: +w.g, w: String(w.w).trim()})).sort((p, q) => p.g - q.g); }
+function chLines(r, W){ const M = r.meter || 4, B = 4 * M, row = g => g < 0 ? 0 : Math.floor(g / B + 1e-9) + 1, R = new Map();
+  W.forEach((w, i) => { const k = row(w.g); if (!R.has(k)) R.set(k, []); R.get(k).push(i); });
+  const ks = [...R.keys()].sort((a, b) => a - b);
+  if (ks.length > 1 && ks[0] === 0){ R.get(ks[1]).unshift(...R.get(0)); R.delete(0); ks.shift(); }   /* a pickup before bar 1 starts line 1 */
+  for (let x = 0; x < ks.length - 1; x++){ const L = R.get(ks[x]), last = ks[x] * B - M;   /* a pickup on the last beat of a row starts the next line (hymnal style) */
+    let c = L.length; while (c > 1 && W[L[c - 1]].g >= last - 1e-9 && ((W[L[c - 1]].g % M) + M) % M >= M - 1 - 1e-9) c--;
+    if (c < L.length) R.get(ks[x + 1]).unshift(...L.splice(c)); }
+  return ks.map(k => R.get(k)).filter(l => l.length); }
+function chSpan(W, i){ return [W[i].g, i + 1 < W.length ? W[i + 1].g : Infinity]; }
+function chRuns(C){ const o = []; C.forEach(c => { const k = String(c.k).trim(); if (!o.length || o[o.length - 1].k !== k) o.push({k, cs: [c]}); else o[o.length - 1].cs.push(c); }); return o; }
+function chIn(a, b){ return chS.ch.filter(c => c.g >= a - 1e-9 && c.g < b - 1e-9); }
+function chSheetHTML(){ const r = chS.r, M = r.meter || 4, vs = btVerses(r).filter(v => v === 1 || chVerseWords(r, v).length), out = [];
+  const W1 = chVerseWords(r, 1), f1 = W1.length ? W1[0].g : 0, intro = chIn(-1e9, f1);
+  const slot = (a, b, key) => `<span class="chc" data-chk="${key}" data-a="${a}" data-b="${b === Infinity ? "inf" : b}"${chS.lock || !(b > a) ? "" : ` contenteditable="true" spellcheck="false" inputmode="text"`}>${esc(chRuns(chIn(a, b)).map(x => x.k).join(" "))}</span>`;
+  if (intro.length || !chS.lock) out.push(`<div class="chi"><span>Intro</span>${slot(intro.length ? Math.min(intro[0].g, f1 - 4 * M) : f1 - 4 * M, f1, "intro")}</div>`);
+  vs.forEach(v => { const W = chVerseWords(r, v); if (!W.length) return;
+    out.push(`<div class="chv"><h3>${vs.length > 1 ? "Verse " + v : "Song"}</h3>` + chLines(r, W).map(l => `<div class="chl">` + l.map(i => { const [a, b] = chSpan(W, i); return `<span class="chw">${slot(Math.max(a, v === 1 ? -1e9 : 0), v === 1 ? b : Math.max(b, 0), "v" + v + "w" + i)}<b>${esc(W[i].w)}</b></span>`; }).join("") + `</div>`).join("") + `</div>`); });
+  if (r.tag && chFlat(r.tag[CHLV[chS.lv][0]]).length) out.push(`<div class="chv"><h3>Tag</h3><div class="chl"><span class="chw"><span class="chc">${esc(chRuns(chFlat(r.tag[CHLV[chS.lv][0]])).map(x => x.k).join(" "))}</span><b>(change the tag in the melody editor)</b></span></div></div>`);
+  return out.join(""); }
+function chDraw(){ const o = document.getElementById("lyrchk"); if (!o || !chS) return; const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = chSheetHTML(); n.scrollTop = y;
+  o.dataset.chlock = chS.lock ? "1" : "0"; const [, , nm] = CHLV[chS.lv];
+  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">${chS.arm ? "Close without saving" : "Back"}</button>` + (chS.lock ? `<button type="button" class="tb" data-chx="edit">Edit (locked)</button>` : `<button type="button" class="tb go" data-chx="ok">Approve ${nm}</button>`);
+  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = "1fr 1fr"; }   /* never swap the buttons under a tap (a blur re-draw would eat the Approve click) */
+function chOpen(id, lv){ const r = (scBoard || []).find(x => x.id === id); if (!r || !CHLV[lv]) return; lyrClose();
+  chS = {id, lv, r, ch: chStart(r, lv), lock: !!r[CHLV[lv][1]], dirty: false, arm: false};
+  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
+  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}: ${CHLV[lv][2]} chords</b><span>Tap a chord to change it (1 4 5 6m 1/5 57; two on one word = 4 1). The same chords play in every verse.</span></div><div class="chsh"></div><div class="lyrbt"></div></div>`;
+  document.body.appendChild(o); chDraw(); }
+function chSetSlot(el){ if (!chS || chS.lock) return true; const a = +el.dataset.a, b = el.dataset.b === "inf" ? Infinity : +el.dataset.b, M = chS.r.meter || 4;
+  const T = el.textContent.replace(/[,|]/g, " ").trim().split(/\s+/).filter(Boolean), C = chIn(a, b), runs = chRuns(C);
+  if (T.join(" ") === runs.map(x => x.k).join(" ")) return true;
+  if (T.some(k => !scParse(k))){ el.classList.add("bad"); return false; } el.classList.remove("bad");
+  if (T.length && T.length === runs.length) runs.forEach((x, j) => x.cs.forEach(c => { c.k = T[j]; }));
+  else { chS.ch = chS.ch.filter(c => !C.includes(c)); if (T.length){ const s0 = C.length ? C[0].g : a, e0 = b === Infinity ? s0 + M : b, st = (e0 - s0) / T.length;
+      T.forEach((k, j) => chS.ch.push({g: chR6(s0 + (j ? Math.max(1, Math.round(st * j)) : 0)), L: 1, k})); } }
+  chS.ch.sort((p, q) => p.g - q.g); chS.ch.forEach((c, j) => { const nx = chS.ch[j + 1]; if (nx) c.L = chR6(nx.g - c.g); else if (!(c.L > 0)) c.L = M; });
+  chS.dirty = true; chS.arm = false; chDraw(); return true; }
+function chRows(L){ const M = chS.r.meter || 4, B = 4 * M, off = (chS.r.intro || L.some(c => c.g < 0)) ? 1 : 0, rows = [];
+  L.forEach(c => { const k = c.g < 0 ? 0 : Math.floor(c.g / B + 1e-9) + off; while (rows.length <= k) rows.push([]); rows[k].push(Object.assign({}, c)); }); return rows; }
+document.addEventListener("keydown", e => { const el = e.target.closest && e.target.closest("#lyrchk .chc[contenteditable]"); if (!el) return; if (e.key === "Enter"){ e.preventDefault(); el.blur(); } }, true);
+document.addEventListener("focusout", e => { const el = e.target.closest && e.target.closest("#lyrchk .chc[contenteditable]"); if (!el) return;
+  const nx = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest("#lyrchk .chc[contenteditable]"), key = nx && nx.dataset.chk;
+  if (chSetSlot(el) && key) setTimeout(() => { const n = document.querySelector(`#lyrchk .chc[data-chk="${key}"]`); if (n && document.activeElement !== n){ n.focus(); const g = getSelection(); g.selectAllChildren(n); g.collapseToEnd(); } }, 0); }, true);
+document.addEventListener("click", async e => { const b = e.target.closest("[data-chsheet]"); if (b){ e.preventDefault(); e.stopPropagation(); chOpen(b.dataset.chsheet, b.dataset.chlv); return; }
+  const x = e.target.closest("[data-chx]"); if (!x || !chS) return; e.preventDefault(); e.stopPropagation();
+  const act = x.dataset.chx; if (act === "back"){ if (chS.dirty && !chS.arm){ chS.arm = true; chDraw(); return; } chS = null; return lyrClose(); }
+  if (act === "edit"){ chS.lock = false; chS.arm = false; chDraw(); return; }
+  const foc = document.querySelector("#lyrchk .chc:focus"); if (foc && !chSetSlot(foc)) return;
+  const r = chS.r, j = CHL.indexOf(chS.lv), now = new Date().toISOString(), rows = chRows(chS.ch), up = {[CHLV[chS.lv][0]]: rows, [CHLV[chS.lv][1]]: now, updated: now};
+  CHL.slice(j + 1).forEach(L => { if (!r[CHLV[L][1]]){ up[CHLV[L][0]] = JSON.parse(JSON.stringify(rows)); up[CHLV[L][0] + "Edited"] = now; } });   /* copy DOWN only into levels he has not approved */
+  Object.assign(r, up); scLocal(r.id, up); chS = null; lyrClose(); render();
+  try { await db.collection("songcheck").doc(r.id).update(up); } catch (er) {} }, true);
 /* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens after it) */
 function plOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
@@ -5481,6 +5568,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   const tx = o.querySelector(".lyrtx").value.trim(), note = o.querySelector(".lyrnote").value.trim(), now = new Date().toISOString(), ed = tx !== String(r.lyricsText || "").trim();
   if (x.dataset.lyrx === "back") return lyrClose();
+  if (x.dataset.lyrx === "unlock"){ o.dataset.lock = "0"; const ta = o.querySelector(".lyrtx"); ta.readOnly = false; ta.focus(); return; }
   const up = x.dataset.lyrx === "ok" ? {lyricsText: tx, lyricsOK: now, lyricsFix: false, updated: now} : {lyricsText: tx, lyricsOK: "", lyricsFix: true, lyricsNote: note || "(see edits)", lyricsFixAt: now, updated: now};
   if (ed) up.lyricsEdited = now;
   Object.assign(r, up); lyrClose(); render();
