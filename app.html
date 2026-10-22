@@ -88,6 +88,12 @@ a.tpill{text-decoration:none;display:inline-flex;align-items:center}
 .who{font-size:12.5px;color:var(--muted)}
 .who b{color:var(--ink)}
 .said{margin:0;font-size:14px;line-height:1.35}
+:root{--cream:#EFEAE0}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cream:#2C3337}}
+:root[data-theme="dark"]{--cream:#2C3337}
+.thrd{background:var(--cream);border-radius:10px;padding:8px 10px;margin:6px 0;min-width:0}
+.thrd .tl{font-size:12.5px;color:var(--muted);margin:0 0 3px}
+.thrd p.te{margin:0;font-size:13px;line-height:1.35;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .draft{margin:0;font-size:14px;line-height:1.35;background:var(--soft);border-radius:10px;padding:8px 10px}
 .draft::before{content:"Your reply: ";font-weight:700;color:var(--teal)}
 textarea{width:100%;box-sizing:border-box;resize:none;height:76px;border:1px solid var(--teal);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;padding:8px 10px}
@@ -2339,7 +2345,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v240</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v241</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3354,7 +3360,9 @@ function replyCard(r){
   // (Oct 8) Chris: comments not in English show the English right under them (filled in when the reply is drafted)
   // (Oct 9) Chris: a private message can only be answered within 24 h of when it was sent: show the time left
   const left = msgLeft(r), clock = left == null ? "" : left <= 0 ? `<p class="note" style="color:var(--red);font-weight:700">Too late to reply from here: answer in the Meta Business Suite app</p>` : `<p class="note" style="font-weight:700;color:${left < 4 ? "var(--red)" : "#97710F"}">Answer by ${new Date(repEnd(r)).toLocaleString("en-US", {timeZone: "America/Phoenix", weekday: "short", hour: "numeric", minute: "2-digit"})} (${left < 1 ? "under an hour" : Math.floor(left) + "h"} left)</p>`;
-  const said = clock + `<p class="said clamp">"${esc(r.text)}"</p>${r.en ? `<p class="tn"><b>In English:</b> ${esc(r.en)}</p>` : ""}${r.subject ? `<p class="tn"><b>Subject:</b> ${esc(r.subject)}</p>` : ""}${r.post || thumbImg(r) ? `<span class="ron">${thumbImg(r)}${r.post ? `<span class="from clamp" style="white-space:normal">On: ${esc(r.post)}</span>` : ""}</span>` : ""}`;
+  // (Oct 21, Chris) side-thread replies: the earlier comments in that conversation sit above the comment (cream box)
+  const thr = r.side && Array.isArray(r.thread) && r.thread.length ? `<div class="thrd"><p class="tl">Earlier in this thread</p>${r.thread.map(t => `<p class="te"><b>${esc(t.who)}:</b> ${esc(t.text)}</p>`).join("")}</div>` : "";
+  const said = clock + thr + `<p class="said clamp">"${esc(r.text)}"</p>${r.en ? `<p class="tn"><b>In English:</b> ${esc(r.en)}</p>` : ""}${r.subject ? `<p class="tn"><b>Subject:</b> ${esc(r.subject)}</p>` : ""}${r.post || thumbImg(r) ? `<span class="ron">${thumbImg(r)}${r.post ? `<span class="from clamp" style="white-space:normal">On: ${esc(r.post)}</span>` : ""}</span>` : ""}`;
   if (editing === r.id){
     return `<div class="item wait">${head}${said}<label for="ed" style="position:absolute;left:-9999px">Edit reply</label>
       <textarea id="ed">${esc(r.final ?? r.draft ?? "")}</textarea>
