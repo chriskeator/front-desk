@@ -2362,7 +2362,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v242</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v243</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5028,7 +5028,7 @@ function socData(){
   for (const a of SOCAPPS){
     for (const c of ["fol", "vw"]){
       const k = key[c], have = L => L.filter(x => x && x[k] && x[k][a] != null), g = have(days), b = have(prv);
-      if (!g.length){ out[c][a] = {none: true}; continue; }
+      if (!g.length){ out[c][a] = {none: true, lag: !!(sd && sd.days.some(x => x && x[k] && x[k][a] != null))}; continue; }   /* lag = the app has numbers, just not for these days yet */
       const gs = g.reduce((t, x) => t + x[k][a], 0), bs = b.reduce((t, x) => t + x[k][a], 0);
       const r = b.length && b.length >= prv.length / 2 && bs ? ((gs / g.length) - (bs / b.length)) / Math.abs(bs / b.length) : null;
       out[c][a] = {v: gs, r, tot: c === "fol" && sd.followers ? sd.followers[a] : null};
@@ -5036,13 +5036,13 @@ function socData(){
   }
   if (S && S.days){ const cur = mpAgg(S, R.from, R.to), prv2 = mpAgg(S, R.pf, R.pt), ok = cur.days > 0;
     SOCAPPS.forEach(a => { const i = S.src.indexOf(a);
-      if (i < 0 || !ok){ out.clk[a] = {none: true}; return; }
+      if (i < 0 || !ok){ out.clk[a] = {none: true, lag: i >= 0}; return; }
       out.clk[a] = {v: cur.vis[i], rev: cur.rev[i], ord: cur.ord[i]}; out.clkN += cur.vis[i]; out.clkRev += cur.rev[i]; out.clkOrd += cur.ord[i]; }); }
   else SOCAPPS.forEach(a => out.clk[a] = {none: true});
   return out;
 }
 function homeSocial(){
-  const D = socData(), R = D.R, anyData = c => SOCAPPS.some(a => !D[c][a].none);
+  const D = socData(), R = D.R, anyData = c => SOCAPPS.some(a => !D[c][a].none), lagged = c => SOCAPPS.some(a => D[c][a].lag);
   const pb = (k, l) => `<button type="button" class="small${socPer === k ? " on" : ""}" data-socper="${k}">${l}</button>`;
   const cust = `<label class="small socdate${socPer === "custom" ? " on" : ""}">Custom<input type="date" data-socfrom max="${azToday()}" value="${esc(socFrom)}" aria-label="Start date, through today"></label>`;
   const sgn = n => (n >= 0 ? "+" : "") + n.toLocaleString();
@@ -5051,11 +5051,11 @@ function homeSocial(){
   const col = ([c, name]) => {
     const rows = SOCAPPS.map(a => ({a, d: D[c][a]})), max = Math.max(1, ...rows.map(x => x.d.none ? 0 : x.d.v));
     let big, small, bigc = "";
-    if (c === "fol"){ big = anyData("fol") ? sgn(D.folTot) : "-"; small = anyData("fol") ? "new followers" : "not connected yet"; }
-    else if (c === "vw"){ big = anyData("vw") ? D.vwTot.toLocaleString() : "-"; small = anyData("vw") ? "views" : "not connected yet"; }
-    else { big = anyData("clk") ? usd(D.clkRev) : "-"; small = anyData("clk") ? `${D.clkN.toLocaleString()} clicks · ${D.clkOrd} sale${D.clkOrd === 1 ? "" : "s"}` : "not connected yet"; }
+    if (c === "fol"){ big = anyData("fol") ? sgn(D.folTot) : "-"; small = anyData("fol") ? "new followers" : lagged("fol") ? "not in yet" : "not connected yet"; }
+    else if (c === "vw"){ big = anyData("vw") ? D.vwTot.toLocaleString() : "-"; small = anyData("vw") ? "views" : lagged("vw") ? "not in yet" : "not connected yet"; }
+    else { big = anyData("clk") ? usd(D.clkRev) : "-"; small = anyData("clk") ? `${D.clkN.toLocaleString()} clicks · ${D.clkOrd} sale${D.clkOrd === 1 ? "" : "s"}` : lagged("clk") ? "not in yet" : "not connected yet"; }
     const rowH = ({a, d}) => { let val, sub = "", cc = "";
-      if (d.none){ val = "-"; sub = "not connected yet"; }
+      if (d.none){ val = "-"; sub = d.lag ? "not in yet" : "not connected yet"; }
       else if (c === "fol"){ val = sgn(d.v); sub = chg(d.r) || (d.tot != null ? d.tot.toLocaleString() + " total" : ""); cc = chgc(d.r); }
       else if (c === "vw"){ val = d.v.toLocaleString(); sub = chg(d.r); cc = chgc(d.r); }
       else { val = usd(d.rev); sub = `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"}`; }
