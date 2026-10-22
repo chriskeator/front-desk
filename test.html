@@ -1374,8 +1374,13 @@ function scPiano(c, s, d, m, v, cut, dst){ const x = scPNear(m), buf = scPB[x]; 
   let end = s + 4.5; if (cut != null && cut < end){ g.gain.cancelScheduledValues(cut); g.gain.setTargetAtTime(.0001, cut, .03); end = cut + .14; }
   src.connect(g).connect(dst || c.destination); src.start(s); src.stop(end); }
 /* the Lab click: square tick 1400 (bar) / 1000, nudged 18ms late to meet the piano sample's attack (piano-engine.js CLICK_DELAY) */
-function scClick(c, s, acc){ s += .018; const o = c.createOscillator(), g = c.createGain(); o.type = "square"; o.frequency.value = acc ? 1400 : 1000;
-  g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(acc ? .18 : .12, s + .002); g.gain.exponentialRampToValueAtTime(.0001, s + .045);
+/* (Oct 22, Chris) click schedule: [beatPosition, level] level true/2 = strong, 1 = medium, 0 = soft; grid 3 songs click every triplet (beat 1 strong, other beats medium, triplets 2 and 3 soft), others only on the beat */
+function scClickTimes(s0, e0, D){ const out = [], M = D.meter, tri = D.grid === 3, mod = b => ((b % M) + M) % M;
+  for (let b = Math.ceil(s0 - 1e-9); b < e0 - 1e-9; b++){ if (!tri){ out.push([b, mod(b) === 0]); continue; }
+    for (let j = 0; j < 3; j++){ const x = b + j / 3; if (x >= s0 - 1e-9 && x < e0 - 1e-9) out.push([x, j ? 0 : mod(b) === 0 ? 2 : 1]); } }
+  return out; }
+function scClick(c, s, acc){ const soft = acc === 0; acc = acc === true || acc === 2; s += .018; const o = c.createOscillator(), g = c.createGain(); o.type = "square"; o.frequency.value = acc ? 1400 : 1000;
+  g.gain.setValueAtTime(.0001, s); g.gain.linearRampToValueAtTime(acc ? .18 : soft ? .05 : .12, s + .002); g.gain.exponentialRampToValueAtTime(.0001, s + .045);
   o.connect(g).connect(c.destination); o.start(s); o.stop(s + .06); }
 function scBeep(m){ if (window.DESK_TEST) return; scPLoad([m]).then(() => { try { const c = new AudioContext(); scPiano(c, c.currentTime + .02, .5, m, 1, c.currentTime + .9); setTimeout(() => c.close(), 1500); } catch {} }); }
 function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } scPH = null; const h = document.getElementById("scph"); if (h) h.remove(); }
@@ -1415,7 +1420,7 @@ async function scPlay(){
   const B = 60 / scDoc.bpm, T = c.currentTime + .3, S = scSched(), K = S.K, skipped = g => K.some(([a, b]) => g >= a - 1e-9 && g < b - 1e-9);
   S.segs.forEach(q => { const at = g => T + q.at(g) * B;
     if (scStep() === 2 && scChdOn()) (scChords[q.i] || []).forEach(ch => { if (scParse(ch.k) && ch.g < q.e0) scChordAt(c, at(Math.max(ch.g, q.s0)), at(Math.min(scEnd(ch), q.e0)), ch.k); });
-    if (scClickOn()) for (let b = Math.ceil(q.s0 - 1e-9); b < q.e0 - 1e-9; b++) if (!skipped(b)) scClick(c, at(b), ((b % scDoc.meter) + scDoc.meter) % scDoc.meter === 0); });
+    if (scClickOn()) for (const [b, lv] of scClickTimes(q.s0, q.e0, scDoc)) if (!skipped(b)) scClick(c, at(b), lv); });
   const mel = scStep() === 1 || scMelOn() ? S.mel : [];
   mel.forEach((n, k) => scPiano(c, T + n.t * B, 0, n.m, 1, k + 1 < mel.length ? T + mel[k + 1].t * B : null));
   scPH = {T, B, segs: S.segs, K}; requestAnimationFrame(scHead);
@@ -1931,7 +1936,7 @@ if(mod&&(String(e.key).toLowerCase()==='z'||e.code==='KeyZ')){stop();e.preventDe
 addEventListener('resize',()=>{if(ON&&!drag)draw()});
 /* PLAY: the desk's real piano (scPiano, the Lab samples) for the numbers, the prototype's click on every beat */
 let PL=null,AC=null,KG=null,rpT=null,rpBusy=false;
-function click(t,hi){t+=.018;/* Oct 20 Chris: "metronome not lining up with the piano, a hair off": same 18ms nudge as the Lab (piano-engine CLICK_DELAY) so the tick meets the sample's attack */const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(KG&&KG.context===AC?KG:AC.destination);o.start(t);o.stop(t+0.08)}
+function click(t,hi){const lv=hi===2||hi===1||hi===0?hi:(hi?2:1);hi=lv===2;t+=.018;/* Oct 20 Chris: "metronome not lining up with the piano, a hair off": same 18ms nudge as the Lab (piano-engine CLICK_DELAY) so the tick meets the sample's attack */const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=hi?1500:1000;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(hi?0.5:lv===0?0.12:0.28,t+0.002);g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);o.connect(g);g.connect(KG&&KG.context===AC?KG:AC.destination);o.start(t);o.stop(t+0.08)}
 /* where each bar starts on the song's clock (16ths), bars back to back */
 function starts(){const st=[];let T=0;bars.forEach(b=>{st.push(T);T+=b.n-(b.a||0)});st.push(T);return st}
 const isHold=q=>!q.w&&/^\s*-+\s*$/.test(String(q.d));
@@ -1956,7 +1961,8 @@ PL={seg,t0,end:t,step,N,nodes:[],ac};{const kg=AC.createGain();kg.connect(AC.des
 const sounding=mel.filter(n=>n.t+n.len>P0);   /* (Oct 20, Chris: 'neither button mutes') melody + chords always scheduled into their own volume; Melody off / Chords off turn it down LIVE */
 const mg=AC.createGain(),cg=AC.createGain();mg.gain.value=(!CM||MON)?1:0;cg.gain.value=CON?1:0;mg.connect(AC.destination);cg.connect(AC.destination);PL.mg=mg;PL.cg=cg;if(CM){const EV=[];seg.forEach(g=>{if(g.i==='lead')return;((bars[g.i].ch||{})[LF[LVK]]||[]).forEach(c=>{const s0=Math.max(c.s,g.a),e0=c.s+c.l;if(e0>s0)EV.push({t:g.t+(s0-g.a)*step,en:g.t+(Math.min(e0,g.n)-g.a)*step,k:c.k,cont:!!c.cont&&s0===c.s})})});EV.sort((a,b)=>a.t-b.t);   /* (Oct 20, Chris: 'I hear a chord on beat 1 of bar 2 but there is none') (Oct 21, Chris) a chord held over the bar line is RE-STRUCK on beat 1 of the next bar (same as the Lab); chords never fill a gap he left */
 EV.forEach(e=>scChordAt(AC,e.t,e.en,e.k,cg))   /* rings for its own length, not until the next chord */}sounding.forEach((n,k)=>{const s0=Math.max(n.t,P0),at=tS+(s0-P0)*step,e=tS+(n.t+n.len-P0)*step;scPiano(AC,at,0,n.mid,1,e,mg)});
-seg.forEach(g=>{for(let k=g.a;k<g.n;k++)if(k%SB===0||k===g.a)click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead')});
+seg.forEach(g=>{for(let k=g.a;k<g.n;k++){if(GR===3){click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead'?2:k%3===0?1:0);continue}   /* (Oct 22, Chris) grid-3 songs (O Holy Night): a click on every triplet, beat 1 strong, other beats medium, triplets 2 and 3 soft */
+if(k%SB===0||k===g.a)click(g.t+(k-g.a)*step,k===g.a&&g.i!=='lead')}});
 if(lv){if(!OLD.end)requestAnimationFrame(tick)}else{hint('Playing at '+bpm+' BPM'+(from?' from '+lab(from):''));requestAnimationFrame(tick)}}
 /* (Oct 21, Chris) edit while playing: rebuild the plan from the next 16th after the playhead, same song clock, no stop */
 function liveReplan(){clearTimeout(rpT);rpT=setTimeout(async()=>{if(!ON||!PL||!PL.end||!PL.seg.length)return;if(rpBusy){liveReplan();return}
@@ -2454,7 +2460,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v263</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v264</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
