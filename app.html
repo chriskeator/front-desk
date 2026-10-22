@@ -19,6 +19,7 @@ html body .wrap{padding-top:max(12px,env(safe-area-inset-top));padding-bottom:ma
 <script>window.DESK_CFG = {url: "https://cndzteukojzzjpmzmdxr.supabase.co", key: "sb_publishable_S6pzTaqMtZCSQoE_2Pkmew_QnzmBUM3"};
 function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//; for (const t of (typeof allTasks !== "undefined" ? allTasks : [])) for (const l of (t.links || [])) { const m = re.exec(l.url || ""); if (m) return m[0] + "lab/"; } } catch (e) {} return "https://lab.worshippianoacademy.com/"; }</script>
 <script src="desk-db.js"></script>
+<link rel="expect" href="#fdend" blocking="render">
 </head><body>
 <title>Front Desk</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Figtree:wght@400;600;700;800&display=swap">
@@ -190,6 +191,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk .lyrtx{flex:1;min-height:0;resize:none;font:15px/1.5 inherit;font-family:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
 #lyrchk .lyrnote{font:14px inherit;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
 #lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:#FBEFD0;color:#8A6508}
+#lyrchk .btfl b.btap{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft,#EEF6F5);color:var(--teal,#0F766E);border:1.5px solid var(--teal,#0F766E)}#lyrchk[data-appr="1"] .bttx{background:var(--soft,#EEF6F5)}#lyrchk[data-appr="1"] [data-btx="fix"],#lyrchk[data-appr="1"] [data-btx="ok"],#lyrchk[data-appr="1"] .lyrnote{display:none}#lyrchk[data-appr="1"] .lyrbt{grid-template-columns:1fr}
 #lyrchk .lyrbt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
 :root{--hov:rgba(0,0,0,.07)}
@@ -1842,9 +1844,13 @@ let ns=Math.max(dst.a||0,Math.min(dst.n-1,dir>0?Math.floor(P.f*N+0.7):dir<0?Math
 /* (v59 'no pushing' replaced Oct 20: the dragged box wins, the crowded box shrinks; nothing ever moves to another spot) */
 /* (Oct 20, Chris, 2nd: "whatever I'm dragging overrides whatever I'm putting it on") the dragged box lands where it is dropped and the box it crowds SHRINKS:
    a box starting before it ends where it starts; a box starting under it starts where it ends. Only a box with the very same start, or one it covers whole, stays put (then the dragged box stops short of it). */
-const same=dst.notes.filter(o=>!o.w===!q.w);let ok=true;let L=Math.min(q.l,dst.n-ns);ok=!same.some(o=>o!==q&&o.s<=ns&&ns<o.s+o.l);   /* (Oct 21, Chris) a drop with its START on a taken spot is refused: the box snaps back, the box under it is never shrunk. (Oct 22, Chris, REGRESSION fix) the DRAGGED box shrinks to fit while dragging: to the gap before the next box, and a lyric word to the short number note that starts under it (O Holy Night: the O block onto the short 7) */
-if(ok){same.forEach(o=>{if(o!==q&&o.s>ns&&o.s<ns+L)L=o.s-ns});if(q.w){const nn=dst.notes.find(o=>!o.w&&o.s===ns);if(nn)L=Math.max(1,Math.min(L,nn.l))}}
-if(ok){q.s=ns;q.l=L}else hint('That spot is taken');
+const same=dst.notes.filter(o=>!o.w===!q.w&&o!==q);let ok=true;let L=Math.min(q.l,dst.n-ns);const adj=[];
+/* (Oct 22 v261, Chris: Hark bar 2) THE DRAGGED BOX WINS: it lands exactly on the grid spot he drops it on and any neighbour in the way SHRINKS (a box that starts before the drop ends there; a box under the dragged one starts where it ends). The neighbour never blocks. Only a box the dragged one would cover whole makes the dragged box stop short; a 1-step box on the very same start cannot shrink, so that one drop is refused. */
+for(let t=0;t<9;t++){let ch=false;same.forEach(o=>{const oe=o.s+o.l;if(o.s===ns&&oe>ns+1&&L>o.l-1){L=Math.max(1,o.l-1);ch=true}else if(o.s>ns&&o.s<ns+L&&oe<=ns+L){L=o.s-ns;ch=true}});if(!ch)break}
+if(same.some(o=>o.s===ns&&o.l<2))ok=false;
+if(ok)same.forEach(o=>{const oe=o.s+o.l;if(o.s<ns&&ns<oe)adj.push([o,o.s,ns-o.s]);else if(o.s>=ns&&o.s<ns+L&&oe>ns+L)adj.push([o,ns+L,oe-ns-L])});
+if(ok&&q.w){const nn=dst.notes.find(o=>!o.w&&o.s===ns);if(nn)L=Math.max(1,Math.min(L,nn.l))}   /* (Oct 22, Chris, REGRESSION fix) a lyric word shrinks to the short number note that starts under it (O Holy Night: the O block onto the short 7) */
+if(ok){q.s=ns;q.l=L;adj.forEach(a=>{a[0].s=a[1];a[0].l=a[2]})}else hint('That spot is taken');
 if(ok)dst.notes.push(q);else{bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})})}
 bars.forEach(b=>(b.notes||[]).sort((a,c)=>a.s-c.s));
 const sig=JSON.stringify(bars.map(b=>(b.notes||[]).map(x=>[x.id,x.s,x.l])));if(sig===drag.sig)return;drag.sig=sig;
@@ -1852,18 +1858,20 @@ const bi=bars.findIndex(b=>(b.notes||[]).includes(q));notePick={b:bars[bi].id,n:
 else if(drag.k==='band'){const er=ED.getBoundingClientRect(),x1=Math.min(drag.x0,e.clientX),x2=Math.max(drag.x0,e.clientX),y1=Math.min(drag.y0,e.clientY),y2=Math.max(drag.y0,e.clientY);if(x2-x1<4&&y2-y1<4)return;
 let bd=ED.querySelector('.nband');if(!bd){bd=document.createElement('div');bd.className='nband';ED.appendChild(bd)}Object.assign(bd.style,{left:(x1-er.left)+'px',top:(y1-er.top)+'px',width:(x2-x1)+'px',height:(y2-y1)+'px'});
 noteSel=[];R.querySelectorAll('.nt[data-qid]').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const b=bars[+el.dataset.nb],q=b&&(b.notes||[]).find(x=>String(x.id)===el.dataset.qid);if(q)noteSel.push(q)}});chSel=[];R.querySelectorAll('.chd:not(.cont)').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const c=chOf(el);if(c)chSel.push(c)}});light();const nB=noteSel.length+chSel.length;hint(nB+' box'+(nB===1?'':'es')+' picked')}
-else if(drag.k==='ngroup'){const N=S(),dw=Math.round((e.clientX-drag.x0)/drag.bw*N);if(dw===drag.dw)return;drag.dw=dw;   /* (Oct 22, Chris) a jump past a real collision stops AT the collision (all picked boxes move together as far as they can), never 'none move' */
+else if(drag.k==='ngroup'){const N=S(),dw=Math.round((e.clientX-drag.x0)/drag.bw*N);if(dw===drag.dw)return;drag.dw=dw;   /* (Oct 22, Chris) a neighbour in the way SHRINKS (v261); only a box the picked ones would cover whole stops the jump AT it (all picked boxes move together as far as they can), never 'none move' */
 const tryD=d=>{const tgt=drag.orig.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {q:o.q,bi,s:g-bi*N}}),moving=new Set(drag.orig.map(o=>o.q));
-const ok=tgt.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.q.l<=B.n&&!(B.notes||[]).some(o=>!o.w===!t.q.w&&!moving.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.q.l)&&!tgt.some(u=>u!==t&&u.bi===t.bi&&!u.q.w===!t.q.w&&t.s<u.s+u.q.l&&u.s<t.s+t.q.l)});
-const oc=drag.oc||[],tc=oc.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {c:o.c,bi,s:g-bi*N}}),mvc=new Set(oc.map(o=>o.c)),okc=tc.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.c.l<=B.n&&!lvlOf(B).some(o=>!o.cont&&!mvc.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.c.l)&&!tc.some(u=>u!==t&&u.bi===t.bi&&t.s<u.s+u.c.l&&u.s<t.s+t.c.l)});return ok&&okc?{tgt,tc,oc}:null};
+const NB=drag.nbo||(drag.nbo=new Map()),P0=o=>NB.get(o)||{s:o.s,l:o.l},AJ=new Map();   /* (Oct 22 v261, Chris) a neighbour in the way SHRINKS (end cut at the dropped box, or start moved to its end); only a box the picked ones would cover whole stops the jump */
+const ok=tgt.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.q.l<=B.n&&!(B.notes||[]).some(o=>{if(!o.w!==!t.q.w||moving.has(o))return false;const p=P0(o),pe=p.s+p.l;if(!(t.s<pe&&p.s<t.s+t.q.l))return false;const a=AJ.get(o)||{s:p.s,e:pe};if(p.s<t.s)a.e=Math.min(a.e,t.s);else if(pe>t.s+t.q.l)a.s=Math.max(a.s,t.s+t.q.l);else return true;AJ.set(o,a);return a.e-a.s<1})&&!tgt.some(u=>u!==t&&u.bi===t.bi&&!u.q.w===!t.q.w&&t.s<u.s+u.q.l&&u.s<t.s+t.q.l)});
+const oc=drag.oc||[],tc=oc.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {c:o.c,bi,s:g-bi*N}}),mvc=new Set(oc.map(o=>o.c)),okc=tc.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.c.l<=B.n&&!lvlOf(B).some(o=>!o.cont&&!mvc.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.c.l)&&!tc.some(u=>u!==t&&u.bi===t.bi&&t.s<u.s+u.c.l&&u.s<t.s+t.c.l)});return ok&&okc?{tgt,tc,oc,adj:[...AJ].map(([o,a])=>[o,a.s,a.e-a.s])}:null};
 let d=dw,R2=tryD(d);while(!R2&&d!==(drag.d||0)){d+=d>(drag.d||0)?-1:1;R2=tryD(d)}if(!R2||d===drag.d)return;const {tgt,tc,oc}=R2;
+{const NB=drag.nbo;NB.forEach((v,o)=>{o.s=v.s;o.l=v.l});R2.adj.forEach(a=>{if(!NB.has(a[0]))NB.set(a[0],{s:a[0].s,l:a[0].l});a[0].s=a[1];a[0].l=a[2]})}
 drag.d=d;drag.orig.forEach(o=>{bars.forEach(b=>{if(b.notes){const k=b.notes.indexOf(o.q);if(k>=0)b.notes.splice(k,1)}})});tgt.forEach(t=>{t.q.s=t.s;const B=bars[t.bi];B.notes=B.notes||[];B.notes.push(t.q)});if(oc.length){oc.forEach(o=>{bars.forEach(b=>{const L=lvlOf(b),k=L.indexOf(o.c);if(k>=0)L.splice(k,1)})});tc.forEach(t=>{t.c.s=t.s;lvl(bars[t.bi]).push(t.c)})}bars.forEach(b=>(b.notes||[]).sort((x,y)=>x.s-y.s));draw();hint('Moving '+(tgt.length+tc.length)+' boxes')}
 else if(drag.k==='lead'){const el=R.querySelector('.b.lead');if(!el)return;const r=el.getBoundingClientRect(),N=S();let a=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N);a=Math.max(0,Math.min(N,a));drag.a=a;draw({leadA:a});hint(a>=N?'Let go: no lead-in':'Let go: lead-in = '+len(N-a))}
 else if(drag.k==='size'&&drag.hatch){const el=R.querySelector('.b[data-i="'+drag.j+'"]');if(!el)return;const r=el.getBoundingClientRect(),N=S(),q=Q(),C=bars.map(b=>({...b})),b=C[drag.j];let f=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N/q)*q;
 if(drag.side==='R')b.n=Math.max((b.a||0)+q,Math.min(N,f));else b.a=Math.max(0,Math.min(b.n-q,f));drag.P={C,sel:[drag.j],msg:'Let go: '+lab(drag.j)+' = '+len(b.n-(b.a||0))};const keep=sel;sel=[drag.j];draw(C);sel=keep;hint(drag.P.msg)}
 else if(drag.k==='size'){const P=spot(e.clientX,e.clientY);if(!P)return;const Q=sizeTo(P,drag.j,drag.side);drag.P=Q;const keep=sel;sel=Q.sel;draw(Q.C);sel=keep;hint(Q.msg)}});
 function gStart(e,bw){save();drag={k:'ngroup',x0:e.clientX,bw,orig:noteSel.map(x=>({q:x,bi:bars.findIndex(b=>(b.notes||[]).includes(x)),s:x.s})),oc:chSel.map(c=>({c,bi:bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c)),s:c.s}))}}
-function cancelDrag(){if(drag&&drag.orig)bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})});delete document.documentElement.dataset.drag;ED.querySelectorAll('.ghost').forEach(x=>x.remove());drag=null;document.body.style.cursor='';showIns(null);draw()}
+function cancelDrag(){if(drag&&drag.nbo)drag.nbo.forEach((v,o)=>{o.s=v.s;o.l=v.l});if(drag&&drag.k==='nmove'&&drag.orig)bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})});delete document.documentElement.dataset.drag;ED.querySelectorAll('.ghost').forEach(x=>x.remove());drag=null;document.body.style.cursor='';showIns(null);draw()}
 ['pointercancel','blur','contextmenu'].forEach(ev=>window.addEventListener(ev,()=>{if(ON&&drag)cancelDrag()}));
 window.addEventListener('pointerup',()=>{if(!ON)return;delete document.documentElement.dataset.drag;ED.querySelectorAll('.nband').forEach(x=>x.remove());const D=drag;drag=null;if(D&&D.gh)D.gh.remove();document.body.style.cursor='';showIns(null);if(!D)return;
 if(D.k==='move'&&D.moved&&D.g!=null){save();const P=D.others.slice();P.splice(D.g,0,...D.items);bars=P.map(b=>typeof b.id==='string'?{id:++id,m:b.m,a:b.a,n:b.n,notes:b.notes||[],ch:b.ch}:b);sel=D.items.map((_,j)=>D.g+j);draw();hint(D.copy?'Copied':'Moved')}
@@ -2441,7 +2449,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v264</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v267</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5029,17 +5037,19 @@ const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled",
    Drag a queued row (computer) or tap Top (phone) = it goes next (writes 'order'). */
 function homeQueue(){
   const Q = queueRows || [], day = Date.now() - 86400000, ts = x => Date.parse(x || "") || 0;
-  const W = Q.filter(q => q.status === "working"), U = Q.filter(q => q.status === "queued").sort((a, b) => (a.order || 0) - (b.order || 0)),
+  const W = Q.filter(q => q.status === "working"), U = Q.filter(q => q.status === "queued" && !((Date.parse(q.holdUntil || "") || 0) > Date.now())).sort((a, b) => (a.order || 0) - (b.order || 0)),
+        H = Q.filter(q => q.status === "queued" && (Date.parse(q.holdUntil || "") || 0) > Date.now()).sort((a, b) => (Date.parse(a.holdUntil) || 0) - (Date.parse(b.holdUntil) || 0)),
         P = Q.filter(q => q.status === "paused").sort((a, b) => (a.order || 0) - (b.order || 0)),
         S = Q.filter(q => q.status === "stuck" && !(q.extra && q.extra.rescueOf) && (!q.rescueId || q.rescueFailed)), G = Q.filter(q => q.status === "waiting-chris"), D = Q.filter(q => q.status === "done" && ts(q.doneAt) > day).sort((a, b) => ts(b.doneAt) - ts(a.doneAt));
   /* (Oct 21, Chris) WORKING first (priority order, any lane), then every other job grouped by lane Desk, Songs, Lab, Shorts, Tasks, then others; each group by order */
   const LN = ["desk", "songs", "lab", "shorts", "tasks"], lk = q => { const i = LN.indexOf(String(q.lane || q.job || "").toLowerCase()); return i < 0 ? LN.length : i; }, oo = q => Number(q.order) || 0;
   W.sort((a, b) => oo(a) - oo(b));
-  const REST = U.concat(P, S, G).sort((a, b) => lk(a) - lk(b) || oo(a) - oo(b));
+  /* (Oct 22, Chris) QUEUE SHOWS ONLY WHAT IS HAPPENING NOW: working + queued/paused ready now. Future holdUntil = 'N scheduled later' line; waiting-on-you rows are his Today tasks; stuck is the rescue's job (S, G only feed the old counts) */
+  const REST = U.concat(P).sort((a, b) => lk(a) - lk(b) || oo(a) - oo(b));
   /* 'For' = plain words: the linked task's short title, or the bracket text unless it is an id or 'steps ..' */
   const forOf = q => { const tid = (/\bt-[a-z0-9][a-z0-9-]*/i.exec((q.ref || "") + " " + (q.title || "")) || [])[0], tk = tid && (allTasks || []).find(t => t.id === tid); if (tk) return tk.short || tk.title || "";
     const pc = sp(q.title)[1]; return !pc || /\bt-[a-z0-9]|^steps?\b/i.test(pc) ? "" : pc; };
-  if (!W.length && !U.length && !P.length && !S.length && !G.length) return "";   /* (Oct 20, Chris) done rows never show */
+  if (!W.length && !U.length && !P.length && !H.length) return "";   /* (Oct 20, Chris) done rows never show */
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   /* (Oct 20, Chris) ONE pill on the left = status + job stacked; no Top button (press and hold a row, drag it where it goes); title gets the room */
   /* (Oct 21, Chris) the label says exactly what is happening: Working teal, Queued grey, Paused amber, On hold purple, Waiting on you blue, Retrying gold, Stuck red, Done green */
@@ -5068,7 +5078,8 @@ function homeQueue(){
   /* (Oct 20, Chris "Ask me every time"): Shorts renders wait for night unless Chris taps Run now (sets dayOk on each waiting one) */
   const NK = {"words-make": 1, "final-make": 1}, hr = new Date().getHours(), NW = hr >= 6 ? U.filter(q => NK[q.kind] && !q.dayOk) : [];
   const ask = NW.length ? `<div class="qrow" style="${RS};background:#F0C75A22"><span style="flex:1;min-width:0;font-size:14px;line-height:1.3">${NW.length} Shorts render${NW.length > 1 ? "s" : ""} wait for tonight<span style="display:block;font-size:12px;color:var(--muted,#8A9099)">Running now slows your Mac while you work</span></span><button type="button" class="tpill" data-qdayok="1" style="flex:0 0 auto;background:#F0C75A;color:#3a2a00;font-weight:700">Run now</button></div>` : "";
-  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length + P.length} waiting${S.length ? " · " + S.length + " stuck" : ""}${G.length ? " · " + G.length + " waiting on you" : ""}</i></span></h4><div class="qhead qd2" style="position:sticky;top:15px;z-index:2;background:var(--card,#fff);border-bottom:1px solid var(--line,#E7E1D6);padding:6px 20px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;width:112px">Status</span><span style="flex:0 0 auto;width:64px">Helper</span><span style="flex:0 0 auto;width:90px">Lane</span><span style="flex:1;min-width:0">Job</span><span class="qfor" style="flex:0 0 auto;width:130px">For</span><span style="flex:0 0 auto;width:64px">Takes</span><span style="flex:0 0 auto;width:128px;text-align:right">When</span><span style="flex:0 0 auto;width:54px;text-align:center">Top</span></div><div class="chgrid qlist">${ask}${W.concat(REST).map(row).join("")}</div></div>`; }
+  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length + P.length} waiting</i></span></h4><div class="qhead qd2" style="position:sticky;top:15px;z-index:2;background:var(--card,#fff);border-bottom:1px solid var(--line,#E7E1D6);padding:6px 20px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;width:112px">Status</span><span style="flex:0 0 auto;width:64px">Helper</span><span style="flex:0 0 auto;width:90px">Lane</span><span style="flex:1;min-width:0">Job</span><span class="qfor" style="flex:0 0 auto;width:130px">For</span><span style="flex:0 0 auto;width:64px">Takes</span><span style="flex:0 0 auto;width:128px;text-align:right">When</span><span style="flex:0 0 auto;width:54px;text-align:center">Top</span></div><div class="chgrid qlist">${ask}${W.concat(REST).map(row).join("")}</div>${H.length ? `<div class="qlater" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" class="qlaterb" data-qlater="1" style="background:none;border:0;padding:4px 0;font-size:12px;font-weight:600;color:var(--muted,#8A9099);cursor:pointer">${H.length} scheduled later</button><div class="qlaterl" hidden style="margin-top:4px">${H.map(q => `<div class="qlr" style="display:flex;gap:10px;font-size:12px;line-height:1.4;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;white-space:nowrap">${esc(new Date(q.holdUntil).toLocaleDateString([], {month: "short", day: "numeric", timeZone: "America/Phoenix"}))}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span></div>`).join("")}</div></div>` : ""}</div>`; }
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qlater]"); if (!b) return; const l = b.parentNode.querySelector(".qlaterl"); if (l) l.hidden = !l.hidden; });
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qdayok]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   (queueRows || []).filter(q => q.status === "queued" && (q.kind === "words-make" || q.kind === "final-make") && !q.dayOk).forEach(q => { q.dayOk = true; db.collection("queue").doc(q.id).update({dayOk: true}).catch(() => {}); });
   liveRender(); }, true);
@@ -5382,11 +5393,22 @@ function btTexts(sc){ const t = sc && sc.beatsText; return t && typeof t === "ob
 function btHas(sc){ return Object.values(btTexts(sc)).some(x => String(x || "").trim()); }
 function btOks(sc){ const o = sc && sc.beatsOK; return o && typeof o === "object" ? o : {}; }
 function btAnyOk(sc){ return Object.values(btOks(sc)).some(Boolean); }
-function btCell(sc, plan){ if (!sc) return {c: ""}; const T = btTexts(sc), O = btOks(sc), vs = btVerses(sc);
+/* (Oct 22 v261, Chris: Hark + Jingle broke) APPROVED = LOCKED for Beats. A verse is approved when its melody is (verse 1 + melodyOK), it is in versesOk, or EVERY row of its notes is ticked (rowsOk, rowsOk_vN). A ticked row of any other verse is locked too. Beats never writes text for, builds, or unticks any of it. */
+function btFlat0(a){ return (a || []).reduce((o, x) => o.concat(Array.isArray(x) ? x : [x]), []); }
+function btRowsSet(r, v){ const a = r && r[v === 1 ? "rowsOk" : "rowsOk_v" + v]; return new Set(Array.isArray(a) ? a : []); }
+function btTicked(r, v, g){ const S = btRowsSet(r, v); if (!S.size) return false; const M = r.meter || 4;
+  if (g < 0) return S.has(r.intro ? "i0" : "b1");
+  const bar = Math.floor(g / M + 1e-9); return S.has("b" + (Math.floor(bar / 4) * 4 + 1)) || (Math.floor(bar / 2) % 2 === 1 && S.has("b" + (Math.floor(bar / 2) * 2 + 1))); }   /* a 4-bar row key, or a phone 2-bar row key (b3) */
+function btVNotes(r, v){ const lv = v > 1 && r.linesV && Array.isArray(r.linesV[v]) && r.linesV[v].length ? r.linesV[v] : null; return btFlat0(lv || r.lines); }
+function btRowsAll(r, v){ const n = btVNotes(r, v); return n.length > 0 && n.every(q => btTicked(r, v, q.g)); }
+function btApproved(r, v){ v = +v; return !!r && ((v === 1 && !!r.melodyOK) || (Array.isArray(r.versesOk) && r.versesOk.includes(v)) || btRowsAll(r, v)); }
+function btWordsText(r, v){ const M = r.meter || 4, W = v === 1 ? btFlat0(r.words) : (r.wordsV && Array.isArray(r.wordsV[v]) && r.wordsV[v].length ? r.wordsV[v] : btFlat0(r.words)), N = btVNotes(r, v), g = btGroup(r, N, W);
+  return g.words.map(l => l.map(w => (Math.abs(w.g / M - Math.round(w.g / M)) < 1e-6 ? "| " : "") + w.w).join(" ")).filter(Boolean).join("\n"); }
+function btCell(sc, plan){ if (!sc) return {c: ""}; const T = btTexts(sc), O = btOks(sc), vs = btVerses(sc), done = v => !!O[v] || btApproved(sc, v);   /* display only: never writes an OK field */
   if (sc.beatsFix) return {c: "fx", ak: fmAck("songcheck", sc.id)};
-  if (vs.length && vs.every(v => O[v])) return {c: "ok", id: sc.id, bt: 1};
-  if (vs.some(v => String(T[v] || "").trim() && !O[v])) return {c: "chk", id: sc.id, bt: 1};
-  if (sc.beatsMaking || btHas(sc)) return {c: "mk"};
+  if (vs.length && vs.every(done)) return {c: "ok", id: sc.id, bt: 1};
+  if (vs.some(v => !done(v) && String(T[v] || "").trim())) return {c: "chk", id: sc.id, bt: 1};
+  if (sc.beatsMaking) return {c: "mk"};
   return {c: ""}; }
 function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow their songcheck row like every other song; nothing is hardcoded Approved */
   const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
@@ -5459,8 +5481,8 @@ function parseLines(text){
       if (cur) cur.toks.push(t); else lead.push(t); }); });
   segs.tail = lead;   /* lead-in words with no | after them: lost, reported */
   return segs; }
-function beatsApply(notes0, text, M, cutoff){
-  const flags = [], r6 = x => +x.toFixed(6), clone = o => JSON.parse(JSON.stringify(o));
+function beatsApply(notes0, text, M, cutoff, grid){
+  const u = grid === 3 ? 1 / 3 : 0.25, e2 = grid === 3 ? 1 / 3 : 0.5, flags = [], r6 = x => +x.toFixed(6), clone = o => JSON.parse(JSON.stringify(o));
   const segs = parseLines(text);
   String(text || "").split("\n").forEach((raw, li) => { const l = raw.trim(); if (!l) return; if (!l.includes("|")) flags.push("Line " + (li + 1) + ": no |"); if (/(^|\s)\?+(\s|$)/.test(l)) flags.push("Line " + (li + 1) + ": ?? left out"); });
   const N = clone(notes0).sort((a, b) => a.g - b.g);
@@ -5468,12 +5490,12 @@ function beatsApply(notes0, text, M, cutoff){
   const down = n => Math.abs(n.g / M - Math.round(n.g / M)) < 1e-6;
   const addC = (a, b) => (a.c || []).concat((b.c || []).map(c => [c[0], r6((c[1] || 0) + b.g - a.g)]));
   const merge = (a, b) => { const o = {g: a.g, L: r6(b.g + b.L - a.g), m: a.m, c: addC(a, b), w: ""}; return o; };
-  const split = n => { const h = Math.max(0.25, Math.round(n.L / 2 * 4) / 4), a = {g: n.g, L: h, m: n.m, c: (n.c || []).filter(c => (c[1] || 0) < h), w: ""}, b = {g: r6(n.g + h), L: r6(n.L - h), m: n.m, c: (n.c || []).filter(c => (c[1] || 0) >= h).map(c => [c[0], r6(c[1] - h)]), w: ""}; return [a, b]; };
+  const split = n => { const h = r6(Math.max(u, Math.round(n.L / 2 / u) * u)), a = {g: n.g, L: h, m: n.m, c: (n.c || []).filter(c => (c[1] || 0) < h), w: ""}, b = {g: r6(n.g + h), L: r6(n.L - h), m: n.m, c: (n.c || []).filter(c => (c[1] || 0) >= h).map(c => [c[0], r6(c[1] - h)]), w: ""}; return [a, b]; };
   /* make exactly k notes out of R: merge the closest same-pitch pair (shortest first), or halve the longest */
   const fit = (R, k, tag, pick) => { R = R.slice(); let mg = 0, sp = 0, md = 0;
     while (R.length > k && R.length > 1){ let bi = -1, bs = 1e9, bsame = false; for (let i = 0; i < R.length - 1; i++){ const same = R[i].m === R[i + 1].m, s = R[i].L + R[i + 1].L; if ((same && !bsame) || (same === bsame && s < bs)){ bi = i; bs = s; bsame = same; } }
       if (!bsame) md++; R.splice(bi, 2, merge(R[bi], R[bi + 1])); mg++; }
-    while (R.length < k && R.length){ let bi = 0; R.forEach((n, i) => { if (n.L >= R[bi].L) bi = i; }); if (R[bi].L < 0.5) break; const nb = R[bi]; if (pick && nb.L >= 1){ R.splice(bi, 1, {g: nb.g, L: r6(nb.L - 0.5), m: nb.m, c: (nb.c || []).filter(c => (c[1] || 0) < nb.L - 0.5), w: ""}, {g: r6(nb.g + nb.L - 0.5), L: 0.5, m: nb.m, c: [], w: ""}); } else R.splice(bi, 1, ...split(nb)); sp++; }
+    while (R.length < k && R.length){ let bi = 0; R.forEach((n, i) => { if (n.L >= R[bi].L) bi = i; }); if (R[bi].L < 2 * u - 1e-6) break; const nb = R[bi]; if (pick && nb.L >= 1){ R.splice(bi, 1, {g: nb.g, L: r6(nb.L - e2), m: nb.m, c: (nb.c || []).filter(c => (c[1] || 0) < nb.L - e2), w: ""}, {g: r6(nb.g + nb.L - e2), L: r6(e2), m: nb.m, c: [], w: ""}); } else R.splice(bi, 1, ...split(nb)); sp++; }
     if (mg) flags.push(tag + ": " + mg + " note" + (mg > 1 ? "s" : "") + " merged" + (md ? " (" + md + " different pitch)" : ""));
     if (sp) flags.push(tag + ": " + sp + " note" + (sp > 1 ? "s" : "") + " split");
     if (R.length < k) flags.push(tag + ": no room for " + (k - R.length) + " syllable" + (k - R.length > 1 ? "s" : ""));
@@ -5489,7 +5511,7 @@ function beatsApply(notes0, text, M, cutoff){
   /* first lead-in: carve a short pickup off a long note just before the first beat 1 */
   const out = [], before = N.slice(0, T[0] - P[0]); let lead0 = N.slice(T[0] - P[0], T[0]);
   if (P[0] > lead0.length){ flags.push("Line " + segs[0].line + ": no notes before the first | for the lead-in"); }
-  if (P[0] && lead0.length === P[0] && lead0.every(n => n.L > 1.5)){ const nl = []; const prev = before.concat(lead0.slice(0, -1)); const lst = lead0[lead0.length - 1]; const pk = P[0] * 0.5; if (lst.L > pk + 0.5){ const a = {g: lst.g, L: r6(lst.L - pk), m: lst.m, c: lst.c || [], w: ""}; before.push(...lead0.slice(0, -1), a); lead0 = []; for (let q = 0; q < P[0]; q++) lead0.push({g: r6(lst.g + lst.L - pk + q * 0.5), L: 0.5, m: lst.m, c: [], w: ""}); flags.push("Line " + segs[0].line + ": pickup carved off a long note"); } }
+  if (P[0] && lead0.length === P[0] && lead0.every(n => n.L > 1.5)){ const nl = []; const prev = before.concat(lead0.slice(0, -1)); const lst = lead0[lead0.length - 1]; const pk = P[0] * e2; if (lst.L > pk + e2){ const a = {g: lst.g, L: r6(lst.L - pk), m: lst.m, c: lst.c || [], w: ""}; before.push(...lead0.slice(0, -1), a); lead0 = []; for (let q = 0; q < P[0]; q++) lead0.push({g: r6(lst.g + lst.L - pk + q * e2), L: r6(e2), m: lst.m, c: [], w: ""}); flags.push("Line " + segs[0].line + ": pickup carved off a long note"); } }
   out.push(...before); const words = [];
   const put = (arr, toks) => arr.forEach((n, i) => { if (toks[i] != null) words.push({g: n.g, L: n.L, w: toks[i]}); out.push(n); });
   let carry = lead0, carryToks = segs[0].lead;
@@ -5515,24 +5537,40 @@ function beatsApply(notes0, text, M, cutoff){
 /* (Oct 22, Chris) BEATS CHECK: gold Beats box = one editable text box per verse (tabs), '|' before each beat-1 syllable. Approve (his tap only) builds that verse's notes + words
    (verse 1 = lines/words, verse 2+ = linesV/wordsV) and unticks that verse's Melody; Send fixes = Cadence's turn. Flags (what could not be placed) show as short pills. */
 function btFlat(a){ return (a || []).reduce((o, x) => o.concat(Array.isArray(x) ? x : [x]), []); }
-function btBuild(r, v, text){ const M = r.meter || 4, w1 = btFlat(r.words), cutoff = w1.length ? Math.min(...w1.map(w => w.g)) : 0, n1 = btFlat(r.lines);
+function btBuild(r, v, text){ if (btApproved(r, v)) return {notes: [], words: [], flags: [], changed: false, range: null, refused: true};   /* HARD GUARD: an approved verse is never rebuilt */
+  const M = r.meter || 4, w1 = btFlat(r.words), cutoff = w1.length ? Math.min(...w1.map(w => w.g)) : 0, n1 = btFlat(r.lines);
   const lv = r.linesV && Array.isArray(r.linesV[v]) && r.linesV[v].length ? r.linesV[v] : null, notes0 = v === 1 ? n1 : (lv || n1);
-  const res = beatsApply(notes0, text, M, cutoff); if (!res.range) return res;
+  const res = beatsApply(notes0, text, M, cutoff, r.grid); if (!res.range) return res;
   const wv = v === 1 ? w1 : (r.wordsV && Array.isArray(r.wordsV[v]) && r.wordsV[v].length ? r.wordsV[v] : w1);
   const eps = 1e-6, keep = wv.filter(w => w.g < res.range[0] - eps || w.g >= res.range[1] - eps);
-  res.allWords = keep.concat(res.words).sort((a, b) => a.g - b.g); return res; }
+  res.allWords = keep.concat(res.words).sort((a, b) => a.g - b.g);
+  if (btRowsSet(r, v).size){ const lk = q => btTicked(r, v, q.g), same = (A, B) => JSON.stringify(A.map(q => [q.g, q.L, q.m, q.w || ""])) === JSON.stringify(B.map(q => [q.g, q.L, q.m, q.w || ""]));   /* ticked rows keep their own notes + words exactly */
+    const nl = res.notes.filter(lk).sort((a, b) => a.g - b.g), ol = notes0.filter(lk).slice().sort((a, b) => a.g - b.g);
+    res.notes = res.notes.filter(q => !lk(q)).concat(JSON.parse(JSON.stringify(ol))).sort((a, b) => a.g - b.g);
+    res.words = res.words.filter(q => !lk(q)); res.allWords = res.allWords.filter(q => !lk(q)).concat(wv.filter(lk)).sort((a, b) => a.g - b.g);
+    if (!same(nl, ol)) res.flags.push("Ticked rows kept as they are");
+    res.changed = JSON.stringify(res.notes.map(n => [n.g, n.L, n.m])) !== JSON.stringify(btFlat(notes0.slice().sort((a, b) => a.g - b.g)).map(n => [n.g, n.L, n.m])); }
+  return res; }
+/* the one Approve patch: null for an approved verse (nothing is written), {err} when nothing can be placed, else the db update. Pure (test calls it). */
+function btUpApprove(r, v, tx, now){ if (btApproved(r, v)) return null;
+  const bt = Object.assign({}, btTexts(r), {[v]: tx}), res = btBuild(r, v, tx); if (!res.range) return {err: "Nothing to place: add a | first"};
+  const ok = Object.assign({}, btOks(r), {[v]: now}), fl = Object.assign({}, r.beatsFlags || {}, {[v]: res.flags}), up = {beatsText: bt, beatsOK: ok, beatsFlags: fl, beatsFix: false, updated: now};
+  if (v === 1){ const g = btGroup(r, res.notes, res.allWords); up.lines = g.lines; up.words = g.words; }
+  else { up.linesV = Object.assign({}, r.linesV || {}, {[v]: res.notes}); up.wordsV = Object.assign({}, r.wordsV || {}, {[v]: res.allWords}); }
+  return up; }
 function btGroup(r, notes, words){ const M = r.meter || 4, B = 4 * M, I = !!r.intro, key = g => I ? (g < 0 ? 0 : 1 + Math.floor(g / B + 1e-9)) : Math.floor(g / B + 1e-9), keys = [...new Set(notes.map(n => key(n.g)))].sort((p, q) => p - q);
   const at = g => { const k = key(g); let x = keys.indexOf(k); if (x < 0){ x = keys.filter(q => q < k).length - 1; if (x < 0) x = 0; } return x; };
   const grp = L => { const out = keys.map(() => []); if (!keys.length) return out; L.forEach(b => out[at(b.g)].push(b)); out.forEach(l => l.sort((p, q) => p.g - q.g)); return out; };
   return {lines: grp(notes), words: grp(words)}; }
 function btOpen(id, v){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
-  const vs = btVerses(r), T = btTexts(r), O = btOks(r); v = vs.includes(+v) ? +v : (vs.find(x => String(T[x] || "").trim() && !O[x]) || vs[0]);
+  const vs = btVerses(r), T = btTexts(r), O = btOks(r); v = vs.includes(+v) ? +v : (vs.find(x => !btApproved(r, x) && String(T[x] || "").trim() && !O[x]) || vs.find(x => !btApproved(r, x) && !O[x]) || vs.find(x => !btApproved(r, x)) || vs[0]);   /* opens on the first verse that is NOT approved */
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.bt = "1"; o._tx = Object.assign({}, T); o.dataset.v = v;
-  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}</b><span>Beats: put a | before the syllable on beat 1</span></div><div class="bttabs">${vs.map(x => `<button type="button" class="tb" data-btv="${x}" aria-pressed="${x === v}">Verse ${x}${O[x] ? " ✓" : ""}</button>`).join("")}</div><textarea class="lyrtx bttx" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea><div class="btfl"></div><input class="lyrnote" placeholder="Note for Cadence (only for Send fixes)"><div class="lyrbt"><button type="button" class="tb" data-btx="back">Back</button><button type="button" class="tb" data-btx="fix">Send fixes</button><button type="button" class="tb go" data-btx="ok">Approve</button></div></div>`;
+  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}</b><span>Beats: put a | before the syllable on beat 1</span></div><div class="bttabs">${vs.map(x => `<button type="button" class="tb" data-btv="${x}" aria-pressed="${x === v}">Verse ${x}${O[x] || btApproved(r, x) ? " ✓" : ""}</button>`).join("")}</div><textarea class="lyrtx bttx" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea><div class="btfl"></div><input class="lyrnote" placeholder="Note for Cadence (only for Send fixes)"><div class="lyrbt"><button type="button" class="tb" data-btx="back">Back</button><button type="button" class="tb" data-btx="fix">Send fixes</button><button type="button" class="tb go" data-btx="ok">Approve</button></div></div>`;
   document.body.appendChild(o); btShow(o); }
 function btShow(o){ const r = (scBoard || []).find(x => x.id === o.dataset.id); if (!r) return; const v = +o.dataset.v, ta = o.querySelector(".bttx");
-  ta.value = String(o._tx[v] || ""); o.querySelectorAll("[data-btv]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.btv === v))); btFlags(o); }
+  const ap = btApproved(r, v); o.dataset.appr = ap ? "1" : ""; ta.readOnly = ap; ta.value = ap ? btWordsText(r, v) : String(o._tx[v] || ""); o.querySelectorAll("[data-btv]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.btv === v))); btFlags(o); }
 function btFlags(o){ const r = (scBoard || []).find(x => x.id === o.dataset.id); if (!r) return; const v = +o.dataset.v, box = o.querySelector(".btfl"); let fl = [];
+  if (btApproved(r, v)){ box.innerHTML = '<b class="btap">Approved</b>'; return; }   /* an approved verse: teal pill, its words from the melody, no flags */
   try { fl = btBuild(r, v, o.querySelector(".bttx").value).flags || []; } catch (er) { fl = ["Could not read the box"]; }
   box.innerHTML = fl.slice(0, 40).map(f => `<i>${esc(f)}</i>`).join(""); }
 document.addEventListener("input", e => { const ta = e.target.closest && e.target.closest("#lyrchk .bttx"); if (!ta) return; const o = document.getElementById("lyrchk"); o._tx[+o.dataset.v] = ta.value; btFlags(o); }, true);
@@ -5542,15 +5580,10 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.btx === "back") return lyrClose();
   const v = +o.dataset.v, tx = o.querySelector(".bttx").value.replace(/[ \t]+$/gm, "").trim(), note = o.querySelector(".lyrnote").value.trim(), now = new Date().toISOString();
+  if (btApproved(r, v)) return;   /* HARD GUARD: nothing is written for an approved verse */
   const bt = Object.assign({}, btTexts(r), {[v]: tx}); let up;
   if (x.dataset.btx === "fix") up = {beatsText: bt, beatsFix: true, beatsNote: note || "(see edits)", beatsFixAt: now, updated: now};
-  else { const res = btBuild(r, v, tx); if (!res.range){ o.querySelector(".btfl").innerHTML = "<i>Nothing to place: add a | first</i>"; return; }
-    const ok = Object.assign({}, btOks(r), {[v]: now}), fl = Object.assign({}, r.beatsFlags || {}, {[v]: res.flags});
-    up = {beatsText: bt, beatsOK: ok, beatsFlags: fl, beatsFix: false, updated: now};
-    if (res.changed || true){ if (v === 1){ const g = btGroup(r, res.notes, res.allWords); up.lines = g.lines; up.words = g.words; if (r.melodyOK) up.melodyOK = ""; }
-      else { up.linesV = Object.assign({}, r.linesV || {}, {[v]: res.notes}); up.wordsV = Object.assign({}, r.wordsV || {}, {[v]: res.allWords}); } }
-    if (Array.isArray(r.versesOk)) up.versesOk = r.versesOk.filter(q => q !== v);
-    else if (r.melodyOK && v === 1) up.melodyOK = ""; }
+  else { up = btUpApprove(r, v, tx, now); if (!up) return; if (up.err){ o.querySelector(".btfl").innerHTML = "<i>" + esc(up.err) + "</i>"; return; } }
   Object.assign(r, up); lyrClose(); render();
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
 function homeSongs(only){
@@ -6324,6 +6357,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 })();
 </script>
 
+<i id="fdend" hidden></i>
 <script>(function(){ var h = document.documentElement; if (!h.classList.contains("fdsplash")) return; var go = function(){ if (go.d) return; go.d = 1; requestAnimationFrame(function(){ h.classList.add("fdfade"); requestAnimationFrame(function(){ h.classList.remove("fdsplash"); setTimeout(function(){ h.classList.remove("fdfade"); }, 600); }); }); };
   /* the fonts first (max 0.4s), so the title never changes size once it shows */ try { document.fonts.ready.then(go); } catch (e) { go(); } setTimeout(go, 400); })();</script>
 </body></html>
