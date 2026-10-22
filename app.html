@@ -2450,7 +2450,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v275</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v276</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5472,7 +5472,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const x = e.target.closest("[data-plx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.plx === "back") return lyrClose();
-  if (x.dataset.plx === "open"){ window.open(SGPREVIEW, "_blank", "noopener"); return; }
+  if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + id), "_blank", "noopener"); return; }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; board id = Lab song id) */
   const now = new Date().toISOString(), up = {playerOK: now, updated: now};
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); lyrClose(); render(); }, true);
 function lyrClose(){ const o = document.getElementById("lyrchk"); if (o) o.remove(); }
