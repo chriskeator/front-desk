@@ -2443,7 +2443,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v257</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v258</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3499,9 +3499,10 @@ const SD = () => { const raw = stats.find(x => x.id === "sales_daily");
 const azToday = () => new Date(Date.now() - 7 * 3600e3).toISOString().slice(0, 10);   // Arizona, UTC-7 all year
 function sUpdated(){
   const sd = SD(); if (!sd || !sd.updated) return "";
-  const t = new Date(Date.parse(sd.updated) - 7 * 3600e3), day = t.toISOString().slice(0, 10);
+  const su = sd.salesUpdated || sd.updated;   /* (Oct 22) sales money older than 2 h = Stale (red), see sales-hourly.py */
+  const t = new Date(Date.parse(su) - 7 * 3600e3), day = t.toISOString().slice(0, 10);
   let h = t.getUTCHours(), m = t.getUTCMinutes(); const ap = h < 12 ? "am" : "pm"; h = h % 12 || 12;
-  return `Updated ${day === azToday() ? "" : sShort(day) + ", "}${h}:${String(m).padStart(2, "0")}${ap}`;
+  return `${Date.now() - Date.parse(su) > 2 * 3600e3 ? "Stale, last " : "Updated "}${day === azToday() ? "" : sShort(day) + ", "}${h}:${String(m).padStart(2, "0")}${ap}`;
 }
 const addD = (s, n) => { const [y,m,d] = s.split("-").map(Number); return new Date(Date.UTC(y, m-1, d+n)).toISOString().slice(0,10); };
 const dDiff = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
@@ -3839,7 +3840,7 @@ function sRowBase(sd){
   const R = sRange(sd);   // totals over the whole period: rates (conversion, $ per view) are computed over it, not added up
   return {t: sTot(sDays(sd, R.from, R.to).map(sF)), label: R.lbl, day: R.to};
 }
-const sLbl = (day, per) => `<b>${esc(day)}</b> · graph: ${esc(sMetOf(sMet)[1])}, ${esc(per)} · <span class="supd">${esc(sUpdated())}</span>`;
+const sLbl = (day, per) => `<b>${esc(day)}</b> · graph: ${esc(sMetOf(sMet)[1])}, ${esc(per)} · <span class="supd"${sUpdated().startsWith("Stale") ? ' style="color:var(--red);font-weight:700"' : ""}>${esc(sUpdated())}</span>`;
 function salesPop(){
   const sd = SD(); if (!sd || !sDet) return "";
   const R = sRange(sd), cur = sDays(sd, R.from, R.to).map(sF), P = sPanel(sd, cur); if (!P) return "";
