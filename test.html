@@ -911,6 +911,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .msec:not(.collapsed):not(.fdcheer):not(:has(.rowon,.subon)):has(> h4[data-ck])::after{content:"";position:absolute;inset:0;border:2px solid var(--gold);border-radius:inherit;pointer-events:none;z-index:6}   /* (Oct 14) gold frame drawn on top, even all the way round (the header used to cover the outline) */
 /* (Oct 11) empty folders hide; Lab-style celebrations (overlays never catch taps) */
 #list .msec.fdempty{display:none!important}
+#list .fdzero{display:none!important}
 #list .msec.fdcheer > :not(h4):not(.fdcheer-msg){display:none!important}
 #list .msec.fdcheer{transition:opacity .4s ease,max-height .4s ease,margin .4s ease;max-height:200px}
 #list .msec.fdcheer.fdgone{opacity:0;max-height:0!important;border-width:0!important;margin:-10px 0 0!important}
@@ -2453,7 +2454,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v262</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v263</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2573,9 +2574,11 @@ function waitLive(t){
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
   return null; }
-const todayTasks = () => tasks.filter(t=>!t.heldOffToday && t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; }).sort(byOrder);
-const laterTasks = () => tasks.filter(t=>!t.date && (showDone ? t.done : !t.done)).sort(byOrder);
-const nextTasks = () => tasks.filter(t=>t.date && t.date>plus(7) && t.date<=plus(14) && (showDone ? t.done : !t.done)).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
+/* (Oct 22, Chris) ZERO = HIDDEN EVERYWHERE: a wait row with nothing waiting is never shown in any list (Today, week, next, later) */
+const waitShow = t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; };
+const todayTasks = () => tasks.filter(t=>!t.heldOffToday && t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(waitShow).sort(byOrder);
+const laterTasks = () => tasks.filter(t=>!t.date && (showDone ? t.done : !t.done)).filter(waitShow).sort(byOrder);
+const nextTasks = () => tasks.filter(t=>t.date && t.date>plus(7) && t.date<=plus(14) && (showDone ? t.done : !t.done)).filter(waitShow).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
 const listFor = s => { const one = oneThing(); const L = s === "todo" ? todayTasks() : s === "week" ? weekTasks() : s === "next" ? nextTasks() : laterTasks(); const S = sortL(L); return deskish() && one && !showDone ? S.filter(t => t.id !== one.id) : S; };
 // Today screen A1 (Chris, Oct 3): computer = two columns. Left: your one thing + the list (Today / This week / Next week / Later).
 // Right: yesterday's money, goals, this week's chores, what needs you. Chores come first (Chris: "chores need to get done first").
@@ -2598,7 +2601,7 @@ let moving = null;  // task id whose "Move to" choices are open
 // Chris (Oct 3): a finished to-do leaves the page (kept in the database as the archive). Undo shows for 10 seconds in case of a wrong tap.
 let lastDone = null, undoTimer = null;
 const undoChip = () => lastDone ? `<button type="button" class="small" data-undodone="${esc(lastDone.id)}">Undo "${esc(lastDone.title.length > 28 ? lastDone.title.slice(0,28) + "…" : lastDone.title)}"</button>` : "";
-const weekTasks = () => tasks.filter(t=>t.date && t.date>plus(0) && t.date<=plus(7) && (showDone ? t.done : !t.done)).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
+const weekTasks = () => tasks.filter(t=>t.date && t.date>plus(0) && t.date<=plus(7) && (showDone ? t.done : !t.done)).filter(waitShow).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
 function taskRow(t){
   // Chris (Oct 4): a to-do is a small pill (title + count badge); tapping it opens its pop-up (details, links, review
   // items, Done / Move / Remove). The dashboard never moves.
@@ -6277,6 +6280,8 @@ function fdFolders(){ const L = $("list"); if (!L) return; const scr = typeof on
     if (c){ m.classList.remove("fdempty"); m.classList.add("fdcheer"); m.classList.toggle("fdgone", !!c.leaving); if (FD_RM.matches) m.classList.add("fdglow");
       if (!m.querySelector(":scope > .fdcheer-msg")) h.insertAdjacentHTML("afterend", `<div class="fdcheer-msg"><b>${esc(c.title)}</b><span>${esc(c.sub)}</span></div>`); }
     else m.classList.add("fdempty"); });
+  /* (Oct 22, Chris) zero = hidden: a sub-folder row titled "... (0)" (and its body) is not shown */
+  L.querySelectorAll(".pc3").forEach(r => { const b = r.querySelector(".pc3t > b"); const z = !!b && /\(0\)\s*$/.test(b.textContent); r.classList.toggle("fdzero", z); const nx = r.nextElementSibling; if (nx && nx.classList.contains("sublist")) nx.classList.toggle("fdzero", z); });
   if (fdFin && fdFin.kind === "reply" && now - fdFin.t < 6000 && Object.values(cur).every(v => v > 0)) fdFin = null;   /* replies: the slide is the feedback, no banner */
   if (fdFin && now - fdFin.t < 6000){ const P = fdPrev[scr] || {}; if (Object.keys(cur).some(k => (P[k] || 0) > (cur[k] || 0))){ const k = fdFin.kind; fdFin = null; if (k === "reply") { fdPrev[scr] = cur; return; } fdConfetti();   /* (Oct 12, Chris) confetti only: no black 'Done!' banner */ } }
   else if (fdFin && now - fdFin.t >= 6000) fdFin = null;
