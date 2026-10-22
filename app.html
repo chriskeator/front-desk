@@ -728,6 +728,11 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kyn{display:flex;gap:6px}.kyn .tb{flex:1;min-width:0;min-height:44px}
 .tb.gold{background:var(--gold);color:#1a1405;border-color:var(--gold)}
 .askq{display:flex;flex-direction:column;gap:8px;min-width:0}.askq .askt{margin:0;overflow-wrap:anywhere}.askq .kpics{grid-template-columns:1fr}.askq .kthumb img{aspect-ratio:auto;max-height:60vh;object-fit:contain;object-position:center}.askq .steps,.askq .ksteps{margin:0}
+.abline{margin:0 0 8px;font-size:14px;overflow-wrap:anywhere}.abcards{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+.abcard{border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--card);display:flex;flex-direction:column;gap:4px;min-width:0;box-sizing:border-box}.abcard.win{border-color:var(--teal)}
+.abpic{aspect-ratio:16/10;border-radius:6px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13px;color:var(--muted);padding:4px;box-sizing:border-box;min-width:0}.abpic img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}.abpic span{overflow-wrap:anywhere}
+.abname{font-size:13px;overflow-wrap:anywhere}.abbig{font-size:22px;line-height:1.1;font-weight:800;overflow-wrap:anywhere}.abbig small{font-size:12px;font-weight:600;color:var(--muted)}.absm{font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.abverdict{margin:8px 0;font-size:14px}.abverdict.clear b{color:var(--teal)}.abverdict.close b{color:var(--gold)}
 .kfix{width:100%;box-sizing:border-box;font:inherit;font-size:14px;min-height:56px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--card);color:var(--ink)}
 .ksteps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.ksteps li{display:flex;gap:8px;align-items:flex-start;font-size:14px;line-height:1.35;min-width:0}.ksteps li i{font-style:normal;flex:0 0 22px;text-align:center}
 .kbig{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box;cursor:zoom-out}.kbig img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
@@ -2331,7 +2336,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v237</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v238</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2595,6 +2600,7 @@ function taskPop(t){
   const whyIn = `${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
   if (t.wait === "asks") return popTop(esc(t.title)) + asksHTML() + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
+  if (t.kind === "ab") return popTop(esc(t.title)) + kindHTML(t) + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
   if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t);
   if (!isDesktop() && list && list.trim()) return popTop(esc(t.title)) + list + `<details class="whyd"><summary>What it's for</summary><div class="why">${whyIn}</div></details>` + acts;
   return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + acts + list;
@@ -5276,6 +5282,7 @@ function kindHTML(t){
   const fl = files.map(f => safeUrl(f.url) ? `<a class="tb" href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label || "Open")}</a>` : "").join("");
   if (k === "go"){ const u = safeUrl(t.url) && t.url !== FDURL ? t.url : "";
     return (u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : "") + (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : ""); }
+  if (k === "ab") return abHTML(t);
   if (k === "yesno") return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="yes|${esc(t.id)}">Yes</button><button type="button" class="tb" data-kans="no|${esc(t.id)}">No</button></div>`;
   return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="good|${esc(t.id)}">Looks good</button><button type="button" class="tb gold" data-kans="fix|${esc(t.id)}">Fix</button></div><textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>`; }
 document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-kbig], [data-kans], [data-asknext]"); if (!b) return;
@@ -5288,6 +5295,29 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
     if (ans === "fix" && t.heldOffToday){ const qi = "q-" + Math.random().toString(36).slice(2, 12); db.collection("queue").doc(qi).set({kind: "ask", ref: "ask/" + qi, key: now, title: ("Fix: " + (t.short || t.title)).slice(0, 70), job: "desk", lane: "desk", status: "queued", order: 0, addedAt: now, tries: 0, model: "sonnet", limit: 45, extra: {detail: "Chris asked for a fix on '" + (t.short || t.title) + "' (task " + id + "): " + note + " When fixed, set that task done:false, clear answer + fixNote, heard:true so it comes back in Questions for you."}}).catch(() => {}); }
     const ak = !!t.heldOffToday && askList().length > 0;
     if (ak){ render(); } else { if (openLinks === id || t.heldOffToday) openLinks = null; if ($("pop") && $("pop").innerHTML) closePop(); taskOpen = null; saveTaskOpen(); render(); } } catch { b.disabled = false; } });
+/* (Oct 21, Chris) A/B TEST FINISHED ROW: one Today row per ended test (never a list of running tests). Opens to one line, two cards (picture, $ per visit big, visits + sales small, winner = teal outline), a verdict line, a note box, Use winner (teal) + Send note (gold). Stays until one of them is tapped (Move only postpones). Data: db abtests (ab-check.py nightly). */
+const abUsd = n => (n == null || isNaN(n)) ? "n/a" : "$" + (Math.round(n * 100) / 100).toFixed(2);
+function abCard(v, label, win, pic){ const vis = Number(v && v.visits), pv = vis > 0 ? Number(v.revenue || 0) / vis : null;
+  return `<div class="abcard${win ? " win" : ""}"><div class="abpic">${pic && safeUrl(pic) ? `<img src="${esc(pic)}" alt="" loading="lazy">` : `<span>${esc(label)}</span>`}</div><b class="abname">${esc(label)}</b><strong class="abbig">${abUsd(pv)}<small> per visit</small></strong><span class="absm">${isNaN(vis) ? "n/a" : vis} visits · ${v && v.sales != null ? esc(String(v.sales)) : "n/a"} sales</span></div>`; }
+function abHTML(t){ const a = t.ab || {}, d = s => s ? dayLabel(String(s).slice(0, 10)) : "";
+  const win = a.verdict === "Clear winner" ? a.winner : "";
+  return `<p class="abline">${esc(a.what || "")}${a.start || a.end ? " · " + esc(d(a.start)) + " to " + esc(d(a.end)) : ""}</p>
+  <div class="abcards">${abCard(a.a, a.aLabel || "A", win === "a", a.picA)}${abCard(a.b, a.bLabel || "B", win === "b", a.picB)}</div>
+  <p class="abverdict ${a.verdict === "Clear winner" ? "clear" : "close"}"><b>${esc(a.verdict || "Too close")}</b>${a.pick ? " · " + esc(a.pick) : ""}</p>
+  <textarea class="kfix" data-abnote="${esc(t.id)}" placeholder="Type or talk: any note for Cadence"></textarea>
+  <div class="kyn"><button type="button" class="tb go" data-abans="use|${esc(t.id)}">Use winner</button><button type="button" class="tb gold" data-abans="note|${esc(t.id)}">Send note</button></div>`; }
+document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-abans]"); if (!b) return;
+  const [ans, id] = b.dataset.abans.split("|"), t = allTasks.find(x => x.id === id); if (!t || !db) return;
+  const ta = document.querySelector(`[data-abnote="${CSS.escape(id)}"]`), note = ta ? ta.value.trim() : "";
+  if (ans === "note" && !note){ if (ta) ta.focus(); return; }
+  b.disabled = true; const now = new Date().toISOString(), a = t.ab || {}, upd = {answer: ans === "use" ? "use" : "note", answeredAt: now, done: true, doneAt: now, heard: false}; if (note) upd.fixNote = note;
+  try { await db.collection("tasks").doc(id).update(upd); Object.assign(t, upd);
+    db.collection("abtests").doc(a.id || t.abId).update({status: "answered", answer: upd.answer, answeredAt: now, answerNote: note, result: {a: a.a, b: a.b, winner: a.winner, verdict: a.verdict, pick: a.pick}}).catch(() => {});
+    const qi = "q-" + Math.random().toString(36).slice(2, 12), what = ans === "use"
+      ? "Chris tapped Use winner on the finished A/B test '" + (a.name || "") + "' (abtests/" + (a.id || t.abId) + ", winner " + (a.winner || "?") + ", Cadence pick: " + (a.pick || "") + "). Prepare the live switch to the winner (see abtests row .live for what is live) but change NOTHING live: add ONE task kind yesno heldOffToday:true 'Switch " + (a.name || "") + " to the winner?' so he answers Yes in Questions for you; on Yes do the switch, archive the loser (never delete). Also write a one-line lesson into abtests/" + (a.id || t.abId) + " field lesson." + (note ? " His note: " + note : "")
+      : "Chris sent a note on the finished A/B test '" + (a.name || "") + "' (abtests/" + (a.id || t.abId) + "): " + note + " Do what it asks (nothing live without his yes), then write a one-line lesson into that abtests row field lesson.";
+    db.collection("queue").doc(qi).set({kind: "ask", ref: "ask/" + qi, key: now, title: ((ans === "use" ? "A/B use winner: " : "A/B note: ") + (a.name || "")).slice(0, 70), job: "desk", lane: "desk", status: "queued", order: 0, addedAt: now, tries: 0, model: "sonnet", limit: 45, extra: {detail: what}}).catch(() => {});
+    if ($("pop") && $("pop").innerHTML) closePop(); taskOpen = null; saveTaskOpen(); render(); } catch { b.disabled = false; } });
 function goBtn(t){
   if (t.wait === "asks") return asksHTML();
   if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked"); return `<div class="revlist"><p class="tn">${items.length} drafts to check</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
