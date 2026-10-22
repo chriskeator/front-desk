@@ -1854,7 +1854,8 @@ let ns=Math.max(dst.a||0,Math.min(dst.n-1,dir>0?Math.floor(P.f*N+0.7):dir<0?Math
 /* (v59 'no pushing' replaced Oct 20: the dragged box wins, the crowded box shrinks; nothing ever moves to another spot) */
 /* (Oct 20, Chris, 2nd: "whatever I'm dragging overrides whatever I'm putting it on") the dragged box lands where it is dropped and the box it crowds SHRINKS:
    a box starting before it ends where it starts; a box starting under it starts where it ends. Only a box with the very same start, or one it covers whole, stays put (then the dragged box stops short of it). */
-const same=dst.notes.filter(o=>!o.w===!q.w);let ok=true;const L=Math.min(q.l,dst.n-ns);ok=!same.some(o=>o!==q&&o.s<ns+L&&ns<o.s+o.l);   /* (Oct 21, Chris) a drop on a taken spot is refused: the box snaps back, nothing is shrunk */
+const same=dst.notes.filter(o=>!o.w===!q.w);let ok=true;let L=Math.min(q.l,dst.n-ns);ok=!same.some(o=>o!==q&&o.s<=ns&&ns<o.s+o.l);   /* (Oct 21, Chris) a drop with its START on a taken spot is refused: the box snaps back, the box under it is never shrunk. (Oct 22, Chris, REGRESSION fix) the DRAGGED box shrinks to fit while dragging: to the gap before the next box, and a lyric word to the short number note that starts under it (O Holy Night: the O block onto the short 7) */
+if(ok){same.forEach(o=>{if(o!==q&&o.s>ns&&o.s<ns+L)L=o.s-ns});if(q.w){const nn=dst.notes.find(o=>!o.w&&o.s===ns);if(nn)L=Math.max(1,Math.min(L,nn.l))}}
 if(ok){q.s=ns;q.l=L}else hint('That spot is taken');
 if(ok)dst.notes.push(q);else{bars.forEach((b,bi)=>{b.notes=drag.orig[bi].map(x=>{x.q.s=x.s;x.q.l=x.l;return x.q})})}
 bars.forEach(b=>(b.notes||[]).sort((a,c)=>a.s-c.s));
@@ -1863,10 +1864,11 @@ const bi=bars.findIndex(b=>(b.notes||[]).includes(q));notePick={b:bars[bi].id,n:
 else if(drag.k==='band'){const er=ED.getBoundingClientRect(),x1=Math.min(drag.x0,e.clientX),x2=Math.max(drag.x0,e.clientX),y1=Math.min(drag.y0,e.clientY),y2=Math.max(drag.y0,e.clientY);if(x2-x1<4&&y2-y1<4)return;
 let bd=ED.querySelector('.nband');if(!bd){bd=document.createElement('div');bd.className='nband';ED.appendChild(bd)}Object.assign(bd.style,{left:(x1-er.left)+'px',top:(y1-er.top)+'px',width:(x2-x1)+'px',height:(y2-y1)+'px'});
 noteSel=[];R.querySelectorAll('.nt[data-qid]').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const b=bars[+el.dataset.nb],q=b&&(b.notes||[]).find(x=>String(x.id)===el.dataset.qid);if(q)noteSel.push(q)}});chSel=[];R.querySelectorAll('.chd:not(.cont)').forEach(el=>{const r=el.getBoundingClientRect();if(r.left<x2&&r.right>x1&&r.top<y2&&r.bottom>y1){const c=chOf(el);if(c)chSel.push(c)}});light();const nB=noteSel.length+chSel.length;hint(nB+' box'+(nB===1?'':'es')+' picked')}
-else if(drag.k==='ngroup'){const N=S(),d=Math.round((e.clientX-drag.x0)/drag.bw*N);if(d===drag.d)return;
-const tgt=drag.orig.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {q:o.q,bi,s:g-bi*N}}),moving=new Set(drag.orig.map(o=>o.q));
+else if(drag.k==='ngroup'){const N=S(),dw=Math.round((e.clientX-drag.x0)/drag.bw*N);if(dw===drag.dw)return;drag.dw=dw;   /* (Oct 22, Chris) a jump past a real collision stops AT the collision (all picked boxes move together as far as they can), never 'none move' */
+const tryD=d=>{const tgt=drag.orig.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {q:o.q,bi,s:g-bi*N}}),moving=new Set(drag.orig.map(o=>o.q));
 const ok=tgt.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.q.l<=B.n&&!(B.notes||[]).some(o=>!o.w===!t.q.w&&!moving.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.q.l)&&!tgt.some(u=>u!==t&&u.bi===t.bi&&!u.q.w===!t.q.w&&t.s<u.s+u.q.l&&u.s<t.s+t.q.l)});
-const oc=drag.oc||[],tc=oc.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {c:o.c,bi,s:g-bi*N}}),mvc=new Set(oc.map(o=>o.c)),okc=tc.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.c.l<=B.n&&!lvlOf(B).some(o=>!o.cont&&!mvc.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.c.l)&&!tc.some(u=>u!==t&&u.bi===t.bi&&t.s<u.s+u.c.l&&u.s<t.s+t.c.l)});if(!ok||!okc)return;
+const oc=drag.oc||[],tc=oc.map(o=>{const g=o.bi*N+o.s+d,bi=Math.floor(g/N);return {c:o.c,bi,s:g-bi*N}}),mvc=new Set(oc.map(o=>o.c)),okc=tc.every(t=>{const B=bars[t.bi];return B&&t.s>=(B.a||0)&&t.s+t.c.l<=B.n&&!lvlOf(B).some(o=>!o.cont&&!mvc.has(o)&&t.s<o.s+o.l&&o.s<t.s+t.c.l)&&!tc.some(u=>u!==t&&u.bi===t.bi&&t.s<u.s+u.c.l&&u.s<t.s+t.c.l)});return ok&&okc?{tgt,tc,oc}:null};
+let d=dw,R2=tryD(d);while(!R2&&d!==(drag.d||0)){d+=d>(drag.d||0)?-1:1;R2=tryD(d)}if(!R2||d===drag.d)return;const {tgt,tc,oc}=R2;
 drag.d=d;drag.orig.forEach(o=>{bars.forEach(b=>{if(b.notes){const k=b.notes.indexOf(o.q);if(k>=0)b.notes.splice(k,1)}})});tgt.forEach(t=>{t.q.s=t.s;const B=bars[t.bi];B.notes=B.notes||[];B.notes.push(t.q)});if(oc.length){oc.forEach(o=>{bars.forEach(b=>{const L=lvlOf(b),k=L.indexOf(o.c);if(k>=0)L.splice(k,1)})});tc.forEach(t=>{t.c.s=t.s;lvl(bars[t.bi]).push(t.c)})}bars.forEach(b=>(b.notes||[]).sort((x,y)=>x.s-y.s));draw();hint('Moving '+(tgt.length+tc.length)+' boxes')}
 else if(drag.k==='lead'){const el=R.querySelector('.b.lead');if(!el)return;const r=el.getBoundingClientRect(),N=S();let a=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N);a=Math.max(0,Math.min(N,a));drag.a=a;draw({leadA:a});hint(a>=N?'Let go: no lead-in':'Let go: lead-in = '+len(N-a))}
 else if(drag.k==='size'&&drag.hatch){const el=R.querySelector('.b[data-i="'+drag.j+'"]');if(!el)return;const r=el.getBoundingClientRect(),N=S(),q=Q(),C=bars.map(b=>({...b})),b=C[drag.j];let f=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N/q)*q;
@@ -2443,7 +2445,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v259</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v260</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
