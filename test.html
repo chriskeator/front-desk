@@ -33,6 +33,7 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
   if (navigator.sendBeacon) navigator.sendBeacon = function () { toast("Test copy: not sent"); return false; };
 })();</script>
 <script src="desk-db.js"></script>
+<link rel="expect" href="#fdend" blocking="render">
 <title>Front Desk TEST</title></head><body>
 <div id="testbanner">TEST COPY: practice only, nothing here reaches the live desk</div>
 <style>#testbanner{position:fixed;top:0;left:0;right:0;z-index:9500;height:24px;line-height:24px;padding-top:env(safe-area-inset-top);text-align:center;font:700 12px/24px system-ui,sans-serif;letter-spacing:.04em;background:#B42318;color:#fff;pointer-events:none}
@@ -998,6 +999,14 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .fdscroll{overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 #list .fdscroll::-webkit-scrollbar{display:none}
 #list .fdscroll > *{flex-shrink:0}
+/* (Oct 22, Chris) HOME FOLDERS FLOAT OVER: an open Home folder drops down from its own row OVER the folders below (like a dropdown); a hidden .fdph placeholder keeps its closed spot, so no folder moves and the page never jumps. Long contents scroll inside it (max height set in fdFloatFit) */
+#list .fdflhost{position:relative}
+#list .fdph{flex:none;pointer-events:none;background:none!important;border:0!important;box-shadow:none!important}   /* empty spacer under the panel (kept visible so layout checks count its space) */
+#list#list .msec.fdfl{position:absolute!important;z-index:25;margin:0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;border:2px solid var(--gold)!important;box-shadow:0 8px 20px rgba(0,0,0,.22)!important;outline:0!important;contain:paint}
+#list .msec.fdfl::after{display:none!important}
+#list .msec.fdfl > *{flex-shrink:0}
+#list .msec.fdfl > h4 .fdx{flex:none;margin-left:8px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:20px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0}
+#list .msec.fdfl > h4 .fdx:hover{background:var(--soft)}
 #list::before{content:"";display:block;flex:none;height:var(--kp,0px);margin-bottom:-8px}
 #list .fdgap.fdclone{overflow:hidden;opacity:1}
 #list .fdgap{display:block!important;flex:none;padding:0;margin:0;border:0;pointer-events:none} #list > .fdgap{margin-bottom:-8px}   /* (Oct 18) the blank gap a closed thing leaves for one glide (keepPos) */
@@ -2460,7 +2469,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v264</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v265</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4381,7 +4390,7 @@ function moneyFolders(){ $("bar").innerHTML = "";
   mDraw(); }
 // (Oct 11, Chris) pin the open folder header (CSS) and the innermost open row header (here) to the top of the list;
 // a pinned row header is pushed off by the end of its open body, like a section header
-function stickUpdate(){ const L = $("list"); if (!L || L.classList.contains("fdlock")) return; const LT = L.getBoundingClientRect().top + L.clientTop;
+function stickUpdate(){ const L = $("list"); if (!L || L.classList.contains("fdlock")) return; const FP = L.querySelector(".msec.fdfl"), LT = FP ? FP.getBoundingClientRect().top + FP.clientTop : L.getBoundingClientRect().top + L.clientTop;   /* (Oct 22) inside a floating Home folder the panel top is the top */
   if (L._pinHold){ L.querySelectorAll(".msec > h4").forEach(x => { x.classList.add("nostick"); x.classList.remove("stuck"); }); return; }
   const all = [...L.querySelectorAll(".rowon, .subon")].filter(x => x.getClientRects().length && x.closest(".msec") && !x.closest(".kids")), h = all.pop();
   L.querySelectorAll(".fdstick").forEach(x => { if (x !== h){ x.classList.remove("fdstick", "stuck", "fdfade"); x.style.top = ""; } });
@@ -4477,20 +4486,46 @@ function fdGaps(L, parts){ const gaps = [], done = new Set();
     const g = document.createElement("div"); g.className = "fdgap"; g.style.height = h + "px"; after.after(g); gaps.push({el: g, h}); if (p.fold) done.add(p.fold); }
   return gaps; }
 /* ONE smooth ~260ms glide: every gap (and any room above) shrinks to nothing while the list scrolls S -> Sf, all on the same curve */
-function fdGlide(L, gaps, K, S, Sf, done){ const t0 = performance.now(), ease = x => 1 - Math.pow(1 - x, 3); L._fitting = true; clearTimeout(L._fitT); let over = false, last = S;
+function fdGlide(L, gaps, K, S, Sf, done){ let t0 = 0; const ease = x => 1 - Math.pow(1 - x, 3); L._fitting = true; clearTimeout(L._fitT); let over = false, last = S;
   const fin = () => { if (over) return; over = true;
     if (Math.abs(L.scrollTop - last) > 2){ const rem = gaps.reduce((t, g) => t + (g.el.isConnected ? g.el.offsetHeight : 0), 0) + (K ? +L.dataset.kp || 0 : 0); const s0 = L.scrollTop;   /* he scrolled during the glide: stop where he is, never pull the list back */
       gaps.forEach(g => g.el.remove()); if (K) kpSet(L, 0); L.scrollTop = Math.max(0, s0 - rem); }
     else { gaps.forEach(g => g.el.remove()); if (K) kpSet(L, 0); L.scrollTop = Sf; }
     L.dataset.lst = L.scrollTop; L._fitT = setTimeout(() => { L._fitting = false; }, 60); if (done) done(); };
-  const step = now => { if (over) return; if (Math.abs(L.scrollTop - last) > 2) return fin(); const k = Math.max(0, Math.min(1, (now - t0) / 260)), e = ease(k);   /* (Oct 21) a frame stamped before t0 gave a negative k = the gap grew a few px first */
+  const step = now => { if (over) return; if (!t0) t0 = now - 16;   /* (Oct 22) the clock starts at the first frame: a late first frame never jumps */
+    if (Math.abs(L.scrollTop - last) > 2) return fin(); const k = Math.max(0, Math.min(1, (now - t0) / 260)), e = ease(k);   /* (Oct 21) a frame stamped before t0 gave a negative k = the gap grew a few px first */
     if (k >= 1) return fin();
     gaps.forEach(g => { g.el.style.height = g.h * (1 - e) + "px"; if (g.el.classList.contains("fdclone")) g.el.style.opacity = String(1 - e); }); if (K) kpSet(L, K * (1 - e));
     L.scrollTop = S + (Sf - S) * e; last = L.scrollTop; L.dataset.lst = L.scrollTop; requestAnimationFrame(step); };
   requestAnimationFrame(step); setTimeout(fin, 600); }   /* frames can stall (app in the background): the glide always finishes */
+/* (Oct 22, Chris) a Home folder opens/closes as a floating panel: the list stays exactly where it is (no glide, no jump) */
+function fdStill(el, fn){ const L = $("list"); if (!L){ fn(); return; } jcClear(); fdUnlock(L); const st = L.scrollTop; fn(); L.scrollTop = st; L.dataset.lst = st; stickUpdate(); }
 function keepPos(el, fn, opening){
   const L = $("list"); if (!el || !L){ fn(); return; }
   jcClear();
+  { const pan = el.closest && el.closest("#list .msec.fdfl"); if (pan && el.tagName !== "H4"){   /* (Oct 22) a row inside a floating Home folder: the page behind never moves; the panel keeps the tapped row where it was */
+      const ph = pan.querySelector(":scope > h4[data-ck]"), ck = ph && ph.dataset.ck, before = el.getBoundingClientRect().top, st0 = pan.scrollTop, lst = L.scrollTop, parts = fdParts(pan, before);
+      const ekey = [...el.attributes].filter(a => a.name.startsWith("data-")).map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join(""), etag = el.tagName.toLowerCase(); fdUnlock(L); fn();
+      const np = ck && [...L.querySelectorAll(".msec.fdfl > h4[data-ck]")].find(x => x.dataset.ck === ck); L.scrollTop = lst; L.dataset.lst = lst;
+      if (np && !el.isConnected && ekey) el = [...np.parentElement.querySelectorAll(etag + ekey)].find(x => x.getClientRects().length && !x.closest(".tdetail .tdetail")) || el;   /* the redraw made a new row: find it again by its data- key */
+      if (!np || !el.isConnected){ stickUpdate(); return; }
+      /* the list's own one-motion rule (keepPos, v149), inside the panel: what vanished above the tapped row leaves a gap (nothing on screen moves
+         in the tap frame), then ONE glide closes the gaps: opened + fits = just enough to show its bottom; taller = its row to the panel top */
+      const P = np.parentElement, rb = el.closest(".trow,.pc3") || el, gaps = fdGaps(P, parts);
+      const PMX = parseFloat(P.style.maxHeight) || P.clientHeight; if (P.scrollHeight < st0 + PMX - 0.5){ const g = document.createElement("div"); g.className = "fdgap"; g.style.height = (st0 + PMX - P.scrollHeight) + "px"; P.appendChild(g); gaps.push({el: g, h: 0, pad: g.offsetHeight}); }   /* room below so the panel cannot snap up */
+      P.scrollTop = st0; const up = before - el.getBoundingClientRect().top;
+      if (up > 0.5){ const g = document.createElement("div"); g.className = "fdgap"; g.style.height = up + "px"; rb.before(g); gaps.push({el: g, h: up}); }
+      P.scrollTop = st0; P.scrollTop += el.getBoundingClientRect().top - before;
+      const S = P.scrollTop, G = gaps.reduce((t, g) => t + g.h, 0), PAD = gaps.reduce((t, g) => t + (g.pad || 0), 0); gaps.forEach(g => { if (g.pad) g.h = g.pad; });
+      let Sf = S >= G ? S - G : S;
+      if (opening){ const nx = rb.nextElementSibling, blk = nx && nx.matches(".tdetail,.sublist,.mbody,.replist") ? nx : rb, PR = P.getBoundingClientRect(), LB = L.getBoundingClientRect();
+        const PT = PR.top + P.clientTop, PB = Math.min(PR.bottom, LB.bottom, innerHeight), FH = np.offsetHeight;
+        const t0 = rb.getBoundingClientRect().top, b0 = blk.getBoundingClientRect().bottom, at = (y, sf) => y - G - (sf - S);
+        if (b0 - t0 <= PB - PT - FH - 4){ if (at(b0, Sf) > PB - 4) Sf += at(b0, Sf) - PB + 4; }
+        else Sf += at(t0, Sf) - PT; }
+      Sf = Math.max(0, Math.min(Sf, P.scrollHeight - G - PAD - P.clientHeight));
+      const end = () => { stickUpdate(); };
+      if (G + PAD > 0.5 || Math.abs(Sf - S) > 1) fdGlide(P, gaps, 0, S, Sf, end); else end(); return; } }
   const key = [...el.attributes].filter(a => a.name.startsWith("data-")).map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join(""), tag = el.tagName.toLowerCase();
   const wasStuck = (el.tagName === "H4" ? el : (el.closest(".trow,.pc3") || el)).classList.contains("stuck");
   /* (Oct 21, Chris) computer folders: remember where the list was before the first folder opened (close glides back there) and, on close, keep a copy of the open folder to shrink into its header */
@@ -4557,7 +4592,7 @@ function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   if (!phone()) return;
   const boxes = [...document.querySelectorAll("#list .msec:not(.pfold)")], open = boxes.filter(b => !b.classList.contains("collapsed"));
   if (!open.length) return;
-  boxes.forEach(b => { if (!open.includes(b)) b.classList.add("fdim"); });
+  if (!fdFloatTab()) boxes.forEach(b => { if (!open.includes(b)) b.classList.add("fdim"); });   /* (Oct 22) a floating Home folder: the folders below stay sharp */
   const sub = document.querySelector("#list .msec:not(.collapsed):not(.pfold) .sublist:not([data-sgfoldbody])");   // (Oct 21, Chris: tapping a Songs folder blurred its siblings) Songs board folders are not a blur-the-others sub-list
   if (sub){ const row = sub.previousElementSibling, grid = sub.parentElement, box = sub.closest(".msec");
     [...grid.children].forEach(c => { if (c !== row && c !== sub) c.classList.add("fdim"); });
@@ -4569,7 +4604,7 @@ function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   if (par.classList.contains("sublist") && par.previousElementSibling) par.previousElementSibling.classList.add("fdim");
   const h2 = box2 && box2.querySelector(":scope > h4"); if (h2) h2.classList.add("fdim");
   /* (Oct 17, Chris: "make the card bigger, you have lots of room") computer: an open to-do gets the blurred folders' room below it, so the list never scrolls */
-  if (isDesktop() && box2){ let n = box2.nextElementSibling; while (n){ if (n.matches(".msec")) n.classList.add("fdhide"); n = n.nextElementSibling; } }
+  if (isDesktop() && box2 && !fdFloatTab()){ let n = box2.nextElementSibling; while (n){ if (n.matches(".msec")) n.classList.add("fdhide"); n = n.nextElementSibling; } }
 }
 function applyCollapse(){
   document.querySelectorAll(".msec:not(.pfold) > h4:not([data-icatopen]), .pcol > h4, .wkcol > h4").forEach(h => {
@@ -4580,7 +4615,52 @@ function applyCollapse(){
   });
   oneItemOpen();
   applyFocus();
+  fdFloat();
 }
+/* (Oct 22, Chris) HOME FOLDERS FLOAT OVER: the open Home folder drops down from its own row as a panel over the folders below; a hidden
+   placeholder keeps its closed spot, so no folder moves and the page never jumps. Close = its x, its title again, a tap outside, Esc. */
+let fdPanelSt = {}, fdClosedH = {};
+const fdFloatTab = () => tab === "today";
+function fdFloat(){
+  const L = $("list"); if (!L) return;
+  L.querySelectorAll(".fdph").forEach(x => { const n = x.nextElementSibling; if (!n || !n.classList.contains("fdfl") || n.classList.contains("collapsed")) x.remove(); });
+  let open = null, restore = null;
+  L.querySelectorAll(".msec:not(.pfold)").forEach(box => {
+    const h = box.querySelector(":scope > h4[data-ck]"); if (!h) return;
+    const on = !open && fdFloatTab() && !box.classList.contains("collapsed") && !box.parentElement.closest(".msec");   /* a top Home folder, never one inside a folder */
+    if (!on){ if (box.classList.contains("fdfl")){ box.classList.remove("fdfl"); ["top", "left", "width", "maxHeight"].forEach(p => { box.style[p] = ""; }); }
+      h.querySelectorAll(".fdx").forEach(x => x.remove());
+      if (box.classList.contains("collapsed") && box.offsetHeight > 0) fdClosedH[h.dataset.ck] = box.offsetHeight; return; }
+    open = box; box.parentElement.classList.add("fdflhost");
+    const p0 = box.previousElementSibling;
+    if (!p0 || !p0.classList.contains("fdph")){
+      const cs = getComputedStyle(box), ph = document.createElement("div"); ph.className = "fdph"; ph.setAttribute("aria-hidden", "true");
+      ph.style.height = (fdClosedH[h.dataset.ck] || (h.offsetHeight + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth))) + "px";
+      ph.style.marginTop = cs.marginTop; ph.style.marginBottom = cs.marginBottom; ph.style.order = cs.order;
+      box.before(ph); }
+    const wasFl = box.classList.contains("fdfl"); box.classList.add("fdfl");
+    if (!wasFl){ const st = fdPanelSt[h.dataset.ck]; if (st) restore = [box, st]; }
+    if (!h.querySelector(".fdx")) h.insertAdjacentHTML("beforeend", '<button type="button" class="fdx" aria-label="Close" data-fdx="1">&times;</button>');
+  });
+  fdFloatFit(); if (restore) restore[0].scrollTop = restore[1];   /* after the max height is set: before it the panel cannot scroll, so the old scroll was lost (rows popped) */
+}
+/* the panel sits exactly on its placeholder and reaches at most to the bottom of the screen (then scrolls inside) */
+function fdFloatFit(){
+  const L = $("list"), m = L && L.querySelector(".msec.fdfl"); if (!m) return; const ph = m.previousElementSibling; if (!ph || !ph.classList.contains("fdph")) return;
+  m.style.top = ph.offsetTop + "px"; m.style.left = ph.offsetLeft + "px"; m.style.width = ph.offsetWidth + "px";
+  const bot = Math.min(L.getBoundingClientRect().bottom, innerHeight), top = ph.getBoundingClientRect().top;
+  m.style.maxHeight = Math.max(260, bot - top - 8) + "px"; }
+function fdFloatClose(){ const m = document.querySelector("#list .msec.fdfl"), h = m && m.querySelector(":scope > h4[data-ck]"); if (!h) return false; h.click(); return true; }
+document.addEventListener("click", e => { const t = e.target; if (!t || !t.closest) return;
+  if (t.closest("#list .msec.fdfl > h4 .fdx")){ e.preventDefault(); e.stopPropagation(); fdFloatClose(); return; }
+  const m = document.querySelector("#list .msec.fdfl"); if (!m || m.contains(t)) return;
+  if ($("pop") && $("pop").innerHTML) return;   /* a pop-up is open: its clicks are its own */
+  if (t.closest("#list") || t === document.body || t === document.documentElement) fdFloatClose(); }, true);   /* tap outside = close; the tap still does its own thing (another folder's title opens it) */
+document.addEventListener("keydown", e => { if (e.key !== "Escape" || !document.querySelector("#list .msec.fdfl") || ($("pop") && $("pop").innerHTML)) return; if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName || "")) return; fdFloatClose(); });
+document.addEventListener("scroll", e => { const t = e.target; if (!t || !t.classList) return;
+  if (t.classList.contains("fdfl")){ const h = t.querySelector(":scope > h4[data-ck]"); if (h) fdPanelSt[h.dataset.ck] = t.scrollTop; try { stickUpdate(); } catch {} }
+  else if (t.id === "list") fdFloatFit(); }, true);
+addEventListener("resize", () => { try { fdFloatFit(); } catch {} });
 /* (Oct 21, Chris) NEVER a folder with ONE row inside: an open folder whose only row is an in-place opener (Usage > Claude use) shows that row's view at once; the lone row is hidden (CSS .one1). A sub-list only with 2+ rows. */
 function oneItemOpen(){
   document.querySelectorAll("#list .msec:not(.collapsed) > .chgrid").forEach(g => {
@@ -4605,7 +4685,7 @@ document.addEventListener("pointerup", e => { if (!fdMiss || fdMiss.up) return; 
 document.addEventListener("click", e => { const h = e.target.closest("[data-ck]"); if (!h || e.target.closest("button,a")) return;
   const k = h.dataset.ck;
   if (fdMiss && fdMiss.k === k) fdMiss.ok = true;
-  if (phone() && h.closest("#list .msec")){ const opening = oneOpen() !== k; if (opening && oneOpen()) scrollStack = scrollStack.slice(0, 1); if (opening && !oneOpen()) scrollStack = []; if (!opening) scrollStack = scrollStack.slice(0, 1); return keepPos(h, () => { openOne[oneKey()] = oneOpen() === k ? "" : k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {}
+  if (phone() && h.closest("#list .msec")){ const opening = oneOpen() !== k; if (opening && oneOpen()) scrollStack = scrollStack.slice(0, 1); if (opening && !oneOpen()) scrollStack = []; if (!opening) scrollStack = scrollStack.slice(0, 1); return (fdFloatTab() && !h.parentElement.parentElement.closest(".msec") ? fdStill : keepPos)(h, () => { openOne[oneKey()] = oneOpen() === k ? "" : k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {}
     // (Oct 7) Chris: opening or closing a folder closes everything inside it (project lists, to-do details)
     taskOpen = null; saveTaskOpen(); subOpen = new Set(); try { localStorage.setItem("fd-subopen", "[]"); } catch {}
     mRow = ""; saveMRow(); document.querySelectorAll("#list .tdetail, #list .sublist:not([data-sgfoldbody]), #list .mbody").forEach(x => x.remove()); document.querySelectorAll("#list .rowon, #list .subon").forEach(x => x.classList.remove("rowon", "subon"));
@@ -5875,8 +5955,9 @@ function taskDetail(t){
     ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait || t.kind ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
+const fdInFloat = el => { if (!fdFloatTab() || !el.closest) return false; let m = el.closest("#list .msec"); while (m && m.parentElement.closest("#list .msec")) m = m.parentElement.closest("#list .msec"); return !!m; };   /* a row in a top Home folder (it floats when open) */
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
-  document.querySelectorAll(`#list [data-tlinks="${CSS.escape(taskOpen)}"]`).forEach(b => { if (!b.matches(".chc, .pc3t")) return; const c = b.closest(".trow") || b.closest(".pc3") || b;
+  document.querySelectorAll(`#list [data-tlinks="${CSS.escape(taskOpen)}"]`).forEach(b => { if (!b.matches(".chc, .pc3t")) return; if (fdInFloat(b)) return; const c = b.closest(".trow") || b.closest(".pc3") || b;
     if (c.nextElementSibling && c.nextElementSibling.classList.contains("tdetail")) return; c.classList.add("rowon"); c.insertAdjacentHTML("afterend", taskDetail(t)); }); }
 function applySubOpen(){ document.querySelectorAll("#list .msec .chgrid .pc3t[data-popproj]").forEach(b => { const row = b.closest(".pc3") || b, n = b.dataset.popproj;
   row.classList.toggle("subon", subOpen.has(n)); if (subOpen.has(n) && !(row.nextElementSibling && row.nextElementSibling.dataset.subof === n)) row.insertAdjacentHTML("afterend", subHTML(n)); }); applyFocus(); }
@@ -5910,6 +5991,7 @@ document.addEventListener("click", e => {
     document.querySelectorAll("#list .sublist:not([data-sgfoldbody])").forEach(x => x.remove()); applySubOpen(); addTodayBtns(); applyTaskOpen(); }, !was); }
   if (b.dataset.tlinks && b.closest("#list .tdetail")){ e.preventDefault(); e.stopPropagation(); const id = b.dataset.tlinks, opening = taskKid !== id; return keepPos(b, () => { taskKid = opening ? id : null; refreshDetail(); }, opening); }
   if (b.dataset.tlinks && b.closest("#list")){ e.preventDefault(); e.stopPropagation(); rowMenuOff(); const id = b.dataset.tlinks; taskKid = null;
+    if (fdInFloat(b)){ taskOpen = null; saveTaskOpen(); closePop(); openLinks = id; render(); return; }   /* (Oct 22, Chris) inside a floating Home folder a to-do opens as its own pop-up, never in place */
     const c = b.closest(".trow") || b.closest(".pc3") || b, opening = taskOpen !== id;
     return keepPos(c, () => { taskOpen = taskOpen === id ? null : id; saveTaskOpen(); document.querySelectorAll("#list .rowon").forEach(x => x.classList.remove("rowon")); document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); applyFocus(); }, opening); }
   const items = rowMenuFor(b); if (!items) return;
@@ -6343,6 +6425,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 })();
 </script>
 
+<i id="fdend" hidden></i>
 <script>(function(){ var h = document.documentElement; if (!h.classList.contains("fdsplash")) return; var go = function(){ if (go.d) return; go.d = 1; requestAnimationFrame(function(){ h.classList.add("fdfade"); requestAnimationFrame(function(){ h.classList.remove("fdsplash"); setTimeout(function(){ h.classList.remove("fdfade"); }, 600); }); }); };
   /* the fonts first (max 0.4s), so the title never changes size once it shows */ try { document.fonts.ready.then(go); } catch (e) { go(); } setTimeout(go, 400); })();</script>
 </body></html>
