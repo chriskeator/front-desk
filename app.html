@@ -120,7 +120,20 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .socn{grid-area:n;display:flex;align-items:center;gap:6px;min-width:0}.socn em{font-style:normal;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socn .picon{flex:none;width:18px;height:18px;margin:0}
 .socv{grid-area:v;font-size:15px;white-space:nowrap}.soct{grid-area:t;display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.soct i{display:block;height:6px;border-radius:3px;background:var(--teal)}
 .socrow small{grid-area:s;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socrow small.up{color:#4A7F37}.socrow small.dn{color:var(--red,#B42318)}
-@media (min-width:1000px){.socsw{display:none}.soccols{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.soccol{display:flex}}
+/* (Oct 21, Chris: double headers) the phone sub-menu rule '.seg{display:grid!important}' (line ~648) beat the plain hide: the computer hides the switch with !important too */
+@media (min-width:1000px){.seg.socsw{display:none!important}.soccols{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.soccol{display:flex}}
+/* (Oct 21, t-1010-drill-down) Social pop-up: 3 levels inside one pop-up, Back goes up one */
+.socpop{display:flex;flex-direction:column;gap:10px;min-height:0;flex:1 1 auto}
+.socpop .soclist{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:2px}
+.socpop .socsum{display:flex;align-items:baseline;justify-content:center;gap:8px;background:var(--soft,#EEF6F5);border:1px solid var(--line);border-radius:12px;padding:10px 8px;min-width:0}
+.socpop .socsum b{font-size:24px;line-height:1.1;white-space:nowrap}.socpop .socsum small{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.socpop .sochd{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:6px 2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.socpop .socnote{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);background:var(--cream,#EFEAE0);border-radius:10px;padding:7px 10px;min-width:0;flex:none}
+.socpop .socnote b{color:var(--ink);white-space:nowrap}.socpop .socnote span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.socpop .socrow{flex:none}.socpop .socrow.end{cursor:default}
+.socfact{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;min-width:0;flex:none}
+.socfact span{color:var(--muted);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.socfact b{font-size:15px;white-space:nowrap}.socfact b.nc{color:var(--muted);font-weight:700;font-size:13px}
+.poptop b.soct1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;display:flex;align-items:center;gap:6px}.poptop b.soct1 .picon{flex:none;width:18px;height:18px}
 .task{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
 .task.isdone .tt{text-decoration:line-through;color:var(--muted)}
 .task:not(.isdone):not(.isidea){touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
@@ -2411,7 +2424,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v251</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v252</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3847,9 +3860,10 @@ function popHTML(){
   else if (fDet != null && (tab === "today" || tab === "money")) h = funnelPop();
   else if (popGoal && tab === "projects") h = goalPop();
   else if (recapOpen && tab === "projects") h = recapPop();
+  else if (socDrill && socDrill.length && tab === "today") h = socPop();
   // (Oct 4) an email review gets a big pop-up: notes on the left, the whole email on the right, no scrolling
   const wide = openRev && (reviews.find(x => x.id === openRev) || {}).preview;
-  return h ? `<div class="popbg" data-popbg="1"></div><div class="popcard${wide ? " wide" : (restOpen && tab === "projects") ? " mid" : fDet != null && (tab === "today" || tab === "money") ? " mid fixed" : ""}" role="dialog" aria-modal="true">${h}</div>` : "";
+  return h ? `<div class="popbg" data-popbg="1"></div><div class="popcard${wide ? " wide" : (restOpen && tab === "projects") ? " mid" : socDrill && socDrill.length && tab === "today" ? " mid fixed" : fDet != null && (tab === "today" || tab === "money") ? " mid fixed" : ""}" role="dialog" aria-modal="true">${h}</div>` : "";
 }
 window.renderPopReal = () => renderPop();
 function renderPop(){
@@ -3875,7 +3889,7 @@ function renderPop(){
   // no automatic focus on the phone: it pops the keyboard up on its own (Chris, Oct 4). Keep focus if he is already typing.
   if (!phone()){ if (revFix) $("revnote")?.focus(); else if (answering) $("ans")?.focus(); else if (sorting) $("sortq")?.focus(); }
 }
-function closePop(){ sortPick = false; fDet = null; needsOpen = false; popGoal = null; recapOpen = false; popProj = null; restOpen = false; openNeed = null; bulkPick = false; if (talking){ try { talkRec && talkRec.stop(); } catch {} talking = null; } sCal = false; if (exDetail != null) exDetail = null; openRev = null; revFix = false; answering = null; openTx = null; sorting = null; sDet = null; openLinks = null; readyOpen = false; labOpen = -1; moving = null; moveCalOn = false; pickingProj = null; restPick = null; perPick = null; icatPick = false; trainLv = null; openIdea = null; confirmDel = null; popCap = null; popPg = 0; }
+function closePop(){ socDrill = null; sortPick = false;fDet = null; needsOpen = false; popGoal = null; recapOpen = false; popProj = null; restOpen = false; openNeed = null; bulkPick = false; if (talking){ try { talkRec && talkRec.stop(); } catch {} talking = null; } sCal = false; if (exDetail != null) exDetail = null; openRev = null; revFix = false; answering = null; openTx = null; sorting = null; sDet = null; openLinks = null; readyOpen = false; labOpen = -1; moving = null; moveCalOn = false; pickingProj = null; restPick = null; perPick = null; icatPick = false; trainLv = null; openIdea = null; confirmDel = null; popCap = null; popPg = 0; }
 // (Oct 7) Chris: more numbers on the left of every graph (about 4-8 even steps, not just 0 / half / top)
 function axTicks(max, intOnly){ const nice = v => { if (!(v > 0)) return false; const e = Math.pow(10, Math.floor(Math.log10(v) + 1e-9)); return [1, 2, 2.5, 5].some(m => Math.abs(v / e - m) < 1e-6); };
   for (const k of [5, 6, 4, 8, 3, 2]){ const st = max / k; if (nice(st) && (!intOnly || Number.isInteger(st))) return Array.from({length: k + 1}, (_, i) => max - i * st); }
@@ -4233,10 +4247,11 @@ let deskPer = null, fitting = false, sProdCap = null;
 let navLast = "", navBusy = false;
 // (Oct 7) Chris: reopen where he left off (tab + sub-view), remembered on this device
 try { const r = JSON.parse(localStorage.getItem("fd-where") || "null"); if (r && ["today", "projects", "money"].includes(r.tab)){ tab = r.tab; sub = r.sub || "todo"; psub = r.psub || "projects"; msub = r.msub || "biz"; } } catch {}
-const navKey = () => [tab, sub, psub, msub, proj || "", $("pop") && $("pop").innerHTML ? 1 : 0].join("|");
+const navKey = () => [tab, sub, psub, msub, proj || "", $("pop") && $("pop").innerHTML ? 1 : 0, socDrill ? socDrill.length : 0].join("|");
 addEventListener("popstate", () => {
   navBusy = true;
-  if ($("pop") && $("pop").innerHTML){ closePop(); render(); }
+  if (socDrill && socDrill.length > 1 && $("pop") && $("pop").innerHTML){ socDrill.pop(); render(); }   /* (Oct 21) Social pop-up: phone back = up one level */
+  else if ($("pop") && $("pop").innerHTML){ closePop(); render(); }
   else if (proj){ proj = null; page = 0; render(); }
   else if (tab !== "today" || sub !== "todo"){ setTab("today"); }
   else { navBusy = false; navLast = navKey(); try { history.back(); } catch {} return; }
@@ -5069,7 +5084,7 @@ document.addEventListener("pointerup", qEnd); document.addEventListener("pointer
 /* (Oct 20, Chris Oct 15 t-1016-usage-tracker) USAGE folder: Claude use this week vs last week. Data: db stats/usage, written hourly by usage-to-desk.py (ccusage, API-price dollars; the real % of the cap only shows on Claude's Usage screen). Week = Fri 6pm to Fri 6pm. */
 let uPer = "now", uOpen = false, uDay = "", uGrp = "";
 /* (Oct 21, Chris approved, task t-1010-drill-down) SOCIAL CARD on Home: Followers / Views / Site clicks, 5 apps each, periods 1D 7D MTD YTD Custom (start date only, through today).
-   Data: sales_daily days[].fol / .soc (followers, views per app), social stats (GA4 visits + traced sales per app). No data = "not connected yet", never a fake number. The tap on a column / app is a placeholder for the next level (still being designed). */
+   Data: sales_daily days[].fol / .soc (followers, views per app), social stats (GA4 visits + traced sales per app). No data = "not connected yet", never a fake number. A column top or app row opens the Social pop-up (socPop, 3 levels). */
 const SOCAPPS = ["YouTube", "Facebook", "Instagram", "TikTok", "X"], SOCCOLS = [["fol", "Followers"], ["vw", "Views"], ["clk", "Site clicks"]];
 let socPer = (() => { try { return localStorage.getItem("fd-socper") || "7"; } catch { return "7"; } })(), socFrom = (() => { try { return localStorage.getItem("fd-socfrom") || ""; } catch { return ""; } })(),
   socCol = (() => { try { return localStorage.getItem("fd-soccol") || "fol"; } catch { return "fol"; } })();
@@ -5126,6 +5141,121 @@ function homeSocial(){
     <span class="seg socsw" role="group" aria-label="Which numbers">${SOCCOLS.map(([c, n]) => `<button type="button" data-socsw="${c}" aria-pressed="${socCol === c}">${n}</button>`).join("")}</span>
     <div class="soccols">${SOCCOLS.map(col).join("")}</div></div></div>`;
 }
+/* (Oct 21, Chris, t-1010-drill-down) SOCIAL POP-UP: every tap goes 3 levels deep inside ONE pop-up. socDrill = the level stack:
+   [{c}] = level 1 (a column: the 5 apps), [{c}, {a}] = level 2 (that app's posts or days, ranked), [.., .., {k}] = level 3 (one post / day / product).
+   Back (button or phone back) pops one level, Close ends. Per-post data on the desk: social stats .shorts [date, title, secs, type, YT views, TikTok views, IG likes].
+   Not on the desk (shows 'not connected yet' / 'export needed', never 0): YouTube subscribers per video, TikTok follows per video, Instagram/Facebook shares + saves, Facebook/X per post, site pages per app. */
+var socDrill = null;
+const SOCNAME = {fol: "Followers", vw: "Views", clk: "Site clicks"};
+function socPosts(a, R){ /* that app's Shorts with a number for the ranking metric; posted in the period, else the latest 10 */
+  const S = SOC(), L = ((S && S.shorts) || []).map((s, i) => ({s, i})), ix = {YouTube: 4, TikTok: 5, Instagram: 6}[a];
+  if (ix == null) return null;
+  const have = L.filter(x => x.s[ix] != null), inP = have.filter(x => x.s[0] >= R.from && x.s[0] <= R.to);
+  const pick = inP.length ? inP : have.slice().sort((p, q) => q.s[0] < p.s[0] ? -1 : 1).slice(0, 10);
+  return {ix, inP: !!inP.length, rows: pick.sort((p, q) => q.s[ix] - p.s[ix])};
+}
+function socDays(c, a, R){ /* real per-day numbers for that app, best first */
+  const out = [];
+  if (c === "clk"){ const S = SOC(), i = S && S.src ? S.src.indexOf(a) : -1; if (i < 0) return out;
+    for (const [d, v, , o] of S.days) if (d >= R.from && d <= R.to && v[i]) out.push({d, v: v[i], rev: o.filter(x => x[0] === i).reduce((t, x) => t + x[1], 0)}); }
+  else { const sd = SD(), k = c === "fol" ? "fol" : "soc"; if (!sd) return out;
+    for (const x of sDays(sd, R.from, R.to)) if (x && x[k] && x[k][a] != null) out.push({d: x.d, v: x[k][a]}); }
+  return out.sort((p, q) => (q.rev || 0) - (p.rev || 0) || q.v - p.v);
+}
+function socSales(a, R){ /* sales traced to that app: [{d, amt, prods}] */
+  const S = SOC(), i = S && S.src ? S.src.indexOf(a) : -1, out = []; if (i < 0) return out;
+  for (const [d, , , o] of S.days) if (d >= R.from && d <= R.to) for (const [s, amt, ps] of o) if (s === i) out.push({d, amt, prods: ps.map(p => S.prods[p] || "Other")});
+  return out;
+}
+function socPop(){
+  const D = socData(), R = D.R, st = socDrill, c = st[0].c, a = st[1] && st[1].a, k = st[2] && st[2].k, S = SOC();
+  const sgn = n => (n >= 0 ? "+" : "") + n.toLocaleString(), kn = v => v == null ? "-" : v.toLocaleString();
+  const bar = (v, max) => `<span class="soct"><i style="width:${max > 0 ? Math.max(v > 0 ? 3 : 0, Math.round(v / max * 100)) : 0}%"></i></span>`;
+  const row = (attr, name, val, v, max, sub, icon) => `<button type="button" class="socrow${attr ? "" : " end"}" ${attr || "disabled"}><span class="socn">${icon || ""}<em>${esc(name)}</em></span><b class="socv">${esc(val)}</b>${bar(v, max)}<small>${esc(sub || "")}</small></button>`;
+  const fact = (l, v, nc) => `<div class="socfact"><span>${esc(l)}</span><b${nc ? ' class="nc"' : ""}>${esc(v)}</b></div>`;
+  const note = (b, t) => `<div class="socnote"><b>${esc(b)}</b><span>${esc(t)}</span></div>`;
+  const hd = t => `<div class="sochd">${esc(t)}</div>`;
+  const pb = (key, l) => `<button type="button" class="small${socPer === key ? " on" : ""}" data-socper="${key}">${l}</button>`;
+  const per = `<div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}<label class="small socdate${socPer === "custom" ? " on" : ""}">Custom<input type="date" data-socfrom max="${azToday()}" value="${esc(socFrom)}" aria-label="Start date, through today"></label></span></div>`;
+  const nc = x => x.lag ? "not in yet" : "not connected yet";
+  let title, body = "";
+  if (!a){ /* level 1: the 5 apps for this column */
+    title = esc(SOCNAME[c]);
+    const any = SOCAPPS.some(x => !D[c][x].none);
+    const big = c === "fol" ? (any ? sgn(D.folTot) : "-") : c === "vw" ? (any ? D.vwTot.toLocaleString() : "-") : (any ? usd(D.clkRev) : "-");
+    const small = !any ? "not connected yet" : c === "fol" ? "new followers" : c === "vw" ? "views" : `${D.clkN.toLocaleString()} clicks · ${D.clkOrd} sale${D.clkOrd === 1 ? "" : "s"}`;
+    const max = Math.max(1, ...SOCAPPS.map(x => D[c][x].none ? 0 : c === "clk" ? D[c][x].rev : D[c][x].v));
+    body = `<div class="socsum"><b>${esc(big)}</b><small>${esc(small)}</small></div>` + hd("Tap an app") + `<div class="soclist">${SOCAPPS.map(x => { const d = D[c][x];
+      const val = d.none ? "-" : c === "fol" ? sgn(d.v) : c === "vw" ? d.v.toLocaleString() : usd(d.rev);
+      const sub = d.none ? nc(d) : c === "clk" ? `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"} · ${d.ord} sale${d.ord === 1 ? "" : "s"}` : d.tot != null ? d.tot.toLocaleString() + " total" : "";
+      return row(`data-socgo="${x}"`, x, val, d.none ? 0 : c === "clk" ? d.rev : d.v, max, sub, pIcon(x)); }).join("")}</div>`;
+  } else if (!k){ /* level 2: that app's posts (or days / products) ranked */
+    const d = D[c][a]; title = `${pIcon(a)}<span>${esc(a)} · ${esc(SOCNAME[c].toLowerCase())}</span>`;
+    const val = d.none ? "-" : c === "fol" ? sgn(d.v) : c === "vw" ? d.v.toLocaleString() : usd(d.rev);
+    body = `<div class="socsum"><b>${esc(val)}</b><small>${esc(d.none ? nc(d) : c === "fol" ? "new followers" : c === "vw" ? "views" : `${d.v.toLocaleString()} clicks · ${d.ord} sale${d.ord === 1 ? "" : "s"}`)}</small></div>`;
+    const P = c === "clk" ? null : socPosts(a, R), L = [];
+    if (c === "fol"){
+      if (a === "YouTube") L.push(note("Subscribers per video:", "not connected yet"));
+      else if (a === "TikTok") L.push(note("Followers per video:", "export needed (TikTok Studio)"));
+      else if (a === "Instagram" || a === "Facebook") L.push(note("Shares + saves per 1K views:", "not connected yet"));
+      else L.push(note("Followers per post:", "not connected yet"));
+    } else if (c === "vw" && (a === "Instagram" || a === "Facebook" || a === "X")) L.push(note("Views per post:", "not connected yet"));
+    if (P && P.rows.length){
+      const w = P.ix === 6 ? "likes" : "views", max = Math.max(1, ...P.rows.map(x => x.s[P.ix]));
+      L.push(hd((c === "fol" || P.ix === 6 ? "Best guess: most " + w : "Most " + w) + (P.inP ? ", posted in this period" : ": nothing posted in this period, latest posts")));
+      P.rows.forEach(x => L.push(row(`data-socgo="p:${x.i}"`, x.s[1], kn(x.s[P.ix]), x.s[P.ix], max, `${sShort(x.s[0])} · ${x.s[2]} s · ${w} so far`)));
+    }
+    if (c === "clk"){
+      const sales = socSales(a, R), by = {};
+      sales.forEach(s => s.prods.forEach((p, j) => { const o = by[p] ||= {n: 0, amt: 0}; o.n++; if (!j) o.amt += s.amt; }));
+      const ps = Object.entries(by).sort((p, q) => q[1].amt - p[1].amt || q[1].n - p[1].n), max = Math.max(1, ...ps.map(x => x[1].amt));
+      L.push(hd("What they bought"));
+      if (ps.length) ps.forEach(([p, o]) => L.push(row(`data-socgo="b:${esc(p)}"`, p, usd(o.amt), o.amt, max, `${o.n} sale${o.n === 1 ? "" : "s"}`)));
+      else L.push(note("No sales", d.none ? nc(d) : "from " + a + " in this period"));
+      if (a === "YouTube" && S && S.days){ const ag = mpAgg(S, R.from, R.to), ys = S.ytk.map((n, i) => [n, ag.yt[i], i]).filter(x => x[1] > 0).sort((p, q) => q[1] - p[1]), m2 = Math.max(1, ...ys.map(x => x[1]));
+        if (ys.length){ L.push(hd("Where on YouTube they clicked")); ys.forEach(([n, v, i]) => L.push(row(`data-socgo="y:${i}"`, n, v.toLocaleString(), v, m2, `click${v === 1 ? "" : "s"}`))); } }
+      L.push(note("Pages they landed on:", "not connected yet"));
+    }
+    if (!(P && P.rows.length) && c !== "clk"){
+      const ds = socDays(c, a, R), max = Math.max(1, ...ds.map(x => Math.abs(x.v)));
+      L.push(hd("Best days"));
+      if (ds.length) ds.forEach(x => L.push(row(`data-socgo="d:${x.d}"`, sDayLbl(x.d), c === "fol" ? sgn(x.v) : x.v.toLocaleString(), Math.abs(x.v), max, c === "fol" ? "new followers" : "views")));
+      else L.push(note("No days", nc(d)));
+    }
+    body += `<div class="soclist">${L.join("")}</div>`;
+  } else { /* level 3: one post / day / product / YouTube spot */
+    const [t, id] = [k.slice(0, 1), k.slice(2)], F = [];
+    if (t === "p"){ const s = S.shorts[+id]; title = esc(s[1]);
+      F.push(fact("Posted", sDayLbl(s[0])), fact("Length", s[2] + " s"), fact("Kind", (S.types || [])[s[3]] || "-"),
+        fact("YouTube views", s[4] == null ? "not connected yet" : kn(s[4]), s[4] == null), fact("TikTok views", s[5] == null ? "not connected yet" : kn(s[5]), s[5] == null),
+        fact("Instagram likes", s[6] == null ? "not connected yet" : kn(s[6]), s[6] == null),
+        fact(a + (a === "YouTube" ? " subscribers from it" : " followers from it"), a === "TikTok" ? "export needed" : "not connected yet", true)); }
+    else if (t === "d"){ const sd = SD(), x = sd ? sDays(sd, id, id)[0] : null, i = S && S.src ? S.src.indexOf(a) : -1, sx = S && S.days ? S.days.find(z => z[0] === id) : null;
+      title = `${pIcon(a)}<span>${esc(a)} · ${esc(sDayLbl(id))}</span>`;
+      const f = x && x.fol && x.fol[a] != null ? sgn(x.fol[a]) : null, v = x && x.soc && x.soc[a] != null ? x.soc[a].toLocaleString() : null;
+      const cl = sx && i >= 0 ? sx[1][i] : null, rv = sx && i >= 0 ? sx[3].filter(z => z[0] === i).reduce((s2, z) => s2 + z[1], 0) : null;
+      F.push(fact("New followers", f ?? "not connected yet", f == null), fact("Views", v ?? "not connected yet", v == null),
+        fact("Site clicks", cl == null ? "not connected yet" : cl.toLocaleString(), cl == null), fact("Sales", rv == null ? "not connected yet" : usd(rv), rv == null)); }
+    else if (t === "b"){ title = `${pIcon(a)}<span>${esc(id)} · from ${esc(a)}</span>`;
+      const L = socSales(a, R).filter(s => s.prods.includes(id));
+      F.push(fact("Sales", L.length.toLocaleString()), fact("Money", usd(L.filter(s => s.prods[0] === id).reduce((s2, z) => s2 + z.amt, 0))));
+      if (L.length) F.push(hd("Each sale"), ...L.sort((p, q) => q.d < p.d ? -1 : 1).map(s => fact(sDayLbl(s.d) + (s.prods.length > 1 ? " · with " + s.prods.filter(p => p !== id).join(", ") : ""), s.prods[0] === id ? usd(s.amt) : "in the same order"))); }
+    else { const i = +id, n = S.ytk[i]; title = `${pIcon(a)}<span>${esc(n)}</span>`;
+      const L = S.days.filter(z => z[0] >= R.from && z[0] <= R.to && z[2][i] > 0).sort((p, q) => q[2][i] - p[2][i]);
+      F.push(fact("Clicks", L.reduce((s2, z) => s2 + z[2][i], 0).toLocaleString()));
+      if (L.length) F.push(hd("Best days"), ...L.map(z => fact(sDayLbl(z[0]), z[2][i].toLocaleString()))); }
+    body = `<div class="soclist">${F.join("")}</div>`;
+  }
+  const back = st.length > 1 ? `<button type="button" class="tb" data-socback="1">Back</button>` : "";
+  return `<div class="poptop"><b class="soct1">${title}</b><span class="row" style="gap:6px;flex:none">${back}<button type="button" class="tb" data-popclose="1">Close</button></span></div><div class="socpop">${per}${body}</div>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-soccolgo],[data-socapp],[data-socgo],[data-socback]"); if (!b) return;
+  const d = b.dataset;
+  if (d.soccolgo) socDrill = [{c: d.soccolgo}];
+  else if (d.socapp){ const [c, a] = d.socapp.split(":"); socDrill = [{c}, {a}]; }
+  else if (d.socback){ if (socDrill && socDrill.length > 1) socDrill.pop(); }
+  else if (socDrill){ const lv = socDrill.length; if (lv === 1) socDrill.push({a: d.socgo}); else if (lv === 2) socDrill.push({k: d.socgo}); }
+  render(); });
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-socper],[data-socsw]"); if (!b) return;
   if (b.dataset.socper){ socPer = b.dataset.socper; try { localStorage.setItem("fd-socper", socPer); } catch {} } else { socCol = b.dataset.socsw; try { localStorage.setItem("fd-soccol", socCol); } catch {} }
   render(); });
