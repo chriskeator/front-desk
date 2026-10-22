@@ -2470,7 +2470,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v280</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v281</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5567,11 +5567,11 @@ function chSetSlot(el){ if (!chS || !chEditable(chS.lv)) return true; const L = 
 function chRows(L, M, intro){ const B = 4 * M, off = (intro || L.some(c => c.g < 0)) ? 1 : 0, rows = [];
   L.forEach(c => { const k = c.g < 0 ? 0 : Math.floor(c.g / B + 1e-9) + off; while (rows.length <= k) rows.push([]); rows[k].push(Object.assign({}, c)); }); return rows; }
 document.addEventListener("keydown", e => { const el = e.target.closest && e.target.closest("#lyrchk .chz[contenteditable]"); if (!el) return; if (e.key === "Enter"){ e.preventDefault(); el.blur(); } }, true);
-document.addEventListener("focusin", e => { const el = e.target.closest && e.target.closest("#lyrchk .chz[contenteditable]"); if (el && el.textContent !== el.dataset.raw) el.textContent = el.dataset.raw || ""; }, true);   /* typing shows what he types (1sus2/3); the raised look returns on leave */
+document.addEventListener("focusin", e => { const el = e.target.closest && e.target.closest("#lyrchk .chz[contenteditable]"); if (!el) return; if (el.textContent !== el.dataset.raw) el.textContent = el.dataset.raw || ""; setTimeout(() => { if (document.activeElement === el) getSelection().selectAllChildren(el); }, 0); }, true);   /* (Oct 22, Chris) Tab/tap selects the whole chord: typing replaces it */   /* typing shows what he types (1sus2/3); the raised look returns on leave */
 document.addEventListener("focusout", e => { const el = e.target.closest && e.target.closest("#lyrchk .chz[contenteditable]"); if (!el) return;
   const nx = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest("#lyrchk .chz[contenteditable]"), key = nx && nx.dataset.chk;
   if (!chSetSlot(el)) return; if (el.isConnected && !el.classList.contains("bad")) el.innerHTML = chFmt(el.dataset.raw || "");
-  if (key) setTimeout(() => { const n = document.querySelector(`#lyrchk .chz[data-chk="${key}"]`); if (n && document.activeElement !== n){ n.focus(); const g = getSelection(); g.selectAllChildren(n); g.collapseToEnd(); } }, 0); }, true);
+  if (key) setTimeout(() => { const n = document.querySelector(`#lyrchk .chz[data-chk="${key}"]`); if (n && document.activeElement !== n){ n.focus(); const g = getSelection(); g.selectAllChildren(n); } }, 0); }, true);
 document.addEventListener("click", async e => { const b = e.target.closest("[data-chsheet]"); if (b){ e.preventDefault(); e.stopPropagation(); chOpen(b.dataset.chsheet, b.dataset.chlv); return; }
   if (!chS) return;
   const lvx = e.target.closest("[data-chlvx]"), sc = e.target.closest("[data-chsc]"), dr = e.target.closest("[data-chdrop]");
