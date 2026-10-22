@@ -2007,8 +2007,8 @@ let nChg=false,wChg=false,anyChg=false;const chIds=new Set();Object.keys(cur).fo
 Object.keys(prev).forEach(k=>{if(k.indexOf(V)===0&&!cur[k]){anyChg=true;nChg=true}});
 if(!chIds.size&&!nChg&&!wChg&&!anyChg)return;
 const F=RKF(),L=(DOC[F]||[]).slice();let up={},rowsChanged=false;
-if(L.length){document.querySelectorAll('#se-rows .row.ok').forEach(r=>{const hit=[...r.querySelectorAll('.b[data-id]')].some(e=>chIds.has(V+e.dataset.id))||anyChg;if(hit){const k=L.indexOf(r.dataset.rk);if(k>=0){L.splice(k,1);rowsChanged=true}r.classList.remove('ok')}});if(rowsChanged){DOC[F]=L;up[F]=L}}
-if(!CM){
+/* (Oct 22, Chris: "I definitely can't have approved things getting wiped") an edit NEVER removes an approval or a ticked row; only Chris's own unapprove does (the song lock keeps approved parts as approved) */ if(false&&L.length){document.querySelectorAll('#se-rows .row.ok').forEach(r=>{const hit=[...r.querySelectorAll('.b[data-id]')].some(e=>chIds.has(V+e.dataset.id))||anyChg;if(hit){const k=L.indexOf(r.dataset.rk);if(k>=0){L.splice(k,1);rowsChanged=true}r.classList.remove('ok')}});if(rowsChanged){DOC[F]=L;up[F]=L}}
+if(false&&!CM){
  if(TAGM){if(DOC.tagOk&&(nChg||wChg)){DOC.tagOk=null;up.tagOk=null}}
  else{if(VS.length>1&&Array.isArray(DOC.versesOk)){let vo=DOC.versesOk.slice();if(nChg&&VER===1)vo=[];else if(nChg||wChg)vo=vo.filter(v=>v!==VER);if(vo.length!==DOC.versesOk.length){DOC.versesOk=vo;up.versesOk=vo}}
   if(DOC.melodyOK&&((nChg&&VER===1)||(wChg&&tChg&&VER===1&&VS.length<2))){DOC.melodyOK=null;up.melodyOK=null}}
@@ -2449,7 +2449,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v270</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v271</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
