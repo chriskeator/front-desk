@@ -2238,6 +2238,11 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 #shortchk .shtime{position:absolute;top:8px;left:8px;z-index:2;background:rgba(0,0,0,.7);color:#fff;font:700 20px/1 ui-monospace,Menlo,monospace;padding:6px 10px;border-radius:8px;pointer-events:none}
 #shortchk .shfl{display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:34vh;min-height:0;flex:0 1 auto;scrollbar-gutter:stable}
 #shortchk .shfi{border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:6px 8px;display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.3;box-sizing:border-box}
+/* (Oct 21, Chris) FINAL check: Tall | Wide | Thumbnail switch (top-tabs look), posting copy box */
+#shortchk .shfsw{flex:0 0 auto}#shortchk .shfsw button{padding:7px 2px}
+#shortchk .shfcp{margin:0;flex:1 1 auto;min-height:0;max-height:110px;overflow:auto;font:12.5px/1.35 var(--body,inherit);font-family:inherit;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 8px;color:var(--ink);box-sizing:border-box;scrollbar-gutter:stable}
+#shortchk .shcard.wide .shfcp{max-height:none;font-size:14px}
+#shortchk .shfwait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
 #shortchk .shfi.good{border-color:#1F9D55}#shortchk .shfi.bad{border-color:var(--red);background:var(--red-soft)}
 #shortchk .shfh{font-weight:700;color:var(--ink);overflow-wrap:anywhere}#shortchk .shfd{color:var(--muted);overflow-wrap:anywhere}
 #shortchk .shff{display:flex;flex-wrap:wrap;gap:6px}
@@ -2270,21 +2275,23 @@ const SH_CHKS = ["Starts on the action", "Ends clean, note rings", "No ums, smac
 const SH_CHKS_H = ["Both hands in view", "Wrists not cut off", "Lettered keys on top", "No lyrics or extras"];
 const SH_CHKS_W = ["Title + words right", "Graphic matches the music", "Nothing covers the hands", "Ending logo + link"];   /* (Oct 17) step 3 Words: fields words/wordsNote/wordsFixes, video wordsUrl (shorts-videos-up.py) */
 const SH_CHKS_T = ["Title fills the width", "One graphic, the right one", "Real piano, both hands whole", "Nothing on the piano or cut off"];   /* (Oct 20) step 4 Thumbnail: fields thumb/thumbNote/thumbFixes, picture thumbUrl (shorts-videos-up.py) */
-const shAns = (r, st) => st === "hands" ? r.hands : st === "words" ? r.words : st === "thumb" ? r.thumb : r.status;
+const SH_CHKS_F = ["Tall + wide play right", "Thumbnail is the approved one", "Posting copy right", "Post date OK"];   /* (Oct 21, Chris) step 5 Final: fields final/finalNote/finalFixes/finalOK, files finalTallUrl/finalWideUrl/finalThumbUrl + finalCopy/finalDate (shorts-final-up.py) */
+const shAns = (r, st) => st === "hands" ? r.hands : st === "words" ? r.words : st === "thumb" ? r.thumb : st === "final" ? r.final : r.status;
 const shQ = s => document.querySelector("#shortchk " + s);
 const shLen = s => { s = Math.round(+s || 0); return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + " s"; };
 const shStep = r => !r.handsFileId ? null : !r.hands ? "hands" : r.hands === "approved" && !r.status ? "start" : r.status === "approved" && r.wordsUrl && !r.words ? "words" : r.words === "approved" && r.thumbUrl && !r.thumb ? "thumb" : null;
 /* (Oct 21, Chris) ONE SOURCE for Shorts "his turn": shStep = a desk check page; shFinal = the final package is made and waits in Drive (6 Final Review/b Chris checks). The column cell, the title pill and the Today count all use shReady. Check: desk-checks.py shorts-state. */
-const shFinal = r => !!(r.handsFileId && !r.moved && r.hands === "approved" && r.status === "approved" && r.words === "approved" && r.thumb === "approved" && r.auto && r.auto.step === "Final" && r.auto.state === "Ready");
+const shFinal = r => !!(r.handsFileId && !r.moved && r.hands === "approved" && r.status === "approved" && r.words === "approved" && r.thumb === "approved" && r.final !== "approved" && r.final !== "fix" && r.auto && r.auto.step === "Final" && r.auto.state === "Ready");
 const shReady = r => shStep(r) || (shFinal(r) ? "final" : null);
-const shShow = r => (shView && shRows && r === shRows[shI] ? shView : null) || shStep(r) || (r.words === "approved" && r.thumbUrl ? "thumb" : r.status === "approved" && r.wordsUrl ? "words" : r.hands === "approved" ? "start" : "hands");
-const shFx = (r, st) => (st === "hands" ? r.handsFixes : st === "words" ? r.wordsFixes : st === "thumb" ? r.thumbFixes : r.fixes) || [];
+const shShow = r => (shView && shRows && r === shRows[shI] ? shView : null) || shStep(r) || (shFinal(r) || r.final ? "final" : r.words === "approved" && r.thumbUrl ? "thumb" : r.status === "approved" && r.wordsUrl ? "words" : r.hands === "approved" ? "start" : "hands");
+const shFx = (r, st) => (st === "hands" ? r.handsFixes : st === "words" ? r.wordsFixes : st === "thumb" ? r.thumbFixes : st === "final" ? r.finalFixes : r.fixes) || [];
+const shFk = st => st === "hands" ? "handsNote" : st === "words" ? "wordsNote" : st === "thumb" ? "thumbNote" : st === "final" ? "finalNote" : "note";
 async function shOpen(tid, rid, view){
   shView = view || null; shOne = !!rid;
   const s = await db.collection("shortcheck").get(), all = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved);
   shWait = all.filter(r => !r.handsFileId && !r.handsFail && !r.status).length;
   shRows = all.filter(r => r.handsFileId).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
-  shTask = tid || null; const j = rid ? shRows.findIndex(r => r.id === rid) : -1, k = shRows.findIndex(shStep); shI = j >= 0 ? j : k < 0 ? shRows.length : k; shDraw(); }
+  shTask = tid || null; const j = rid ? shRows.findIndex(r => r.id === rid) : -1, k = shRows.findIndex(shReady); shFm = "tall"; shI = j >= 0 ? j : k < 0 ? shRows.length : k; shDraw(); }
 function shClose(){ shView = null; shOne = false; shRows = null; document.getElementById("shortchk").innerHTML = ""; shBoard = null; waitBusy.add("shorts"); if (tab === "today") render(); fdShLoad(); }
 /* (Oct 21, Chris) FIX LIST: every fix he sent on this step, in order, above the checks: 'Fix N: his words' -> 'Done: what changed' + frames (tap = jump the video) + OK / Still wrong. Field fixList (shorts-fixlist.py). The note box opens EMPTY. */
 const shFl = (r, st) => (r.fixList || []).filter(f => f.step === st);
@@ -2296,7 +2303,7 @@ function shFixHtml(r, st){ const L = shFl(r, st); if (!L.length) return "";
     + (f.done && f.ok !== "redo" ? `<div class="shfb"><button type="button" class="shfo${f.ok === "ok" ? " on" : ""}" data-shx="fok" data-f="${esc(f.id)}">OK</button><button type="button" class="shfo no${f.ok === "bad" ? " on" : ""}" data-shx="fbad" data-f="${esc(f.id)}">Still wrong</button></div>` : "") + `</div>`).join("") + `</div>`; }
 function shFixMark(id, v){ const r = shRows && shRows[shI]; if (!r) return; shNoteSave(); const f = (r.fixList || []).find(x => x.id === id); if (!f) return; f.ok = f.ok === v ? "" : v;
   db.collection("shortcheck").doc(r.id).update({fixList: r.fixList, updated: new Date().toISOString()}).catch(() => {}); shDraw(); }
-function shFixLog(r, step, now){ const CKS = step === "hands" ? SH_CHKS_H : step === "words" ? SH_CHKS_W : step === "thumb" ? SH_CHKS_T : SH_CHKS, k = step === "hands" ? "handsNote" : step === "words" ? "wordsNote" : step === "thumb" ? "thumbNote" : "note";
+function shFixLog(r, step, now){ const CKS = step === "hands" ? SH_CHKS_H : step === "words" ? SH_CHKS_W : step === "thumb" ? SH_CHKS_T : step === "final" ? SH_CHKS_F : SH_CHKS, k = shFk(step);
   const bad = shBad(r, step), raw = String(r[k] || "").replace(/^(Fix: [^;]*; ?)+/, "").trim(), picks = shFx(r, step).filter(i => CKS[i]).map(i => CKS[i]);
   const text = [picks.length ? "Not right: " + picks.join(", ") : "", bad.length ? "Still wrong: " + bad.map(f => "Fix " + f.n).join(", ") : "", raw].filter(Boolean).join(". ");
   const L = (r.fixList || []).map(f => f.ok === "bad" ? Object.assign({}, f, {ok: "redo"}) : f); L.push({id: "f" + (L.length + 1) + "-" + Date.parse(now), step, n: L.filter(f => f.step === step).length + 1, at: now, chris: text || "Sent back", done: "", frames: [], ok: ""});
@@ -2307,6 +2314,7 @@ function shDraw(){
   let h;
   if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.status === "fix" || x.hands === "fix").length;
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
+  else if (shShow(r) === "final") h = shFinalHtml(r, head);
   else { const st = shShow(r), H = st === "hands", W = st === "words", T = st === "thumb", CK = H ? SH_CHKS_H : W ? SH_CHKS_W : T ? SH_CHKS_T : SH_CHKS, fx = shFx(r, st), ans = shAns(r, st);
     h = head((shI + 1) + " of " + N) + (ans === "approved" ? `<div class="okbar">&#10003; ${H ? "Hands" : W ? "Words" : T ? "Thumbnail" : "Start + end"} approved</div>` : "") + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; ${esc(r.source || "")}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : ans === "fix" ? "Sent back" : "Dropped"}</span>` : ""}<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/view" target="_blank" rel="noopener">Open in Drive</a></div></div>`
     + `<div class="shbody"><div class="shv${T ? " shimg" : ""}">${T ? `<img id="shthumb" src="${esc(r.thumbUrl)}" alt="${esc(r.title || "Thumbnail")}">` : ((W ? r.wordsUrl : r.handsUrl) ? `<video id="shvid" src="${esc(W ? r.wordsUrl : r.handsUrl)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>` : `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(r.handsFileId || "")}/preview" allow="autoplay; fullscreen" allowfullscreen title="${esc(r.title || "Short")}"></iframe>`)}</div><div class="shside">`
@@ -2320,6 +2328,25 @@ function shDraw(){
     h += shWide() ? NB + `</div></div>` : `</div></div>` + NB; }
   const okc = r && shAns(r, shShow(r)) === "approved";
   document.getElementById("shortchk").innerHTML = `<div class="shbg" data-shx="close"></div><div class="shcard${okc ? " ok" : ""}${r && shWide() ? " wide" : ""}" role="dialog" aria-modal="true">${h}</div>`; shMain(); }
+/* (Oct 21, Chris: "everything is done from the desk") FINAL check: the finished package in place of the Drive folder.
+   Tall | Wide | Thumbnail switch on the big player, posting copy + post date, fix list, 4 checks, note, Send fixes / Approve.
+   Approve = his yes for THIS Short (RULES - Posting 11): final 'approved' + finalOK; the queue's final-approve job moves the folder into 7 Approved. */
+let shFm = "tall";
+function shFinalHtml(r, head){
+  const fx = shFx(r, "final"), ans = r.final, url = shFm === "wide" ? r.finalWideUrl : r.finalTallUrl;
+  const pd = r.finalDate ? new Date(r.finalDate + "T12:00:00") : null, pds = pd && !isNaN(pd) ? pd.toLocaleDateString("en-US", {weekday: "short", month: "short", day: "numeric"}) + ", 5am" : "date not set";
+  const copy = String(r.finalCopy || "").replace(/^POST DATE:.*\n(LENGTH:.*\n)?\s*/, "").trim();
+  const nv = esc(r.finalNote || ""), NB = (shWide() ? `<textarea class="shnote" id="shnote" placeholder="Note (optional)">${nv}</textarea>` : `<input class="shnote" id="shnote" type="text" placeholder="Note (optional)" value="${nv}">`)
+    + `<div class="shbtns">${shOne ? "<span></span>" : `<button type="button" class="tb" data-shx="back"${shI ? "" : " disabled"}>Back</button>`}<span></span><button type="button" class="tb" id="shmain"></button></div>`;
+  const h = head((shI + 1) + " of " + shRows.length) + (ans === "approved" ? `<div class="okbar">&#10003; Final approved</div>` : "")
+    + `<div><div class="sht">${esc(r.title || "")}</div><div class="shh" style="gap:8px"><span class="shsrc">${shLen(r.secs)} &middot; Posts ${esc(pds)}</span>${ans ? `<span class="shst ${ans === "approved" ? "ok" : "no"}">${ans === "approved" ? "Approved" : "Sent back"}</span>` : ""}${r.finalFolder ? `<a class="tb" style="margin-left:auto;height:30px;font-size:12px;padding:4px 10px" href="https://drive.google.com/drive/folders/${encodeURIComponent(r.finalFolder)}" target="_blank" rel="noopener">Open in Drive</a>` : ""}</div></div>`
+    + `<div class="shbody"><div class="shv${shFm === "thumb" ? " shimg" : ""}">${shFm === "thumb" ? (r.finalThumbUrl ? `<img id="shthumb" src="${esc(r.finalThumbUrl)}" alt="${esc(r.title || "Thumbnail")}">` : `<div class="shfwait">Thumbnail uploading</div>`) : url ? `<video id="shvid" src="${esc(url)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>` : `<div class="shfwait">Video uploading</div>`}</div><div class="shside">`
+    + `<div class="tabs shfsw" role="group" aria-label="Pick what to see">${[["tall", "Tall"], ["wide", "Wide"], ["thumb", "Thumbnail"]].map(([k, t]) => `<button type="button" data-shx="fm" data-m="${k}" aria-pressed="${shFm === k}">${t}</button>`).join("")}</div>`
+    + shFixHtml(r, "final")
+    + `<div class="shstep">Step 5 of 5: Final<span>Approve = it posts ${esc(pds)}</span></div>`
+    + `<pre class="shfcp" id="shfcp">${esc(copy || "Posting copy not found")}</pre>`
+    + `<div class="shchks">${SH_CHKS_F.map((c, i) => `<button type="button" class="shchk${fx.includes(i) ? " bad" : ""}" data-shx="chk" data-i="${i}">${fx.includes(i) ? "&#10007; " : "&#10003; "}${esc(c)}</button>`).join("")}</div>`;
+  return shWide() ? h + NB + `</div></div>` : h + `</div></div>` + NB; }
 /* (Oct 15) Chris: a red check OR any note text turns Approve into a red Send fixes */
 function shMain(){ const r = shRows && shRows[shI], b = document.getElementById("shmain"), el = document.getElementById("shnote"); if (!r || !b) return;
   const st = shShow(r), fix = shFx(r, st).length || (el && el.value.trim()) || shBad(r, st).length, ok = shAns(r, st) === "approved";
@@ -2329,7 +2356,7 @@ document.addEventListener("input", e => { if (shRows && e.target.id === "shnote"
 const shFmt = t => Math.floor(t / 60) + ":" + (t % 60).toFixed(1).padStart(4, "0");
 document.addEventListener("timeupdate", e => { if (e.target.id === "shvid"){ const el = document.getElementById("shtime"); if (el) el.textContent = shFmt(e.target.currentTime); } }, true);
 document.addEventListener("seeked", e => { if (e.target.id === "shvid"){ const el = document.getElementById("shtime"); if (el) el.textContent = shFmt(e.target.currentTime); } }, true);
-function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(), st0 = shShow(r), k = st0 === "hands" ? "handsNote" : st0 === "words" ? "wordsNote" : st0 === "thumb" ? "thumbNote" : "note"; if (v === (r[k] || "")) return;
+function shNoteSave(){ const r = shRows && shRows[shI], el = document.getElementById("shnote"); if (!r || !el) return; const v = el.value.trim(), k = shFk(shShow(r)); if (v === (r[k] || "")) return;
   r[k] = v; db.collection("shortcheck").doc(r.id).update({[k]: v, updated: new Date().toISOString()}).catch(() => {}); }
 async function shAnswer(st){
   const r = shRows[shI]; if (!r) return; const el = document.getElementById("shnote"), now = new Date().toISOString(), step = shShow(r);
@@ -2343,6 +2370,11 @@ async function shAnswer(st){
       db.collection("shortcheck").doc(r.id).update({words: "dropped", status: "dropped", note: r.note, answeredAt: now, updated: now}).catch(() => {}); }
     else { r.words = st === "approved" ? "approved" : "fix"; r.wordsNote = el ? el.value.trim() : (r.wordsNote || ""); const fx = r.words === "approved" ? [] : shFx(r, "words"); r.wordsFixes = fx;
       db.collection("shortcheck").doc(r.id).update({words: r.words, wordsNote: [fx.filter(i => SH_CHKS_W[i]).map(i => "Fix: " + SH_CHKS_W[i]).join("; "), r.wordsNote].filter(Boolean).join("; "), wordsFixes: fx, wordsAt: now, updated: now}).catch(() => {}); } }
+  else if (step === "final"){   /* (Oct 21, Chris) Approve = his yes for THIS Short: the queue moves it into 7 Approved (shorts-final-approve.py) */
+    r.final = st === "approved" ? "approved" : "fix"; r.finalNote = el ? el.value.trim() : (r.finalNote || ""); const fx = r.final === "approved" ? [] : shFx(r, "final"); r.finalFixes = fx;
+    const up = {final: r.final, finalNote: [fx.filter(i => SH_CHKS_F[i]).map(i => "Fix: " + SH_CHKS_F[i]).join("; "), r.finalNote].filter(Boolean).join("; "), finalFixes: fx, updated: now};
+    if (r.final === "approved"){ up.finalOK = r.finalOK = now; up.auto = r.auto = {step: "Scheduled", state: "Working", text: "Moving to 7 Approved", at: now}; } else up.finalFixAt = r.finalFixAt = now;
+    db.collection("shortcheck").doc(r.id).update(up).catch(() => {}); }
   else if (step === "thumb"){
     if (st === "dropped" && !shFx(r, "thumb").length && !(el && el.value.trim())){ r.thumb = "dropped"; r.status = "dropped"; r.note = "Drop, don't redo";
       db.collection("shortcheck").doc(r.id).update({thumb: "dropped", status: "dropped", note: r.note, answeredAt: now, updated: now}).catch(() => {}); }
@@ -2356,10 +2388,10 @@ async function shAnswer(st){
   if (st === "fix") shFixLog(r, step, now);
   if (shOne){ shClose(); return; }   /* (Oct 16, Chris) from the board: one step, then closed + ticked, like Songs */
   if (step === "hands" && r.hands === "approved"){ shDraw(); return; }   /* same Short goes straight on to Start + end */
-  shI++; while (shI < shRows.length && !shStep(shRows[shI])) shI++;
-  if (shI >= shRows.length){ const k = shRows.findIndex(shStep); if (k >= 0) shI = k; }
+  shI++; shFm = "tall"; while (shI < shRows.length && !shReady(shRows[shI])) shI++;
+  if (shI >= shRows.length){ const k = shRows.findIndex(shReady); if (k >= 0) shI = k; }
   shDraw();
-  if (!shWait && shRows.every(x => !shStep(x))){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
+  if (!shWait && shRows.every(x => !shReady(x))){ const t = allTasks.find(x => !x.done && x.shortcheck && (!shTask || x.id === shTask)); if (t) db.collection("tasks").doc(t.id).update({done: true, doneAt: now}).catch(() => {}); } }
 document.addEventListener("keydown", e => { if (!shRows) return; if (e.target.id === "shnote"){ if (e.key === "Enter"){ e.preventDefault(); e.target.blur(); } return; } if (e.key === "Escape") shClose(); });
 document.addEventListener("focusout", e => { if (shRows && e.target.id === "shnote") shNoteSave(); });
 document.addEventListener("click", e => {
@@ -2367,7 +2399,8 @@ document.addEventListener("click", e => {
   if (!shRows || !e.target.closest("#shortchk")) return;
   const x = e.target.closest("[data-shx]"); if (!x) return; const a = x.dataset.shx;
   if (a === "close"){ shNoteSave(); shClose(); }
-  else if (a === "back"){ shNoteSave(); if (shI > 0){ shI--; shDraw(); } }
+  else if (a === "back"){ shNoteSave(); if (shI > 0){ shI--; shFm = "tall"; shDraw(); } }
+  else if (a === "fm"){ shNoteSave(); shFm = x.dataset.m; shDraw(); }
   else if (a === "seek"){ const v = document.getElementById("shvid"); if (v){ const p = String(x.dataset.t).split(":"); v.currentTime = Math.max(0, (+p[0]) * 60 + (+p[1]) - 2); v.play().catch(() => {}); } }
   else if (a === "seekt"){ const v = document.getElementById("shvid"); if (v){ v.currentTime = Math.max(0, +x.dataset.t - 1); v.play().catch(() => {}); } }
   else if (a === "fok") shFixMark(x.dataset.f, "ok");
@@ -2375,10 +2408,10 @@ document.addEventListener("click", e => {
   else if (a === "ok") shAnswer("approved");
   else if (a === "drop"){ const r = shRows[shI]; if (r){ if (shShow(r) === "hands") r.handsFixes = []; else r.fixes = []; } shAnswer("dropped"); }
   else if (a === "fix") shAnswer("fix");
-  else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
+  else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v250</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v251</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5124,16 +5157,16 @@ function homeShorts(){
   const blk = (bg, bd, txt, rid, view) => `<i class="sblk"${rid ? ` data-shortrow="${esc(rid)}"${view ? ` data-shview="${view}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${rid ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${txt ? `<span class="sfw">${txt}</span>` : ""}</i>`;
   /* (Oct 20, Chris) DATES IN THE BUTTONS: Scheduled box = the day it was scheduled (schedOn), Posted box = the day it posts (outlined = still to come) or posted (teal) */
   const dtx = (d, c) => d ? `<span class="sfw" style="color:${c};font-weight:600">${md(d)}</span><span class="sdtp" style="color:${c}">${+String(d).slice(5, 7)}/${+String(d).slice(8, 10)}</span>` : "";
-  const cells = (k, you, rid, fixing, id, dt) => SHS.map((t, i) => dt && dt[i] ? (i < k ? blk("#1FA598", "#1FA598", dtx(dt[i], "#fff"), id && i < 4 ? id : "", id && i < 4 ? ["hands", "start", "words", "thumb"][i] : "") : blk("transparent", "#1FA598", dtx(dt[i], "#14786F"))) : i < k ? (id && i < 4 ? blk("#1FA598", "#1FA598", `<span style="color:#fff;font-weight:600">Approved</span>`, id, ["hands", "start", "words", "thumb"][i]) : blk("#1FA598", "#1FA598")) : i === k && fixing ? (ak => blk(ak && ak[0] === "Stuck" ? "#FBE2DC" : "#FDE8E4", ak && ak[0] === "Stuck" ? "#B4362A" : "#D85A30", `<span style="color:#B23B17;font-weight:600">${ak ? ak[0] : "Fixing"}</span>`))(fmAck("shortcheck", id)) : i === k && rid === "final" ? `<i class="sblk" data-shfinal="${esc(id)}" role="button" tabindex="0" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#fff;cursor:pointer;background:#1FA598;border:1.5px solid #1FA598"><span class="sfw" style="color:#fff;font-weight:600">Ready</span></i>` : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
+  const cells = (k, you, rid, fixing, id, dt) => SHS.map((t, i) => dt && dt[i] ? (i < k ? blk("#1FA598", "#1FA598", dtx(dt[i], "#fff"), id && i < 5 ? id : "", id && i < 5 ? ["hands", "start", "words", "thumb", "final"][i] : "") : blk("transparent", "#1FA598", dtx(dt[i], "#14786F"))) : i < k ? (id && i < 5 ? blk("#1FA598", "#1FA598", `<span style="color:#fff;font-weight:600">Approved</span>`, id, ["hands", "start", "words", "thumb", "final"][i]) : blk("#1FA598", "#1FA598")) : i === k && fixing ? (ak => blk(ak && ak[0] === "Stuck" ? "#FBE2DC" : "#FDE8E4", ak && ak[0] === "Stuck" ? "#B4362A" : "#D85A30", `<span style="color:#B23B17;font-weight:600">${ak ? ak[0] : "Fixing"}</span>`))(fmAck("shortcheck", id)) : i === k && rid === "final" ? blk("#E8B53A", "#E8B53A", "Check", id, "final") : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
   /* (Oct 20, Chris) AUTO STEP PILL: db shortcheck.auto {step,state,text} from desk-queue short_stages; Waiting light gold, Working gold, Ready teal, Failed red */
-  const apill = au => { if (!au || !au.state) return ""; const C = {Waiting: ["#FBEFD0", "#8A6508"], Working: ["#E8B53A", "#3a2a00"], Ready: ["#1FA598", "#fff"], Failed: ["#FBE2DC", "#B4362A"]}[au.state]; if (!C) return ""; return `<span class="apill" title="${esc(au.text || "")}" style="display:inline-block;margin-top:2px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em;background:${C[0]};color:${C[1]};max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top">${esc((au.step ? au.step + ": " : "") + au.state)}</span>`; };
+  const apill = au => { if (!au || !au.state) return ""; const C = {Waiting: ["#FBEFD0", "#8A6508"], Working: ["#FBEFD0", "#8A6508"], Ready: ["#E8B53A", "#3a2a00"], Failed: ["#FBE2DC", "#B4362A"]}[au.state]; if (!C) return ""; return `<span class="apill" title="${esc(au.text || "")}" style="display:inline-block;margin-top:2px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em;background:${C[0]};color:${C[1]};max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top">${esc((au.step ? au.step + ": " : "") + (au.state === "Ready" ? "Check" : au.state))}</span>`; };   /* (Oct 21, Chris) teal = ONLY his Approve: his turn = gold 'Check', Cadence working = light gold */
   const row = (title, sub, k, you, rid, fixing, id, dt, au) => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}${apill(au)}</b><span class="sbar" style="display:flex;gap:4px">${cells(k, you, rid, fixing, id, dt)}</span></div>`;
   const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SHS.map((t, i) => `<i class="sblk" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SHAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   /* (Oct 20, Chris) every teal box shows the day that step was approved; a timestamp becomes Chris's local day; no date = box stays as it is */
   const shDay = d => { if (!d) return ""; const t = String(d); if (t.length <= 10) return t; const q = new Date(t); return isNaN(q) ? "" : ymd(q); };
   const md = d => { const p = String(d).slice(5, 10).split("-"); return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
-  const W = (shBoard || []).map(r => ({r, k: r.hands !== "approved" ? 0 : !r.status || r.status === "fix" ? 1 : r.words !== "approved" ? 2 : r.thumb !== "approved" ? 3 : 4, you: !!shReady(r), fin: !shStep(r) && shFinal(r), fixing: r.hands === "fix" || r.status === "fix" || r.words === "fix" || r.thumb === "fix"})).sort((a, b) => b.you - a.you || a.k - b.k || (a.r.order || 0) - (b.r.order || 0));
+  const W = (shBoard || []).map(r => ({r, k: r.hands !== "approved" ? 0 : !r.status || r.status === "fix" ? 1 : r.words !== "approved" ? 2 : r.thumb !== "approved" ? 3 : r.final === "approved" ? 5 : 4, you: !!shReady(r), fin: !shStep(r) && shFinal(r), fixing: r.hands === "fix" || r.status === "fix" || r.words === "fix" || r.thumb === "fix" || r.final === "fix"})).sort((a, b) => b.you - a.you || a.k - b.k || (a.r.order || 0) - (b.r.order || 0));
   const S = sb.filter(x => x.kind === "scheduled").sort((a, b) => a.date.localeCompare(b.date)), P = sb.filter(x => x.kind === "posted").sort((a, b) => b.date.localeCompare(a.date));
   if (!W.length && !S.length && !P.length) return "";
   const yours = W.filter(x => x.you).length;
@@ -5148,10 +5181,10 @@ function homeShorts(){
   const postCheck = PR.length ? label("Posting check", pRed ? pRed + " red" : "all good") + PR.map(prow).join("") : "";
   const sec = (t, L, f) => L.length ? label(t, L.length) + head + L.map(f).join("") : "";
   return `<div class="msec" style="--cc:#D85A30"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
-    + sec("In the works", W, x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalAt].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto))
+    + sec("In the works", W, x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto))
     + sec("Scheduled", S, x => row(x.title, "", 6, null, "", false, "", {5: x.schedOn, 6: x.date}))
     + sec("Posted this week", P, x => row(x.title, "", 7, false, "", false, "", {5: x.schedOn, 6: x.date})) + postCheck + `</div></div>`; }
-document.addEventListener("click", e => { const f = e.target.closest("[data-shfinal]"); if (f){ e.preventDefault(); e.stopPropagation(); const r = (shBoard || []).find(x => x.id === f.dataset.shfinal); window.open(r && r.finalFolder ? "https://drive.google.com/drive/folders/" + r.finalFolder : "https://drive.google.com/drive/search?q=" + encodeURIComponent(r ? '"' + r.title + '" type:folder' : ""), "_blank", "noopener"); return; }   /* (Oct 21, Chris) Ready opens THAT Short's final folder (finalFolder from shorts-final-links.py) */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
+document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Check opens the Final check pop-up on the desk (view final), never Drive */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
    Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
