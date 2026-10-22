@@ -2331,7 +2331,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v236</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v237</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5104,7 +5104,7 @@ function homeSongs(only){
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(sgRow).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
   const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
   /* (Oct 21, Chris) SONGS BOARD = 4 FOLDERS: Christmas (Nov 1 list), Church songs, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
-  const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "theoldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
+  const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
   const isCh = x => SGCH.has(x.k) || (!x.sg && x.sc && /hymns|sunday/i.test(x.sc.group || ""));
   const inXm = x => x.xm, hasSg = x => !!x.sg;
   const fX = U.filter(inXm).sort(ord), fC = U.filter(x => !inXm(x) && hasSg(x) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !hasSg(x)).sort(ord);
