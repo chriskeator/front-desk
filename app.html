@@ -2449,7 +2449,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v272</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v273</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5365,7 +5365,8 @@ document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Chec
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
    Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
    NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songs + db songcheck, matched by name. */
-const SGCOLS = ["Lyrics", "Beats", "Melody", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "Be", "Me", "L1", "L2", "L3", "Fn"];   /* (Oct 22, Chris) Beats = step 2: the | text box per verse, before the melody */   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
+const SGCOLS = ["Lyrics", "Beats", "Melody", "Player", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "Be", "Me", "Pl", "L1", "L2", "L3", "Fn"];   /* (Oct 22, Chris) Player = hear the approved melody in the real Lab song player (preview copy) before chords */
+const SGPREVIEW = "https://lab.worshippianoacademy.com/a14d315000dc/";   /* = ~/Library/Scripts/claude-tasks/song-preview-path.txt (song-preview-push.sh publishes only that folder) */   /* (Oct 22, Chris) Beats = step 2: the | text box per verse, before the melody */   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
 const SGLIVE = ["twinkletwinklelittlestar", "jesuslovesme", "maryhadalittlelamb"];   /* = PP_SONG_OK in the Lab (twinkle, jesusloves, mary) */
 const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
 const sgKey = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
@@ -5419,15 +5420,16 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   else if (sc && sc.melodyOK && sc.orig && scVersesLeft(sc)) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
-  const LV = ["chordsOK", "mediumOK", "hardOK"];
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && sc.melodyOK; if (sc && sc[f]) C[3 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[3 + j] = {c: "chk", id: sc.id, v: 2}; });
+  if (sc && sc.melodyOK && !scVersesLeft(sc)) C[3] = {c: sc.playerOK ? "ok" : "chk", id: sc.id, pl: 1};   /* (Oct 22, Chris) PLAYER: gold Check once the melody and every verse are approved; teal after his Approve (playerOK) */
+  const LV = ["chordsOK", "mediumOK", "hardOK"], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK); if (sc && sc[f]) C[4 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[4 + j] = {c: "chk", id: sc.id, v: 2}; });
   /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
   { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
     const built = L => { const b = bt[L]; return b === true || !!(b && b.band && b.cards && b.lesson); }, lvOk = {L1: sc && sc.chordsOK, L2: sc && sc.mediumOK, L3: sc && sc.hardOK};
     const todo = ["L1", "L2", "L3"].find(L => lvOk[L] && built(L) && !fo[L]), done = ["L3", "L2", "L1"].find(L => fo[L]);
-    if (todo) C[6] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (done) C[6] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
+    if (todo) C[7] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (done) C[7] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
-  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "L1" ? 3 : k === "L2" ? 4 : k === "L3" ? 5 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
+  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "L2" ? 5 : k === "L3" ? 6 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
   return C; }
 function sgUniverse(){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -5441,7 +5443,7 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -5459,6 +5461,18 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.fnx === "back") return lyrClose();
   if (x.dataset.fnx === "open"){ window.open(deskLabTestUrl() + "?song=" + encodeURIComponent(r.name) + "&level=" + lv.slice(1), "_blank", "noopener"); return; }
   const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo, updated: new Date().toISOString()};
+  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); lyrClose(); render(); }, true);
+/* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens after it) */
+function plOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
+  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
+  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Songs tab &gt; ${esc(r.name)} &gt; Play</span></div><div class="lyrbt"><button type="button" class="tb" data-plx="back">Back</button><button type="button" class="tb" data-plx="open">Open player</button><button type="button" class="tb go" data-plx="ok">Approve</button></div></div>`;
+  document.body.appendChild(o); }
+document.addEventListener("click", async e => { const b = e.target.closest("[data-plchk]"); if (b){ e.preventDefault(); e.stopPropagation(); plOpen(b.dataset.plchk); return; }
+  const x = e.target.closest("[data-plx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+  const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
+  if (x.dataset.plx === "back") return lyrClose();
+  if (x.dataset.plx === "open"){ window.open(SGPREVIEW, "_blank", "noopener"); return; }
+  const now = new Date().toISOString(), up = {playerOK: now, updated: now};
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); lyrClose(); render(); }, true);
 function lyrClose(){ const o = document.getElementById("lyrchk"); if (o) o.remove(); }
 document.addEventListener("click", async e => { const b = e.target.closest("[data-lyrchk]"); if (b){ e.preventDefault(); e.stopPropagation(); lyrOpen(b.dataset.lyrchk); return; }
