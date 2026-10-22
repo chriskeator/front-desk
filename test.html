@@ -208,6 +208,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk .lyrhd{display:flex;flex-direction:column;gap:2px}#lyrchk .lyrhd b{font-size:17px}#lyrchk .lyrhd span{font-size:12.5px;color:var(--muted)}#lyrchk .lyrhd .lyrcp{color:var(--ink);font-weight:600}
 #lyrchk .lyrtx{flex:1;min-height:0;resize:none;font:15px/1.5 inherit;font-family:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
 #lyrchk .lyrnote{font:14px inherit;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
+#lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:#FBEFD0;color:#8A6508}
 #lyrchk .lyrbt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
 :root{--hov:rgba(0,0,0,.07)}
@@ -2452,7 +2453,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v261</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v262</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5363,7 +5364,7 @@ document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Chec
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
    Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
    NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songs + db songcheck, matched by name. */
-const SGCOLS = ["Lyrics", "Melody", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "Me", "L1", "L2", "L3", "Fn"];   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
+const SGCOLS = ["Lyrics", "Beats", "Melody", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "Be", "Me", "L1", "L2", "L3", "Fn"];   /* (Oct 22, Chris) Beats = step 2: the | text box per verse, before the melody */   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
 const SGLIVE = ["twinkletwinklelittlestar", "jesuslovesme", "maryhadalittlelamb"];   /* = PP_SONG_OK in the Lab (twinkle, jesusloves, mary) */
 const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
 const sgKey = t => String(t || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, "");
@@ -5385,21 +5386,36 @@ function scVersesOk(sc){ return (Array.isArray(sc && sc.versesOk) ? sc.versesOk 
 function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; if (sc && sc.tag && !sc.tagOk) k++; return k; }   /* the end tag counts as one more thing to approve */
 function scFixKeys(sc){ return sc && sc.fixing && typeof sc.fixing === "object" ? Object.keys(sc.fixing).filter(k => sc.fixing[k]) : []; }
 function scFixingTitle(t){ return !!(t && Array.isArray(t.songcheck) && (scBoard || []).some(r => scFixKeys(r).length && t.songcheck.some(p => sgKey(p && p[1] || p) === sgKey(r.name)))); }
+/* (Oct 22, Chris) BEATS cell helpers: songcheck.beatsText {verse: text}, beatsOK {verse: iso} (his real Approve tap only), beatsFix, beatsMaking */
+function btVerses(sc){ const n = Math.max(1, scVerses(sc).length), g = new Set(scGone(sc)); const o = []; for (let v = 1; v <= n; v++) if (!g.has(v)) o.push(v); return o; }
+function btTexts(sc){ const t = sc && sc.beatsText; return t && typeof t === "object" ? t : {}; }
+function btHas(sc){ return Object.values(btTexts(sc)).some(x => String(x || "").trim()); }
+function btOks(sc){ const o = sc && sc.beatsOK; return o && typeof o === "object" ? o : {}; }
+function btAnyOk(sc){ return Object.values(btOks(sc)).some(Boolean); }
+function btCell(sc, plan){ if (!sc) return {c: ""}; const T = btTexts(sc), O = btOks(sc), vs = btVerses(sc);
+  if (sc.beatsFix) return {c: "fx", ak: fmAck("songcheck", sc.id)};
+  if (vs.length && vs.every(v => O[v])) return {c: "ok", id: sc.id, bt: 1};
+  if (vs.some(v => String(T[v] || "").trim() && !O[v])) return {c: "chk", id: sc.id, bt: 1};
+  if (sc.beatsMaking || btHas(sc)) return {c: "mk"};
+  return {c: ""}; }
 function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow their songcheck row like every other song; nothing is hardcoded Approved */
   const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
   if (sc && sc.lyricsOK) C[0] = {c: "ok", id: sc.id, lyr: 1}; else if (sc && sc.lyricsText && !sc.lyricsFix) C[0] = {c: "chk", id: sc.id, lyr: 1}; else if (sc && sc.lyricsFix) C[0] = {c: "fx", ak: fmAck("songcheck", sc.id)}; else if (plan) C[0] = {c: "mk"};   /* (Oct 20, Chris: Lyrics = step one) his words list -> his Approve on the Lyrics check */
-  if (sc && sc.melodyOK && sc.orig && scVersesLeft(sc)) C[1] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[1] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
-  else if (sc && sc.orig && scHasWords(sc)) C[1] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
-  else if (sc && sc.orig) C[1] = {c: "mk"}; else if (plan) C[1] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
+  C[1] = btCell(sc, plan);
+  const btHold = !!(sc && btHas(sc) && !btAnyOk(sc) && !sc.melodyOK);   /* (Oct 22, Chris) Beats come first: the Melody check opens only after a verse's beats are approved */
+  if (btHold) C[2] = {c: ""};
+  else if (sc && sc.melodyOK && sc.orig && scVersesLeft(sc)) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
+  else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
+  else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
   const LV = ["chordsOK", "mediumOK", "hardOK"];
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && sc.melodyOK; if (sc && sc[f]) C[2 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[2 + j] = {c: "chk", id: sc.id, v: 2}; });
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && sc.melodyOK; if (sc && sc[f]) C[3 + j] = {c: "ok", id: sc.id, v: 2}; else if (prev) C[3 + j] = {c: "chk", id: sc.id, v: 2}; });
   /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
   { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
     const built = L => { const b = bt[L]; return b === true || !!(b && b.band && b.cards && b.lesson); }, lvOk = {L1: sc && sc.chordsOK, L2: sc && sc.mediumOK, L3: sc && sc.hardOK};
     const todo = ["L1", "L2", "L3"].find(L => lvOk[L] && built(L) && !fo[L]), done = ["L3", "L2", "L1"].find(L => fo[L]);
-    if (todo) C[5] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (done) C[5] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
+    if (todo) C[6] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (done) C[6] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
-  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "L1" ? 2 : k === "L2" ? 3 : k === "L3" ? 4 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 1 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
+  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "L1" ? 3 : k === "L2" ? 4 : k === "L3" ? 5 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
   return C; }
 function sgUniverse(){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -5413,7 +5429,7 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -5440,6 +5456,111 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.lyrx === "back") return lyrClose();
   const up = x.dataset.lyrx === "ok" ? {lyricsText: tx, lyricsOK: now, lyricsFix: false, updated: now} : {lyricsText: tx, lyricsOK: "", lyricsFix: true, lyricsNote: note || "(see edits)", lyricsFixAt: now, updated: now};
   if (ed) up.lyricsEdited = now;
+  Object.assign(r, up); lyrClose(); render();
+  db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
+/* BEATS-START (Oct 22, Chris) BEATS TEXT: one editable plain-text box per verse, one lyric line per line, '|' right before the syllable on beat 1, words split with hyphens.
+   beatsApply turns it into that verse's notes + words (syllables spread over each bar's notes; notes split or merged when the count differs; flags for what it could not place). Pure: no DOM, no db. */
+function parseLines(text){
+  const segs = []; let lead = [];
+  String(text || "").split("\n").forEach((raw, li) => { const line = raw.trim(); if (!line) return;
+    const toks = line.replace(/\|/g, " | ").split(/\s+/).filter(Boolean); let cur = null;
+    toks.forEach(t => { if (t === "|"){ cur = {line: li + 1, toks: [], lead: lead}; lead = []; segs.push(cur); return; }
+      if (/^\?+$/.test(t)) return;
+      if (cur) cur.toks.push(t); else lead.push(t); }); });
+  segs.tail = lead;   /* lead-in words with no | after them: lost, reported */
+  return segs; }
+function beatsApply(notes0, text, M, cutoff){
+  const flags = [], r6 = x => +x.toFixed(6), clone = o => JSON.parse(JSON.stringify(o));
+  const segs = parseLines(text);
+  String(text || "").split("\n").forEach((raw, li) => { const l = raw.trim(); if (!l) return; if (!l.includes("|")) flags.push("Line " + (li + 1) + ": no |"); if (/(^|\s)\?+(\s|$)/.test(l)) flags.push("Line " + (li + 1) + ": ?? left out"); });
+  const N = clone(notes0).sort((a, b) => a.g - b.g);
+  if (!segs.length) return {notes: N, words: [], flags: ["No | anywhere"], changed: false, range: null};
+  const down = n => Math.abs(n.g / M - Math.round(n.g / M)) < 1e-6;
+  const addC = (a, b) => (a.c || []).concat((b.c || []).map(c => [c[0], r6((c[1] || 0) + b.g - a.g)]));
+  const merge = (a, b) => { const o = {g: a.g, L: r6(b.g + b.L - a.g), m: a.m, c: addC(a, b), w: ""}; return o; };
+  const split = n => { const h = Math.max(0.25, Math.round(n.L / 2 * 4) / 4), a = {g: n.g, L: h, m: n.m, c: (n.c || []).filter(c => (c[1] || 0) < h), w: ""}, b = {g: r6(n.g + h), L: r6(n.L - h), m: n.m, c: (n.c || []).filter(c => (c[1] || 0) >= h).map(c => [c[0], r6(c[1] - h)]), w: ""}; return [a, b]; };
+  /* make exactly k notes out of R: merge the closest same-pitch pair (shortest first), or halve the longest */
+  const fit = (R, k, tag, pick) => { R = R.slice(); let mg = 0, sp = 0, md = 0;
+    while (R.length > k && R.length > 1){ let bi = -1, bs = 1e9, bsame = false; for (let i = 0; i < R.length - 1; i++){ const same = R[i].m === R[i + 1].m, s = R[i].L + R[i + 1].L; if ((same && !bsame) || (same === bsame && s < bs)){ bi = i; bs = s; bsame = same; } }
+      if (!bsame) md++; R.splice(bi, 2, merge(R[bi], R[bi + 1])); mg++; }
+    while (R.length < k && R.length){ let bi = 0; R.forEach((n, i) => { if (n.L >= R[bi].L) bi = i; }); if (R[bi].L < 0.5) break; const nb = R[bi]; if (pick && nb.L >= 1){ R.splice(bi, 1, {g: nb.g, L: r6(nb.L - 0.5), m: nb.m, c: (nb.c || []).filter(c => (c[1] || 0) < nb.L - 0.5), w: ""}, {g: r6(nb.g + nb.L - 0.5), L: 0.5, m: nb.m, c: [], w: ""}); } else R.splice(bi, 1, ...split(nb)); sp++; }
+    if (mg) flags.push(tag + ": " + mg + " note" + (mg > 1 ? "s" : "") + " merged" + (md ? " (" + md + " different pitch)" : ""));
+    if (sp) flags.push(tag + ": " + sp + " note" + (sp > 1 ? "s" : "") + " split");
+    if (R.length < k) flags.push(tag + ": no room for " + (k - R.length) + " syllable" + (k - R.length > 1 ? "s" : ""));
+    return R; };
+  /* first | : the first note on a bar start at or after the song's words begin, with room before it for the lead-in */
+  const P = segs.map(s => s.lead.length), K = segs.map(s => s.toks.length), T = [];
+  let from = 0; { const p0 = P[0]; let i = N.findIndex((n, ix) => ix >= p0 && down(n) && n.g >= cutoff - 1e-6); if (i < 0){ flags.push("Line " + segs[0].line + ": no note on beat 1"); return {notes: N, words: [], flags, changed: false, range: null}; } T[0] = i; }
+  for (let s = 1; s < segs.length; s++){ let j = N.findIndex((n, ix) => ix > T[s - 1] && down(n) && ix - T[s - 1] >= K[s - 1]);
+    if (j < 0){ flags.push("Line " + segs[s].line + ": no note on this beat 1 (rest of the song left out)"); segs.length = s; break; }
+    T[s] = j; }
+  const S = segs.length, last = S - 1;
+  let tEnd = N.findIndex((n, ix) => ix > T[last] && down(n) && ix - T[last] >= K[last]); if (tEnd < 0) tEnd = N.length;
+  /* first lead-in: carve a short pickup off a long note just before the first beat 1 */
+  const out = [], before = N.slice(0, T[0] - P[0]); let lead0 = N.slice(T[0] - P[0], T[0]);
+  if (P[0] > lead0.length){ flags.push("Line " + segs[0].line + ": no notes before the first | for the lead-in"); }
+  if (P[0] && lead0.length === P[0] && lead0.every(n => n.L > 1.5)){ const nl = []; const prev = before.concat(lead0.slice(0, -1)); const lst = lead0[lead0.length - 1]; const pk = P[0] * 0.5; if (lst.L > pk + 0.5){ const a = {g: lst.g, L: r6(lst.L - pk), m: lst.m, c: lst.c || [], w: ""}; before.push(...lead0.slice(0, -1), a); lead0 = []; for (let q = 0; q < P[0]; q++) lead0.push({g: r6(lst.g + lst.L - pk + q * 0.5), L: 0.5, m: lst.m, c: [], w: ""}); flags.push("Line " + segs[0].line + ": pickup carved off a long note"); } }
+  out.push(...before); const words = [];
+  const put = (arr, toks) => arr.forEach((n, i) => { if (toks[i] != null) words.push({g: n.g, L: n.L, w: toks[i]}); out.push(n); });
+  let carry = lead0, carryToks = segs[0].lead;
+  for (let s = 0; s < S; s++){
+    const end = s < last ? T[s + 1] : tEnd, nextP = s < last ? P[s + 1] : 0;
+    let R = N.slice(T[s], end), need = K[s] + nextP;
+    if (R.length < need){ R = fit(R, need, "Line " + segs[s].line, nextP > 0); }
+    const tailN = R.length - nextP;
+    /* carried lead-in goes first, then this segment's notes */
+    put(carry, carryToks);
+    const tail = fit(R.slice(0, Math.max(tailN, 0)), K[s], "Line " + segs[s].line);
+    put(tail, segs[s].toks);
+    carry = R.slice(Math.max(tailN, 0)); carryToks = s < last ? segs[s + 1].lead : [];
+  }
+  put(carry, carryToks);
+  out.push(...N.slice(tEnd));
+  if (segs.tail && segs.tail.length) flags.push("Words after the last | of the box had no beat 1 line: left out");
+  const range = words.length ? [Math.min(...words.map(w => w.g)), Math.max(...words.map(w => w.g + w.L))] : null;
+  return {notes: out, words, flags, changed: JSON.stringify(out.map(n => [n.g, n.L, n.m])) !== JSON.stringify(N.map(n => [n.g, n.L, n.m])), range};
+}
+/* BEATS-END */
+
+/* (Oct 22, Chris) BEATS CHECK: gold Beats box = one editable text box per verse (tabs), '|' before each beat-1 syllable. Approve (his tap only) builds that verse's notes + words
+   (verse 1 = lines/words, verse 2+ = linesV/wordsV) and unticks that verse's Melody; Send fixes = Cadence's turn. Flags (what could not be placed) show as short pills. */
+function btFlat(a){ return (a || []).reduce((o, x) => o.concat(Array.isArray(x) ? x : [x]), []); }
+function btBuild(r, v, text){ const M = r.meter || 4, w1 = btFlat(r.words), cutoff = w1.length ? Math.min(...w1.map(w => w.g)) : 0, n1 = btFlat(r.lines);
+  const lv = r.linesV && Array.isArray(r.linesV[v]) && r.linesV[v].length ? r.linesV[v] : null, notes0 = v === 1 ? n1 : (lv || n1);
+  const res = beatsApply(notes0, text, M, cutoff); if (!res.range) return res;
+  const wv = v === 1 ? w1 : (r.wordsV && Array.isArray(r.wordsV[v]) && r.wordsV[v].length ? r.wordsV[v] : w1);
+  const eps = 1e-6, keep = wv.filter(w => w.g < res.range[0] - eps || w.g >= res.range[1] - eps);
+  res.allWords = keep.concat(res.words).sort((a, b) => a.g - b.g); return res; }
+function btGroup(r, notes, words){ const M = r.meter || 4, B = 4 * M, I = !!r.intro, key = g => I ? (g < 0 ? 0 : 1 + Math.floor(g / B + 1e-9)) : Math.floor(g / B + 1e-9), keys = [...new Set(notes.map(n => key(n.g)))].sort((p, q) => p - q);
+  const at = g => { const k = key(g); let x = keys.indexOf(k); if (x < 0){ x = keys.filter(q => q < k).length - 1; if (x < 0) x = 0; } return x; };
+  const grp = L => { const out = keys.map(() => []); if (!keys.length) return out; L.forEach(b => out[at(b.g)].push(b)); out.forEach(l => l.sort((p, q) => p.g - q.g)); return out; };
+  return {lines: grp(notes), words: grp(words)}; }
+function btOpen(id, v){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
+  const vs = btVerses(r), T = btTexts(r), O = btOks(r); v = vs.includes(+v) ? +v : (vs.find(x => String(T[x] || "").trim() && !O[x]) || vs[0]);
+  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.bt = "1"; o._tx = Object.assign({}, T); o.dataset.v = v;
+  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}</b><span>Beats: put a | before the syllable on beat 1</span></div><div class="bttabs">${vs.map(x => `<button type="button" class="tb" data-btv="${x}" aria-pressed="${x === v}">Verse ${x}${O[x] ? " ✓" : ""}</button>`).join("")}</div><textarea class="lyrtx bttx" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea><div class="btfl"></div><input class="lyrnote" placeholder="Note for Cadence (only for Send fixes)"><div class="lyrbt"><button type="button" class="tb" data-btx="back">Back</button><button type="button" class="tb" data-btx="fix">Send fixes</button><button type="button" class="tb go" data-btx="ok">Approve</button></div></div>`;
+  document.body.appendChild(o); btShow(o); }
+function btShow(o){ const r = (scBoard || []).find(x => x.id === o.dataset.id); if (!r) return; const v = +o.dataset.v, ta = o.querySelector(".bttx");
+  ta.value = String(o._tx[v] || ""); o.querySelectorAll("[data-btv]").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.btv === v))); btFlags(o); }
+function btFlags(o){ const r = (scBoard || []).find(x => x.id === o.dataset.id); if (!r) return; const v = +o.dataset.v, box = o.querySelector(".btfl"); let fl = [];
+  try { fl = btBuild(r, v, o.querySelector(".bttx").value).flags || []; } catch (er) { fl = ["Could not read the box"]; }
+  box.innerHTML = fl.slice(0, 40).map(f => `<i>${esc(f)}</i>`).join(""); }
+document.addEventListener("input", e => { const ta = e.target.closest && e.target.closest("#lyrchk .bttx"); if (!ta) return; const o = document.getElementById("lyrchk"); o._tx[+o.dataset.v] = ta.value; btFlags(o); }, true);
+document.addEventListener("click", async e => { const b = e.target.closest("[data-beatschk]"); if (b){ e.preventDefault(); e.stopPropagation(); btOpen(b.dataset.beatschk); return; }
+  const tb = e.target.closest("[data-btv]"); if (tb){ e.preventDefault(); e.stopPropagation(); const o = document.getElementById("lyrchk"); o.dataset.v = tb.dataset.btv; btShow(o); return; }
+  const x = e.target.closest("[data-btx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+  const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
+  if (x.dataset.btx === "back") return lyrClose();
+  const v = +o.dataset.v, tx = o.querySelector(".bttx").value.replace(/[ \t]+$/gm, "").trim(), note = o.querySelector(".lyrnote").value.trim(), now = new Date().toISOString();
+  const bt = Object.assign({}, btTexts(r), {[v]: tx}); let up;
+  if (x.dataset.btx === "fix") up = {beatsText: bt, beatsFix: true, beatsNote: note || "(see edits)", beatsFixAt: now, updated: now};
+  else { const res = btBuild(r, v, tx); if (!res.range){ o.querySelector(".btfl").innerHTML = "<i>Nothing to place: add a | first</i>"; return; }
+    const ok = Object.assign({}, btOks(r), {[v]: now}), fl = Object.assign({}, r.beatsFlags || {}, {[v]: res.flags});
+    up = {beatsText: bt, beatsOK: ok, beatsFlags: fl, beatsFix: false, updated: now};
+    if (res.changed || true){ if (v === 1){ const g = btGroup(r, res.notes, res.allWords); up.lines = g.lines; up.words = g.words; if (r.melodyOK) up.melodyOK = ""; }
+      else { up.linesV = Object.assign({}, r.linesV || {}, {[v]: res.notes}); up.wordsV = Object.assign({}, r.wordsV || {}, {[v]: res.allWords}); } }
+    if (Array.isArray(r.versesOk)) up.versesOk = r.versesOk.filter(q => q !== v);
+    else if (r.melodyOK && v === 1) up.melodyOK = ""; }
   Object.assign(r, up); lyrClose(); render();
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
 function homeSongs(only){
@@ -5682,7 +5803,7 @@ function waitFolderGo(k){ openOne[oneKey()] = k; try { localStorage.setItem("fd-
 document.addEventListener("click", e => { const b = e.target.closest("[data-tlinks]"); if (!b || !WAITFOLD[b.dataset.tlinks] || !b.closest("#list")) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); waitFolderGo(WAITFOLD[b.dataset.tlinks]); }, true);
 document.addEventListener("click", e => { const b = e.target.closest("[data-waitgo]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.waitgo === "shorts") return shOpen(null);
-  const w = waitLive({wait: "songs"}), q = w && w.first; if (!q) return; if (q.lyr) lyrOpen(q.id); else scOpen(q.id, q.v); }, true);   /* (Oct 20 night) opens the board at the FIRST item waiting */
+  const w = waitLive({wait: "songs"}), q = w && w.first; if (!q) return; if (q.bt) btOpen(q.id); else if (q.lyr) lyrOpen(q.id); else scOpen(q.id, q.v); }, true);   /* (Oct 20 night) opens the board at the FIRST item waiting */
 function kidsHTML(t){ const K = sortL(allTasks.filter(x => x.parent === t.id && !x.done && !x.removed)); if (!K.length) return "";
   return `<div class="kids"><b>To-dos inside (${K.length})</b>${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`; }
 // (Oct 10) the open to-do has the Give to Cadence button too (only on to-dos Cadence can really do = has a cost)
