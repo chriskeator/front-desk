@@ -1726,7 +1726,15 @@ function len(n){if(MT===6)return n+' eighth'+(n===1?'':'s');const b=n/SB,w=Math.
 /* bar names: the bar where the song's beat 0 sits = bar 1; bars before it = intro (or pickup) */
 function zi(){let z=bars.findIndex(b=>b.id===zeroId);if(z<0){z=Math.max(0,Math.min(zeroIdx,bars.length-1));zeroId=bars[z]&&bars[z].id}return z}
 function lab(i){const k=i-zi();return k>=0?'bar '+(k+1):(DOC&&DOC.intro?'intro':'pickup')}
-function draw(pv){const B=pv&&pv.C?pv.C:pv&&pv.leadA!=null?bars:pv||bars,N=S(),per=innerWidth<=520?2:4;R.innerHTML='';octSync();
+/* (Oct 22, Chris: 'I want the check marks to be the lock') A TICKED ROW IS LOCKED: any edit that changes a bar in a ticked row (notes, words, chords, bar length, a bar added or removed before it) is undone at once with a hint. Untick to edit, tick to lock again. */
+var RLK=null;
+function rlBars(keys,B,zid,zidx){const per=innerWidth<=520?2:4;let z0=B.findIndex(b=>b.id===zid);if(z0<0)z0=Math.max(0,Math.min(zidx,B.length-1));const P1=z0>0&&B[0]&&(B[0].a||0)>0?1:0,F=z0-P1,IR=Math.ceil(F/per),out=[];
+ keys.forEach(rk=>{const n=parseInt(String(rk).slice(1),10);if(!(n>=0))return;if(rk[0]==='b'){for(let c=0;c<per;c++)out.push(z0+n-1+c)}else if(rk[0]==='i'){if(n===0&&P1)out.push(0);for(let c=0;c<per;c++){const k=n*per+c-(IR*per-F);if(k>=0)out.push(P1+k)}}});return out}
+function rlSig(keys,o){return JSON.stringify(rlBars(keys,o.bars,o.zeroId,o.zeroIdx).map(i=>{const b=o.bars[i];return b?[b.a||0,b.n,!!b.m,(b.notes||[]).map(q=>JSON.stringify([q.s,q.l,q.d,q.o||0,!!q.w])).sort(),b.ch||null]:null}))}
+function rowLock(){const keys=((DOC&&DOC[RKF()])||[]).slice(),ctx=[DID,VER,TAGM,CS,CM,LVK].join('|'),now={bars,leadA,zeroId,zeroIdx};
+ if(keys.length&&RLK&&RLK.ctx===ctx){const was=JSON.parse(RLK.snap);if(rlSig(keys,now)!==rlSig(keys,was)){bars=was.bars;leadA=was.leadA;zeroId=was.zeroId;zeroIdx=was.zeroIdx;sel=[];noteSel=[];chSel=[];cPick=null;notePick=null;if(hist.length>RLK.h)hist.length=RLK.h;setTimeout(()=>hint('Row locked: untick it to edit'),0)}}
+ RLK={ctx,snap:JSON.stringify({bars,leadA,zeroId,zeroIdx}),h:hist.length}}
+function draw(pv){if(!pv)rowLock();const B=pv&&pv.C?pv.C:pv&&pv.leadA!=null?bars:pv||bars,N=S(),per=innerWidth<=520?2:4;R.innerHTML='';octSync();
 /* (Oct 16, Chris) THE 5-COLUMN GRID: column 1 = lead-in (only when there is lead-in time), bar 1 in column 2, then bars 2, 3, 4
    left to right; every row = 4 bars. A partial bar before the first full bar (the pickup, e.g. "A-" before "way") sits in column 1;
    whole intro bars sit right-aligned in columns 2-5 of the row(s) above bar 1's row. */
@@ -1975,7 +1983,7 @@ const sc=ED.parentNode,r=el.getBoundingClientRect(),sr=sc.getBoundingClientRect(
 ph.style.left=(Math.min(st,g.n)/PL.N*100)+'%'}
 requestAnimationFrame(tick)}
 /* ---- db doc <-> bars ---- */
-function fromDoc(doc){ML=doc.meterLabel||null;setMeter(doc.meter||4,doc.grid||null);const N=S(),M=doc.meter||4,U=N/M;id=0;
+function fromDoc(doc){RLK=null;ML=doc.meterLabel||null;setMeter(doc.meter||4,doc.grid||null);const N=S(),M=doc.meter||4,U=N/M;id=0;
 const notes=(doc.lines||[]).flat().filter(Boolean),words=Array.isArray(doc.words)?doc.words.flat().filter(Boolean):notes.filter(n=>n.w).map(n=>({g:n.g,L:n.L,w:n.w}));
 const LV=['chords','chordsMedium','chordsHard'].filter(f=>Array.isArray(doc[f])),allG=notes.map(n=>n.g).concat(words.map(w=>w.g),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g)));
 const ends=notes.map(n=>n.g+n.L).concat(words.map(w=>w.g+w.L),LV.flatMap(f=>doc[f].flat().filter(Boolean).map(c=>c.g+c.L)));
@@ -2086,8 +2094,8 @@ function vHead(){setTimeout(seLockSync,0);const el=document.getElementById('se-v
 const c=document.querySelector('#songchk .secard');if(c)c.classList.toggle('vnew',TAGM?!DOC.tagOk:VER>1&&!ok.includes(VER));
 const tl=document.getElementById('se-taglbl');if(tl)tl.textContent=TAGM?(DOC.tag?'Tag (after the last verse only)':'Tag (after the last verse only): empty. Copy bars from the song and paste here'):'';
 const b=document.getElementById('se-okm');if(b&&(VS.length>1||DOC.tag)){const left=vLeft(),isOk=TAGM?!!DOC.tagOk:ok.includes(VER),nm=l=>l==='tag'?'the tag':'verse '+l;b.textContent=!left.length?'Approve melody':isOk?'Go to '+nm(left[0]):left.length===1?'Approve melody':'Approve '+(TAGM?'the tag':'verse '+VER)}wcPanel()}
-function vGo(v){if(v==='tag'){if(TAGM)return;VW[VER]=wNow();mKeep();TSTASH={bars,leadA,zeroId,zeroIdx,id};TAGM=true;sel=[];noteSel=[];chSel=[];cPick=null;fromDoc(Object.assign({meter:DOC.meter,grid:DOC.grid},DOC.tag||{lines:[],words:[],bars:[{n:SB*(DOC.meter||4),a:0}],spb:SB,zero:0,lead:0}));hist=[];lastSig=sig();lastRS=rsig();lastWT=Object.assign({},lastWT,wmap());draw();vHead();if(CM)cHead();if(PL)liveReplan();return}
-if(!VS[v-1]||(!TAGM&&v===VER))return;if(TAGM){tagOut();sel=[];noteSel=[];chSel=[];cPick=null}else{VW[VER]=wNow();mKeep()}VER=v;mPlace(VM[v]||VM[1]);wPlace(VW[v]);hist=[];lastSig=sig();lastRS=rsig();lastWT=Object.assign({},lastWT,wmap());draw();vHead();if(CM)cHead();if(PL)liveReplan()}
+function vGo(v){if(v==='tag'){if(TAGM)return;VW[VER]=wNow();mKeep();TSTASH={bars,leadA,zeroId,zeroIdx,id};TAGM=true;sel=[];noteSel=[];chSel=[];cPick=null;fromDoc(Object.assign({meter:DOC.meter,grid:DOC.grid},DOC.tag||{lines:[],words:[],bars:[{n:SB*(DOC.meter||4),a:0}],spb:SB,zero:0,lead:0}));hist=[];RLK=null;lastSig=sig();lastRS=rsig();lastWT=Object.assign({},lastWT,wmap());draw();vHead();if(CM)cHead();if(PL)liveReplan();return}
+if(!VS[v-1]||(!TAGM&&v===VER))return;if(TAGM){tagOut();sel=[];noteSel=[];chSel=[];cPick=null}else{VW[VER]=wNow();mKeep()}VER=v;mPlace(VM[v]||VM[1]);wPlace(VW[v]);hist=[];RLK=null;lastSig=sig();lastRS=rsig();lastWT=Object.assign({},lastWT,wmap());draw();vHead();if(CM)cHead();if(PL)liveReplan()}
 function tagTick(){tagSave();if(!DOC.tag){hint('The tag is empty: paste bars into it first');return}DOC.tagOk=new Date().toISOString();flush();vHead();cHead();hint('Tag ticked')}
 function vOk(){if(TAGM){tagSave();if(!DOC.tag){tagOut();const l=vLeft();if(!l.length){flush();approve();return}vGo(l[0]);return}DOC.tagOk=new Date().toISOString()}else{const ok=(DOC.versesOk||[]).slice();if(!ok.includes(VER))ok.push(VER);ok.sort((a,b)=>a-b);DOC.versesOk=ok}const left=vLeft();flush();if(!left.filter(l=>l!=='tag').length&&(!TAGM||!left.length)&&!DOC.melodyOK){approve();return}if(!left.length){approve();return}vGo(left[0])}   /* (Oct 22, Chris) Tag shows only once every verse is approved, and never holds up the Melody approve */
 /* (Oct 22, Chris: "apply that lock feature to everything") APPROVED MELODY = LOCKED: an approved verse (or the tag, or a one-verse song's melody) opens
@@ -2114,7 +2122,7 @@ cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
 OKD=CS?!CUR():(VIEW===1?!!doc.melodyOK:!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved')))&&!scVersesLeft(doc);   /* (Oct 22, Chris) the melody board says Approved ONLY when melodyOK is saved (a stale step/status showed Approved, so his Approve tap saved nothing) */
 TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=doc.oneVerse?scVerses(doc).slice(0,1):scVerses(doc);VW={};   /* (Oct 22, Chris) one long verse = every verse already written out in the melody: no verse tabs */if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();VM={1:mNow()};const lvv=doc.linesV||{},wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++){VM[v]=Array.isArray(lvv[v])&&lvv[v].length?JSON.parse(JSON.stringify(lvv[v])):null;VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}}
-UNL=new Set();EDN=false;sel=[];hist=[];drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
+UNL=new Set();EDN=false;sel=[];hist=[];RLK=null;drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
 const SF=seFrame(doc),top=SF.top;
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CS?'All chords':'Melody')+' approved</div>':'')+top
 +'<div id="se-wc" hidden></div><div id="se-hint">'+(CS?'Double-click the beat row = add a chord. Drag a chord to move it. Double-click a chord to change it.':'Point at anything: this line says what a click or drag will do.')+'</div><div class="sescroll"><div id="se-ed"><div id="se-rows"></div><div id="se-ins" hidden></div></div></div>'+SF.bot+'</div>';
@@ -2470,7 +2478,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v284</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v285</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
