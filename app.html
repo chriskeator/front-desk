@@ -2478,7 +2478,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v294</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v295</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5561,8 +5561,9 @@ function chDraw(){ const o = document.getElementById("lyrchk"); if (!o || !chS) 
     + `<span class="chsc" style="visibility:${sc ? "visible" : "hidden"}">Change:<button type="button" class="tb" data-chsc="all" aria-pressed="${chS.scope !== "verse"}"${sc ? "" : " tabindex=\"-1\""}>All verses</button><button type="button" class="tb" data-chsc="verse" aria-pressed="${chS.scope === "verse"}"${sc ? "" : " tabindex=\"-1\""}>This verse</button></span>`;
   if (lb.innerHTML !== lh) lb.innerHTML = lh;
   const act = ed ? `<button type="button" class="tb go" data-chx="ok">Approve ${nm}</button>` : chPrevOk(L) ? `<button type="button" class="tb" data-chx="edit">Edit (locked)</button>` : `<button type="button" class="tb" disabled>Approve ${CHLV[CHL[CHL.indexOf(L) - 1]][2]} first</button>`;
-  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">${chS.arm ? "Close without saving" : "Back"}</button>` + act;
-  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = "1fr 1fr"; }   /* never swap the buttons under a tap (a blur re-draw would eat the Approve click) */
+  const sv = ed ? `<button type="button" class="tb" data-chx="save"${chS.dirty.has(L) ? "" : " disabled"}>${chS.saved === L && !chS.dirty.has(L) ? "Saved" : "Save"}</button>` : "";   /* (Oct 23, Chris) save half-done chords without approving */
+  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">${chS.arm ? "Close without saving" : "Back"}</button>` + sv + act;
+  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ed ? "1fr 1fr 1fr" : "1fr 1fr"; }   /* never swap the buttons under a tap (a blur re-draw would eat the Approve click) */
 function chLoad(r, L, prev){ const f = CHLV[L][0], V = r[f + "V"] && typeof r[f + "V"] === "object" ? r[f + "V"] : {}, S = chFlat(r[f]), T = chFlat(r.tag && r.tag[f]);
   if (prev && !chOk(L) && L !== "L1") return chCloneSet(prev);   /* not yet approved: shows a copy of the level before (Chris: start from scratch) */
   return {S: S.length || !prev ? S : chClone(prev.S), V: L === "L1" ? {} : Object.fromEntries(Object.entries(V).map(([v, rows]) => [v, chFlat(rows)]).filter(([, A]) => A.length)), T: T.length || !prev ? T : chClone(prev.T)}; }
@@ -5604,6 +5605,10 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
   const r = chS.r, lv = chS.lv, j = CHL.indexOf(lv), now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, tag = r.tag ? JSON.parse(JSON.stringify(r.tag)) : null;
   const put = (L, X) => { const f = CHLV[L][0]; up[f] = chRows(X.S, M, r.intro); if (L !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)])); if (tag) tag[f] = chRows(X.T, TM, false); };
+  if (act === "save"){ const X = chS.charts[lv], f = CHLV[lv][0], up = {updated: now, [f + "Edited"]: now, [f]: chRows(X.S, M, r.intro)};
+    if (lv !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)])); if (tag){ tag[f] = chRows(X.T, TM, false); up.tag = tag; }   /* chart only: no approval stamp, no copy into other levels, window stays open */
+    Object.assign(r, up); scLocal(r.id, up); chS.dirty.delete(lv); chS.saved = lv; chS.arm = false; render(); chDraw();
+    try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {} return; }
   const up = {[CHLV[lv][1]]: now, updated: now}; put(lv, chS.charts[lv]);
   CHL.slice(j + 1).forEach(L => { if (!r[CHLV[L][1]]){ chS.charts[L] = chCloneSet(chS.charts[lv]); if (L !== "L1" && lv === "L1") chS.charts[L].V = {}; put(L, chS.charts[L]); up[CHLV[L][0] + "Edited"] = now; } });   /* copy DOWN only into levels he has not approved */
   if (tag) up.tag = tag;
