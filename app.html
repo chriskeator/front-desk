@@ -2113,7 +2113,7 @@ function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated
 cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
 OKD=CS?!CUR():(VIEW===1?!!doc.melodyOK:!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved')))&&!scVersesLeft(doc);   /* (Oct 22, Chris) the melody board says Approved ONLY when melodyOK is saved (a stale step/status showed Approved, so his Approve tap saved nothing) */
-TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=scVerses(doc);VW={};if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();VM={1:mNow()};const lvv=doc.linesV||{},wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++){VM[v]=Array.isArray(lvv[v])&&lvv[v].length?JSON.parse(JSON.stringify(lvv[v])):null;VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}}
+TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=doc.oneVerse?scVerses(doc).slice(0,1):scVerses(doc);VW={};   /* (Oct 22, Chris) one long verse = every verse already written out in the melody: no verse tabs */if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();VM={1:mNow()};const lvv=doc.linesV||{},wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++){VM[v]=Array.isArray(lvv[v])&&lvv[v].length?JSON.parse(JSON.stringify(lvv[v])):null;VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}}
 UNL=new Set();EDN=false;sel=[];hist=[];drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
 const SF=seFrame(doc),top=SF.top;
 document.getElementById('songchk').innerHTML='<div class="scbg" data-se="close"></div><div class="secard'+(CM?' cm':'')+'" role="dialog" aria-modal="true">'+(OKD?'<div class="okbar">&#10003; '+(CS?'All chords':'Melody')+' approved</div>':'')+top
@@ -2470,7 +2470,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v283</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v284</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5406,11 +5406,11 @@ function scGone(sc){ const g = new Set(Array.isArray(sc && sc.versesGone) ? sc.v
   if (placed.size) V.forEach((v, i) => { if (i && (whole || nw(v.join(" ")).filter(w => placed.has(w)).length >= 0.9 * nw(v.join(" ")).length)) g.add(i + 1); });
   return [...g]; }
 function scVersesOk(sc){ return (Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []).concat(scGone(sc)); }
-function scVersesLeft(sc){ const n = scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; return k; }   /* (Oct 22, Chris) the end tag never holds up the Melody cell (was +1 for an unapproved tag) */
+function scVersesLeft(sc){ const n = sc && sc.oneVerse ? 1 : scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; return k; }   /* (Oct 22, Chris) the end tag never holds up the Melody cell (was +1 for an unapproved tag) */
 function scFixKeys(sc){ return sc && sc.fixing && typeof sc.fixing === "object" ? Object.keys(sc.fixing).filter(k => sc.fixing[k]) : []; }
 function scFixingTitle(t){ return !!(t && Array.isArray(t.songcheck) && (scBoard || []).some(r => scFixKeys(r).length && t.songcheck.some(p => sgKey(p && p[1] || p) === sgKey(r.name)))); }
 /* (Oct 22, Chris) BEATS cell helpers: songcheck.beatsText {verse: text}, beatsOK {verse: iso} (his real Approve tap only), beatsFix, beatsMaking */
-function btVerses(sc){ const n = Math.max(1, scVerses(sc).length), g = new Set(scGone(sc)); const o = []; for (let v = 1; v <= n; v++) if (!g.has(v)) o.push(v); return o; }
+function btVerses(sc){ const n = sc && sc.oneVerse ? 1 : Math.max(1, scVerses(sc).length), g = new Set(scGone(sc)); const o = []; for (let v = 1; v <= n; v++) if (!g.has(v)) o.push(v); return o; }
 function btTexts(sc){ const t = sc && sc.beatsText; return t && typeof t === "object" ? t : {}; }
 function btHas(sc){ return Object.values(btTexts(sc)).some(x => String(x || "").trim()); }
 function btOks(sc){ const o = sc && sc.beatsOK; return o && typeof o === "object" ? o : {}; }
