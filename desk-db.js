@@ -40,7 +40,7 @@
       let c = cols.get(name);
       if (!c) {
         c = { map: new Map(), listeners: new Set(), loaded: false };
-        c.ready = backend.load(name).then(rows => { for (const r of rows) c.map.set(r.id, { data: r.data || {}, version: r.version || 1 }); c.loaded = true; });
+        c.ready = backend.load(name).then(rows => { for (const r of rows) c.map.set(r.id, { data: r.data || {}, version: r.version || 1 }); c.maxAt = maxAt(rows, ""); c.fullAt = Date.now(); c.loaded = true; });
         cols.set(name, c);
       }
       return c;
@@ -59,10 +59,19 @@
       const r = await backend.getOne(name, id);
       if (r) put(name, id, r.data || {}, r.version, true); else drop(name, id);
     }
+    /* (Oct 23) Supabase free plan went over its 5.5 GB monthly bandwidth: every phone reopen re-downloaded every collection.
+       Now a resync fetches only rows changed since the newest one we hold (updated_at), at most once per 15 s; a full reload
+       (which also catches deletes missed while offline) only when the last one is over 6 hours old. */
+    function maxAt(rows, cur) { let m = cur || ""; for (const r of rows) if (r.updated_at && r.updated_at > m) m = r.updated_at; return m; }
+    let syncAt = 0;
     async function reloadAll() {
+      if (Date.now() - syncAt < 15000) return; syncAt = Date.now();
       for (const [name, c] of cols) {
         if (!c.loaded) continue;
-        try { const rows = await backend.load(name); c.map = new Map(rows.map(r => [r.id, { data: r.data || {}, version: r.version || 1 }])); emit(name); } catch (e) {}
+        try {
+          if (!c.maxAt || Date.now() - (c.fullAt || 0) > 6 * 3600 * 1000) { const rows = await backend.load(name); c.map = new Map(rows.map(r => [r.id, { data: r.data || {}, version: r.version || 1 }])); c.maxAt = maxAt(rows, ""); c.fullAt = Date.now(); emit(name); }
+          else { const rows = await backend.load(name, c.maxAt); for (const r of rows) put(name, r.id, r.data || {}, r.version); c.maxAt = maxAt(rows, c.maxAt); }
+        } catch (e) {}
       }
     }
     if (backend.subscribe) backend.subscribe(e => {
@@ -161,7 +170,7 @@
   function testBackend(inner) {
     const m = n => testOnly(TESTP + n);
     return {
-      load: n => inner.load(m(n)), getOne: (n, id) => inner.getOne(m(n), id), upsert: (n, id, d) => inner.upsert(m(n), id, d),
+      load: (n, since) => inner.load(m(n), since), getOne: (n, id) => inner.getOne(m(n), id), upsert: (n, id, d) => inner.upsert(m(n), id, d),
       updateIf: (n, id, d, v) => inner.updateIf(m(n), id, d, v), remove: (n, id) => inner.remove(m(n), id),
       subscribe: (onEvt, onResync) => inner.subscribe(e => { if (e.collection && e.collection.indexOf(TESTP) === 0) onEvt(Object.assign({}, e, { collection: e.collection.slice(TESTP.length) })); }, onResync)
     };
@@ -176,10 +185,11 @@
         delete: () => { const r = q.delete(); const eq0 = r.eq.bind(r); r.eq = (c, v) => { if (c === "collection") testOnly(v); return eq0(c, v); }; return r; } }; };
     const chk = ({ data, error }) => { if (error) throw error; return data; };
     return {
-      async load(name) {
+      async load(name, since) {
         const out = [];
         for (let from = 0; ; from += 1000) {
-          const d = chk(await T().select("id,data,version").eq("collection", name).order("id").range(from, from + 999));
+          let q = T().select("id,data,version,updated_at").eq("collection", name); if (since) q = q.gt("updated_at", since);
+          const d = chk(await q.order("id").range(from, from + 999));
           out.push(...d); if (d.length < 1000) break;
         }
         return out;
