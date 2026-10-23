@@ -2478,7 +2478,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v288</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v289</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5464,7 +5464,8 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
     const pv = sc && sc.pvChords && typeof sc.pvChords === "object" ? sc.pvChords : {}, lvOk = {L1: sc && sc.chordsOK, L2: sc && sc.mediumOK, L3: sc && sc.hardOK};
     const ready = L => !!(lvOk[L] && pv[L] && String(pv[L]) >= String(lvOk[L])), heard = L => !!(fo[L] && String(fo[L]) >= String(lvOk[L]));
     const todo = ["L1", "L2", "L3"].find(L => ready(L) && !heard(L)), done = ["L3", "L2", "L1"].find(L => lvOk[L] && heard(L));
-    if (todo) C[7] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (done) C[7] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
+    const making = ["L1", "L2", "L3"].find(L => lvOk[L] && !ready(L) && !heard(L));   /* (Oct 23, Chris: an empty Final looked like a mistake) level approved, player not updated yet (chores.sh, hourly) = light gold Making */
+    if (todo) C[7] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (making) C[7] = {c: "mk"}; else if (done) C[7] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
   FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "L2" ? 5 : k === "L3" ? 6 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
   return C; }
