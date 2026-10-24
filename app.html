@@ -2482,7 +2482,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v297</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v298</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5398,10 +5398,12 @@ function homeShorts(){
     return `<i class="sblk" title="${esc(ab + ": " + (why || a.c))}" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:9px;font-weight:800;background:${c[0]};border:1.5px solid ${c[1]};color:${c[2]}">${ab}</i>`; }).join("")}</span></div>`;
   const pRed = PR.reduce((t, o) => t + Object.values(o.apps || {}).filter(a => a.c === "red").length, 0);
   const postCheck = PR.length ? label("Posting check", pRed ? pRed + " red" : "all good") + PR.map(prow).join("") : "";
+  /* (Oct 24, Chris) Scheduled box fills only when YouTube AND Facebook gave back a real id (stats/shortsboard need/err from shorts-board.py) */
+  const shNeed = x => !x.need || !x.need.length ? "" : x.err ? "Not scheduled: " + x.err : "Not on " + x.need.map(a => a === "youtube" ? "YouTube" : "Facebook").join(" + ") + " yet";
   const sec = (t, L, f) => L.length ? label(t, L.length) + head + L.map(f).join("") : "";
   return `<div class="msec" style="--cc:#D85A30"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
     + sec("In the works", W, x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto))
-    + sec("Scheduled", S, x => row(x.title, "", 6, null, "", false, "", {5: x.schedOn, 6: x.date}))
+    + sec("Scheduled", S, x => row(x.title, shNeed(x), x.schedOn ? 6 : 5, null, "", false, "", {5: x.schedOn, 6: x.date}))
     + sec("Posted this week", P, x => row(x.title, "", 7, false, "", false, "", {5: x.schedOn, 6: x.date})) + postCheck + `</div></div>`; }
 document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Check opens the Final check pop-up on the desk (view final), never Drive */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
