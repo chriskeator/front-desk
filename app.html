@@ -2482,7 +2482,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v296</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v297</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3208,7 +3208,7 @@ function morningScreen(seg){
   const one = flagged && flagged.date && flagged.date <= plus(0) ? flagged : null, next = [];   // (Oct 7) no 'Next up' on Home: he works toward an empty screen
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
-  return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}<button type="button" class="tpill folbtn" data-goto="money" data-msub2="fol">Followers</button>${labTestPill()}</span></div>
+  return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}${labTestPill()}</span></div>
     <div class="mgrid"><div class="mleft">${homeStuck()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
@@ -4373,9 +4373,10 @@ function kidsView(){
 // (Oct 8) Chris picked B (Money Map picker): on the phone Money Map = 2 folders like Projects; each row opens its chart in place
 let mRow = (() => { try { return localStorage.getItem("fd-mrow") || ""; } catch { return ""; } })();
 const saveMRow = () => { try { localStorage.setItem("fd-mrow", mRow); } catch {} };
+// (Oct 24, Chris: 'those social numbers are garbage, delete that whole idea') Followers + Social views removed (Home pill, these rows); homeSocial unused.
 // (Oct 8) Chris: 3 separate things: Business money, Social media + website (numbers overlap, so together), Family
 const MROWS = {Business: [["funnel", "Sales funnel", "visitors down to sales"], ["graph", "Sales graph", "net sales by day"], ["f4", "Orders", "by product"], ["f3", "Checkout views", "by checkout page"], ["explore", "Explore", "chart any number"]],
-  "Social and website": [["fol", "Followers", "new followers per app"], ["f0", "Social views", "views per app"], ["f1", "Website visitors", "top pages"], ["f2", "Signups", "free guide signups"], ["mpa", "Money per app", "sales, buys, Shorts per app"]],
+  "Social and website": [["f1", "Website visitors", "top pages"], ["f2", "Signups", "free guide signups"], ["mpa", "Money per app", "sales, buys, Shorts per app"]],
   Family: [["budget", "Budget", "spent, money in, cash flow"], ["nw", "Net worth", "every account"], ["sort", "Charges to sort", ""], ["kids", "Kids' apps", "Kids' Claude use"]]};
 function mBody(k){
   if (k === "funnel" || k === "graph"){ const m = {day: "7", "7": "7", mtd: "mtd", lm: "lm", ytd: "ytd", custom: "custom"}; sRowMode = "period"; sPer = m[fPer] || "7"; if (fPer === "custom"){ sFrom = fFrom; sTo = fTo || azToday(); }
