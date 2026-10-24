@@ -2482,7 +2482,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v298</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v299</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5389,13 +5389,14 @@ function homeShorts(){
   const S = sb.filter(x => x.kind === "scheduled").sort((a, b) => a.date.localeCompare(b.date)), P = sb.filter(x => x.kind === "posted").sort((a, b) => b.date.localeCompare(a.date));
   if (!W.length && !S.length && !P.length) return "";
   const yours = W.filter(x => x.you).length;
-  /* (Oct 20) POSTING CHECK: one row per Short, 5 pills (YT FB IG X TT), green = scheduled/posted + thumbnail + 5am all fine, red = something wrong, grey = not due / by hand.
+  /* (Oct 24, Chris) POSTING CHECK: one row per Short, 5 pills (YT FB IG X TT): solid green = the app says LIVE (tap opens the post), outline = the app confirms scheduled, red = missing/failed, grey = not due / by hand (TikTok).
      Read only: stats/posting from shorts-posting-check.py (hourly chores). Tap-free; the red pill's reason is its tooltip. */
   const PK = (stats.find(x => x.id === "posting") || {}).shorts || [], PA = [["youtube", "YT"], ["facebook", "FB"], ["instagram", "IG"], ["x", "X"], ["tiktok", "TT"]];
-  const pc = {green: ["#1FA598", "#1FA598", "#fff"], red: ["#FBE2DC", "#D85A30", "#B3261E"], grey: ["transparent", "#C9C4B8", "var(--muted,#8A9099)"]};
+  const pc = {green: ["#1FA598", "#1FA598", "#fff"], sched: ["transparent", "#1FA598", "#14786F"], red: ["#FBE2DC", "#D85A30", "#B3261E"], grey: ["transparent", "#C9C4B8", "var(--muted,#8A9099)"]};
   const PR = PK.filter(o => Object.values(o.apps || {}).some(a => a.c !== "grey")).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
   const prow = o => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(o.title)}<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099)">${md(o.date)}</span></b><span class="sbar" style="display:flex;gap:4px">${PA.map(([k, ab]) => { const a = (o.apps || {})[k] || {c: "grey"}, c = pc[a.c] || pc.grey, why = [a.s === false ? "not scheduled/posted" : "", a.t === false ? "no custom thumbnail" : "", a.m === false ? "not at 5am" : "", a.note || ""].filter(Boolean).join(", ");
-    return `<i class="sblk" title="${esc(ab + ": " + (why || a.c))}" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-size:9px;font-weight:800;background:${c[0]};border:1.5px solid ${c[1]};color:${c[2]}">${ab}</i>`; }).join("")}</span></div>`;
+    const tg = a.c === "green" && a.url ? "a" : "i", lab = {green: "live", sched: "scheduled", red: "missing", grey: "not checked"}[a.c] || a.c;
+    return `<${tg} class="sblk"${tg === "a" ? ` href="${esc(a.url)}" target="_blank" rel="noopener"` : ""} title="${esc(ab + ": " + lab + (why ? " (" + why + ")" : ""))}" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;text-decoration:none;font-size:9px;font-weight:800;background:${c[0]};border:1.5px solid ${c[1]};color:${c[2]}">${ab}</${tg}>`; }).join("")}</span></div>`;
   const pRed = PR.reduce((t, o) => t + Object.values(o.apps || {}).filter(a => a.c === "red").length, 0);
   const postCheck = PR.length ? label("Posting check", pRed ? pRed + " red" : "all good") + PR.map(prow).join("") : "";
   /* (Oct 24, Chris) Scheduled box fills only when YouTube AND Facebook gave back a real id (stats/shortsboard need/err from shorts-board.py) */
