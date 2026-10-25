@@ -2484,7 +2484,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v300</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v301</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5470,7 +5470,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
   if (sc && sc.melodyOK && !scVersesLeft(sc)) C[3] = sc.playerOK && !(sc.melodyEditedAt && String(sc.melodyEditedAt) > String(sc.playerOK)) ? {c: "ok", id: sc.id, pl: 1} : !sc.previewAt || String(sc.previewAt) < String(sc.updated || "") ? {c: "mk"} : {c: "chk", id: sc.id, pl: 1};   /* (Oct 23, Chris) the player not rebuilt with his latest approval yet = light gold Making, never a Check that opens an old player */   /* (Oct 22, Chris) an edit to the approved melody = Check again */   /* (Oct 22, Chris) PLAYER: gold Check once the melody and every verse are approved; teal after his Approve (playerOK) */
   const LV = ["chordsOK", "mediumOK", "hardOK"], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK); if (sc && sc[f]) C[4 + j] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[4 + j] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; });   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK || (sc.melodyOK && sc.previewAt && !scVersesLeft(sc))); if (sc && sc[f]) C[4 + j] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[4 + j] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; });   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */   /* (Oct 24, Chris) Level 1 opens once the song HAS a player (melodyOK + previewAt), not only after playerOK: he fixes intro chords before approving the Player */
   /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
   { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
     /* (Oct 22, Chris) FINAL = the song preview player with the approved chords: gold 'Check L#' once song-preview-auto.py has put that level's
@@ -5677,7 +5677,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   Object.assign(r, up); scLocal(r.id, up); chS.dirty.delete(lv); chS.unl.delete(lv); render();
   try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {}
   const nx = CHL[j + 1]; if (nx && !chOk(nx)){ chS.lv = nx; chDraw(); } else { chS = null; lyrClose(); } }, true);   /* after an Approve the next level opens in place (same spot) */
-/* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens after it) */
+/* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens once the player exists, Oct 24) */
 function plOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
   o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Songs tab &gt; ${esc(r.name)} &gt; Play</span></div><div class="lyrbt"><button type="button" class="tb" data-plx="back">Back</button><button type="button" class="tb" data-plx="open">Open player</button><button type="button" class="tb go" data-plx="ok">Approve</button></div></div>`;
