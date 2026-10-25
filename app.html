@@ -2111,7 +2111,7 @@ function vOk(){if(TAGM){tagSave();if(!DOC.tag){tagOut();const l=vLeft();if(!l.le
    read-only; 'Edit' unlocks it for this visit, 'Approve again' saves + locks it. Nothing else (no other column, script or helper) changes it (desk_db.py guard). */
 let UNL=new Set(),EDN=false;
 function seLkKey(){return TAGM?'tag':VER}
-function seLocked(){if(!ON||CS||!DOC)return false;const ok=TAGM?!!DOC.tagOk:(VS.length>1?(DOC.versesOk||[]).includes(VER):!!DOC.melodyOK);return ok&&!UNL.has(seLkKey())}
+function seLocked(){if(!ON||CS||!DOC)return false;const ok=TAGM?!!DOC.tagOk:(VS.length>1?(DOC.versesOk||[]).includes(VER):!!DOC.melodyOK&&!scRowsLeft(DOC));return ok&&!UNL.has(seLkKey())}
 function seLockSync(){const c=document.querySelector('#songchk .secard');if(!c||!ON)return;const L=seLocked(),un=!CS&&UNL.has(seLkKey());c.classList.toggle('selock',L);let b=document.getElementById('se-unl');
  if(!b){const m=document.getElementById('se-okm');if(!m)return;b=document.createElement('button');b.type='button';b.className='tb';b.id='se-unl';m.parentNode.insertBefore(b,m)}
  b.hidden=!(L||un);b.textContent=L?'Edit (locked)':'Approve again';b.classList.toggle('go',!L);if(L)hint('Approved and locked. Tap Edit to change it.')}
@@ -2129,7 +2129,7 @@ function tgSync(){octSync();const m=document.querySelector('#songchk [data-se="m
 function seOpen(sid,view,doc){if(ON)seClose();DID=sid;DOC=doc;seSeen=doc.updated||null;seMine=new Set([seSeen]);VIEW=view?+view:null;CS=(VIEW||doc.step||1)>=2;CM=CS;cPick=null;   /* CS = chords step; CM = the chord row: chords step ONLY (Oct 20 later, Chris: 'When I'm checking the melody, I don't also want to check the chords. One at a time.'); melody/bar/word tools still work on the chords step */
 cDrag=null;
 if(CM){if(!Array.isArray(doc.chords))doc.chords=[];['chordsMedium','chordsHard'].forEach(f=>{if(!Array.isArray(doc[f]))doc[f]=JSON.parse(JSON.stringify(doc.chords))});LVK=CUR()||'easy'}
-OKD=CS?!CUR():(VIEW===1?!!doc.melodyOK:!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved')))&&!scVersesLeft(doc);   /* (Oct 22, Chris) the melody board says Approved ONLY when melodyOK is saved (a stale step/status showed Approved, so his Approve tap saved nothing) */
+OKD=CS?!CUR():(VIEW===1?!!doc.melodyOK:!!(VIEW&&(VIEW<(doc.step||1)||doc.status==='approved')))&&!scVersesLeft(doc)&&!scRowsLeft(doc);   /* (Oct 22, Chris) the melody board says Approved ONLY when melodyOK is saved (a stale step/status showed Approved, so his Approve tap saved nothing) */
 TAGM=false;TSTASH=null;fromDoc(doc);VER=1;VS=doc.oneVerse?scVerses(doc).slice(0,1):scVerses(doc);VW={};   /* (Oct 22, Chris) one long verse = every verse already written out in the melody: no verse tabs */if(VS.length>1){if(!Array.isArray(doc.versesOk)&&doc.melodyOK)doc.versesOk=[1];VW[1]=wNow();VM={1:mNow()};const lvv=doc.linesV||{},wv=doc.wordsV||{};for(let v=2;v<=VS.length;v++){VM[v]=Array.isArray(lvv[v])&&lvv[v].length?JSON.parse(JSON.stringify(lvv[v])):null;VW[v]=Array.isArray(wv[v])&&wv[v].length?JSON.parse(JSON.stringify(wv[v])):vAuto(VW[1],VS[0],VS[v-1])}}
 UNL=new Set();EDN=false;sel=[];hist=[];RLK=null;drag=null;startAt=null;leadSpot=null;pastePos=null;notePick=null;noteSel=[];chSel=[];cAnchor=null;CLIP=null;
 const SF=seFrame(doc),top=SF.top;
@@ -2487,7 +2487,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v304</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v305</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5440,6 +5440,7 @@ function scGone(sc){ const g = new Set(Array.isArray(sc && sc.versesGone) ? sc.v
   return [...g]; }
 function scVersesOk(sc){ return (Array.isArray(sc && sc.versesOk) ? sc.versesOk : sc && sc.melodyOK ? [1] : []).concat(scGone(sc)); }
 function scVersesLeft(sc){ const n = sc && sc.oneVerse ? 1 : scVerses(sc).length, ok = scVersesOk(sc); let k = 0; if (n >= 2) for (let v = 1; v <= n; v++) if (!ok.includes(v)) k++; return k; }   /* (Oct 22, Chris) the end tag never holds up the Melody cell (was +1 for an unapproved tag) */
+function scRowsLeft(sc){ return !!(sc && sc.oneVerse && sc.melodyOK && !btRowsAll(sc, 1)); }   /* (Oct 24, Chris: 'only the first verse I think I approved, and the rest of it is unchecked') a one-long-verse song is approved only when EVERY row is ticked: until then the Melody box is gold Check and the editor stays open (ticked rows stay locked) */
 function scFixKeys(sc){ return sc && sc.fixing && typeof sc.fixing === "object" ? Object.keys(sc.fixing).filter(k => sc.fixing[k]) : []; }
 function scFixingTitle(t){ return !!(t && Array.isArray(t.songcheck) && (scBoard || []).some(r => scFixKeys(r).length && t.songcheck.some(p => sgKey(p && p[1] || p) === sgKey(r.name)))); }
 /* (Oct 22, Chris) BEATS cell helpers: songcheck.beatsText {verse: text}, beatsOK {verse: iso} (his real Approve tap only), beatsFix, beatsMaking */
@@ -5471,7 +5472,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   C[1] = btCell(sc, plan);
   const btHold = false;   /* (Oct 22, Chris) Beats column removed: the Melody check never waits on Beats. Was: !!(sc && btHas(sc) && !btAnyOk(sc) && !sc.melodyOK) */   /* (Oct 22, Chris) Beats come first: the Melody check opens only after a verse's beats are approved */
   if (btHold) C[2] = {c: ""};
-  else if (sc && sc.melodyOK && sc.orig && scVersesLeft(sc)) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
+  else if (sc && sc.melodyOK && sc.orig && (scVersesLeft(sc) || scRowsLeft(sc))) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
   if (sc && sc.melodyOK && !scVersesLeft(sc)) C[3] = sc.playerOK && !(sc.melodyEditedAt && String(sc.melodyEditedAt) > String(sc.playerOK)) ? {c: "ok", id: sc.id, pl: 1} : !sc.previewAt || String(sc.previewAt) < String(sc.updated || "") ? {c: "mk"} : {c: "chk", id: sc.id, pl: 1};   /* (Oct 23, Chris) the player not rebuilt with his latest approval yet = light gold Making, never a Check that opens an old player */   /* (Oct 22, Chris) an edit to the approved melody = Check again */   /* (Oct 22, Chris) PLAYER: gold Check once the melody and every verse are approved; teal after his Approve (playerOK) */
