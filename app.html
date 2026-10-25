@@ -922,6 +922,9 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .fdban small{display:block;font-family:inherit;font-family:system-ui,sans-serif;font-size:13.5px;font-weight:500;opacity:.85;margin-top:4px}
 @keyframes fdbanpop{from{transform:translate(-50%,10px) scale(.9);opacity:0}}
 .fdconf{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:8990}
+.sgc.sgcel{animation:sgcel 1.4s ease-out both;position:relative;z-index:2}   /* (Oct 24, Chris) song Approve: the box waits gold, flashes the Lab's gold glow, turns teal */
+@keyframes sgcel{0%,30%{background:#E8B53A;border-color:#E8B53A;transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}50%{background:#1FA598;border-color:#1FA598;transform:scale(1.35);box-shadow:0 0 16px 5px rgba(242,181,24,.9)}100%{transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}}
+@media (prefers-reduced-motion: reduce){.sgc.sgcel{animation:none;box-shadow:0 0 0 3px rgba(242,181,24,.7)}}
 .fdconf i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:fdfall linear forwards}
 @keyframes fdfall{to{transform:translateY(900px) rotate(720deg)}}
 .fdcannon{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:8995}
@@ -1190,7 +1193,7 @@ async function scOpen(id, view){
   scGridDoc(d); scId = null; window.SE.open(id, view, d); return;   /* (Oct 20, Chris) chords step = the melody template again: melody on top, words, chords to drag, Play, a check per row, one level at a time */
   if (window.CT){ window.CT.open(id, view, d); return; }   /* (Oct 17, Chris) chords step = one text box, chord numbers above the words */   /* (Oct 16 night, Chris hated the editor chords card: chords step back on the old page) */   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
   scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
-function scClose(){ if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = ""; }
+function scClose(){ const scHad = !!(document.getElementById("songchk") || {}).innerHTML; if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = "";  if (scHad) sgBack(); }
 /* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
 function scSync(){ scLines.forEach((l, i) => { l.sort((p, q) => p.g - q.g);
   l.forEach(n => { const w = (scWords[i] || []).find(x => Math.abs(x.g - n.g) < 1e-9); n.w = w ? w.w : ""; n.c = []; });
@@ -1430,7 +1433,7 @@ async function scApprove(){
   /* (Oct 16, Chris) Approve = back to the list AT ONCE with the song's row closed and its pill saying Submitted;
      Cadence turns it to Fixing when she starts, Ready when it's his turn again. The db writes follow (proven by desk-songcheck-test.py) */
   if (t){ t.scState = "submitted"; t.scAt = now; }
-  waitBusy.add("songs"); scClose(); render();   /* (Oct 21, Chris) Approve = back to the SAME open board he came from (its row stays open), never the Home list */
+  sgCelebrate(id, st === 1 ? 2 : ({easy: 4, medium: 5, hard: 6})[scLv] || 4); waitBusy.add("songs"); scClose(); render();   /* (Oct 21, Chris) Approve = back to the SAME open board he came from (its row stays open), never the Home list */
   if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
   const SC0 = db.collection("songcheck").doc(id), SC = {update: o => { scLocal(id, o); return SC0.update(o); }}, done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
   try {
@@ -2484,7 +2487,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v301</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v302</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4310,6 +4313,9 @@ let navLast = "", navBusy = false;
 try { const r = JSON.parse(localStorage.getItem("fd-where") || "null"); if (r && ["today", "projects", "money"].includes(r.tab)){ tab = r.tab; sub = r.sub || "todo"; psub = r.psub || "projects"; msub = r.msub || "biz"; } } catch {}
 const navKey = () => [tab, sub, psub, msub, proj || "", $("pop") && $("pop").innerHTML ? 1 : 0, socDrill ? socDrill.length : 0].join("|");
 addEventListener("popstate", () => {
+  if (sgNavSkip){ sgNavSkip = false; return; }   /* (Oct 24, Chris) a song check closed by its own button: its Back step is gone, nothing else moves */
+  if (document.getElementById("lyrchk")){ if (chS && chS.dirty.size && !chS.arm){ chS.arm = true; chDraw(); try { history.pushState({fd: 1, sgov: 1}, ""); } catch {} return; } chS = null; lyrClose(); return; }   /* phone Back = close only the open song check */
+  { const k = document.getElementById("songchk"); if (k && k.innerHTML){ scClose(); render(); return; } }
   navBusy = true;
   if (socDrill && socDrill.length > 1 && $("pop") && $("pop").innerHTML){ socDrill.pop(); render(); }   /* (Oct 21) Social pop-up: phone back = up one level */
   else if ($("pop") && $("pop").innerHTML){ closePop(); render(); }
@@ -4717,7 +4723,7 @@ function render(){ const L1 = $("list"), st1 = L1 ? L1.scrollTop : 0, k1 = L1 ? 
   // (Oct 8) each step is guarded: one broken extra can never stop the page's buttons from working
   try { $("list").classList.toggle("roomy", tab === "today" || tab === "projects"); } catch {}
   const keepSt = () => { if (L1 && L1.isConnected && k1 === tab + "|" + (sub || "") && Math.abs(L1.scrollTop - st1) > 1){ L1.scrollTop = st1; L1.dataset.lst = L1.scrollTop; } };
-  for (const f of [renderMain, renderPop, applyOrder, applyCollapse, () => phone() && applySubOpen(), addTodayBtns, applyTaskOpen, keepSt, applyFocus]){ try { f(); } catch (err){ fdErr(err); } }
+  for (const f of [renderMain, renderPop, applyOrder, applyCollapse, () => phone() && applySubOpen(), addTodayBtns, applyTaskOpen, keepSt, applyFocus, sgApply]){ try { f(); } catch (err){ fdErr(err); } }
   // (Oct 8) Chris: coming back from the Lab (or any Go link) = the same spot: the to-do he left is open AND in view
   if (!backDone && phone() && taskOpen){ const det = document.querySelector("#list .tdetail"), L = $("list");
     if (det && L){ backDone = true; let moved = false; L.addEventListener("touchstart", () => { moved = true; }, {once: true});
@@ -5496,7 +5502,7 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -5515,7 +5521,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.fnx === "back") return lyrClose();
   if (x.dataset.fnx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + id), "_blank", "noopener"); return; }   /* (Oct 22, Chris) the song preview player, approved chords on it */
   const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo, updated: new Date().toISOString()};
-  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); lyrClose(); render(); }, true);
+  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 7); lyrClose(); render(); }, true);
 /* (Oct 22, Chris: "it's probably just easier to see the song as a chord chart ... chords above the lyrics") CHORD SHEET = the Level 1/2/3 check.
    Every verse on one page, the chord over the word it starts on (the chart is shared: a change shows in every verse). Tap a chord, type
    (1 4 5 6m 1/5 57 ...; two chords on one word = '4 1'; empty = no chord), Approve. Approve copies the chart DOWN to every later level
@@ -5676,7 +5682,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (tag) up.tag = tag;
   Object.assign(r, up); scLocal(r.id, up); chS.dirty.delete(lv); chS.unl.delete(lv); render();
   try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {}
-  const nx = CHL[j + 1]; if (nx && !chOk(nx)){ chS.lv = nx; chDraw(); } else { chS = null; lyrClose(); } }, true);   /* after an Approve the next level opens in place (same spot) */
+  sgCelebrate(r.id, 4 + j); chS = null; lyrClose(); }, true);   /* (Oct 24, Chris) Approve closes the sheet: back on the same song, the box glows teal + confetti (was: the next level opened in place) */
 /* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens once the player exists, Oct 24) */
 function plOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
@@ -5688,8 +5694,26 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.plx === "back") return lyrClose();
   if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + id), "_blank", "noopener"); return; }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; board id = Lab song id) */
   const now = new Date().toISOString(), up = {playerOK: now, updated: now};
-  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); lyrClose(); render(); }, true);
-function lyrClose(){ const o = document.getElementById("lyrchk"); if (o) o.remove(); }
+  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 3); lyrClose(); render(); }, true);
+function lyrClose(){ const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); } }
+/* (Oct 24, Chris) SONG CHECK RETURN: every Approve closes the check at once, back on the SAME song at the SAME spot (the box sits where it was on screen,
+   even if the board re-sorted); the approved box waits a beat gold, flashes the Lab's gold glow, turns teal, then the desk confetti falls. Phone Back closes only the check. */
+let sgMk = null, sgCel = null, sgNavSkip = false;
+const sgCellEl = (id, col) => [...document.querySelectorAll(`.sgc[data-sgid="${CSS.escape(String(id))}"][data-sgcol="${col}"]`)].find(e => e.offsetParent);
+const sgScroller = el => { for (let p = el && el.parentElement; p; p = p.parentElement){ const st = getComputedStyle(p); if (/(auto|scroll)/.test(st.overflowY) && p.scrollHeight > p.clientHeight + 1) return p; } return null; };
+window.addEventListener("click", e => { const b = e.target.closest && e.target.closest('.sgc[data-sgid][role="button"]'); if (!b || !b.dataset.sgid || document.getElementById("lyrchk")) return;
+  sgMk = {id: b.dataset.sgid, col: b.dataset.sgcol, top: b.getBoundingClientRect().top, t: 0, cut: false}; try { history.pushState({fd: 1, sgov: 1}, ""); } catch {} }, true);
+["wheel", "touchstart"].forEach(t => addEventListener(t, () => { if (sgMk && sgMk.t) sgMk.cut = true; }, {passive: true}));   /* he scrolls = stop putting the row back */
+function sgCelebrate(id, col){ sgCel = {id: String(id), col: String(col), t: Date.now()}; }
+function sgBack(){ if (!sgMk || sgMk.t) return; sgMk.t = Date.now();
+  if (history.state && history.state.sgov){ sgNavSkip = true; try { history.back(); } catch { sgNavSkip = false; } }
+  [0, 80, 400].forEach(ms => setTimeout(sgApply, ms)); }
+function sgApply(){ const now = Date.now();
+  if (sgMk && sgMk.t && !sgMk.cut && now - sgMk.t < 2500){ const el = sgCellEl(sgMk.id, sgMk.col); if (el){ const d = el.getBoundingClientRect().top - sgMk.top; if (Math.abs(d) > 2){ const sp = sgScroller(el); if (sp) sp.scrollTop += d; else scrollBy(0, d); } } }
+  if (!sgCel) return; const age = now - sgCel.t; if (age > 1600){ sgCel = null; return; }
+  const el = sgCellEl(sgCel.id, sgCel.col); if (!el) return;
+  if (!el.classList.contains("sgcel")){ el.style.animationDelay = -age + "ms"; el.classList.add("sgcel"); }   /* a board redraw mid-flash picks up where it was */
+  if (!sgCel.boom){ sgCel.boom = 1; setTimeout(fdConfetti, Math.max(0, 650 - age)); } }
 document.addEventListener("click", async e => { const b = e.target.closest("[data-lyrchk]"); if (b){ e.preventDefault(); e.stopPropagation(); lyrOpen(b.dataset.lyrchk); return; }
   const x = e.target.closest("[data-lyrx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
@@ -5698,7 +5722,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.lyrx === "unlock"){ o.dataset.lock = "0"; const ta = o.querySelector(".lyrtx"); ta.readOnly = false; ta.focus(); return; }
   const up = x.dataset.lyrx === "ok" ? {lyricsText: tx, lyricsOK: now, lyricsFix: false, updated: now} : {lyricsText: tx, lyricsOK: "", lyricsFix: true, lyricsNote: note || "(see edits)", lyricsFixAt: now, updated: now};
   if (ed) up.lyricsEdited = now;
-  Object.assign(r, up); lyrClose(); render();
+  if (x.dataset.lyrx === "ok") sgCelebrate(id, 0); Object.assign(r, up); lyrClose(); render();
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
 /* BEATS-START (Oct 22, Chris) BEATS TEXT: one editable plain-text box per verse, one lyric line per line, '|' right before the syllable on beat 1, words split with hyphens.
    beatsApply turns it into that verse's notes + words (syllables spread over each bar's notes; notes split or merged when the count differs; flags for what it could not place). Pure: no DOM, no db. */
@@ -5813,7 +5837,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (btApproved(r, v)) return;   /* HARD GUARD: nothing is written for an approved verse */
   const bt = Object.assign({}, btTexts(r), {[v]: tx}); let up;
   if (x.dataset.btx === "fix") up = {beatsText: bt, beatsFix: true, beatsNote: note || "(see edits)", beatsFixAt: now, updated: now};
-  else { up = btUpApprove(r, v, tx, now); if (!up) return; if (up.err){ o.querySelector(".btfl").innerHTML = "<i>" + esc(up.err) + "</i>"; return; } }
+  else { up = btUpApprove(r, v, tx, now); if (!up) return; if (up.err){ o.querySelector(".btfl").innerHTML = "<i>" + esc(up.err) + "</i>"; return; } sgCelebrate(id, 1); }
   Object.assign(r, up); lyrClose(); render();
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
 function homeSongs(only){
