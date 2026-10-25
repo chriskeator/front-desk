@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#FFFDF8" media="(prefers-color-scheme: light)">
@@ -41,6 +41,11 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
   --red:#F97066; --red-soft:#3A2220; --hover:#2C3337; --pick:#D19A12; color-scheme:dark}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px}
+/* (Oct 25, Chris: the phone's ||| O < bar must always show but nothing may shift) the page is laid out under the phone bars from the first frame (viewport-fit=cover in build-desk-app.py) and keeps their room as padding, so the bars never resize the page after it opens */
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);box-sizing:border-box}
+#fderr{bottom:calc(8px + env(safe-area-inset-bottom))!important}
+.exleft.open{padding-top:calc(12px + env(safe-area-inset-top))!important;padding-bottom:calc(12px + env(safe-area-inset-bottom))!important}
+#lyrchk,.revsheet,.kbig{padding-top:calc(16px + env(safe-area-inset-top))!important;padding-bottom:calc(16px + env(safe-area-inset-bottom))!important}
 .wrap{height:100%;max-width:960px;margin:0 auto;padding-inline:16px;padding-block:12px;box-sizing:border-box;display:flex;flex-direction:column;gap:9px}
 header{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 h1{font-family:var(--display);font-weight:600;font-size:26px;margin:0}
@@ -2487,7 +2492,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v308</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v309</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
