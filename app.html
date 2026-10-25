@@ -2487,7 +2487,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v305</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v306</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5472,6 +5472,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   C[1] = btCell(sc, plan);
   const btHold = false;   /* (Oct 22, Chris) Beats column removed: the Melody check never waits on Beats. Was: !!(sc && btHas(sc) && !btAnyOk(sc) && !sc.melodyOK) */   /* (Oct 22, Chris) Beats come first: the Melody check opens only after a verse's beats are approved */
   if (btHold) C[2] = {c: ""};
+  else if (sc && sc.rebuild && !sc.melodyOK) C[2] = {c: "mk"};   /* (Oct 24, Chris) songcheck.rebuild = the melody is being rebuilt from hymnal sheet music: Making, never a Check, until the rebuild clears it */
   else if (sc && sc.melodyOK && sc.orig && (scVersesLeft(sc) || scRowsLeft(sc))) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
