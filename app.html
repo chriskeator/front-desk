@@ -718,7 +718,9 @@ a.tb.rs-fixed{flex-direction:column}
 /* (Oct 7) Chris: on the phone the first thing under the top tabs sits the same distance down on Home, Projects and Money Map */
 @media all{ .wrap > .tabs{margin-bottom:16px} .today1.morning > .hello{display:none} }
 /* (Oct 7) a long press on the phone never selects words or opens link previews (it's for dragging folders) */
-@media all{ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none} input,textarea{-webkit-user-select:text;user-select:text} }
+/* (Oct 24, Chris: "i need to be able to highlight the text on everything ... so i can copy it") computers (mouse) select and copy any text; buttons stay unselectable */
+@media (pointer: coarse){ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none} input,textarea{-webkit-user-select:text;user-select:text} }
+@media (pointer: fine){ button,.tpill{-webkit-user-select:none;user-select:none} }
 /* (Oct 7) time at the far right of every to-do / idea row; project pop-up list; row drop-down menu */
 .chc{position:relative}
 .chc .tmr{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-style:normal;font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}
@@ -2482,7 +2484,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v299</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v300</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
