@@ -3,7 +3,7 @@
   "short_name": "Front Desk",
   "start_url": "./app.html",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#171B1E",
   "theme_color": "#171B1E",
   "icons": [
