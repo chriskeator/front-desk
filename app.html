@@ -2507,7 +2507,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v315</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v316</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2626,6 +2626,9 @@ function waitLive(t){
     return {n, first, title: "Songs: " + n + " to check"}; }
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
+  /* (Oct 25, Chris: 'Chapter 7 is not in my Today folder') desk-wait-rows.py groups ready lessons into t-wait-lab-chN (wait 'lab-chN', lessons = its kids); count the open kids live */
+  if (/^lab-ch\d+$/.test(t.wait)){ const n = (allTasks || []).filter(x => x.parent === t.id && !x.done && !x.removed).length; return {n, title: "Ch" + t.wait.slice(6) + ": " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
+  if (t.wait === "lab"){ const n = (t.links || []).length; return {n, title: "Lab: " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
   return null; }
 /* (Oct 22, Chris) ZERO = HIDDEN EVERYWHERE: a wait row with nothing waiting is never shown in any list (Today, week, next, later) */
 const waitShow = t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; };
