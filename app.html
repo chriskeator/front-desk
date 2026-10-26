@@ -947,7 +947,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 @keyframes fdbanpop{from{transform:translate(-50%,10px) scale(.9);opacity:0}}
 .fdconf{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:8990}
 .sgc.sgcel{animation:sgcel 1.4s ease-out both;position:relative;z-index:2}   /* (Oct 24, Chris) song Approve: the box waits gold, flashes the Lab's gold glow, turns teal */
-@keyframes sgcel{0%,30%{background:var(--kbE8B53A);border-color:var(--klE8B53A);transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}50%{background:var(--kb1FA598);border-color:var(--kl1FA598);transform:scale(1.35);box-shadow:0 0 16px 5px rgba(242,181,24,.9)}100%{transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}}
+@keyframes sgcel{0%,30%{background:var(--kbE8B53A);border-color:var(--klE8B53A);transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}50%{background:var(--kb1FA598);border-color:var(--kl1FA598);transform:scale(1.35);box-shadow:0 0 16px 5px rgba(242,181,24,.9)}100%{background:var(--kb1FA598);border-color:var(--kl1FA598);transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}}   /* (Oct 26, Chris: Approved flashed several times) ends teal, never fades back to the old gold, so it flashes ONCE */
 @media (prefers-reduced-motion: reduce){.sgc.sgcel{animation:none;box-shadow:0 0 0 3px rgba(242,181,24,.7)}}
 .fdconf i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:fdfall linear forwards}
 @keyframes fdfall{to{transform:translateY(900px) rotate(720deg)}}
@@ -2526,7 +2526,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v326</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v327</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5870,7 +5870,7 @@ function sgApply(){ const now = Date.now();
   if (sgMk && sgMk.t && !sgMk.cut && now - sgMk.t < 2500){ const el = sgCellEl(sgMk.id, sgMk.col); if (el){ const d = el.getBoundingClientRect().top - sgMk.top; if (Math.abs(d) > 2){ const sp = sgScroller(el); if (sp) sp.scrollTop += d; else scrollBy(0, d); } } }
   if (!sgCel) return; const age = now - sgCel.t; if (age > 1600){ sgCel = null; return; }
   const el = sgCellEl(sgCel.id, sgCel.col); if (!el) return;
-  if (!el.classList.contains("sgcel")){ el.style.animationDelay = -age + "ms"; el.classList.add("sgcel"); }   /* a board redraw mid-flash picks up where it was */
+  if (!el.classList.contains("sgcel") && age < 1400){ el.style.animationDelay = -age + "ms"; el.classList.add("sgcel"); }   /* a board redraw mid-flash picks up where it was */
   if (!sgCel.boom){ sgCel.boom = 1; setTimeout(fdConfetti, Math.max(0, 650 - age)); } }
 document.addEventListener("click", async e => { const b = e.target.closest("[data-lyrchk]"); if (b){ e.preventDefault(); e.stopPropagation(); lyrOpen(b.dataset.lyrchk); return; }
   const x = e.target.closest("[data-lyrx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
