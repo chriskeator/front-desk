@@ -2492,7 +2492,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v310</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v311</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2601,7 +2601,7 @@ function askList(){ const L = tasks.filter(x => x.heldOffToday && !x.done && !x.
   const sk = askSkip.filter(id => L.some(x => x.id === id)); if (sk.length >= L.length) askSkip.length = 0;
   return L.filter(x => !askSkip.includes(x.id)).concat(askSkip.map(id => L.find(x => x.id === id)).filter(Boolean)); }
 function asksHTML(){ const L = askList(), a = L[0]; if (!a) return `<p class="note">Nothing waiting.</p>`;
-  const done = a.kind === "go" ? `<div class="kyn"><button type="button" class="tb go" data-kans="done|${esc(a.id)}">Done</button></div>` : "";
+  const done = "";
   return `<div class="askq" data-askof="${esc(a.id)}"><p class="tn">${esc([a.project, L.length + (L.length === 1 ? " question" : " questions") + " left"].filter(Boolean).join(" \u00b7 "))}</p><p class="askt"><b>${esc(a.short || a.title)}</b></p>${a.note ? `<p class="tn">${esc(String(a.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${kindHTML(a)}${done}${L.length > 1 ? `<div class="kyn"><button type="button" class="tb" data-asknext="1">Next</button></div>` : ""}</div>`; }
 function waitLive(t){
   if (t.wait === "asks"){ const L = askList(); return {n: L.length, first: L[0], title: "Questions for you: " + L.length}; }
@@ -6030,7 +6030,7 @@ function kindHTML(t){
   const pg = pics.length ? `<div class="kpics">${pics.map((p, i) => `<button type="button" class="kthumb" data-kbig="${esc(p.url || p)}" aria-label="Picture ${i + 1}, tap for big"><img src="${esc(p.url || p)}" alt="" loading="lazy"></button>`).join("")}</div>` : "";
   const fl = files.map(f => safeUrl(f.url) ? `<a class="tb" href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label || "Open")}</a>` : "").join("");
   if (k === "go"){ const u = safeUrl(t.url) && t.url !== FDURL ? t.url : "";
-    return (u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : "") + (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : ""); }
+    return (u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : "") + (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : "") + `<div class="kyn"><button type="button" class="tb go" data-kans="done|${esc(t.id)}">Done</button></div>`; }   /* (Oct 25, Chris: 'Stop putting things on my to-do list that I can't get rid of') every go row has its own Done */
   if (k === "ab") return abHTML(t);
   if (k === "yesno") return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="yes|${esc(t.id)}">Yes</button><button type="button" class="tb" data-kans="no|${esc(t.id)}">No</button></div>`;
   return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="good|${esc(t.id)}">Looks good</button><button type="button" class="tb gold" data-kans="fix|${esc(t.id)}">Fix</button></div><textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>`; }
