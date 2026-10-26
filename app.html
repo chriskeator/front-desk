@@ -3,7 +3,7 @@
 <meta name="robots" content="noindex,nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#FFFDF8" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#171B1E" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#1F1F1F" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Front Desk">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192-v2.png"><link rel="apple-touch-icon" href="icon-180-v2.png">
@@ -211,6 +211,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk .chcp{display:grid;grid-template-columns:72px repeat(8,52px) 88px;grid-template-rows:34px;gap:6px;align-items:center;margin:4px 0 0;width:max-content;max-width:100%}#lyrchk .chcpl{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}#lyrchk .chcp .tb{height:34px;min-height:0;padding:0 4px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap}#lyrchk .chcpx{display:block;height:34px}#lyrchk .chcpb[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}#lyrchk .chcp .tb[disabled]{opacity:.45;cursor:default}#lyrchk .chcpn{height:18px;line-height:18px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
 @media (max-width:759px){#lyrchk .chcp{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:34px 34px 34px;width:auto}#lyrchk .chcpl{grid-column:1/4;grid-row:1}#lyrchk .chap{grid-column:4;grid-row:1}}
 #lyrchk[data-chlock="0"] .chz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .chz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .chz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .chz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .chsh{border-radius:10px;padding:8px!important}#lyrchk[data-chlock="1"] .chsh{background:var(--soft,#EEF6F5)}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
+#lyrchk .ntz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 3px}#lyrchk[data-chlock="0"] .ntz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .ntz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .ntz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .ntz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}   /* (Oct 26) Notes check boxes = the chord boxes */
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
 :root{--hov:rgba(0,0,0,.07)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.09)}}
@@ -2520,7 +2521,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v324</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v325</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5459,7 +5460,7 @@ document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Chec
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
    Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
    NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songs + db songcheck, matched by name. */
-const SGCOLS = ["Lyrics", "Beats", "Melody", "Player", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "Be", "Me", "Pl", "L1", "L2", "L3", "Fn"];   /* (Oct 22, Chris) Player = hear the approved melody in the real Lab song player (preview copy) before chords */
+const SGCOLS = ["Lyrics", "Notes", "Melody", "Player", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "No", "Me", "Pl", "L1", "L2", "L3", "Fn"];   /* (Oct 22, Chris) Player = hear the approved melody in the real Lab song player (preview copy) before chords */
 const SGPREVIEW = "https://lab.worshippianoacademy.com/a14d315000dc/";   /* = ~/Library/Scripts/claude-tasks/song-preview-path.txt (song-preview-push.sh publishes only that folder) */   /* (Oct 22, Chris) Beats = step 2: the | text box per verse, before the melody */   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
 const SGLIVE = ["twinkletwinklelittlestar", "jesuslovesme", "maryhadalittlelamb"];   /* = PP_SONG_OK in the Lab (twinkle, jesusloves, mary) */
 const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
@@ -5510,6 +5511,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
   if (sc && sc.lyricsOK) C[0] = {c: "ok", id: sc.id, lyr: 1}; else if (sc && sc.lyricsText && !sc.lyricsFix) C[0] = {c: "chk", id: sc.id, lyr: 1}; else if (sc && sc.lyricsFix) C[0] = {c: "fx", ak: fmAck("songcheck", sc.id)}; else if (plan) C[0] = {c: "mk"};   /* (Oct 20, Chris: Lyrics = step one) his words list -> his Approve on the Lyrics check */
   C[1] = btCell(sc, plan);
+  if (sc && NT8.includes(sc.id) && Array.isArray(sc.lines) && sc.lines.length) C[1] = sc.notesOK ? {c: "ok", id: sc.id, nt: 1} : {c: "chk", id: sc.id, nt: 1};   /* (Oct 26, Chris) Notes check: these 8 songs only */
   const btHold = false;   /* (Oct 22, Chris) Beats column removed: the Melody check never waits on Beats. Was: !!(sc && btHas(sc) && !btAnyOk(sc) && !sc.melodyOK) */   /* (Oct 22, Chris) Beats come first: the Melody check opens only after a verse's beats are approved */
   if (btHold) C[2] = {c: ""};
   else if (sc && sc.rebuild && !sc.melodyOK) C[2] = Array.isArray(sc.rebuildLines) && sc.rebuildLines.length ? {c: "chk", id: sc.id, cmp: 1} : {c: "mk"};   /* (Oct 24, Chris) songcheck.rebuild = the melody is being rebuilt from hymnal sheet music: Making until the draft exists; (Oct 25, Chris) draft ready = gold Check that opens the compare pop-up (mcOpen) */
@@ -5540,11 +5542,11 @@ function sgUniverse(){ if (scBoard === null) fdScLoad();
   return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas */
 function sgRow(x){ const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
-  return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => { if (i === 1) return "";   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
+  return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => { if (i === 1 && !q.nt) return `<i class="sblk sgc" data-sgcol="1" data-sgst="none" title="Notes" style="background:transparent;border-color:transparent"></i>`;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -5786,6 +5788,66 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return; }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; Oct 24: the player's own id = songcheck.labId from song-preview-auto.py, e.g. jesuslittle) */
   const now = new Date().toISOString(), up = {playerOK: now, updated: now};
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 3); lyrClose(); render(); }, true);
+/* (Oct 26, Chris: "this style of checker for the melody on these 8 check songs ... an extra row in between the lyrics and melody columns")
+   NOTES CHECK: the melody as numbers over every syllable, like the chord sheet. Only these 8 songs get the Notes column (the old hidden 2nd slot);
+   every other song's slot stays empty. Tap a box, type the numbers (1-7, b/# in front, ' = high octave, , = low; a held syllable = 3 2; no mark =
+   the octave nearest the old note). Only the pitch (m) of songcheck.lines changes. Save keeps edits; Approve = songcheck.notesOK (his tap only). */
+const NT8 = ["gotell", "firstnoel", "ly-itcameuponthemidnightclear", "ly-godrestyemerrygentlemen", "ly-wethreekings", "ly-ochristmastree", "ly-ocomeocomeemmanuel", "ly-upontheousetop"];
+const NTDEG = ["1", "#1", "2", "b3", "3", "4", "#4", "5", "#5", "6", "b7", "7"], NTPC = [0, 2, 4, 5, 7, 9, 11];
+let ntS = null;
+const ntTxt = m => NTDEG[((m % 12) + 12) % 12] + (m >= 72 ? "'".repeat(Math.floor((m - 60) / 12)) : m < 60 ? ",".repeat(Math.ceil((60 - m) / 12)) : "");
+function ntParse(t, old){ const m = /^([b#]?)([1-7])('*)(,*)$/.exec(t); if (!m) return null;
+  const pc = NTPC[+m[2] - 1] + (m[1] === "#" ? 1 : m[1] === "b" ? -1 : 0);
+  if (m[3] || m[4]) return 60 + pc + 12 * m[3].length - 12 * m[4].length;
+  let best = null; for (let o = 36; o <= 96; o += 12){ const c = o + pc; if (best == null || Math.abs(c - old) < Math.abs(best - old)) best = c; } return best; }
+/* one box per sung syllable: a note with words starts one, the wordless notes after it are held on it; wordless notes before the first word = the intro */
+function ntGroups(row, li){ const out = []; (row || []).forEach((n, j) => { if (!n || typeof n.m !== "number") return; const w = String(n.w || "").trim();
+  if (w || !out.length) out.push({w, li, js: [j], g: n.g}); else out[out.length - 1].js.push(j); }); return out; }
+function ntSheetHTML(){ const r = ntS.r, L = ntS.lines, ed = !ntS.lock, S = chSecs(r) ? chSecNum(chSecs(r)) : null, out = []; let sec = -1, blk = [];
+  const box = gp => { const t = gp.js.map(j => ntTxt(L[gp.li][j].m)).join(" "), key = gp.li + ":" + gp.js[0];
+    return `<span class="chw"><span class="ntz${ntS.bad.has(key) ? " bad" : ""}" data-ntk="${key}" data-raw="${esc(t)}" style="min-width:calc(${Math.max(1, t.length)}ch + 6px)"${ed ? ` contenteditable="true" spellcheck="false" inputmode="text"` : ""}>${esc(t)}</span><b>${esc(gp.w || "–")}</b></span>`; };
+  const flush = () => { if (!blk.length) return; const x = S && sec >= 0 ? S[sec] : null;
+    out.push(`<div class="chv${x ? " chsec" : ""}">${x ? `<h3><span class="tb chlab" data-sect="${x.t}">${chSecName(x)}</span></h3>` : ""}${blk.join("")}</div>`); blk = []; };
+  L.forEach((row, li) => { let G = ntGroups(row, li); if (!G.length) return;
+    const I = G.filter(gp => !gp.w && gp.g < 0); if (I.length){ out.push(`<div class="chi"><span>Intro</span>${I.map(box).join("")}</div>`); G = G.filter(gp => !I.includes(gp)); if (!G.length) return; }   /* wordless notes before the words = the intro */
+    const k = S ? chSecOf(S, G.find(gp => gp.w) ? G.find(gp => gp.w).g : G[0].g) : -1; if (k !== sec){ flush(); sec = k; }
+    blk.push(`<div class="chl">${G.map(box).join("")}</div>`); });
+  flush(); return out.join(""); }
+function ntDraw(){ const o = document.getElementById("lyrchk"); if (!o || !ntS) return; const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = ntSheetHTML(); n.scrollTop = y;
+  o.dataset.chlock = ntS.lock ? "1" : "0";
+  const bt = o.querySelector(".lyrbt"), act = ntS.lock ? `<button type="button" class="tb" data-ntx="edit">Edit (locked)</button>` : `<button type="button" class="tb go" data-ntx="ok"${ntS.bad.size ? " disabled" : ""}>Approve</button>`;
+  const bh = `<button type="button" class="tb" data-ntx="back">${ntS.arm ? "Close without saving" : "Back"}</button>` + (ntS.lock ? "" : `<button type="button" class="tb" data-ntx="save"${ntS.dirty && !ntS.bad.size ? "" : " disabled"}>${ntS.saved && !ntS.dirty ? "Saved" : "Save"}</button>`) + act;
+  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ntS.lock ? "1fr 1fr" : "1fr 1fr 1fr"; }
+function ntOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r || !Array.isArray(r.lines)) return; lyrClose();
+  ntS = {id, r, lines: JSON.parse(JSON.stringify(r.lines)), lock: !!r.notesOK, dirty: false, saved: false, arm: false, bad: new Set()};
+  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.nt = "1";
+  o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}: melody</b><span>Tap a number to change it (1-7, b3 #4, ' = high, , = low; a held word = 3 2).</span></div><div class="chsh"></div><div class="lyrbt"></div></div>`;
+  document.body.appendChild(o); ntDraw(); }
+function ntSet(el){ if (!ntS || ntS.lock) return; const [li, j0] = el.dataset.ntk.split(":").map(Number), gp = ntGroups(ntS.lines[li], li).find(g => g.js[0] === j0); if (!gp) return;
+  const toks = el.textContent.replace(/[’‘]/g, "'").trim().split(/\s+/).filter(Boolean);
+  const ms = toks.length === gp.js.length ? toks.map((t, k) => ntParse(t, ntS.lines[li][gp.js[k]].m)) : null;
+  if (!ms || ms.some(m => m == null)){ ntS.bad.add(el.dataset.ntk); el.classList.add("bad"); ntDraw(); return; }
+  ntS.bad.delete(el.dataset.ntk); el.classList.remove("bad");
+  gp.js.forEach((j, k) => { if (ntS.lines[li][j].m !== ms[k]){ ntS.lines[li][j].m = ms[k]; ntS.dirty = true; ntS.arm = false; } });
+  el.dataset.raw = el.textContent = gp.js.map(j => ntTxt(ntS.lines[li][j].m)).join(" "); ntDraw(); }
+document.addEventListener("keydown", e => { const el = e.target.closest && e.target.closest("#lyrchk .ntz[contenteditable]"); if (el && e.key === "Enter"){ e.preventDefault(); el.blur(); } }, true);
+document.addEventListener("focusin", e => { const el = e.target.closest && e.target.closest("#lyrchk .ntz[contenteditable]"); if (!el) return; setTimeout(() => { if (document.activeElement === el) getSelection().selectAllChildren(el); }, 0); }, true);
+document.addEventListener("focusout", e => { const el = e.target.closest && e.target.closest("#lyrchk .ntz[contenteditable]"); if (!el) return;
+  const nx = e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest("#lyrchk .ntz[contenteditable]"), key = nx && nx.dataset.ntk; ntSet(el);
+  if (key) setTimeout(() => { const n = document.querySelector(`#lyrchk .ntz[data-ntk="${key}"]`); if (n && document.activeElement !== n){ n.focus(); getSelection().selectAllChildren(n); } }, 0); }, true);
+document.addEventListener("click", e => { const b = e.target.closest("[data-ntchk]"); if (b){ e.preventDefault(); e.stopPropagation(); ntOpen(b.dataset.ntchk); return; }
+  const x = e.target.closest("[data-ntx]"); if (!x || !ntS) return; e.preventDefault(); e.stopPropagation();
+  const foc = document.querySelector("#lyrchk .ntz:focus"); if (foc) ntSet(foc);
+  const act = x.dataset.ntx, r = ntS.r, now = new Date().toISOString();
+  if (act === "back"){ if (ntS.dirty && !ntS.arm){ ntS.arm = true; ntDraw(); return; } ntS = null; return lyrClose(); }
+  if (act === "edit"){ ntS.lock = false; ntDraw(); return; }
+  if (ntS.bad.size) return;
+  const up = {updated: now}; if (ntS.dirty){ up.lines = ntS.lines; up.melodyEditedAt = now; }
+  if (act === "ok") up.notesOK = now; else if (!ntS.dirty) return;
+  Object.assign(r, up); scLocal(r.id, up); render();
+  try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {}
+  if (act === "save"){ ntS.lines = JSON.parse(JSON.stringify(r.lines)); ntS.dirty = false; ntS.saved = true; ntDraw(); return; }
+  sgCelebrate(r.id, 1); ntS = null; lyrClose(); }, true);
 function lyrClose(){ const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); } }
 /* (Oct 24, Chris) SONG CHECK RETURN: every Approve closes the check at once, back on the SAME song at the SAME spot (the box sits where it was on screen,
    even if the board re-sorted); the approved box waits a beat gold, flashes the Lab's gold glow, turns teal, then the desk confetti falls. Phone Back closes only the check. */
@@ -5933,7 +5995,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
 function homeSongs(only){
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
-  const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SGCOLS.map((t, i) => i === 1 ? "" : `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SGAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
+  const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SGCOLS.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SGAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
   const U = sgUniverse(), byK = new Map(U.map(x => [x.k, x]));
   const ord = (a, b) => (b.cells.some(q => q.c === "chk") - a.cells.some(q => q.c === "chk")) || b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title);
   /* inside a song-check task: the same template, only its songs */
