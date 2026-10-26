@@ -2507,7 +2507,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v316</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v317</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5937,7 +5937,8 @@ function homeSongs(only){
   const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
   const mine = U.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
-  const CR = (scBoard || []).filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
+  /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
+  const CR = [].filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
   const secCR = CR.length ? label("Copyright check", CR.length) + CR.map(r => { const np = /^NOT/i.test(String(r.lyricsCheck).trim());
     return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:#FDE8E4;border:1.5px solid #B4362A;color:#B23B17" : "background:#FBEFD0;border:1.5px solid #E8B53A;color:#8A6508"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
   return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${secN}</div></div>`; }
