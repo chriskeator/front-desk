@@ -2507,7 +2507,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v317</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v318</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6655,7 +6655,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   if (!db){ $("list").innerHTML = '<div class="empty"><b>Sign in to see your desk</b><span>Taking you to sign in.</span></div>'; return; }
   const fail = () => { $("list").innerHTML = '<div class="empty"><b>Couldn\'t load</b><span>Close and reopen this page.</span></div>'; };
   const first = name => { if (deskWait.delete(name) && !deskWait.size) deskGo(); };
-  const live = (name, order, set) => (deskWait.add(name), db.collection(name).orderBy(order[0], order[1]).limit(300)
+  /* (Oct 26, Chris: Ch7 + Questions missing from Today) was limit(300): tasks passed 300 rows, so the newest dated rows and every ask silently dropped off */
+  const live = (name, order, set) => (deskWait.add(name), db.collection(name).orderBy(order[0], order[1]).limit(1000)
     .onSnapshot(s => { first(name); set(s.docs.map(d=>({id:d.id,...d.data()}))); if (!editing && !sorting && !answering && !revFix && !bulkPick && !(editOpen && document.querySelector("#list .tdedit"))) liveRender(); }, () => { first(name); fail(); }));
   live("projects", ["order","asc"], v => projects = v);
   live("jobs", ["updated","desc"], v => jobs = v);
