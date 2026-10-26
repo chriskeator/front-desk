@@ -1031,6 +1031,21 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .msec.one1 > .chgrid > .mrow{display:none!important}
 #list .msec.one1 > .chgrid{display:none!important}
 .usg .fpers{gap:6px!important}
+/* (Oct 25, Chris) melody compare pop-up (mcOpen): current melody vs hymnal draft */
+.mcov{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.mcbox{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:14px 16px;width:min(560px,100%);max-height:calc(100vh - 32px);display:flex;flex-direction:column;gap:8px;box-sizing:border-box}
+@media (min-width:1000px){.mcbox{width:80vw;max-width:none}}
+.mchd{display:flex;justify-content:space-between;align-items:center;gap:8px}.mchd b{font-size:16px}
+.mcx{border:0;background:none;color:var(--ink);font-size:18px;cursor:pointer;padding:4px}
+.mccard{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px}
+.mcch{display:flex;justify-content:space-between;align-items:center;gap:8px}.mcch .tn{margin:0}
+.mcdiff{overflow:auto;min-height:0;flex:1 1 auto}.mcr{border-top:1px solid var(--line);padding:6px 0}.mcr .tn{margin:0 0 2px}
+.mcl{margin:4px 0 2px;font-size:11px;color:var(--muted)}
+.mcrow{display:flex;flex-wrap:wrap;gap:3px}
+.mcn{display:inline-flex;flex-direction:column;align-items:center;min-width:30px;padding:2px 3px;border-radius:6px;border:1px solid transparent}
+.mcn b{font-size:12px}.mcn i{font-style:normal;font-size:10px;color:var(--muted);white-space:nowrap}
+.mcn.d{background:var(--gold-soft);border-color:var(--gold)}.mcn.d b{color:var(--gold)}
+.mcbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mcbtns .tb{padding:10px}
 </style>
 
 <div id="pop"></div>
@@ -2492,7 +2507,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v311</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v312</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5477,7 +5492,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   C[1] = btCell(sc, plan);
   const btHold = false;   /* (Oct 22, Chris) Beats column removed: the Melody check never waits on Beats. Was: !!(sc && btHas(sc) && !btAnyOk(sc) && !sc.melodyOK) */   /* (Oct 22, Chris) Beats come first: the Melody check opens only after a verse's beats are approved */
   if (btHold) C[2] = {c: ""};
-  else if (sc && sc.rebuild && !sc.melodyOK) C[2] = {c: "mk"};   /* (Oct 24, Chris) songcheck.rebuild = the melody is being rebuilt from hymnal sheet music: Making, never a Check, until the rebuild clears it */
+  else if (sc && sc.rebuild && !sc.melodyOK) C[2] = Array.isArray(sc.rebuildLines) && sc.rebuildLines.length ? {c: "chk", id: sc.id, cmp: 1} : {c: "mk"};   /* (Oct 24, Chris) songcheck.rebuild = the melody is being rebuilt from hymnal sheet music: Making until the draft exists; (Oct 25, Chris) draft ready = gold Check that opens the compare pop-up (mcOpen) */
   else if (sc && sc.melodyOK && sc.orig && (scVersesLeft(sc) || scRowsLeft(sc))) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: sc.orig ? sc.id : "", v: 1};   /* verses still to check = gold again */
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
@@ -5509,7 +5524,7 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -5522,6 +5537,55 @@ function fnOpen(id, lv){ const r = (scBoard || []).find(x => x.id === id); if (!
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.lv = lv;
   o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Final check: Open player, tap Level ${lv.slice(1)}, play it with the chords</span></div><div class="lyrbt"><button type="button" class="tb" data-fnx="back">Back</button><button type="button" class="tb" data-fnx="open">Open player</button><button type="button" class="tb go" data-fnx="ok">Approve ${lv}</button></div></div>`;
   document.body.appendChild(o); }
+/* (Oct 25, Chris approved the picture) MELODY COMPARE: a hymnal rebuild draft (songcheck rebuildLines/Words/Chords) next to his
+   current melody. Play each on the real piano, only the rows that differ are shown (differing notes gold), then Keep mine or
+   Use hymnal draft. Nothing changes until he taps one (Lab rule: research never overwrites). */
+const MCN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+let mcDoc = null, mcCtx = null, mcT = null;
+function mcStop(){ clearTimeout(mcT); if (mcCtx){ try { mcCtx.close(); } catch (x) {} mcCtx = null; } document.querySelectorAll("[data-mcplay]").forEach(b => { b.innerHTML = "&#9654; Play"; }); }
+async function mcPlay(which, btn){
+  const was = btn.dataset.on === "1"; mcStop(); document.querySelectorAll("[data-mcplay]").forEach(b => { b.dataset.on = "0"; }); if (was) return;
+  const L = (which === "d" ? mcDoc.rebuildLines : mcDoc.lines) || [], N = L.flat().filter(n => n && n.m > 0).sort((p, q) => p.g - q.g); if (!N.length) return;
+  btn.dataset.on = "1"; btn.innerHTML = "&#9632; Stop"; const c = mcCtx = new AudioContext(); await scPLoad(N.map(n => n.m)); if (mcCtx !== c) return;
+  const B = 60 / (mcDoc.bpm || 90), g0 = N[0].g, T = c.currentTime + .3;
+  N.forEach((n, k) => scPiano(c, T + (n.g - g0) * B, 0, n.m, 1, k + 1 < N.length ? T + (N[k + 1].g - g0) * B : T + (n.g - g0 + n.L) * B));
+  const end = N[N.length - 1]; mcT = setTimeout(mcStop, ((end.g - g0 + end.L) * B + 1.5) * 1000); }
+/* the two versions split rows differently, so notes are matched by beat position (g), pitch and length across the whole song */
+const mcKey = n => n.m + "@" + (+n.g).toFixed(3) + "/" + (+n.L).toFixed(3), mcFlat = L => (L || []).flat().filter(n => n && n.m > 0).sort((p, q) => p.g - q.g);
+function mcRowHTML(notes, otherKeys, words, gold){
+  const W = (words || []).flat().filter(Boolean), wAt = g => (W.find(w => Math.abs(w.g - g) < 1e-3) || {}).w || "";
+  return `<div class="mcrow">${notes.map(n => `<span class="mcn${gold && !otherKeys.has(mcKey(n)) ? " d" : ""}"><b>${MCN[n.m % 12]}</b><i>${esc(wAt(n.g))}</i></span>`).join("")}</div>`; }
+async function mcOpen(id){
+  const s = await db.collection("songcheck").doc(id).get(); if (!s.exists) return; mcDoc = Object.assign({id}, s.data());
+  const FA = mcFlat(mcDoc.lines), KA = new Set(FA.map(mcKey)), KR = new Set(mcFlat(mcDoc.rebuildLines).map(mcKey)), rows = [];
+  let notes = 0; (mcDoc.rebuildLines || []).forEach((r, i) => { const b = (r || []).filter(x => x && x.m > 0); if (!b.length) return;
+    const g0 = Math.min(...b.map(x => x.g)), g1 = Math.max(...b.map(x => x.g + x.L)), a = FA.filter(x => x.g >= g0 - 1e-3 && x.g < g1 - 1e-3);
+    const dif = b.filter(x => !KA.has(mcKey(x))).length + a.filter(x => !KR.has(mcKey(x))).length; if (dif){ rows.push({i, a, b}); notes += b.filter(x => !KA.has(mcKey(x))).length; } });
+  const body = rows.length ? rows.map(({i, a, b}) => `<div class="mcr"><p class="tn">Row ${i + 1}</p><p class="mcl">Yours</p>${mcRowHTML(a, KR, mcDoc.words, false)}<p class="mcl">Hymnal</p>${mcRowHTML(b, KA, mcDoc.rebuildWords, true)}</div>`).join("") : `<p class="note">The hymnal draft has the same notes as yours.</p>`;
+  const src = String(mcDoc.rebuildNote || "").match(/from (\d+|two|2) (hymnals|sources)[^.]*/i);
+  const o = document.createElement("div"); o.id = "mcpop"; o.className = "mcov";
+  o.innerHTML = `<div class="mcbox" role="dialog" aria-label="Pick a melody"><div class="mchd"><b>${esc(mcDoc.name || id)}: pick a melody</b><button type="button" class="mcx" data-mcclose aria-label="Close">&#10005;</button></div>
+    <p class="tn">${notes ? notes + (notes === 1 ? " note differs" : " notes differ") + " (gold)" : "No notes differ"}</p>
+    <div class="mccard"><div class="mcch"><div><b>Your melody</b><p class="tn">What is on the song board now</p></div><button type="button" class="tb" data-mcplay="m">&#9654; Play</button></div></div>
+    <div class="mccard"><div class="mcch"><div><b>Hymnal draft</b><p class="tn">${esc(src ? "F" + src[0].split(/[:(]/)[0].trim().slice(1) : "From hymnal sheet music")}</p></div><button type="button" class="tb" data-mcplay="d">&#9654; Play</button></div></div>
+    <div class="mcdiff">${body}</div>
+    <div class="mcbtns"><button type="button" class="tb go" data-mcpick="mine">Keep mine</button><button type="button" class="tb" data-mcpick="draft">Use hymnal draft</button></div></div>`;
+  document.body.appendChild(o); }
+function mcClose(){ mcStop(); const o = document.getElementById("mcpop"); if (o) o.remove(); mcDoc = null; }
+async function mcPick(p){
+  const D = mcDoc; if (!D) return; const now = new Date().toISOString();
+  const upd = p === "draft" ? {lines: D.rebuildLines, words: D.rebuildWords || D.words, rebuild: null, rebuildPicked: "draft", rebuildPickedAt: now, rebuildOld: {lines: D.lines || null, words: D.words || null, chords: D.chords || null}, updated: now}
+    : {rebuild: null, rebuildPicked: "mine", rebuildPickedAt: now};
+  if (p === "draft" && Array.isArray(D.rebuildChords) && D.rebuildChords.length) upd.chords = D.rebuildChords;
+  const id = D.id; mcClose();
+  try { await db.collection("songcheck").doc(id).update(upd); scLocal(id, upd); } catch (x) {}
+  scBoard = null; render(); fdScLoad(); }
+document.addEventListener("click", e => { const t = e.target;
+  const m = t.closest && t.closest("[data-melcmp]"); if (m){ e.preventDefault(); e.stopPropagation(); mcOpen(m.dataset.melcmp); return; }
+  if (!t.closest || !t.closest("#mcpop")) return;
+  if (t.closest("[data-mcclose]") || t.id === "mcpop"){ mcClose(); return; }
+  const pl = t.closest("[data-mcplay]"); if (pl){ mcPlay(pl.dataset.mcplay, pl); return; }
+  const pk = t.closest("[data-mcpick]"); if (pk){ mcPick(pk.dataset.mcpick); return; } }, true);
 document.addEventListener("click", async e => { const b = e.target.closest("[data-sgfinal]"); if (b){ e.preventDefault(); e.stopPropagation(); fnOpen(b.dataset.sgfinal, b.dataset.sglv); return; }
   const x = e.target.closest("[data-fnx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, lv = o && o.dataset.lv, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
