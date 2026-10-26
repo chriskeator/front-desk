@@ -2507,7 +2507,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v319</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v320</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5928,12 +5928,12 @@ function homeSongs(only){
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(sgRow).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
   const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
   /* (Oct 21, Chris) SONGS BOARD = 5 FOLDERS: Christmas (Nov 1 list), Church songs, Kids, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
-  const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
+  const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "joyfuljoyful", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
   const isCh = x => SGCH.has(x.k) || (!x.sg && x.sc && /hymns|sunday/i.test(x.sc.group || ""));
   /* (Oct 21, Chris) KIDS folder: nursery and children's songs that are not church songs (fixed id set, like SGCH) */
   const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
-  const fX = U.filter(inXm).sort(ord), fK = U.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !isKid(x) && !hasSg(x)).sort(ord);
+  const fX = U.filter(inXm).sort(ord), fK = U.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = U.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
   let sfo = ""; try { sfo = localStorage.getItem("fd-songfolder") || ""; } catch {}
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0), on = sfo === key;
     return `<div class="pc3${on ? " subon" : ""}"><button type="button" class="pc3t" data-sgfold="${key}"><b>${t} (${L.length})</b><span>${g ? g + " to check" : sub}</span></button></div><div class="sublist" data-sgfoldbody="${key}" style="${on ? "" : "display:none"}">${head}${L.map(sgRow).join("")}</div>`; };   /* the desk's own subfolder template: .pc3 row (arrow when open) + .sublist body, same as the project folders */
