@@ -2507,7 +2507,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v318</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v319</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5429,14 +5429,18 @@ function homeShorts(){
     const tg = a.c === "green" && a.url ? "a" : "i", lab = {green: "live", sched: "scheduled", red: "missing", grey: "not checked"}[a.c] || a.c;
     return `<${tg} class="sblk"${tg === "a" ? ` href="${esc(a.url)}" target="_blank" rel="noopener"` : ""} title="${esc(ab + ": " + lab + (why ? " (" + why + ")" : ""))}" style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;text-decoration:none;font-size:13px;font-weight:800;background:${c[0]};border:1.5px solid ${c[1]};color:${c[2]}">${ab}</${tg}>`; }).join("")}</span></div>`;
   const pRed = PR.reduce((t, o) => t + Object.values(o.apps || {}).filter(a => a.c === "red").length, 0);
-  const postCheck = PR.length ? label("Posting check", pRed ? pRed + " red" : "all good") + PR.map(prow).join("") : "";
   /* (Oct 24, Chris) Scheduled box fills only when YouTube AND Facebook gave back a real id (stats/shortsboard need/err from shorts-board.py) */
   const shNeed = x => !x.need || !x.need.length ? "" : x.err ? "Not scheduled: " + x.err : "Not on " + x.need.map(a => a === "youtube" ? "YouTube" : "Facebook").join(" + ") + " yet";
-  const sec = (t, L, f) => L.length ? label(t, L.length) + head + L.map(f).join("") : "";
+  /* (Oct 26, Chris) Upcoming, Scheduled and Posting check are SUBFOLDERS (the Songs subfolder template, one open at a time); Upcoming always shows, even empty, so new Shorts always have the checklist */
+  let sfo = ""; try { sfo = localStorage.getItem("fd-songfolder") || ""; } catch {}
+  const fold = (key, t, sub, body) => `<div class="pc3${sfo === key ? " subon" : ""}"><button type="button" class="pc3t" data-sgfold="${key}"><b>${t}</b><span>${esc(sub)}</span></button></div><div class="sublist" data-sgfoldbody="${key}" style="${sfo === key ? "" : "display:none"}">${body}</div>`;
+  const wRows = W.length ? head + W.map(x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto)).join("") : head + `<div class="tn" style="${RS}"><span style="color:var(--muted,#8A9099);font-size:13px">No Shorts in the works yet. New cuts land here and move through the checklist.</span></div>`;
+  const nextS = S.length ? S[S.length - 1] : null, lastS = S.length ? S[0] : null;
   return `<div class="msec" style="--cc:#D85A30"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
-    + sec("In the works", W, x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto))
-    + sec("Scheduled", S, x => row(x.title, shNeed(x), x.schedOn ? 6 : 5, null, "", false, "", {5: x.schedOn, 6: x.date}))
-    + postCheck   /* (Oct 25, Chris: i do not need it) Posted this week dropped; the Posting check shows what posted */ + `</div></div>`; }
+    + fold("shworks", `Upcoming (${W.length})`, W.length ? (yours ? yours + " to check" : "in the checklist") : "nothing in the works", wRows)
+    + (S.length ? fold("shsched", `Scheduled (${S.length})`, `next ${md(nextS.date)} · last ${md(lastS.date)}`, head + S.map(x => row(x.title, shNeed(x), x.schedOn ? 6 : 5, null, "", false, "", {5: x.schedOn, 6: x.date})).join("")) : "")
+    + (PR.length ? fold("shpost", `Posting check (${PR.length})`, pRed ? pRed + " red" : "all good", PR.map(prow).join("")) : "")   /* (Oct 25, Chris: i do not need it) Posted this week dropped; the Posting check shows what posted */
+    + `</div></div>`; }
 document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Check opens the Final check pop-up on the desk (view final), never Drive */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
