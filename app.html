@@ -838,6 +838,14 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .kids .chc.ledge{padding-left:34px!important}
 #list .tdetail .kidsub{margin:0 -12px;border-top:1px solid var(--line)}
 #list .kidsub .chc.ledge::before{left:30px}
+/* (Oct 26, Chris) chapter lesson rows: title, then Go | Done | Move | Remove | Edit on one colour-coded line */
+.kidrow{border-top:1px solid var(--line);padding:9px 12px 10px}
+.kidt b{display:block;font-size:14px;font-weight:700;color:var(--ink);line-height:1.25}.kidt span{display:block;font-size:12px;color:var(--muted)}
+.kbtns{display:flex;gap:6px;margin-top:8px}
+.kbtns .kb{flex:1 1 0;min-width:0;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;font:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;text-decoration:none;white-space:nowrap;padding:0 2px}
+.kbtns .kgo{background:#0F766E}.kbtns .kdone{background:#4A7F37}.kbtns .kmove{background:#D19A12}.kbtns .krem{background:#B42318}.kbtns .kedit{background:#5B6470}
+.kbtns .kb.off{opacity:.35;cursor:default}
+.kidrow .tdetail{margin:8px -12px -10px}
 .chc span b.kidn{display:inline;font-size:12px;font-weight:800;color:#1FA598}
 #fderr{display:none;position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:#B42318;color:#fff;font-size:12px;line-height:1.3;padding:8px 10px;border-radius:8px;word-break:break-word}
 /* (Oct 8) Chris picked B: colour edge = automation %, one grey line, nothing on the right */
@@ -2511,7 +2519,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v321</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v322</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6036,7 +6044,7 @@ function rowB(){ document.querySelectorAll("#list .chc[data-tlinks], #list .pc3t
     if (sp) sp.innerHTML = `<b class="cadst"><i style="background:${sc}"></i>${esc(w)}</b> · ` + (t.chore ? '<b class="chw">chore</b> · ' : "") + esc([fmtMins(t.cmins), t.due ? "due " + dayLabel(t.due).replace(/^[A-Z][a-z]{2}, /, "") : ""].filter(Boolean).join(" · ")); return; }
   if (sp) sp.innerHTML = (t.chore ? '<b class="chw">chore</b> · ' : "") + esc([fmtMins(t.mins), t.ships ? "ships " + dayLabel(t.ships).replace(",", "") : (t.due || t.date) ? "due " + dayLabel(t.due || t.date).replace(/^[A-Z][a-z]{2}, /, "") : "", all ? dn + " of " + all + " checked" : "", nk ? nk + " to-dos inside" : ""].filter(Boolean).join(" · ")); }); }
 function addLvChips(){ if (phone()) return rowB(); document.querySelectorAll("#list .chc[data-tlinks], #list .pc3t[data-tlinks], #pop .plist .chc[data-tlinks]").forEach(b => {
-  if (b.querySelector(".lvchip")) return; const t = allTasks.find(x => x.id === b.dataset.tlinks); if (!t) return; const k = lvOf(t), c = (TLV.find(x => x[0] === k) || TLV[0])[2];
+  if (b.querySelector(".lvchip")) return; const t = allTasks.find(x => x.id === b.dataset.tlinks); if (!t || t.project === "Worship Piano Lab") return; const k = lvOf(t), c = (TLV.find(x => x[0] === k) || TLV[0])[2];
   // (Oct 7) Chris: under the title = automation % chip + (chore) + how long it's been OPEN in days (no dates);
   // to-dos with things to check get a thin progress bar (picked A) that fills green as he checks them
   const sp = b.querySelector(":scope > span"); if (sp) sp.innerHTML = `<i class="lvchip" style="--lc:${c}">${TLVP[k]}%</i>` + esc([t.chore ? "chore" : "", openFor(t)].filter(Boolean).join(" · "));
@@ -6098,7 +6106,7 @@ const fdLink = u =>/lab\.worshippianoacademy\.com/.test(u || "") && !/[?&]from=f
 // (Oct 7) Chris: the bottom of every to-do shows how much Cadence can do it, in the 4 Training colours
 const TLVP = {cant: 0, teach: 25, checked: 50, auto: 100};   // (Oct 7) Chris: each Training step = how automatic it is
 const lvOf = t => t.level || (t.cadence === false ? "cant" : t.teach ? "teach" : t.cost ? "checked" : "cant");
-function lvBar(t){ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
+function lvBar(t){ if (t.project === "Worship Piano Lab") return "";   /* (Oct 26, Chris) no 0/25/50/100% on anything in the Lab */ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
   return `<div class="lvbar">${TLV.map(([kk, h, c]) => `<span class="${kk === k ? "on" : ""}" style="--lc:${LVL[kk] || c}">${TLVP[kk]}%</span>`).join("")}</div>`; }
 // (Oct 7) Chris: every to-do has a Go button that opens where the work happens; the Front Desk stays on this to-do
 function kindHTML(t){
@@ -6166,7 +6174,10 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-wait
   const w = waitLive({wait: "songs"}), q = w && w.first; if (!q) return; if (q.bt) btOpen(q.id); else if (q.lyr) lyrOpen(q.id); else scOpen(q.id, q.v); }, true);   /* (Oct 20 night) opens the board at the FIRST item waiting */
 function kidsHTML(t){ const K = sortL(allTasks.filter(x => x.parent === t.id && !x.done && !x.removed)); if (!K.length) return "";
   /* (Oct 26, Chris: 'I asked you to make these lessons as a subfolder') a chapter folder (t-wait-lab-chN) lists its lessons in the desk's own subfolder template (project to-do rows), no 'To-dos inside' box */
-  if (/^lab-ch\d+$/.test(t.wait || "")) return `<div class="sublist kidsub">${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`;
+  /* (Oct 26, Chris) each lesson row carries Go | Done | Move | Remove | Edit on ONE colour-coded line, no need to open it; Move / Edit open their panel right under the row */
+  if (/^lab-ch\d+$/.test(t.wait || "")) return `<div class="sublist kidsub">${K.map(k => { const id = esc(k.id), u = safeUrl(k.url) ? fdLink(k.url) : "";
+    const sub = [fmtMins(k.mins), k.date ? "due " + dayLabel(k.date).replace(/^[A-Z][a-z]{2}, /, "") : ""].filter(Boolean).join(" · ");
+    return `<div class="kidrow"><div class="kidt"><b>${esc(k.short || k.title)}</b><span>${esc(sub)}</span></div><div class="kbtns">${u ? `<a class="kb kgo" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : `<span class="kb kgo off">Go</span>`}<button type="button" class="kb kdone" data-task="${id}" data-done="0">Done</button><button type="button" class="kb kmove" data-tdcal="${id}">Move</button><button type="button" class="kb krem" data-delyes="${id}">Remove</button><button type="button" class="kb kedit" data-edopen="${id}">Edit</button></div>${editOpen === k.id ? editHTML(k) : moving === k.id ? `<div class="tdetail" data-tdof="${id}"><div class="tdpanel">${moveCal(k)}</div></div>` : ""}</div>`; }).join("")}</div>`;
   return `<div class="kids"><b>To-dos inside (${K.length})</b>${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`; }
 // (Oct 10) the open to-do has the Give to Cadence button too (only on to-dos Cadence can really do = has a cost)
 function cadBtn(t){ if (t.done || t.cadence === false || t.test || !(t.cost || t.teach)) return "";
@@ -6196,7 +6207,7 @@ function edFit(){ const x = document.activeElement; if (!x || !x.closest || !x.c
     const r = x.getBoundingClientRect(), br = B.getBoundingClientRect(); if (r.bottom > br.bottom - 8) B.scrollTop += r.bottom - br.bottom + 8; else if (r.top < br.top) B.scrollTop -= br.top - r.top + 8; } }
 /* (Oct 11 fix: Edit "didn't work") the same to-do can sit in two folders (Today + Cadence tasks; the hidden copy came first),
    so EVERY copy of its open body is swapped, not just the first one found */
-function edSwap(id){ const t = allTasks.find(x => x.id === id), olds = [...document.querySelectorAll(`#list .tdetail[data-tdof="${CSS.escape(id)}"]`)]; if (!t || !olds.length) return render();
+function edSwap(id){ const t = allTasks.find(x => x.id === id), olds = [...document.querySelectorAll(`#list .tdetail[data-tdof="${CSS.escape(id)}"]`)]; if (!t || !olds.length || olds.some(o => o.closest(".kidsub")) || (editOpen === id && allTasks.some(x => x.id === t.parent && /^lab-ch\d+$/.test(x.wait || "")))) return render();
   const L = $("list"); let keep = null;
   olds.forEach(old => { old.insertAdjacentHTML("afterend", taskDetail(t)); if (L && L._lock === old) keep = old.scrollTop; old.remove(); });
   try { applyFocus(); } catch {} if (keep != null && L._lock) L._lock.scrollTop = keep; if (L) L._edST = editOpen ? L.scrollTop : null;
