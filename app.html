@@ -888,6 +888,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  .replist .item,.repf .item{margin:0}
  .picon{display:inline-block;vertical-align:-4px;margin:0 2px}
  .ron{display:flex;align-items:center;gap:8px;margin-top:4px}.ron .from{margin:0}
+ .rlink{text-decoration:none;color:inherit;cursor:pointer}.rlink .from{flex:1 1 auto;min-width:0}.rlink .rwatch{flex:none;margin-left:auto;background:var(--teal);color:#fff;font-size:13px;font-weight:700;border-radius:8px;padding:7px 14px}
  .rthumb{flex:0 0 auto;width:64px;height:36px;object-fit:cover;border-radius:4px;background:var(--line);display:block}
  .rthumb.tall{width:36px;height:64px}.rthumb.rtwait{opacity:.6}
  .repf{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line);overflow-wrap:anywhere}
@@ -2519,7 +2520,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v322</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v323</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3540,7 +3541,7 @@ function replyCard(r){
   const left = msgLeft(r), clock = left == null ? "" : left <= 0 ? `<p class="note" style="color:var(--red);font-weight:700">Too late to reply from here: answer in the Meta Business Suite app</p>` : `<p class="note" style="font-weight:700;color:${left < 4 ? "var(--red)" : "#97710F"}">Answer by ${new Date(repEnd(r)).toLocaleString("en-US", {timeZone: "America/Phoenix", weekday: "short", hour: "numeric", minute: "2-digit"})} (${left < 1 ? "under an hour" : Math.floor(left) + "h"} left)</p>`;
   // (Oct 21, Chris) side-thread replies: the earlier comments in that conversation sit above the comment (cream box)
   const thr = r.side && Array.isArray(r.thread) && r.thread.length ? `<div class="thrd"><p class="tl">Earlier in this thread</p>${r.thread.map(t => `<p class="te"><b>${esc(t.who)}:</b> ${esc(t.text)}</p>`).join("")}</div>` : "";
-  const said = clock + thr + `<p class="said clamp">"${esc(r.text)}"</p>${r.en ? `<p class="tn"><b>In English:</b> ${esc(r.en)}</p>` : ""}${r.subject ? `<p class="tn"><b>Subject:</b> ${esc(r.subject)}</p>` : ""}${r.post || thumbImg(r) ? `<span class="ron">${thumbImg(r)}${r.post ? `<span class="from clamp" style="white-space:normal">On: ${esc(r.post)}</span>` : ""}</span>` : ""}`;
+  const said = clock + thr + `<p class="said clamp">"${esc(r.text)}"</p>${r.en ? `<p class="tn"><b>In English:</b> ${esc(r.en)}</p>` : ""}${r.subject ? `<p class="tn"><b>Subject:</b> ${esc(r.subject)}</p>` : ""}${safeUrl(r.link) && r.kind !== "message" ? `<a class="ron rlink" href="${esc(r.link)}" target="_blank" rel="noopener">${thumbImg(r)}<span class="from clamp" style="white-space:normal">On: ${esc(r.post || "the video")}</span><span class="rwatch">Watch</span></a>` : r.post || thumbImg(r) ? `<span class="ron">${thumbImg(r)}${r.post ? `<span class="from clamp" style="white-space:normal">On: ${esc(r.post)}</span>` : ""}</span>` : ""}`;   // (Oct 26, Chris) every reply: tap the video (picture, title or Watch) = that post on its own platform, at the comment
   if (editing === r.id){
     return `<div class="item wait">${head}${said}<label for="ed" style="position:absolute;left:-9999px">Edit reply</label>
       <textarea id="ed">${esc(r.final ?? r.draft ?? "")}</textarea>
