@@ -32,13 +32,13 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
   --display:"Fraunces",Georgia,serif; --body:"Figtree",system-ui,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#171B1E; --card:#21272B; --ink:#F1EEE6; --muted:#A3A9AE; --line:#343B40;
-  --teal:#1FA598; --teal-ink:#0B1714; --gold:#D19A12; --gold-soft:#3A3220; --soft:#1E2E2C;
-  --red:#F97066; --red-soft:#3A2220; --hover:#2C3337; --pick:#D19A12; color-scheme:dark}}
+  --bg:#1F1F1F; --card:#2A2A2A; --ink:#ECECEC; --muted:#A7A7A0; --line:#3B4240;
+  --teal:#3FB8AA; --teal-ink:#1F1F1F; --gold:#F0D58A; --gold-soft:#4A3D1D; --soft:#183B38;
+  --red:#E8948F; --red-soft:#5D2F2A; --hover:#292F2E; --pick:#F0D58A; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#171B1E; --card:#21272B; --ink:#F1EEE6; --muted:#A3A9AE; --line:#343B40;
-  --teal:#1FA598; --teal-ink:#0B1714; --gold:#D19A12; --gold-soft:#3A3220; --soft:#1E2E2C;
-  --red:#F97066; --red-soft:#3A2220; --hover:#2C3337; --pick:#D19A12; color-scheme:dark}
+  --bg:#1F1F1F; --card:#2A2A2A; --ink:#ECECEC; --muted:#A7A7A0; --line:#3B4240;
+  --teal:#3FB8AA; --teal-ink:#1F1F1F; --gold:#F0D58A; --gold-soft:#4A3D1D; --soft:#183B38;
+  --red:#E8948F; --red-soft:#5D2F2A; --hover:#292F2E; --pick:#F0D58A; color-scheme:dark}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px}
 /* (Oct 25, Chris: the phone's ||| O < bar must always show but nothing may shift) the page is laid out under the phone bars from the first frame (viewport-fit=cover in build-desk-app.py) and keeps their room as padding, so the bars never resize the page after it opens */
@@ -95,8 +95,8 @@ a.tpill{text-decoration:none;display:inline-flex;align-items:center}
 .who b{color:var(--ink)}
 .said{margin:0;font-size:14px;line-height:1.35}
 :root{--cream:#EFEAE0}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cream:#2C3337}}
-:root[data-theme="dark"]{--cream:#2C3337}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--cream:#292F2E}}
+:root[data-theme="dark"]{--cream:#292F2E}
 .thrd{background:var(--cream);border-radius:10px;padding:8px 10px;margin:6px 0;min-width:0}
 .thrd .tl{font-size:12.5px;color:var(--muted);margin:0 0 3px}
 .thrd p.te{margin:0;font-size:13px;line-height:1.35;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
@@ -249,7 +249,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}
 .lg::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--wc)}
 .w-weekly{--wc:var(--gold);--ws:var(--gold-soft)} .w-now{--wc:var(--teal);--ws:var(--soft)} .w-next{--wc:#5B6470;--ws:#EEF0F2} .w-someday{--wc:#B4B2A9;--ws:var(--bg)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .w-next{--ws:#262B30}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .w-next{--ws:#292F2E}}
 .blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
 .block{display:flex;flex-direction:column;gap:4px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-top:5px solid var(--wc);border-radius:12px;padding:12px;cursor:pointer;min-height:96px}
 .block b{font-size:15px;line-height:1.2}.block span{font-size:12.5px;color:var(--muted)}
@@ -302,8 +302,8 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
    #1FA598 #E07A45 #D19A12 #6AA84F, slate #5B6470. Never orange with mustard, never teal with green in one colour group.
    Chart series c0..c5 = teal, orange, slate, ink, light teal, light orange (no clash). --green = the main chart line (teal). */
 :root{--green:#0F766E;--grid:#EFEAE0;--c0:#0F766E;--c1:#B4582F;--c2:#5B6470;--c3:#2A2F34;--c4:#1FA598;--c5:#E07A45}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#1FA598;--grid:#2C3337;--c0:#1FA598;--c1:#E07A45;--c2:#8C95A1;--c3:#E9E6DF;--c4:#5CC4B8;--c5:#F0A47C}}
-:root[data-theme="dark"]{--green:#1FA598;--grid:#2C3337;--c0:#1FA598;--c1:#E07A45;--c2:#8C95A1;--c3:#E9E6DF;--c4:#5CC4B8;--c5:#F0A47C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--green:#3FB8AA;--grid:#292F2E;--c0:#3FB8AA;--c1:#F4B4A8;--c2:#A7A7A0;--c3:#ECECEC;--c4:#BCE8E5;--c5:#F0D58A}}
+:root[data-theme="dark"]{--green:#3FB8AA;--grid:#292F2E;--c0:#3FB8AA;--c1:#F4B4A8;--c2:#A7A7A0;--c3:#ECECEC;--c4:#BCE8E5;--c5:#F0D58A}
 .toprow{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
 .scard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:6px}
 .shead{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -1539,7 +1539,7 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 /* (Oct 16, chat 12) NEW SONG EDITOR look = the prototype (greys only), scoped to #songchk so nothing else on the desk changes */
 #songchk .secard{--se-bg:#FBFAF6;--se-card:#FFFFFF;--se-ink:#2A2F34;--se-mute:#6B6F66;--se-line:#DCD8CC;--se-line2:#B9B4A6;--se-stripe:#EFECE3;--se-gold:#2A2F34;--se-goldbg:#ECEAE4;--se-goldink:#2A2F34;--se-teal:#2A2F34;--se-hov:#F3F1EC;--se-hov2:#E8E5DE;--se-font:inherit}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-bg:#16191B;--se-card:#1F2427;--se-ink:#EEEBE3;--se-mute:#A2A69E;--se-line:#353C40;--se-line2:#4E565B;--se-stripe:#262C30;--se-gold:#EEEBE3;--se-goldbg:#2E3437;--se-goldink:#EEEBE3;--se-teal:#EEEBE3;--se-hov:#252B2E;--se-hov2:#2F363A;}}
-:root[data-theme="dark"] #songchk .secard{--se-bg:#16191B;--se-card:#1F2427;--se-ink:#EEEBE3;--se-mute:#A2A69E;--se-line:#353C40;--se-line2:#4E565B;--se-stripe:#262C30;--se-gold:#EEEBE3;--se-goldbg:#2E3437;--se-goldink:#EEEBE3;--se-teal:#EEEBE3;--se-hov:#252B2E;--se-hov2:#2F363A;}
+:root[data-theme="dark"] #songchk .secard{--se-bg:#1F1F1F;--se-card:#2A2A2A;--se-ink:#ECECEC;--se-mute:#A7A7A0;--se-line:#3B4240;--se-line2:#3B4240;--se-stripe:#292F2E;--se-gold:#ECECEC;--se-goldbg:#292F2E;--se-goldink:#ECECEC;--se-teal:#ECECEC;--se-hov:#292F2E;--se-hov2:#3B4240;}
 #songchk .secard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1180px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:hidden;display:flex;flex-direction:column;gap:12px;background:var(--se-bg);color:var(--se-ink);border-radius:14px;padding:16px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25)}
 @media (min-width:1000px){#songchk .secard{width:calc(80vw - 20px)}}
 #songchk .secard>*{flex:none}#songchk .sescroll{flex:0 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 8px 0}
@@ -1661,7 +1661,7 @@ html[data-drag="size"] *{cursor:ew-resize!important}
    Colours only: no size, border width or font metric changes, so nothing shifts and the 16th graph paper stays exact. */
 #songchk .secard{--se-tbg:#E9F4F1;--se-tbd:#2C7A70;--se-tink:#1F6F66;--se-tpk:#CBE6DF;--se-thov:#DDEFEA;--se-bar:#3A4048}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-tbg:#173A36;--se-tbd:#4FB3A6;--se-tink:#8FE0D4;--se-tpk:#22524C;--se-thov:#1D4641;--se-bar:#9AA3A8}}
-:root[data-theme="dark"] #songchk .secard{--se-tbg:#173A36;--se-tbd:#4FB3A6;--se-tink:#8FE0D4;--se-tpk:#22524C;--se-thov:#1D4641;--se-bar:#9AA3A8}
+:root[data-theme="dark"] #songchk .secard{--se-tbg:#183B38;--se-tbd:#3FB8AA;--se-tink:#BCE8E5;--se-tpk:#2B4D52;--se-thov:#2B4D52;--se-bar:#A7A7A0}
 #songchk .secard .row>.b[data-i]{border-color:var(--se-bar)}
 #songchk .secard .nt:not(.w){background:var(--se-tbg);border-color:var(--se-tbd);color:var(--se-tink)}
 #songchk .secard .nt:not(.w) .tx i{font-weight:700}
@@ -1671,7 +1671,7 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .secard .nt .lo::after,#songchk .secard .nt .hi::after{background:var(--se-tink)}
 /* chords step: gold chord markers on the beat row; numbers, words, bar edges locked */
 #songchk .secard{--se-cg:#8A6100;--se-cgbg:#FBF3DF;--se-cgpk:#F1DDA8}
-:root[data-theme="dark"] #songchk .secard{--se-cg:#E6C46A;--se-cgbg:#3A3220;--se-cgpk:#5A4A22}
+:root[data-theme="dark"] #songchk .secard{--se-cg:#F0D58A;--se-cgbg:#4A3D1D;--se-cgpk:#4A3D1D}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-cg:#E6C46A;--se-cgbg:#3A3220;--se-cgpk:#5A4A22}}
 #songchk .secard .chd{position:absolute;top:84px;height:28px;box-sizing:border-box;padding:0 0 0 3px;border:1px solid var(--se-cg);border-radius:4px;background:var(--se-cgbg);color:var(--se-ink);font:700 15px/26px var(--se-font);z-index:5;cursor:grab;white-space:nowrap;overflow:hidden}
 #songchk .secard .chd.cont{pointer-events:none;opacity:.7}
@@ -2520,7 +2520,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v323</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v324</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
