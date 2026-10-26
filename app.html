@@ -39,6 +39,11 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
   --bg:#1F1F1F; --card:#2A2A2A; --ink:#ECECEC; --muted:#A7A7A0; --line:#3B4240;
   --teal:#3FB8AA; --teal-ink:#1F1F1F; --gold:#F0D58A; --gold-soft:#4A3D1D; --soft:#183B38;
   --red:#E8948F; --red-soft:#5D2F2A; --hover:#292F2E; --pick:#F0D58A; color-scheme:dark}
+/* (Oct 26, Chris: palette v3 'warm charcoal' for the whole desk) every colour typed into this page is a --k<role><HEX> variable:
+   its light value IS that colour (light mode unchanged), its night value a v3 colour (built by darkv3.py; role b/t/l/a/tw = background/words/line/accent/white words on a dark box) */
+:root{--ktFFFFFF:#FFFFFF;--kt4A7F37:#4A7F37;--kbFBEFD0:#FBEFD0;--kt8A6508:#8A6508;--ktFFF:#fff;--ka5B6470:#5B6470;--kaEEF0F2:#EEF0F2;--kaB4B2A9:#B4B2A9;--ka1FA598:#1FA598;--kaE07A45:#E07A45;--kaD19A12:#D19A12;--ka6AA84F:#6AA84F;--kl5B6470:#5B6470;--kbD19A12:#D19A12;--klD19A12:#D19A12;--kb4A7F37:#4A7F37;--kl4A7F37:#4A7F37;--kbF4F4F4:#F4F4F4;--kaB42318:#B42318;--kbEEF0F2:#EEF0F2;--kt1FA598:#1FA598;--kl1FA598:#1FA598;--kbE4E6E9:#E4E6E9;--kt8A9099:#8A9099;--kt16191C:#16191c;--kt1A1405:#1a1405;--ktD19A12:#D19A12;--kb0F766E:#0F766E;--kbB42318:#B42318;--kb5B6470:#5B6470;--kt97710F:#97710F;--ktB4582F:#B4582F;--kt0F766E:#0F766E;--kbE9E4D9:#E9E4D9;--kbFFF:#fff;--klDDD6C8:#DDD6C8;--kb2A2F34:#2a2f34;--ktwFFF:#fff;--kbE8B53A:#E8B53A;--klE8B53A:#E8B53A;--kb1FA598:#1FA598;--kbE07A45:#E07A45;--kb1F9D55:#1F9D55;--kl1F9D55:#1F9D55;--kbFAEEDA:#FAEEDA;--kt854F0B:#854F0B;--kbFBF1D6:#fbf1d6;--kt2A2F34:#2A2F34;--kbB3261E:#B3261E;--klB3261E:#B3261E;--kb1F8A4C:#1f8a4c;--kl1F8A4C:#1f8a4c;--kbE2F4E8:#e2f4e8;--kbCDEBD8:#cdebd8;--kbF5B301:#F5B301;--klF5B301:#F5B301;--ktB3261E:#B3261E;--kb000:#000;--kt1F9D55:#1F9D55;--ktB4532A:#b4532a;--ka0F766E:#0F766E;--ka4A7F37:#4A7F37;--kaB4582F:#B4582F;--ka2A2F34:#2a2f34;--kaB9BEC5:#B9BEC5;--kaE8B53A:#E8B53A;--ka7A8FD6:#7A8FD6;--ka9AA3AD:#9AA3AD;--kaD9534F:#D9534F;--ka97710F:#97710F;--kaFF0000:#FF0000;--kaFFF:#fff;--kbFEDA75:#FEDA75;--kbFA7E1E:#FA7E1E;--kbD62976:#D62976;--kb962FBF:#962FBF;--kb4F5BD5:#4F5BD5;--klFFF:#fff;--ka000:#000;--kl25F4EE:#25F4EE;--klFE2C55:#FE2C55;--ka1877F2:#1877F2;--klDDD:#ddd;--klEA4335:#EA4335;--kl4285F4:#4285F4;--kl34A853:#34A853;--kaECEAE4:#ECEAE4;--ka5B5648:#5B5648;--kaFBEFD0:#FBEFD0;--ka8A6508:#8A6508;--kaFBE2DC:#FBE2DC;--kaB4362A:#B4362A;--kaDDF1EE:#DDF1EE;--ka555:#555;--kaEFEBE3:#EFEBE3;--ka5C5A55:#5C5A55;--kaF7E3B5:#F7E3B5;--ka7A5200:#7A5200;--kaE6DAF5:#E6DAF5;--ka5B2E91:#5B2E91;--kaD8E7FA:#D8E7FA;--ka1F4E8C:#1F4E8C;--kaF6D6D3:#F6D6D3;--kaB3261E:#B3261E;--kaDDF1E5:#DDF1E5;--ka2E7D4F:#2E7D4F;--kbF0C75A22:#F0C75A22;--kbF0C75A:#F0C75A;--kt3A2A00:#3a2a00;--ka6CB8F5:#6CB8F5;--ka8A9099:#8A9099;--ka14786F:#14786F;--kaFDE8E4:#FDE8E4;--kaD85A30:#D85A30;--ktB23B17:#B23B17;--ka3A2A00:#3a2a00;--kaC9C4B8:#C9C4B8;--kaB23B17:#B23B17;--kbFDE8E4:#FDE8E4;--klB4362A:#B4362A;--ka7F77DD:#7F77DD;--kaF2B518:#F2B518;--kaE39A62:#e39a62;--ka7FB069:#7fb069;--kaCDEAF2:#cdeaf2;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ktFFFFFF:#1F1F1F;--kt4A7F37:#B8DBA9;--kbFBEFD0:#4A3D1D;--kt8A6508:#F0D58A;--ktFFF:#1F1F1F;--ka5B6470:#A7A7A0;--kaEEF0F2:#292F2E;--kaB4B2A9:#3B4240;--ka1FA598:#3FB8AA;--kaE07A45:#F4B4A8;--kaD19A12:#F0D58A;--ka6AA84F:#B8DBA9;--kl5B6470:#3B4240;--kbD19A12:#F0D58A;--klD19A12:#4A3D1D;--kb4A7F37:#B8DBA9;--kl4A7F37:#2E4A2A;--kbF4F4F4:#2A2A2A;--kaB42318:#E8948F;--kbEEF0F2:#292F2E;--kt1FA598:#3FB8AA;--kl1FA598:#3FB8AA;--kbE4E6E9:#292F2E;--kt8A9099:#A7A7A0;--kt16191C:#1F1F1F;--kt1A1405:#1F1F1F;--ktD19A12:#F0D58A;--kb0F766E:#3FB8AA;--kbB42318:#E8948F;--kb5B6470:#A7A7A0;--kt97710F:#F0D58A;--ktB4582F:#F4B4A8;--kt0F766E:#3FB8AA;--kbE9E4D9:#292F2E;--kbFFF:#2A2A2A;--klDDD6C8:#3B4240;--kb2A2F34:#3B4240;--ktwFFF:#ECECEC;--kbE8B53A:#F0D58A;--klE8B53A:#4A3D1D;--kb1FA598:#3FB8AA;--kbE07A45:#F4B4A8;--kb1F9D55:#B8DBA9;--kl1F9D55:#2E4A2A;--kbFAEEDA:#292F2E;--kt854F0B:#F4B4A8;--kbFBF1D6:#4A3D1D;--kt2A2F34:#ECECEC;--kbB3261E:#E8948F;--klB3261E:#5D2F2A;--kb1F8A4C:#B8DBA9;--kl1F8A4C:#2E4A2A;--kbE2F4E8:#292F2E;--kbCDEBD8:#2E4A2A;--kbF5B301:#F0D58A;--klF5B301:#4A3D1D;--ktB3261E:#E8948F;--kb000:#1F1F1F;--kt1F9D55:#B8DBA9;--ktB4532A:#F4B4A8;--ka0F766E:#3FB8AA;--ka4A7F37:#B8DBA9;--kaB4582F:#F4B4A8;--ka2A2F34:#ECECEC;--kaB9BEC5:#3B4240;--kaE8B53A:#F0D58A;--ka7A8FD6:#8EC3EA;--ka9AA3AD:#A7A7A0;--kaD9534F:#E8948F;--ka97710F:#F0D58A;--kaFF0000:#E8948F;--kaFFF:#1F1F1F;--kbFEDA75:#F0D58A;--kbFA7E1E:#F4B4A8;--kbD62976:#E8948F;--kb962FBF:#8EC3EA;--kb4F5BD5:#8EC3EA;--klFFF:#3B4240;--ka000:#ECECEC;--kl25F4EE:#3B4240;--klFE2C55:#5D2F2A;--ka1877F2:#8EC3EA;--klDDD:#3B4240;--klEA4335:#5D2F2A;--kl4285F4:#2B4D52;--kl34A853:#2E4A2A;--kaECEAE4:#292F2E;--ka5B5648:#A7A7A0;--kaFBEFD0:#4A3D1D;--ka8A6508:#F0D58A;--kaFBE2DC:#5D2F2A;--kaB4362A:#E8948F;--kaDDF1EE:#183B38;--ka555:#A7A7A0;--kaEFEBE3:#292F2E;--ka5C5A55:#A7A7A0;--kaF7E3B5:#4A3D1D;--ka7A5200:#F0D58A;--kaE6DAF5:#2B4D52;--ka5B2E91:#8EC3EA;--kaD8E7FA:#2B4D52;--ka1F4E8C:#8EC3EA;--kaF6D6D3:#5D2F2A;--kaB3261E:#E8948F;--kaDDF1E5:#2E4A2A;--ka2E7D4F:#B8DBA9;--kbF0C75A22:#4A3D1D;--kbF0C75A:#F0D58A;--kt3A2A00:#1F1F1F;--ka6CB8F5:#8EC3EA;--ka8A9099:#A7A7A0;--ka14786F:#3FB8AA;--kaFDE8E4:#5D2F2A;--kaD85A30:#F4B4A8;--ktB23B17:#F4B4A8;--ka3A2A00:#1F1F1F;--kaC9C4B8:#3B4240;--kaB23B17:#F4B4A8;--kbFDE8E4:#5D2F2A;--klB4362A:#5D2F2A;--ka7F77DD:#8EC3EA;--kaF2B518:#F0D58A;--kaE39A62:#F4B4A8;--ka7FB069:#B8DBA9;--kaCDEAF2:#2B4D52;}}
+:root[data-theme="dark"]{--ktFFFFFF:#1F1F1F;--kt4A7F37:#B8DBA9;--kbFBEFD0:#4A3D1D;--kt8A6508:#F0D58A;--ktFFF:#1F1F1F;--ka5B6470:#A7A7A0;--kaEEF0F2:#292F2E;--kaB4B2A9:#3B4240;--ka1FA598:#3FB8AA;--kaE07A45:#F4B4A8;--kaD19A12:#F0D58A;--ka6AA84F:#B8DBA9;--kl5B6470:#3B4240;--kbD19A12:#F0D58A;--klD19A12:#4A3D1D;--kb4A7F37:#B8DBA9;--kl4A7F37:#2E4A2A;--kbF4F4F4:#2A2A2A;--kaB42318:#E8948F;--kbEEF0F2:#292F2E;--kt1FA598:#3FB8AA;--kl1FA598:#3FB8AA;--kbE4E6E9:#292F2E;--kt8A9099:#A7A7A0;--kt16191C:#1F1F1F;--kt1A1405:#1F1F1F;--ktD19A12:#F0D58A;--kb0F766E:#3FB8AA;--kbB42318:#E8948F;--kb5B6470:#A7A7A0;--kt97710F:#F0D58A;--ktB4582F:#F4B4A8;--kt0F766E:#3FB8AA;--kbE9E4D9:#292F2E;--kbFFF:#2A2A2A;--klDDD6C8:#3B4240;--kb2A2F34:#3B4240;--ktwFFF:#ECECEC;--kbE8B53A:#F0D58A;--klE8B53A:#4A3D1D;--kb1FA598:#3FB8AA;--kbE07A45:#F4B4A8;--kb1F9D55:#B8DBA9;--kl1F9D55:#2E4A2A;--kbFAEEDA:#292F2E;--kt854F0B:#F4B4A8;--kbFBF1D6:#4A3D1D;--kt2A2F34:#ECECEC;--kbB3261E:#E8948F;--klB3261E:#5D2F2A;--kb1F8A4C:#B8DBA9;--kl1F8A4C:#2E4A2A;--kbE2F4E8:#292F2E;--kbCDEBD8:#2E4A2A;--kbF5B301:#F0D58A;--klF5B301:#4A3D1D;--ktB3261E:#E8948F;--kb000:#1F1F1F;--kt1F9D55:#B8DBA9;--ktB4532A:#F4B4A8;--ka0F766E:#3FB8AA;--ka4A7F37:#B8DBA9;--kaB4582F:#F4B4A8;--ka2A2F34:#ECECEC;--kaB9BEC5:#3B4240;--kaE8B53A:#F0D58A;--ka7A8FD6:#8EC3EA;--ka9AA3AD:#A7A7A0;--kaD9534F:#E8948F;--ka97710F:#F0D58A;--kaFF0000:#E8948F;--kaFFF:#1F1F1F;--kbFEDA75:#F0D58A;--kbFA7E1E:#F4B4A8;--kbD62976:#E8948F;--kb962FBF:#8EC3EA;--kb4F5BD5:#8EC3EA;--klFFF:#3B4240;--ka000:#ECECEC;--kl25F4EE:#3B4240;--klFE2C55:#5D2F2A;--ka1877F2:#8EC3EA;--klDDD:#3B4240;--klEA4335:#5D2F2A;--kl4285F4:#2B4D52;--kl34A853:#2E4A2A;--kaECEAE4:#292F2E;--ka5B5648:#A7A7A0;--kaFBEFD0:#4A3D1D;--ka8A6508:#F0D58A;--kaFBE2DC:#5D2F2A;--kaB4362A:#E8948F;--kaDDF1EE:#183B38;--ka555:#A7A7A0;--kaEFEBE3:#292F2E;--ka5C5A55:#A7A7A0;--kaF7E3B5:#4A3D1D;--ka7A5200:#F0D58A;--kaE6DAF5:#2B4D52;--ka5B2E91:#8EC3EA;--kaD8E7FA:#2B4D52;--ka1F4E8C:#8EC3EA;--kaF6D6D3:#5D2F2A;--kaB3261E:#E8948F;--kaDDF1E5:#2E4A2A;--ka2E7D4F:#B8DBA9;--kbF0C75A22:#4A3D1D;--kbF0C75A:#F0D58A;--kt3A2A00:#1F1F1F;--ka6CB8F5:#8EC3EA;--ka8A9099:#A7A7A0;--ka14786F:#3FB8AA;--kaFDE8E4:#5D2F2A;--kaD85A30:#F4B4A8;--ktB23B17:#F4B4A8;--ka3A2A00:#1F1F1F;--kaC9C4B8:#3B4240;--kaB23B17:#F4B4A8;--kbFDE8E4:#5D2F2A;--klB4362A:#5D2F2A;--ka7F77DD:#8EC3EA;--kaF2B518:#F0D58A;--kaE39A62:#F4B4A8;--ka7FB069:#B8DBA9;--kaCDEAF2:#2B4D52;}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px}
 /* (Oct 25, Chris: the phone's ||| O < bar must always show but nothing may shift) the page is laid out under the phone bars from the first frame (viewport-fit=cover in build-desk-app.py) and keeps their room as padding, so the bars never resize the page after it opens */
@@ -54,8 +59,8 @@ h1{font-family:var(--display);font-weight:600;font-size:26px;margin:0}
 .tabs button{flex:1;border:0;background:transparent;font:inherit;font-weight:700;font-size:13px;color:var(--muted);padding:9px 2px;border-radius:9px;cursor:pointer;white-space:nowrap}
 .tabs button[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink)}
 /* (Oct 9) Chris: the Money Map badge must lead somewhere: the same gold count sits on Family and on Charges to sort */
-.msec h4 .n,.mrow b .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:#FFFFFF;font-size:12px;line-height:18px;text-align:center;font-weight:700}
-.tabs .n{display:inline-block;min-width:18px;margin-left:3px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:#FFFFFF;font-size:12px;line-height:18px}
+.msec h4 .n,.mrow b .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:var(--ktFFFFFF);font-size:12px;line-height:18px;text-align:center;font-weight:700}
+.tabs .n{display:inline-block;min-width:18px;margin-left:3px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:var(--ktFFFFFF);font-size:12px;line-height:18px}
 .bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 8px;min-height:30px}
 .bar .lbl{font-weight:700;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pager{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -125,7 +130,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .socrow{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n v" "t t" "s s";gap:3px 8px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;color:var(--ink);font:inherit;text-align:left;cursor:pointer;min-width:0}
 .socn{grid-area:n;display:flex;align-items:center;gap:6px;min-width:0}.socn em{font-style:normal;font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socn .picon{flex:none;width:18px;height:18px;margin:0}
 .socv{grid-area:v;font-size:15px;white-space:nowrap}.soct{grid-area:t;display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.soct i{display:block;height:6px;border-radius:3px;background:var(--teal)}
-.socrow small{grid-area:s;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socrow small.up{color:#4A7F37}.socrow small.dn{color:var(--red,#B42318)}
+.socrow small{grid-area:s;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.socrow small.up{color:var(--kt4A7F37)}.socrow small.dn{color:var(--red,#B42318)}
 /* (Oct 21, Chris: double headers) the phone sub-menu rule '.seg{display:grid!important}' (line ~648) beat the plain hide: the computer hides the switch with !important too */
 @media (min-width:1000px){.seg.socsw{display:none!important}.soccols{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.soccol{display:flex}}
 /* (Oct 21, t-1010-drill-down) Social pop-up: 3 levels inside one pop-up, Back goes up one */
@@ -159,7 +164,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .addf{display:flex;gap:6px;border-top:1px solid var(--line);padding-top:9px}
 .addf input{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;padding:9px 10px}
 .addf select{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;padding:0 6px;max-width:96px}
-.addf button{border:0;background:var(--gold);color:#FFFFFF;font:inherit;font-weight:800;border-radius:10px;padding:0 14px;cursor:pointer}
+.addf button{border:0;background:var(--gold);color:var(--ktFFFFFF);font:inherit;font-weight:800;border-radius:10px;padding:0 14px;cursor:pointer}
 .jobdone{align-self:flex-start}
 .sum{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
 .sum h3{margin:0;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
@@ -195,7 +200,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk .lyrhd{display:flex;flex-direction:column;gap:2px}#lyrchk .lyrhd b{font-size:17px}#lyrchk .lyrhd span{font-size:12.5px;color:var(--muted)}#lyrchk .lyrhd .lyrcp{color:var(--ink);font-weight:600}
 #lyrchk .lyrtx{flex:1;min-height:0;resize:none;font:15px/1.5 inherit;font-family:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
 #lyrchk .lyrnote{font:14px inherit;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
-#lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:#FBEFD0;color:#8A6508}
+#lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--kbFBEFD0);color:var(--kt8A6508)}
 #lyrchk .btfl b.btap{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft,#EEF6F5);color:var(--teal,#0F766E);border:1.5px solid var(--teal,#0F766E)}#lyrchk[data-appr="1"] .bttx{background:var(--soft,#EEF6F5)}#lyrchk[data-appr="1"] [data-btx="fix"],#lyrchk[data-appr="1"] [data-btx="ok"],#lyrchk[data-appr="1"] .lyrnote{display:none}#lyrchk[data-appr="1"] .lyrbt{grid-template-columns:1fr}
 #lyrchk .lyrbt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 /* (Oct 22, Chris: "apply that lock feature to everything") APPROVED = LOCKED: approved lyrics open read-only with Edit; Approve again locks them */
@@ -204,7 +209,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 /* (Oct 22, Chris) CHORD SHEET (Levels 1-3): chords above the words, every verse on one page; tap a chord to change it */
 #lyrchk .chsh{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}#lyrchk .chv{margin:0 0 16px}#lyrchk .chv h3{font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
 #lyrchk .chl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 9px;margin:0 0 8px}#lyrchk .chw{display:inline-flex;flex-direction:column;min-width:18px}#lyrchk .chw b{font-weight:500;font-size:16px;white-space:nowrap}
-#lyrchk .chlvb{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}#lyrchk .chlvs{display:flex;gap:8px}#lyrchk .chsc{display:inline-flex;gap:6px;align-items:center;justify-self:start;margin-left:6px;font-size:13px;font-weight:700;color:var(--muted)}#lyrchk .chlvs .tb{width:220px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}#lyrchk .chlvs .tb small{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}#lyrchk .chlvs .tb[aria-pressed="true"] small{color:rgba(255,255,255,.85)}#lyrchk .chlvn i{font-style:normal}@media (max-width:699px){#lyrchk .chlvb{grid-template-columns:1fr}#lyrchk .chlvb>span:first-child{display:none}#lyrchk .chlvs{justify-content:center}#lyrchk .chlvs .tb{width:auto;flex:1 1 0;min-width:0;padding:4px 6px}#lyrchk .chlvs .tb small{white-space:normal;font-size:10.5px}#lyrchk .chsc{justify-self:center;margin-left:0}}#lyrchk .chsc .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .chz sup{font-size:75%;vertical-align:super;line-height:0}#lyrchk .chv h3 .chown{font-style:normal;color:var(--gold,#D19A12);text-transform:none;margin-left:6px}#lyrchk .chv h3 .chdrop{min-height:26px;padding:2px 10px;font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}#lyrchk .chlvb .tb{min-height:38px;padding:4px 16px}#lyrchk .chlvb .tb[aria-pressed="true"]{background:var(--teal,#0F766E);color:#fff;border-color:var(--teal,#0F766E)}#lyrchk .lyrbt .tb[disabled]{opacity:.55}
+#lyrchk .chlvb{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}#lyrchk .chlvs{display:flex;gap:8px}#lyrchk .chsc{display:inline-flex;gap:6px;align-items:center;justify-self:start;margin-left:6px;font-size:13px;font-weight:700;color:var(--muted)}#lyrchk .chlvs .tb{width:220px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}#lyrchk .chlvs .tb small{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}#lyrchk .chlvs .tb[aria-pressed="true"] small{color:rgba(255,255,255,.85)}#lyrchk .chlvn i{font-style:normal}@media (max-width:699px){#lyrchk .chlvb{grid-template-columns:1fr}#lyrchk .chlvb>span:first-child{display:none}#lyrchk .chlvs{justify-content:center}#lyrchk .chlvs .tb{width:auto;flex:1 1 0;min-width:0;padding:4px 6px}#lyrchk .chlvs .tb small{white-space:normal;font-size:10.5px}#lyrchk .chsc{justify-self:center;margin-left:0}}#lyrchk .chsc .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .chz sup{font-size:75%;vertical-align:super;line-height:0}#lyrchk .chv h3 .chown{font-style:normal;color:var(--gold,#D19A12);text-transform:none;margin-left:6px}#lyrchk .chv h3 .chdrop{min-height:26px;padding:2px 10px;font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}#lyrchk .chlvb .tb{min-height:38px;padding:4px 16px}#lyrchk .chlvb .tb[aria-pressed="true"]{background:var(--teal,#0F766E);color:var(--ktFFF);border-color:var(--teal,#0F766E)}#lyrchk .lyrbt .tb[disabled]{opacity:.55}
 #lyrchk .chz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 2px}#lyrchk .chi{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}#lyrchk .chi>span:first-child{font-size:13px;color:var(--muted);font-weight:700}
 #lyrchk .chsec{border-top:1px solid var(--line);padding-top:10px}#lyrchk .chsec:first-child,#lyrchk .chi+.chsec{border-top:0;padding-top:0}#lyrchk .chsec h3{display:flex;align-items:center;gap:6px;margin:0 0 6px}
 #lyrchk .chlab{width:112px;height:30px;min-height:0;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;background:var(--soft);color:var(--teal);border:1.5px solid var(--teal);box-sizing:border-box;white-space:nowrap}#lyrchk .chlab[data-sect="chorus"]{background:var(--gold-soft);color:var(--pick);border-color:var(--gold)}#lyrchk .chlab:hover{background:var(--hover)}
@@ -249,7 +254,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .pdiv{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 .legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}
 .lg::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px;background:var(--wc)}
-.w-weekly{--wc:var(--gold);--ws:var(--gold-soft)} .w-now{--wc:var(--teal);--ws:var(--soft)} .w-next{--wc:#5B6470;--ws:#EEF0F2} .w-someday{--wc:#B4B2A9;--ws:var(--bg)}
+.w-weekly{--wc:var(--gold);--ws:var(--gold-soft)} .w-now{--wc:var(--teal);--ws:var(--soft)} .w-next{--wc:var(--ka5B6470);--ws:var(--kaEEF0F2)} .w-someday{--wc:var(--kaB4B2A9);--ws:var(--bg)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .w-next{--ws:#292F2E}}
 .blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
 .block{display:flex;flex-direction:column;gap:4px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-top:5px solid var(--wc);border-radius:12px;padding:12px;cursor:pointer;min-height:96px}
@@ -339,7 +344,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 /* funnel step on each box (Chris, Oct 4; computer only): share of the box before it, arrow vs the period before */
 .scell{position:relative}
 .scell .sstep{position:absolute;right:6px;bottom:4px;font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted)}
-.scell .sstep .su{color:#4A7F37}.scell .sstep .sd{color:var(--red)}
+.scell .sstep .su{color:var(--kt4A7F37)}.scell .sstep .sd{color:var(--red)}
 .sprods{display:flex;gap:4px;flex-wrap:nowrap;overflow:hidden}
 .sprods .sp{font-size:12px;padding:2px 8px;white-space:nowrap;color:var(--muted)}
 .sbody{height:clamp(186px, calc(100vh - 580px), 380px);display:flex;flex-direction:column;gap:4px;min-height:0}
@@ -472,23 +477,23 @@ a.tb{text-decoration:none;display:inline-flex;align-items:center;justify-content
 @media (hover:hover){ a.tb:hover{box-shadow:inset 0 0 0 999px var(--hov)} }
 /* status colours for review items and Lab lessons (Chris, Oct 4): slate = not checked, light gold = fix sent,
    green = good / approved, slate + "check again" = fixed. One colour group: no teal with green here. */
-.tb.rs-none,.tb.rs-fixed{background:var(--card);color:var(--ink);border:1.5px solid #5B6470}
-.tb.rs-fix{background:#D19A12;color:#FFFFFF;border-color:#D19A12}
-.tb.rs-good{background:#4A7F37;color:#FFFFFF;border-color:#4A7F37}
+.tb.rs-none,.tb.rs-fixed{background:var(--card);color:var(--ink);border:1.5px solid var(--kl5B6470)}
+.tb.rs-fix{background:var(--kbD19A12);color:var(--ktFFFFFF);border-color:var(--klD19A12)}
+.tb.rs-good{background:var(--kb4A7F37);color:var(--ktFFFFFF);border-color:var(--kl4A7F37)}
 .tb small{display:block;font-size:10.5px;font-weight:600;color:var(--muted)}
 a.tb.rs-fixed{flex-direction:column}
 .rs-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;white-space:nowrap}
-.rs-tag.rs-none,.rs-tag.rs-fixed{border:1px solid #5B6470;color:var(--ink)} .rs-tag.rs-fix{background:#D19A12;color:#fff} .rs-tag.rs-good{background:#4A7F37;color:#fff}
+.rs-tag.rs-none,.rs-tag.rs-fixed{border:1px solid var(--kl5B6470);color:var(--ink)} .rs-tag.rs-fix{background:var(--kbD19A12);color:var(--ktFFF)} .rs-tag.rs-good{background:var(--kb4A7F37);color:var(--ktFFF)}
 .labdots{display:flex;flex-wrap:wrap;gap:3px}
 .labdots i,.rs-key i{display:inline-block;width:10px;height:10px;border-radius:3px}
 .rs-key{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
-.labdots i.rs-none,.labdots i.rs-fixed,.rs-key i.rs-none,.rs-key i.rs-fixed{border:1.5px solid #5B6470;box-sizing:border-box}
-.labdots i.rs-fixed,.rs-key i.rs-fixed{background:repeating-linear-gradient(45deg,transparent 0 2px,#5B6470 2px 3px)}
-.labdots i.rs-fix,.rs-key i.rs-fix{background:#D19A12} .labdots i.rs-good,.rs-key i.rs-good{background:#4A7F37}
+.labdots i.rs-none,.labdots i.rs-fixed,.rs-key i.rs-none,.rs-key i.rs-fixed{border:1.5px solid var(--kl5B6470);box-sizing:border-box}
+.labdots i.rs-fixed,.rs-key i.rs-fixed{background:repeating-linear-gradient(45deg,transparent 0 2px,var(--ka5B6470) 2px 3px)}
+.labdots i.rs-fix,.rs-key i.rs-fix{background:var(--kbD19A12)} .labdots i.rs-good,.rs-key i.rs-good{background:var(--kb4A7F37)}
 .labboard{display:flex;flex-direction:column;gap:6px;min-height:0}
 .labrow{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer;min-height:40px}
 .labrow .tn{grid-column:1}.labrow .labdots{grid-column:2;grid-row:1/3;align-self:center;max-width:220px;justify-content:flex-end}
-.labrow.on{border-color:#5B6470;box-shadow:inset 0 0 0 1px #5B6470}
+.labrow.on{border-color:var(--kl5B6470);box-shadow:inset 0 0 0 1px var(--kl5B6470)}
 .labbtns .tb,.readybox .tb{font-size:12.5px;padding:6px 9px}
 .readybox{gap:4px}
 .readybox .tlinks{padding-top:0}
@@ -508,7 +513,7 @@ a.tb.rs-fixed{flex-direction:column}
 .revgrid .revnotes{align-self:start;max-height:100%;overflow:auto}
 .revgrid.one{grid-template-columns:1fr}
 @media (max-width:760px){.revgrid{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}}
-.emailprev{height:100%;min-height:220px;width:100%;border:1px solid var(--line);border-radius:10px;background:#F4F4F4}
+.emailprev{height:100%;min-height:220px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--kbF4F4F4)}
 .task[data-tid],.onecard[data-tid]{cursor:pointer}
 @media all{ .labrow .labdots{display:none} .labrow{grid-template-columns:1fr;padding:6px 10px} .labrow b{font-size:14px} .labboard > .tn{font-size:12px} .labbtns .tb{padding:5px 8px} }
 .supd{text-transform:none;letter-spacing:0;font-weight:600}
@@ -516,15 +521,15 @@ a.tb.rs-fixed{flex-direction:column}
 .nightc{display:flex;flex-direction:column;gap:8px;margin:6px 0;min-width:0}
 .nightg{display:flex;flex-direction:column;gap:3px;min-width:0}
 .nightp{align-self:flex-start;max-width:100%;box-sizing:border-box;border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;font-size:13.5px;border-radius:999px;padding:5px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.nightp i{font-style:normal;display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--muted);color:#FFFFFF;font-size:12px;line-height:18px;text-align:center}
+.nightp i{font-style:normal;display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--muted);color:var(--ktFFFFFF);font-size:12px;line-height:18px;text-align:center}
 .nightp.ok i{background:var(--teal);color:var(--teal-ink)}
-.nightp.gold i{background:var(--gold);color:#FFFFFF}
+.nightp.gold i{background:var(--gold);color:var(--ktFFFFFF)}
 .nightp.red{border-color:var(--red);background:var(--red-soft)}
-.nightp.red i{background:var(--red);color:#FFFFFF}
+.nightp.red i{background:var(--red);color:var(--ktFFFFFF)}
 .nightl{font-size:13px;color:var(--ink);padding-left:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .pills{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
 .tpill{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:700;font-size:13.5px;border-radius:999px;padding:7px 13px;cursor:pointer;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:36px}
-.tpill .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:#FFFFFF;font-size:12px;line-height:18px;text-align:center}
+.tpill .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:999px;background:var(--gold);color:var(--ktFFFFFF);font-size:12px;line-height:18px;text-align:center}
 .tpill.onepill{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
 .tpill.chore{border-color:var(--gold)}
 .tpill.isdone{text-decoration:line-through;color:var(--muted)}
@@ -551,7 +556,7 @@ a.tb.rs-fixed{flex-direction:column}
 .popcard .slist{min-height:0;flex:1 1 auto;overflow-y:auto}
 /* Projects board, layout C (Chris, Oct 4): Every week | Quick | Longer */
 .pboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:stretch}
-.pcol.cw{--cc:#D19A12}.pcol.cq{--cc:#6AA84F}.pcol.cl{--cc:#B42318}
+.pcol.cw{--cc:var(--kaD19A12)}.pcol.cq{--cc:var(--ka6AA84F)}.pcol.cl{--cc:var(--kaB42318)}
 .pcol{border-top:4px solid var(--cc)}.pcol h4{color:var(--cc)}
 .pcol{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px;display:flex;flex-direction:column;gap:7px;min-height:150px}
 .pcol h4{margin:0 0 2px;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.pcol h4 i{font-style:normal;font-weight:600;text-transform:none;letter-spacing:0}
@@ -583,7 +588,7 @@ a.tb.rs-fixed{flex-direction:column}
 .fshare{display:flex;flex-direction:column;gap:5px}
 .fline{position:relative;flex:1;min-height:160px}.fline svg{position:absolute;inset:0}.fline .ax{font-size:11px;fill:var(--muted);font-family:var(--body)}.fbub{position:absolute;display:none;flex-direction:column;align-items:center;gap:1px;background:var(--card);border:1px solid var(--teal);border-radius:9px;padding:4px 8px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:none}
 .fsr{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr) 70px 44px;gap:10px;align-items:center;font-size:13.5px}
-.fsn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}.fsb{height:10px;border-radius:5px;background:#EEF0F2;overflow:hidden}.fsb i{display:block;height:10px;background:var(--teal)}
+.fsn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}.fsb{height:10px;border-radius:5px;background:var(--kbEEF0F2);overflow:hidden}.fsb i{display:block;height:10px;background:var(--teal)}
 .fsr b{text-align:right;font-variant-numeric:tabular-nums}.fsr em{font-style:normal;color:var(--muted);font-weight:700;text-align:right}
 .popcard.fixed{height:min(640px,calc(100vh - 24px))}.popcard.fixed .fbody{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:hidden}
 .fpop{justify-content:flex-start}
@@ -599,7 +604,7 @@ a.tb.rs-fixed{flex-direction:column}
 @media all{.foltiles{grid-template-columns:1fr 1fr}}
 .fbig{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.fbig div{border:1px solid var(--line);border-radius:10px;padding:10px}.fbig span{display:block;font-size:12px;color:var(--muted);font-weight:700}.fbig b{font-size:24px}
 
-.fbar{height:36px;box-sizing:border-box;border-radius:9px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:6px;padding:0 10px;font-weight:800;font-size:13.5px;white-space:nowrap}
+.fbar{height:36px;box-sizing:border-box;border-radius:9px;color:var(--ktFFF);display:flex;justify-content:space-between;align-items:center;gap:6px;padding:0 10px;font-weight:800;font-size:13.5px;white-space:nowrap}
 .fbar span{overflow:hidden;text-overflow:ellipsis}.fbar small{flex:none;font-size:11px;font-weight:800;background:rgba(255,255,255,.22);border-radius:999px;padding:2px 7px}
 .fstep{font-size:11.5px;font-weight:700;color:var(--muted);height:17px;display:flex;align-items:center}
 @media (max-width:899px){.mgrid{grid-template-columns:1fr}}
@@ -616,11 +621,11 @@ a.tb.rs-fixed{flex-direction:column}
 .morning{gap:12px}
 .msec{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--cc);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}
 .msec h4{margin:0;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--cc);display:flex;justify-content:space-between;gap:8px}.msec h4 i{font-style:normal;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:700}
-.mbar{height:10px;border-radius:5px;background:#EEF0F2;overflow:hidden}.mbar i{display:block;height:10px;background:var(--cc)}
+.mbar{height:10px;border-radius:5px;background:var(--kbEEF0F2);overflow:hidden}.mbar i{display:block;height:10px;background:var(--cc)}
 .chgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .chc{height:54px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:1px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-left:4px solid var(--cc);border-radius:9px;padding:6px 10px;cursor:pointer;min-width:0}
 .chc b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chc span{font-size:12px;color:var(--muted)}
-.chc.done{opacity:.55}.chc.done b::before{content:"\2713  ";color:#4A7F37}
+.chc.done{opacity:.55}.chc.done b::before{content:"\2713  ";color:var(--kt4A7F37)}
 .onebig{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;font:inherit;background:var(--teal);color:var(--teal-ink);border:0;border-radius:12px;padding:14px 16px;cursor:pointer}
 .onebig small{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.onebig b{display:block;font-size:21px;margin:2px 0}.onebig span span{font-size:13px;opacity:.9}
 .onebig em{font-style:normal;background:var(--card);color:var(--teal);font-weight:800;border-radius:9px;padding:9px 16px;flex:none}
@@ -656,11 +661,11 @@ a.tb.rs-fixed{flex-direction:column}
  .pc3,.chc,.labrow{height:auto!important;min-height:54px;box-sizing:border-box;border:1px solid var(--line);border-left:4px solid var(--cc,#D19A12);border-radius:9px;background:var(--card);box-shadow:none}
  .pc3{padding:0 8px 0 0;align-items:center}
  .pc3t,.chc{padding:6px 10px!important;gap:1px}
- .labrow{padding:6px 10px!important;--cc:#1FA598;display:flex;flex-direction:column;justify-content:center;gap:1px}
+ .labrow{padding:6px 10px!important;--cc:var(--ka1FA598);display:flex;flex-direction:column;justify-content:center;gap:1px}
  .pc3t b,.chc b,.labrow b{font-size:14px!important;font-weight:700;line-height:1.25;white-space:normal!important;overflow:visible!important}
  .pc3t span,.chc span,.labrow .tn{font-size:12px!important;color:var(--muted);white-space:normal!important;overflow:visible!important}
  .msec .chgrid{display:flex!important;flex-direction:column;gap:8px}
- .labrow.on{border-color:var(--line);border-left-color:#5B6470;box-shadow:none}
+ .labrow.on{border-color:var(--line);border-left-color:var(--kl5B6470);box-shadow:none}
 }
 /* (Oct 7) Chris picked B (Gmail list) for EVERY folder on the phone: one card, header row with a colour square,
    count + time centred, sort on the right; items = plain rows with thin lines between, lined up under the title */
@@ -675,7 +680,7 @@ a.tb.rs-fixed{flex-direction:column}
  .msec .chgrid > .rowon{background:var(--card)!important}
  .rowmenu{display:flex;flex-direction:column;margin:0 12px 8px 34px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.25);overflow:hidden}
  .rowmenu button{font:inherit;font-size:14px;font-weight:700;text-align:left;padding:12px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
- .rowmenu button:first-child{border-top:0;color:#1FA598}
+ .rowmenu button:first-child{border-top:0;color:var(--kt1FA598)}
  .msec > h4{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
  .msec.fdrag{box-shadow:0 8px 24px rgba(0,0,0,.35);outline:2px solid var(--cc);opacity:.95}
  .msec .chgrid{gap:0!important}
@@ -718,7 +723,7 @@ a.tb.rs-fixed{flex-direction:column}
 .ltxt{border:0;background:transparent;color:var(--teal);font:inherit;font-weight:700;font-size:15px;padding:10px 12px;cursor:pointer;border-radius:8px}
  .sortmenu{position:fixed;z-index:60;display:flex;flex-direction:column;min-width:170px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.3);overflow:hidden} 
 .sortmenu button{font:inherit;font-size:14px;font-weight:700;text-align:left;padding:12px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer} 
-.sortmenu button:first-child{border-top:0}.sortmenu button.cur{color:#1FA598}.sortmenu button.cur::before{content:"✓ "}
+.sortmenu button:first-child{border-top:0}.sortmenu button.cur{color:var(--kt1FA598)}.sortmenu button.cur::before{content:"✓ "}
 .msec.fdrag{box-shadow:0 8px 24px rgba(0,0,0,.35);outline:2px solid var(--cc);opacity:.95;position:relative;z-index:20}
 @media (pointer:fine){ #list .msec > h4{cursor:grab} }
 /* (Oct 7) Chris: on the phone the first thing under the top tabs sits the same distance down on Home, Projects and Money Map */
@@ -737,7 +742,7 @@ a.tb.rs-fixed{flex-direction:column}
 #pop details.whyd{margin:8px 0 4px}#pop details.whyd > summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--muted);padding:8px 0}
 #pop .rowmenu{display:flex;flex-direction:column;margin:0 0 4px 20px;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.25);overflow:hidden}
 #pop .rowmenu button{font:inherit;font-size:14px;font-weight:700;text-align:left;padding:12px 14px;border:0;border-top:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
-#pop .rowmenu button:first-child{border-top:0;color:#1FA598}
+#pop .rowmenu button:first-child{border-top:0;color:var(--kt1FA598)}
 /* (Oct 7) project to-dos open in place under the project row */
 @media all{
  .sublist{display:flex;flex-direction:column;background:var(--card)}
@@ -751,7 +756,7 @@ a.tb.rs-fixed{flex-direction:column}
 .llist{margin:0;border:1px solid var(--line);border-radius:12px;padding:0;background:var(--card);overflow-y:auto}
 .lrow{min-height:50px;padding:9px 14px;gap:10px;font-size:14px;font-weight:700;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
-.lrow.cur{color:#1FA598}.lrow.cur::after{content:"✓";margin-left:auto;color:#1FA598}
+.lrow.cur{color:var(--kt1FA598)}.lrow.cur::after{content:"✓";margin-left:auto;color:var(--kt1FA598)}
 .lrow.cur i{margin-left:8px}
 .lfoot .ltxt{border:1px solid var(--line);background:var(--card);color:var(--ink);font-weight:700;border-radius:8px;padding:8px 14px}
 .pfolds{display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:0;max-height:60vh}
@@ -764,29 +769,29 @@ a.tb.rs-fixed{flex-direction:column}
 .trow > .chc:has(.tmr){padding-right:150px!important}
 .trow > .chc:not(:has(.tmr)){padding-right:88px!important}
 .trow > .chc .tmr{right:84px}
-.trow > .tdy{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:1px solid #1FA598;background:transparent;color:#1FA598;font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:7px 11px;cursor:pointer}
+.trow > .tdy{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:1px solid var(--kl1FA598);background:transparent;color:var(--kt1FA598);font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:7px 11px;cursor:pointer}
 @media all{
  .msec .chgrid > .trow{border-top:1px solid var(--line)}
  .msec .chgrid > .trow > .chc{border:0!important;border-radius:0!important;background:transparent!important;min-height:50px;padding-top:9px!important;padding-bottom:9px!important;padding-left:34px!important}
  .sublist > .trow{border-top:1px solid var(--line)}
  .sublist > .trow > .chc{border-top:0!important;padding-left:50px!important}
 }
-.pc3 > .tdy2{position:static;transform:none;flex:none;margin-right:2px;border:1px solid #1FA598;background:transparent;color:#1FA598;font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:7px 11px;cursor:pointer}
+.pc3 > .tdy2{position:static;transform:none;flex:none;margin-right:2px;border:1px solid var(--kl1FA598);background:transparent;color:var(--kt1FA598);font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:7px 11px;cursor:pointer}
 .tdetail{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line)}
 .sublist .tdetail{padding-left:12px}
 .tdetail b{font-size:12px;color:var(--muted)}.tdetail p{margin:0;font-size:14px;line-height:1.4}.tdetail .tn{font-size:12px}
 .rowon > .chc,.rowon.chc{background:var(--card)!important}
 .tdbtns{display:flex;flex-wrap:nowrap;gap:6px}.tdbtns .tb{flex:1 1 0;min-width:0;padding:8px 4px;white-space:nowrap;text-align:center}
 .lvbar{display:flex;gap:4px;margin-top:4px}
-.lvbar span{flex:1 1 0;min-width:0;border-radius:6px;background:#E4E6E9;color:#8A9099;font-size:12px;font-weight:700;padding:6px 4px;text-align:center;white-space:nowrap;line-height:16px}   /* (Oct 11, Chris) 4 equal boxes, each labelled; only the current one in colour */
-.lvbar span.on{background:var(--lc);color:#16191c;font-weight:800}
+.lvbar span{flex:1 1 0;min-width:0;border-radius:6px;background:var(--kbE4E6E9);color:var(--kt8A9099);font-size:12px;font-weight:700;padding:6px 4px;text-align:center;white-space:nowrap;line-height:16px}   /* (Oct 11, Chris) 4 equal boxes, each labelled; only the current one in colour */
+.lvbar span.on{background:var(--lc);color:var(--kt16191C);font-weight:800}
 a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Chris video: Go flashed) no grey/blue Android tap flash on any desk button */
 /* (Oct 21, Chris) a Today row opens to THE THING: review = pictures + Looks good / Fix, yesno = Yes / No, go = one Go button + icon steps. No Done/Move/Remove. */
 .kpics{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px}
 .kthumb{padding:0;border:1px solid var(--line);border-radius:8px;background:var(--card);overflow:hidden;cursor:pointer;display:block;width:100%;min-width:0}
 .kthumb img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;object-position:top}
 .kyn{display:flex;gap:6px}.kyn .tb{flex:1;min-width:0;min-height:44px}
-.tb.gold{background:var(--gold);color:#1a1405;border-color:var(--gold)}
+.tb.gold{background:var(--gold);color:var(--kt1A1405);border-color:var(--gold)}
 .askq{display:flex;flex-direction:column;gap:8px;min-width:0}.askq .askt{margin:0;overflow-wrap:anywhere}.askq .kpics{grid-template-columns:1fr}.askq .kthumb img{aspect-ratio:auto;max-height:60vh;object-fit:contain;object-position:center}.askq .steps,.askq .ksteps{margin:0}
 .abline{margin:0 0 8px;font-size:14px;overflow-wrap:anywhere}.abcards{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
 .abcard{border:2px solid var(--line);border-radius:10px;padding:8px;background:var(--card);display:flex;flex-direction:column;gap:4px;min-width:0;box-sizing:border-box}.abcard.win{border-color:var(--teal)}
@@ -801,7 +806,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .chc b,.pc3t b,.chc span,.pc3t span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
 .pc3t{min-width:0}
 /* (Oct 7) Chris: ON = the line's colour, OFF = grey */
-.sertog{display:inline-flex;align-items:center;border:0;background:var(--sc);color:#fff;font:inherit;font-size:13px;font-weight:800;border-radius:999px;padding:7px 13px;cursor:pointer}
+.sertog{display:inline-flex;align-items:center;border:0;background:var(--sc);color:var(--ktFFF);font:inherit;font-size:13px;font-weight:800;border-radius:999px;padding:7px 13px;cursor:pointer}
 .sertog.off{background:var(--line);color:var(--muted)}
 .exleg:has(.sertog){flex-wrap:nowrap;gap:6px}
 .exleg .sertog{flex:1 1 0;min-width:0;justify-content:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:7px 6px}
@@ -817,16 +822,16 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 /* (Oct 8) Chris: every check item is the SAME height, with or without the small "check again" line */
 .revlist .tb{min-height:48px;justify-content:center}
 .revlist .tb .rsl{display:block;max-width:100%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* (Oct 20) one line each, equal side margins */
-.lvchip{display:inline-block;font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--lc);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.lvchip{display:inline-block;font-style:normal;font-size:11px;font-weight:800;color:var(--ktFFF);background:var(--lc);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
 /* (Oct 7) Chris (2nd time): titles ALWAYS wrap before the time / Today button. Last rule wins over every row style above. */
 #list .chc:has(.tmr),#pop .chc:has(.tmr){padding-right:84px!important}
 #list .trow > .chc:has(.tmr),#pop .trow > .chc:has(.tmr){padding-right:150px!important}
 #list .trow > .chc:not(:has(.tmr)){padding-right:92px!important}
 #list .pc3:has(.tdy2) .pc3t{padding-right:6px!important}
-.chc span b.chk{display:inline;font-size:12px;font-weight:800;color:#D19A12}.msec > h4 i .chk{color:#D19A12}.msec > h4 i{white-space:nowrap}
+.chc span b.chk{display:inline;font-size:12px;font-weight:800;color:var(--ktD19A12)}.msec > h4 i .chk{color:var(--ktD19A12)}.msec > h4 i{white-space:nowrap}
 .cbarw{display:flex!important;align-items:center;gap:8px;margin-top:5px}
 .cbar{display:block!important;width:140px;max-width:60%;height:6px;border-radius:4px;background:var(--line);overflow:hidden}
-.cbar i{display:block;height:100%;background:#4A7F37}
+.cbar i{display:block;height:100%;background:var(--kb4A7F37)}
 .cbarw small{font-size:12px;font-weight:700;color:var(--muted)}
 .kids{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
 .kids > b{font-size:12px;color:var(--muted);padding:8px 12px}
@@ -843,12 +848,12 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kidrow{border-top:1px solid var(--line);padding:9px 12px 10px}
 .kidt b{display:block;font-size:14px;font-weight:700;color:var(--ink);line-height:1.25}.kidt span{display:block;font-size:12px;color:var(--muted)}
 .kbtns{display:flex;gap:6px;margin-top:8px}
-.kbtns .kb{flex:1 1 0;min-width:0;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;font:inherit;font-size:13px;font-weight:700;color:#fff;cursor:pointer;text-decoration:none;white-space:nowrap;padding:0 2px}
-.kbtns .kgo{background:#0F766E}.kbtns .kdone{background:#4A7F37}.kbtns .kmove{background:#D19A12}.kbtns .krem{background:#B42318}.kbtns .kedit{background:#5B6470}
+.kbtns .kb{flex:1 1 0;min-width:0;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;font:inherit;font-size:13px;font-weight:700;color:var(--ktFFF);cursor:pointer;text-decoration:none;white-space:nowrap;padding:0 2px}
+.kbtns .kgo{background:var(--kb0F766E)}.kbtns .kdone{background:var(--kb4A7F37)}.kbtns .kmove{background:var(--kbD19A12)}.kbtns .krem{background:var(--kbB42318)}.kbtns .kedit{background:var(--kb5B6470)}
 .kbtns .kb.off{opacity:.35;cursor:default}
 .kidrow .tdetail{margin:8px -12px -10px}
-.chc span b.kidn{display:inline;font-size:12px;font-weight:800;color:#1FA598}
-#fderr{display:none;position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:#B42318;color:#fff;font-size:12px;line-height:1.3;padding:8px 10px;border-radius:8px;word-break:break-word}
+.chc span b.kidn{display:inline;font-size:12px;font-weight:800;color:var(--kt1FA598)}
+#fderr{display:none;position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:var(--kbB42318);color:var(--ktFFF);font-size:12px;line-height:1.3;padding:8px 10px;border-radius:8px;word-break:break-word}
 /* (Oct 8) Chris picked B: colour edge = automation %, one grey line, nothing on the right */
 @media all{
  #list .chc.ledge,#pop .chc.ledge,#list .pc3t.ledge{position:relative}
@@ -858,7 +863,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  #list .chc.ledge::before,#pop .chc.ledge::before,#list .pc3t.ledge::before{content:"";position:absolute;left:14px;top:12px;bottom:12px;width:5px;border-radius:3px;background:var(--lc)}
  #list .chc[data-rowb],#pop .chc[data-rowb]{padding-right:14px!important}
  #list .chc[data-rowb] > span,#pop .chc[data-rowb] > span{font-size:13px!important}
- .chc b.chw{display:inline;font-size:13px!important;font-weight:700;color:#97710F}
+ .chc b.chw{display:inline;font-size:13px!important;font-weight:700;color:var(--kt97710F)}
  .tdetail .tfull{font-size:14px;font-weight:700;color:var(--ink)}
  /* (Oct 8) Chris: the scroll bar sits OUTSIDE the cards, in the right margin */
  #list{scrollbar-width:none}
@@ -874,22 +879,22 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  /* (Oct 8) Chris: Ships this week rows, ship day lined up on the far right. (Oct 12) Chris: each row OPENS like any to-do (Go to test, Done...) */
  #list .chc.shiprow{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;cursor:default}
  #list .chc.shiprow[data-tlinks]{cursor:pointer} #list .chc.shiprow[data-tlinks]:hover{background:rgba(42,47,52,.06)!important}   /* (Oct 12) only rows with something to test open */
- #list .chc.shiprow .shipday{font-style:normal;font-size:13px;font-weight:700;color:#B4582F;white-space:nowrap;margin-left:10px}
+ #list .chc.shiprow .shipday{font-style:normal;font-size:13px;font-weight:700;color:var(--ktB4582F);white-space:nowrap;margin-left:10px}
  /* (Oct 8) Songs: step count on the far right of each song, steps strip inside */
  #list .chc.songrow{position:relative;padding-right:74px!important}
- #list .chc.songrow .sstep{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-style:normal;font-size:13px;font-weight:800;color:#0F766E;white-space:nowrap}
+ #list .chc.songrow .sstep{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-style:normal;font-size:13px;font-weight:800;color:var(--kt0F766E);white-space:nowrap}
  .songsort{display:flex;gap:6px;padding:8px 12px 8px 50px;border-top:1px solid var(--line)}.songsort .tb{flex:1 1 0;padding:7px 4px;font-size:12px;white-space:nowrap}
  .songsort.fdim{filter:none!important;opacity:1!important}
  .llsum{display:flex;gap:6px;padding:8px 12px 8px 50px;border-top:1px solid var(--line)}.llsum span{flex:1 1 0;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--mute,#5B6470);white-space:nowrap}.llsum b{font-size:17px;color:var(--ink,#2a2f34)}
- .llhead{padding:8px 12px 4px 50px;font-size:12px;font-weight:700;color:#0F766E;border-top:1px solid var(--line)}
+ .llhead{padding:8px 12px 4px 50px;font-size:12px;font-weight:700;color:var(--kt0F766E);border-top:1px solid var(--line)}
  .llrow{cursor:default}.llprow > .chc{padding-right:84px}
  .ssteps{display:flex;gap:3px}.ssteps span{flex:1 1 0;min-width:0;text-align:center;font-size:11px;font-weight:700;padding:6px 1px;white-space:nowrap;overflow:hidden;border-radius:7px;background:var(--line);color:var(--muted)}
- .ssteps span.on{background:#4A7F37;color:#fff}.ssteps span.next{background:#D19A12;color:#fff}
+ .ssteps span.on{background:var(--kb4A7F37);color:var(--ktFFF)}.ssteps span.next{background:var(--kbD19A12);color:var(--ktFFF)}
  .replist{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line)}
  .replist .item,.repf .item{margin:0}
  .picon{display:inline-block;vertical-align:-4px;margin:0 2px}
  .ron{display:flex;align-items:center;gap:8px;margin-top:4px}.ron .from{margin:0}
- .rlink{text-decoration:none;color:inherit;cursor:pointer}.rlink .from{flex:1 1 auto;min-width:0}.rlink .rwatch{flex:none;margin-left:auto;background:var(--teal);color:#fff;font-size:13px;font-weight:700;border-radius:8px;padding:7px 14px}
+ .rlink{text-decoration:none;color:inherit;cursor:pointer}.rlink .from{flex:1 1 auto;min-width:0}.rlink .rwatch{flex:none;margin-left:auto;background:var(--teal);color:var(--ktFFF);font-size:13px;font-weight:700;border-radius:8px;padding:7px 14px}
  .rthumb{flex:0 0 auto;width:64px;height:36px;object-fit:cover;border-radius:4px;background:var(--line);display:block}
  .rthumb.tall{width:36px;height:64px}.rthumb.rtwait{opacity:.6}
  .repf{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line);overflow-wrap:anywhere}
@@ -902,9 +907,9 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 }
 /* (Oct 8) Chris picked A (Desktop colour picker): on the computer a darker warm page so the white folders pop; phone unchanged */
 @media (min-width:600px){
- :root:not([data-theme="dark"]) body{background:#E9E4D9}
+ :root:not([data-theme="dark"]) body{background:var(--kbE9E4D9)}
  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) body{background:var(--bg)} }
- :root:not([data-theme="dark"]) #list .msec{background:#fff;border-color:#DDD6C8!important;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+ :root:not([data-theme="dark"]) #list .msec{background:var(--kbFFF);border-color:var(--klDDD6C8)!important;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 }
 /* (Oct 8) Chris: anything clickable shows a hover (computer) */
 @media (hover:hover){
@@ -937,12 +942,12 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .msec.fdglow{animation:fdglow 1.4s ease-in-out 2}
 @keyframes fdglow{0%,100%{box-shadow:0 0 0 0 rgba(242,181,24,0)}50%{box-shadow:0 0 0 6px rgba(242,181,24,.55),0 0 22px 6px rgba(242,181,24,.45)}}
 @keyframes fdpop{from{transform:translateY(10px) scale(.9);opacity:0}}
-.fdban{position:fixed;left:50%;top:22%;transform:translate(-50%,0);z-index:9000;pointer-events:none;background:#2a2f34;color:#fff;border-radius:18px;padding:14px 20px;text-align:center;font-family:'Fraunces',Georgia,serif;font-size:21px;line-height:1.2;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:fdbanpop .35s cubic-bezier(.2,.9,.3,1.3);width:max-content;max-width:86%}
+.fdban{position:fixed;left:50%;top:22%;transform:translate(-50%,0);z-index:9000;pointer-events:none;background:var(--kb2A2F34);color:var(--ktwFFF);border-radius:18px;padding:14px 20px;text-align:center;font-family:'Fraunces',Georgia,serif;font-size:21px;line-height:1.2;box-shadow:0 12px 40px rgba(0,0,0,.25);animation:fdbanpop .35s cubic-bezier(.2,.9,.3,1.3);width:max-content;max-width:86%}
 .fdban small{display:block;font-family:inherit;font-family:system-ui,sans-serif;font-size:13.5px;font-weight:500;opacity:.85;margin-top:4px}
 @keyframes fdbanpop{from{transform:translate(-50%,10px) scale(.9);opacity:0}}
 .fdconf{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:8990}
 .sgc.sgcel{animation:sgcel 1.4s ease-out both;position:relative;z-index:2}   /* (Oct 24, Chris) song Approve: the box waits gold, flashes the Lab's gold glow, turns teal */
-@keyframes sgcel{0%,30%{background:#E8B53A;border-color:#E8B53A;transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}50%{background:#1FA598;border-color:#1FA598;transform:scale(1.35);box-shadow:0 0 16px 5px rgba(242,181,24,.9)}100%{transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}}
+@keyframes sgcel{0%,30%{background:var(--kbE8B53A);border-color:var(--klE8B53A);transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}50%{background:var(--kb1FA598);border-color:var(--kl1FA598);transform:scale(1.35);box-shadow:0 0 16px 5px rgba(242,181,24,.9)}100%{transform:none;box-shadow:0 0 0 0 rgba(242,181,24,0)}}
 @media (prefers-reduced-motion: reduce){.sgc.sgcel{animation:none;box-shadow:0 0 0 3px rgba(242,181,24,.7)}}
 .fdconf i{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;animation:fdfall linear forwards}
 @keyframes fdfall{to{transform:translateY(900px) rotate(720deg)}}
@@ -984,7 +989,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kapp .kday{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:7px 10px;font-size:12.5px;display:flex;flex-direction:column;gap:3px}
 .kapp .kday > b{font-size:13px}.kapp .kday > b em{font-style:normal;color:var(--muted);font-weight:700;font-size:11.5px}
 .kapp .kday ul{margin:0;padding-left:16px;color:var(--muted)}.kapp .kday li{margin:1px 0}
-.kapp .kflag{color:#fff;background:#E07A45;border-radius:7px;padding:4px 8px;font-weight:700}
+.kapp .kflag{color:var(--ktFFF);background:var(--kbE07A45);border-radius:7px;padding:4px 8px;font-weight:700}
 .kapp .mprow{box-sizing:border-box}
 .mpdet .fsr{grid-template-columns:minmax(0,120px) minmax(0,1fr) 54px 36px;gap:6px;font-size:12.5px}
 .mpsort{display:flex;gap:4px;justify-content:center}.mpsort button{font-size:12px!important;padding:3px 10px}.mpsort button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -1107,9 +1112,9 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #songchk .scc{z-index:1;justify-content:flex-start!important;padding-left:5px;box-sizing:border-box;border-left:2px solid var(--pick)}   /* (Oct 16, Chris) the number sits where the chord STARTS (it was centred, so bar 1 chords looked like pickups) */
 #songchk .scc.sel{box-shadow:0 0 0 2px var(--gold)}
 /* (Oct 16, Chris) an approved step looks different: green frame + green bar, main button = Approved (closes) */
-.okbar{background:#1F9D55;color:#fff;font-weight:700;font-size:16px;border-radius:10px;padding:10px 14px;text-align:center;margin:4px 0 8px}
-.sccard.ok,.shcard.ok{box-shadow:0 0 0 5px #1F9D55}
-.tb.okd{background:#1F9D55!important;border-color:#1F9D55!important;color:#fff!important}
+.okbar{background:var(--kb1F9D55);color:var(--ktFFF);font-weight:700;font-size:16px;border-radius:10px;padding:10px 14px;text-align:center;margin:4px 0 8px}
+.sccard.ok,.shcard.ok{box-shadow:0 0 0 5px var(--kl1F9D55)}
+.tb.okd{background:var(--kb1F9D55)!important;border-color:var(--kl1F9D55)!important;color:var(--ktFFF)!important}
 #songchk .scn .scwin{width:86%;font:inherit;font-size:15px;text-align:center;padding:1px 4px;border:1px solid var(--gold);border-radius:4px;background:var(--card);color:var(--ink);box-sizing:border-box}
 #songchk .scsel{display:flex;align-items:center;gap:8px;grid-column:span 2;min-width:0}
 #songchk .scbtns .scsel .tb{width:auto;flex:none;padding-left:14px;padding-right:14px}
@@ -1125,14 +1130,14 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #songchk .scc:hover{background:var(--hover)}
 #songchk .scc.no{color:var(--line)}
 #songchk .scbn{position:absolute;top:-18px;font-size:11px;color:var(--muted);white-space:nowrap}
-#songchk .scbn[data-scbar]{cursor:pointer;padding:0 4px;border-radius:6px}#songchk .scbn[data-scbar]:hover,#songchk .scbn.on{background:#FAEEDA;color:#854F0B}
+#songchk .scbn[data-scbar]{cursor:pointer;padding:0 4px;border-radius:6px}#songchk .scbn[data-scbar]:hover,#songchk .scbn.on{background:var(--kbFAEEDA);color:var(--kt854F0B)}
 #songchk .scmz{position:absolute;top:0;bottom:0;z-index:5;cursor:pointer;border:2px dashed var(--teal);border-radius:6px;background:rgba(15,118,110,.06)}#songchk .scmz:hover{background:rgba(15,118,110,.16)}#songchk .scmz.on{background:rgba(120,120,120,.25);border-color:var(--muted)}
 #songchk .scbn.mu{color:var(--muted);text-decoration:line-through}#songchk .scmu{position:absolute;top:0;bottom:0;pointer-events:none;background:repeating-linear-gradient(135deg,transparent 0 6px,rgba(120,120,120,.12) 6px 12px)}
 #songchk .scbn.in{font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 #songchk .scck.scadd{margin-left:6px;font-size:22px;color:var(--teal)}
 #songchk .scck{width:40px;height:40px;flex:none;align-self:center;margin-left:10px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:18px;cursor:pointer;padding:0}
 #songchk .scrow.done .sctrk,#songchk .scrow.done .scpk{background:rgba(31,157,85,.16)}
-#songchk .scrow.done .scck{background:#1F9D55;color:#fff;border-color:#1F9D55}
+#songchk .scrow.done .scck{background:var(--kb1F9D55);color:var(--ktFFF);border-color:var(--kl1F9D55)}
 #songchk .scbtns{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:4px}
 #songchk .scbtns .tb[disabled]{opacity:.45;cursor:default}
 #songchk .scbtns .tb{height:46px;width:100%}
@@ -1539,7 +1544,7 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 <style>
 /* (Oct 16, chat 12) NEW SONG EDITOR look = the prototype (greys only), scoped to #songchk so nothing else on the desk changes */
 #songchk .secard{--se-bg:#FBFAF6;--se-card:#FFFFFF;--se-ink:#2A2F34;--se-mute:#6B6F66;--se-line:#DCD8CC;--se-line2:#B9B4A6;--se-stripe:#EFECE3;--se-gold:#2A2F34;--se-goldbg:#ECEAE4;--se-goldink:#2A2F34;--se-teal:#2A2F34;--se-hov:#F3F1EC;--se-hov2:#E8E5DE;--se-font:inherit}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-bg:#16191B;--se-card:#1F2427;--se-ink:#EEEBE3;--se-mute:#A2A69E;--se-line:#353C40;--se-line2:#4E565B;--se-stripe:#262C30;--se-gold:#EEEBE3;--se-goldbg:#2E3437;--se-goldink:#EEEBE3;--se-teal:#EEEBE3;--se-hov:#252B2E;--se-hov2:#2F363A;}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-bg:#1F1F1F;--se-card:#2A2A2A;--se-ink:#ECECEC;--se-mute:#A7A7A0;--se-line:#3B4240;--se-line2:#3B4240;--se-stripe:#292F2E;--se-gold:#ECECEC;--se-goldbg:#292F2E;--se-goldink:#ECECEC;--se-teal:#ECECEC;--se-hov:#292F2E;--se-hov2:#3B4240;}}
 :root[data-theme="dark"] #songchk .secard{--se-bg:#1F1F1F;--se-card:#2A2A2A;--se-ink:#ECECEC;--se-mute:#A7A7A0;--se-line:#3B4240;--se-line2:#3B4240;--se-stripe:#292F2E;--se-gold:#ECECEC;--se-goldbg:#292F2E;--se-goldink:#ECECEC;--se-teal:#ECECEC;--se-hov:#292F2E;--se-hov2:#3B4240;}
 #songchk .secard{position:fixed;z-index:61;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1180px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:hidden;display:flex;flex-direction:column;gap:12px;background:var(--se-bg);color:var(--se-ink);border-radius:14px;padding:16px;box-sizing:border-box;box-shadow:0 14px 40px rgba(0,0,0,.25)}
 @media (min-width:1000px){#songchk .secard{width:calc(80vw - 20px)}}
@@ -1616,7 +1621,7 @@ document.addEventListener("dblclick", e => { if (!scId || !e.target.closest("#so
 #songchk .nt.w,#songchk .nt.w:hover,#songchk .nt.w.np{border-color:transparent!important;cursor:grab}   /* (Oct 16 7pm, Chris) melody step: lyrics are never typed here. (Oct 20, Chris: 'the lyrics cannot move to the new phrasing') words DRAG again, onto the new notes */
 #songchk .nt.w:hover .tx,#songchk .nt.w.np .tx{background:var(--se-hov);border-radius:4px}
 #songchk .row.ok .nt.w{cursor:default}
-#songchk .secard.vnew .nt.w .tx{background:#fbf1d6;color:#2A2F34;border-radius:4px}   /* (Oct 22) dark mode: the cream box keeps dark ink, words stay readable */
+#songchk .secard.vnew .nt.w .tx{background:var(--kbFBF1D6);color:var(--kt2A2F34);border-radius:4px}   /* (Oct 22) dark mode: the cream box keeps dark ink, words stay readable */
 #songchk .selv .tb.vt{width:auto;min-width:34px;padding:0 8px}
 #songchk .nt.w .tx{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;white-space:nowrap;padding-left:4px}
 #songchk .nt.slot{background:transparent;border:1px dashed var(--se-line2)}
@@ -1650,18 +1655,18 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 #songchk .sp{visibility:hidden}
 #songchk .row{grid-template-columns:repeat(5,minmax(0,1fr)) 40px}
 .stuckbox{margin:0}.stuckbox>summary{list-style:none;cursor:pointer}.stuckbox>summary::-webkit-details-marker{display:none}
-.stuckpill{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 16px;border-radius:999px;background:#B3261E;color:#fff;font-weight:800;font-size:15px}
-.stucklist{margin-top:8px;border:1.5px solid #B3261E;border-radius:12px;overflow:hidden}.stuckrow{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-top:1px solid var(--line,#e5e0d6)}.stuckrow:first-child{border-top:0}.stuckrow span{font-size:13px;opacity:.75}
+.stuckpill{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 16px;border-radius:999px;background:var(--kbB3261E);color:var(--ktFFF);font-weight:800;font-size:15px}
+.stucklist{margin-top:8px;border:1.5px solid var(--klB3261E);border-radius:12px;overflow:hidden}.stuckrow{display:flex;flex-direction:column;gap:2px;padding:10px 14px;border-top:1px solid var(--line,#e5e0d6)}.stuckrow:first-child{border-top:0}.stuckrow span{font-size:13px;opacity:.75}
 #songchk .rok{align-self:center;justify-self:end;width:32px;height:32px;margin-left:8px;border-radius:50%;border:1.5px solid var(--se-line2);background:var(--se-card);color:var(--se-mute);font:700 16px/1 inherit;cursor:pointer;padding:0}
-#songchk .row.ok .rok{background:#1f8a4c;border-color:#1f8a4c;color:#fff}
-#songchk .row.ok>.b:not(.lead){background:#e2f4e8}
-#songchk .row.ok .nt{background:#cdebd8}
+#songchk .row.ok .rok{background:var(--kb1F8A4C);border-color:var(--kl1F8A4C);color:var(--ktFFF)}
+#songchk .row.ok>.b:not(.lead){background:var(--kbE2F4E8)}
+#songchk .row.ok .nt{background:var(--kbCDEBD8)}
 @media (max-width:520px){#songchk .row{grid-template-columns:repeat(3,minmax(0,1fr)) 36px}}
 #songchk .b .t{line-height:normal}
 /* (Oct 16 night, Chris) TEAL LOOK on the song editor (his pick from the old song check): teal number boxes, darker bar lines, plain words.
    Colours only: no size, border width or font metric changes, so nothing shifts and the 16th graph paper stays exact. */
 #songchk .secard{--se-tbg:#E9F4F1;--se-tbd:#2C7A70;--se-tink:#1F6F66;--se-tpk:#CBE6DF;--se-thov:#DDEFEA;--se-bar:#3A4048}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-tbg:#173A36;--se-tbd:#4FB3A6;--se-tink:#8FE0D4;--se-tpk:#22524C;--se-thov:#1D4641;--se-bar:#9AA3A8}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-tbg:#183B38;--se-tbd:#3FB8AA;--se-tink:#BCE8E5;--se-tpk:#2B4D52;--se-thov:#2B4D52;--se-bar:#A7A7A0}}
 :root[data-theme="dark"] #songchk .secard{--se-tbg:#183B38;--se-tbd:#3FB8AA;--se-tink:#BCE8E5;--se-tpk:#2B4D52;--se-thov:#2B4D52;--se-bar:#A7A7A0}
 #songchk .secard .row>.b[data-i]{border-color:var(--se-bar)}
 #songchk .secard .nt:not(.w){background:var(--se-tbg);border-color:var(--se-tbd);color:var(--se-tink)}
@@ -1673,7 +1678,7 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 /* chords step: gold chord markers on the beat row; numbers, words, bar edges locked */
 #songchk .secard{--se-cg:#8A6100;--se-cgbg:#FBF3DF;--se-cgpk:#F1DDA8}
 :root[data-theme="dark"] #songchk .secard{--se-cg:#F0D58A;--se-cgbg:#4A3D1D;--se-cgpk:#4A3D1D}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-cg:#E6C46A;--se-cgbg:#3A3220;--se-cgpk:#5A4A22}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #songchk .secard{--se-cg:#F0D58A;--se-cgbg:#4A3D1D;--se-cgpk:#4A3D1D}}
 #songchk .secard .chd{position:absolute;top:84px;height:28px;box-sizing:border-box;padding:0 0 0 3px;border:1px solid var(--se-cg);border-radius:4px;background:var(--se-cgbg);color:var(--se-ink);font:700 15px/26px var(--se-font);z-index:5;cursor:grab;white-space:nowrap;overflow:hidden}
 #songchk .secard .chd.cont{pointer-events:none;opacity:.7}
 #songchk .secard .chd .ne{position:absolute;top:0;bottom:0;width:6px;cursor:ew-resize;z-index:2}
@@ -1729,13 +1734,13 @@ html[data-drag="size"] *{cursor:ew-resize!important}
 
 #songchk .secard.cm.ro .chd{cursor:default}
 #songchk .secard .selv{display:inline-flex;gap:4px}#songchk .secard .selv .tb{width:96px}
-#songchk .secard .selv .tb.on,#songchk .secard .setg.on{background:var(--se-tink);color:#fff;border-color:var(--se-tink)}
+#songchk .secard .selv .tb.on,#songchk .secard .setg.on{background:var(--se-tink);color:var(--ktFFF);border-color:var(--se-tink)}
 #songchk .secard .setg{width:112px}#songchk .secard .selvp{width:150px;font-size:12px;font-weight:600;color:var(--se-tink)}
 #songchk #se-wc{font-size:13px;background:var(--se-card);border:1px solid var(--se-line);border-radius:8px;padding:6px 10px;max-height:132px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}#songchk #se-wc[hidden]{display:none}
-#songchk .wch{font-weight:700;color:var(--se-ink)}#songchk .wcl{display:flex;align-items:center;gap:8px;min-width:0}#songchk .wcd{flex:none;width:10px;height:10px;border-radius:50%;background:#F5B301}#songchk .wcl.r .wcd{background:var(--red,#B42318)}
+#songchk .wch{font-weight:700;color:var(--se-ink)}#songchk .wcl{display:flex;align-items:center;gap:8px;min-width:0}#songchk .wcd{flex:none;width:10px;height:10px;border-radius:50%;background:var(--kbF5B301)}#songchk .wcl.r .wcd{background:var(--red,#B42318)}
 #songchk .wcl.d{opacity:.6}#songchk .wcb{flex:none;font-weight:700;width:52px}#songchk .wct{flex:1 1 0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--se-ink)}#songchk .wcs{flex:none;color:var(--se-mute);font-weight:600}
 #songchk .wcbt{flex:none;width:auto;min-width:84px;padding:0 10px}
-#songchk .secard .b.wcr{outline:3px solid var(--red,#B42318);outline-offset:-2px}#songchk .secard .b.wcy{outline:3px solid #F5B301;outline-offset:-2px}
+#songchk .secard .b.wcr{outline:3px solid var(--red,#B42318);outline-offset:-2px}#songchk .secard .b.wcy{outline:3px solid var(--klF5B301);outline-offset:-2px}
 #songchk .secard #se-okc{min-width:190px}#songchk .secard #se-okc:disabled{opacity:.45;cursor:default}
 </style>
 <script>
@@ -2083,11 +2088,11 @@ let seSeen=null,seMine=new Set();
 function tagPick(P){const o={meter:DOC.meter||4};['lines','words','bars','spb','zero','lead','chords','chordsMedium','chordsHard'].forEach(f=>{if(P[f]!=null)o[f]=P[f]});return o}
 function tagSave(){if(!TAGM)return;if(!bars.length){DOC.tag=null;return}const P=toDoc(),has=(P.lines||[]).flat().length>0||['chords','chordsMedium','chordsHard'].some(f=>(P[f]||[]).flat().length>0);DOC.tag=has?tagPick(P):null}   /* (Oct 21, Chris) every song has a Tag row: an empty one (one blank bar) saves nothing */
 function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
-function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;if(!TAGM&&!bars.length){if(H){H.textContent='Not saved: a song needs its melody. To remove a verse, use Delete verse.';H.style.color='#B3261E'}return}   /* (Oct 21, Chris: deleting verse 2 bars wiped verse 1) never save an empty melody */
+function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;if(!TAGM&&!bars.length){if(H){H.textContent='Not saved: a song needs its melody. To remove a verse, use Delete verse.';H.style.color='var(--ktB3261E)'}return}   /* (Oct 21, Chris: deleting verse 2 bars wiped verse 1) never save an empty melody */
 let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();if(EDN){P.melodyEditedAt=now;DOC.melodyEditedAt=now;EDN=false}   /* (Oct 22, Chris) an edit to an approved melody sends the Player check back to gold */
 db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
  const ap={};['versesOk','tagOk'].forEach(f=>{if(P[f]!=null)ap[f]=P[f]});
- if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(Object.keys(ap).length){scLocal(id,ap);seSeen=now;seMine.add(now);db.collection('songcheck').doc(id).update(Object.assign(ap,{updated:now})).catch(()=>{})}   /* (Oct 21) a helper changed the song while it was open: his approvals still save (they only add ticks) */if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='#B3261E'}return}   /* never alert(): it freezes the page */
+ if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(Object.keys(ap).length){scLocal(id,ap);seSeen=now;seMine.add(now);db.collection('songcheck').doc(id).update(Object.assign(ap,{updated:now})).catch(()=>{})}   /* (Oct 21) a helper changed the song while it was open: his approvals still save (they only add ticks) */if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='var(--ktB3261E)'}return}   /* never alert(): it freezes the page */
  seSeen=now;seMine.add(now);scLocal(id,Object.assign({},P,{updated:now}));return db.collection('songcheck').doc(id).update(Object.assign({},P,{updated:now}))}).catch(()=>{})}
 /* Approve = the desk's one approve flow (scApprove: back to the list at once, task pill Submitted, step 2 next) */
 function approve(){if(!ON)return;clearTimeout(saveT);saveT=null;tagOut();const P=toDoc();Object.assign(DOC,P);
@@ -2312,11 +2317,11 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 #shortchk .shh .tb{margin-left:auto;height:36px}
 #shortchk .shsrc{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 #shortchk .sht{font:600 18px var(--display);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#shortchk .shv{position:relative;width:100%;aspect-ratio:16/9;max-height:calc(100vh - 450px);margin:0 auto;background:#000;border-radius:10px;overflow:hidden}
+#shortchk .shv{position:relative;width:100%;aspect-ratio:16/9;max-height:calc(100vh - 450px);margin:0 auto;background:var(--kb000);border-radius:10px;overflow:hidden}
 @media (min-width:1000px){#shortchk .shv{max-height:calc(100vh - 390px)}}
 #shortchk .shv iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 #shortchk .shst{font-size:13px;font-weight:700;white-space:nowrap}
-#shortchk .shst.ok{color:#1F9D55}#shortchk .shst.no{color:var(--red)}
+#shortchk .shst.ok{color:var(--kt1F9D55)}#shortchk .shst.no{color:var(--red)}
 #shortchk .shnote{height:44px;box-sizing:border-box;font:inherit;font-size:15px;width:100%;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 #shortchk .shcuts{font-size:13px;color:var(--ink);line-height:1.35;max-height:2.7em;overflow:hidden}
 #shortchk .shcuts b{color:var(--teal)}
@@ -2327,40 +2332,40 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 #shortchk .shbody .shchks{grid-template-columns:1fr}
 #shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
 @media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
-#shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:#000}
-#shortchk .shv img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
+#shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:var(--kb000)}
+#shortchk .shv img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--kb000)}
 /* (Oct 17, Chris) a row's V1 · Ready / Checks pill sits at the row's bottom right, the same spot on every row */
 #list .chc:has(.ltag),#pop .chc:has(.ltag){position:relative}#list .chc .ltag,#pop .chc .ltag{position:absolute;right:14px;bottom:11px;margin:0!important}#list .chc:has(.ltag)>span,#pop .chc:has(.ltag)>span{padding-right:120px}#list .chc.shiprow .ltag,#pop .chc.shiprow .ltag{position:static;margin-left:6px!important}/* Oct 20 Chris: on Ships rows the pill sat on the red ship date: keep it inline after the title */
 #songchk .ctcard{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80vw,1100px);max-width:calc(100vw - 32px);height:min(88vh,860px);box-sizing:border-box;background:var(--card,#fff);border-radius:18px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;z-index:61;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 #songchk .cth{display:flex;align-items:center;gap:10px;flex-wrap:nowrap}#songchk .cth .t{font:600 19px var(--display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px}
 #songchk .ctlvp{width:140px;font-size:12px;font-weight:600;color:var(--teal-ink,#1f6f66)}#songchk .ctlvs{display:inline-flex;gap:4px}#songchk .ctlvs .tb{width:96px}
-#songchk .ctlvs .tb.on{background:var(--teal);color:#fff;border-color:var(--teal)}#songchk .ctts{font-size:13px;color:var(--muted,#6b7280);white-space:nowrap}#songchk .ctsp{flex:1}#songchk .ctplay{width:96px}
+#songchk .ctlvs .tb.on{background:var(--teal);color:var(--ktFFF);border-color:var(--teal)}#songchk .ctts{font-size:13px;color:var(--muted,#6b7280);white-space:nowrap}#songchk .ctsp{flex:1}#songchk .ctplay{width:96px}
 #songchk #ct-ta{flex:1;width:100%;box-sizing:border-box;resize:none;border:1.5px solid var(--line,#cfd8d5);border-radius:12px;padding:16px 18px;font:15px/1.6 ui-monospace,Menlo,monospace;color:var(--ink);background:var(--card,#fff);white-space:pre;overflow:auto}
 #songchk #ct-ta[readonly]{background:var(--bg,#f6f5f1);color:var(--muted,#6b7280)}
-#songchk .ctft{display:flex;align-items:center;gap:12px}#songchk #ct-msg{color:#b4532a;font-size:13px}#songchk #ct-ok{min-width:200px}#songchk #ct-ok:disabled{opacity:.45;cursor:default}
+#songchk .ctft{display:flex;align-items:center;gap:12px}#songchk #ct-msg{color:var(--ktB4532A);font-size:13px}#songchk #ct-ok{min-width:200px}#songchk #ct-ok:disabled{opacity:.45;cursor:default}
 @media (max-width:600px){#songchk .cth{flex-wrap:wrap}#songchk .ctlvs .tb{width:auto;flex:1}}
-#songchk .sclvs{display:inline-flex;gap:4px}#songchk .sclvs .tb{width:84px;text-align:center}#songchk .sch .scpill{min-width:118px;text-align:center;box-sizing:border-box}   /* (Oct 16 night, Chris) nothing in the header shifts */#songchk .sclvs .tb.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+#songchk .sclvs{display:inline-flex;gap:4px}#songchk .sclvs .tb{width:84px;text-align:center}#songchk .sch .scpill{min-width:118px;text-align:center;box-sizing:border-box}   /* (Oct 16 night, Chris) nothing in the header shifts */#songchk .sclvs .tb.on{background:var(--teal);color:var(--ktFFF);border-color:var(--teal)}
 /* (Oct 16, Chris picked A) computer: full-height card, the tall video fills it top to bottom; note (grows) + buttons at the bottom of the right column */
 #shortchk .shcard.wide{height:calc(100vh - 24px)}
 #shortchk .shcard.wide .shbody{flex:1}
 #shortchk .shcard.wide .shbody .shv{height:100%;width:auto}
 #shortchk .shcard.wide .shside .shnote{flex:1;min-height:60px;resize:none;padding:10px}
-#shortchk .shtime{position:absolute;top:8px;left:8px;z-index:2;background:rgba(0,0,0,.7);color:#fff;font:700 20px/1 ui-monospace,Menlo,monospace;padding:6px 10px;border-radius:8px;pointer-events:none}
+#shortchk .shtime{position:absolute;top:8px;left:8px;z-index:2;background:rgba(0,0,0,.7);color:var(--ktwFFF);font:700 20px/1 ui-monospace,Menlo,monospace;padding:6px 10px;border-radius:8px;pointer-events:none}
 #shortchk .shfl{display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:34vh;min-height:0;flex:0 1 auto;scrollbar-gutter:stable}
 #shortchk .shfi{border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:6px 8px;display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.3;box-sizing:border-box}
 /* (Oct 21, Chris) FINAL check: Tall | Wide | Thumbnail switch (top-tabs look), posting copy box */
 #shortchk .shfsw{flex:0 0 auto}#shortchk .shfsw button{padding:7px 2px}
 #shortchk .shfcp{margin:0;flex:1 1 auto;min-height:0;max-height:110px;overflow:auto;font:12.5px/1.35 var(--body,inherit);font-family:inherit;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:6px 8px;color:var(--ink);box-sizing:border-box;scrollbar-gutter:stable}
 #shortchk .shcard.wide .shfcp{max-height:none;font-size:14px}
-#shortchk .shfwait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
-#shortchk .shfi.good{border-color:#1F9D55}#shortchk .shfi.bad{border-color:var(--red);background:var(--red-soft)}
+#shortchk .shfwait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ktwFFF);font-size:14px;font-weight:700}
+#shortchk .shfi.good{border-color:var(--kl1F9D55)}#shortchk .shfi.bad{border-color:var(--red);background:var(--red-soft)}
 #shortchk .shfh{font-weight:700;color:var(--ink);overflow-wrap:anywhere}#shortchk .shfd{color:var(--muted);overflow-wrap:anywhere}
 #shortchk .shff{display:flex;flex-wrap:wrap;gap:6px}
 #shortchk .shfr{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--teal);background:var(--card);color:var(--teal);font:inherit;font-size:11px;font-weight:700;border-radius:6px;padding:2px;cursor:pointer}
-#shortchk .shfr img{display:block;position:static;width:54px;height:auto;max-height:96px;object-fit:contain;border-radius:3px;background:#000}
+#shortchk .shfr img{display:block;position:static;width:54px;height:auto;max-height:96px;object-fit:contain;border-radius:3px;background:var(--kb000)}
 #shortchk .shfb{display:flex;gap:6px}
 #shortchk .shfo{flex:1;height:30px;font:inherit;font-size:13px;font-weight:700;border:1px solid var(--teal);background:var(--card);color:var(--teal);border-radius:6px;cursor:pointer}
-#shortchk .shfo.on{background:var(--teal);color:#fff}#shortchk .shfo.no{border-color:var(--red);color:var(--red)}#shortchk .shfo.no.on{background:var(--red);color:#fff}
+#shortchk .shfo.on{background:var(--teal);color:var(--ktFFF)}#shortchk .shfo.no{border-color:var(--red);color:var(--red)}#shortchk .shfo.no.on{background:var(--red);color:var(--ktFFF)}
 #shortchk .shseek{border:1px solid var(--teal);background:var(--soft);color:var(--teal);font-weight:700;border-radius:6px;padding:1px 7px;font-size:13px;cursor:pointer}
 #shortchk .shwhat{font-size:13.5px;line-height:1.35;color:var(--ink)}
 #shortchk .shstep{font-size:14px;font-weight:700;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2521,7 +2526,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v325</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v326</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2682,7 +2687,7 @@ function taskRow(t){
 // A centered card over a dimmed, blurred page: nothing behind it moves. "Close" (or tapping the dim background) closes it.
 // Long lists page inside it (Back / More). A review item opens as the pop-up's next page, with "Back".
 let openLinks = null;   // the task whose pop-up is open
-const TLV = [["cant", "Only you", "#5B6470"], ["teach", "Needs your training", "#D19A12"], ["checked", "Cadence does it, you check", "#0F766E"], ["auto", "100% automatic", "#4A7F37"]];
+const TLV = [["cant", "Only you", "var(--ka5B6470)"], ["teach", "Needs your training", "var(--kaD19A12)"], ["checked", "Cadence does it, you check", "var(--ka0F766E)"], ["auto", "100% automatic", "var(--ka4A7F37)"]];
 let trainLv = null;
 function trainPop(){
   const [k, h] = TLV.find(x => x[0] === trainLv) || []; if (!k) return "";
@@ -2753,11 +2758,11 @@ function moveList(t){
 // (Oct 7) Project = a list of every open project
 // (Oct 7) Chris: the project picker shows the same folders as Projects (folder look, not Gmail); tap a folder, then a project
 let pickCat = null;
-const PCOL = {"YouTube and Shorts": "#B42318", "Worship Piano Lab": "#1FA598", "Courses": "#6AA84F", "Sales and Email": "#D19A12", "Systems": "#5B6470", "Family and Money": "#B4582F", "Ideas": "#E07A45"};
+const PCOL = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)", "Ideas": "var(--kaE07A45)"};
 function projList(t){
   const open = projects.filter(p => p.status !== "done"), cats = [...new Set(open.map(p => p.category || "More"))].sort(byAZ);
   const f = c => { const L = open.filter(p => (p.category || "More") === c).sort(byAZ), on = pickCat === c || L.some(p => p.name === t.project) && pickCat == null;
-    return `<div class="msec pfold" style="--cc:${PCOL[c] || "#5B6470"}"><h4 data-pickcat="${esc(c)}" style="cursor:pointer">${esc(c)}<span class="hr"><i>${L.length}</i></span></h4>${on ? `<div class="chgrid">${L.map(p => `<button type="button" class="chc${p.name === t.project ? " cur" : ""}" data-setproj="${esc(p.name)}"><b>${esc(p.name)}</b><span>${p.name === t.project ? "now here" : "move here"}</span></button>`).join("")}</div>` : ""}</div>`; };
+    return `<div class="msec pfold" style="--cc:${PCOL[c] || "var(--ka5B6470)"}"><h4 data-pickcat="${esc(c)}" style="cursor:pointer">${esc(c)}<span class="hr"><i>${L.length}</i></span></h4>${on ? `<div class="chgrid">${L.map(p => `<button type="button" class="chc${p.name === t.project ? " cur" : ""}" data-setproj="${esc(p.name)}"><b>${esc(p.name)}</b><span>${p.name === t.project ? "now here" : "move here"}</span></button>`).join("")}</div>` : ""}</div>`; };
   return `<div class="pfolds">${cats.map(f).join("")}</div>` + lfoot('data-projcancel="1"');
 }
 function moveCal(t){
@@ -2929,7 +2934,7 @@ function labBoard(){
   const rows = ch.map((c, i) => { const cnt = revCounts(c.lessons);
     const head = `<button type="button" class="labrow${labOpen === i ? " on" : ""}" data-labch="${i}" aria-expanded="${labOpen === i}"><b>Chapter ${i + 1}: ${esc(c.name)}</b><span class="tn">${esc(countLine(cnt))}</span><span class="labdots">${c.lessons.map(L => `<i class="rs-${L.s}"></i>`).join("")}</span></button>`;
     return head; });
-  if (phone()) return `<div class="msec" style="--cc:#1FA598"><h4>Lab chapters<span class="hr"><i>${rows.length}</i>${sortCtl()}</span></h4><div class="chgrid">${srtBy(rows.map((r, i) => [r, i]), () => 3, ([, i]) => (ch[i].lessons || []).filter(L => L.s !== "good").length * 5).map(([r]) => r).join("")}</div></div>`;
+  if (phone()) return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Lab chapters<span class="hr"><i>${rows.length}</i>${sortCtl()}</span></h4><div class="chgrid">${srtBy(rows.map((r, i) => [r, i]), () => 3, ([, i]) => (ch[i].lessons || []).filter(L => L.s !== "good").length * 5).map(([r]) => r).join("")}</div></div>`;
   return `<div class="labboard"><p class="tn">Tap a lesson to open it on Test. Use Good or Fix on its cards; colours update hourly. <span class="rs-key"><i class="rs-none"></i>not checked <i class="rs-fix"></i>fix sent <i class="rs-good"></i>good <i class="rs-fixed"></i>fixed, check again</span></p>${rows.join("")}</div>`;
 }
 // (Oct 4) every project he isn't working on: one tap puts it on the board (Work on now), Quick / Longer set its size
@@ -3056,7 +3061,7 @@ function funnelPop(){
   const sd = SD(); if (!sd || fDet == null) return "";
   const {from, to, pf, lbl} = fRange(), days = sDays(sd, from, to), dates = []; for (let k = from; k <= to; k = addD(k, 1)) dates.push(k);
   const pdays = dates.map((_, i) => sDays(sd, addD(pf, i), addD(pf, i))[0] || null), pname = fPer === "day" ? "7 days before" : "period before";
-  const COLS = ["#0F766E", "#B4582F", "#5B6470", "#D19A12", "#1FA598", "#E07A45"];
+  const COLS = ["var(--ka0F766E)", "var(--kaB4582F)", "var(--ka5B6470)", "var(--kaD19A12)", "var(--ka1FA598)", "var(--kaE07A45)"];
   const top = (m, n) => { const L = Object.entries(m).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]); if (L.length <= n) return L; const rest = L.slice(n).reduce((a, e) => a + e[1], 0); return [...L.slice(0, n), ["Other", rest]]; };
   let body = "";
   if (fDet === 0){
@@ -3110,7 +3115,7 @@ function yFunnel(){
   const steps = [pct(cv[1], cv[0]) && pct(cv[1], cv[0]) + " visited", pct(cv[2], cv[1]) && pct(cv[2], cv[1]) + " signed up", pct(cv[3], cv[1]) && pct(cv[3], cv[1]) + " to checkout", pct(cv[4], cv[3]) && pct(cv[4], cv[3]) + " bought", cv[4] ? usd(cv[5] / cv[4]) + " each" : ""];
   const socPart = noYT && cv[0] != null;   // YouTube lags ~2 days: a partial total isn't compared
   const bars = N.map((n, i) => { const v = cv[i], a = pv[i], r = v != null && a && !(i === 0 && socPart) ? (v - a) / a : null;
-    const col = r == null ? "#D19A12" : r >= 0.25 ? "#4A7F37" : r >= 0.05 ? "#6AA84F" : r <= -0.05 ? "#B42318" : "#D19A12";
+    const col = r == null ? "var(--kaD19A12)" : r >= 0.25 ? "var(--ka4A7F37)" : r >= 0.05 ? "var(--ka6AA84F)" : r <= -0.05 ? "var(--kaB42318)" : "var(--kaD19A12)";
     const tag = i === 0 && v == null ? "not in yet" : i === 0 && socPart ? "YouTube not in yet" : r == null ? "" : Math.abs(r) < 0.05 ? "same" : (r > 0 ? "▲ " : "▼ ") + Math.round(Math.abs(r) * 100) + "%";
     return `<button type="button" class="fbar" data-fdet="${i}" title="${n}: ${FHINT[i]}. Click for the breakdown." style="width:${100 - i * 10}%;background:${col}"><span>${n} ${v == null ? "n/a" : F[i](v)}</span>${tag ? `<small>${tag}</small>` : ""}</button>` + (i < 5 ? `<div class="fstep">↓ ${steps[i] || ""}</div>` : ""); }).join("");
   return `<div class="fcard"><div class="fhead"><button type="button" class="small" data-foff="-1" aria-label="Day before">‹</button><b>${esc(lbl)}</b><button type="button" class="small" data-foff="1" ${fPer === "day" && fOff >= 0 ? "disabled" : ""} aria-label="Day after">›</button></div>
@@ -3118,7 +3123,7 @@ function yFunnel(){
     <div class="fbars">${bars}</div><span class="tn" style="text-align:center">vs ${fPer === "day" ? "the 6 days before" : "the period before"}</span></div>`;
 }
 // (Oct 5) Chris: follower growth for every platform on one page (Money Map > Followers for now)
-const FOLC = {YouTube: "#B42318", Facebook: "#0F766E", Instagram: "#B4582F", TikTok: "#5B6470"};
+const FOLC = {YouTube: "var(--kaB42318)", Facebook: "var(--ka0F766E)", Instagram: "var(--kaB4582F)", TikTok: "var(--ka5B6470)"};
 function followersView(){
   const sd = SD(); if (!sd) return `<div class="empty"><b>Follower numbers show up after the next refresh</b></div>`;
   fLinesM = [];
@@ -3141,7 +3146,7 @@ function followersView(){
 // days: [date, visits per source, YouTube visit starts, orders [[source, $, [product numbers]]]]; shorts: [date, title, seconds, type, YT views, TikTok views, IG likes]
 let mpTab = (() => { try { return localStorage.getItem("fd-mptab") || "money"; } catch { return "money"; } })(), mpExp = null, mpWin = 4;
 const MPT = [["money", "Money"], ["buy", "What they buy"], ["same", "Same Short"], ["len", "Length"], ["win", "Winners"]];
-const MPAPPS = 5, MPC = {YouTube: "#B42318", Instagram: "#B4582F", Facebook: "#0F766E", TikTok: "#5B6470", X: "#2a2f34"};
+const MPAPPS = 5, MPC = {YouTube: "var(--kaB42318)", Instagram: "var(--kaB4582F)", Facebook: "var(--ka0F766E)", TikTok: "var(--ka5B6470)", X: "var(--ka2A2F34)"};
 const SOC = () => stats.find(x => x.id === "social");
 function mpAgg(S, from, to){
   const n = S.src.length, a = {visO: Array(n).fill(0), vis: Array(n).fill(0), yt: Array(S.ytk.length).fill(0), ord: Array(n).fill(0), rev: Array(n).fill(0), prod: S.src.map(() => ({})), mon: S.src.map(() => ({})), days: 0};
@@ -3171,7 +3176,7 @@ function mpView(){
       const val = i => i === S.src.length ? cur.rev.slice(MPAPPS).reduce((s, x) => s + x, 0) : cur.rev[i], noCmp = pf < S.ord_from, pv = i => noCmp ? 0 : (i === S.src.length ? prv.rev.slice(MPAPPS).reduce((s, x) => s + x, 0) : prv.rev[i]) / (avgN || 1);
       const vis = i => i === S.src.length ? cur.vis.slice(MPAPPS).reduce((s, x) => s + x, 0) : cur.vis[i], visO = i => i === S.src.length ? cur.visO.slice(MPAPPS).reduce((s, x) => s + x, 0) : cur.visO[i], ords = i => i === S.src.length ? cur.ord.slice(MPAPPS).reduce((s, x) => s + x, 0) : cur.ord[i];
       const max = Math.max(1, ...rows.map(([, i]) => val(i)), val(S.src.length));
-      const one = (n, i) => { const v = val(i), p = pv(i), r = p ? (v - p) / p : null, col = !v && !p ? "#B9BEC5" : r == null ? "#0F766E" : r >= 0.25 ? "#4A7F37" : r >= 0.05 ? "#6AA84F" : r <= -0.05 ? "#B42318" : "#D19A12";
+      const one = (n, i) => { const v = val(i), p = pv(i), r = p ? (v - p) / p : null, col = !v && !p ? "var(--kaB9BEC5)" : r == null ? "var(--ka0F766E)" : r >= 0.25 ? "var(--ka4A7F37)" : r >= 0.05 ? "var(--ka6AA84F)" : r <= -0.05 ? "var(--kaB42318)" : "var(--kaD19A12)";
         const tag = r == null ? (v && !noCmp ? "new" : "") : Math.abs(r) < 0.05 ? "same" : (r > 0 ? "▲ " : "▼ ") + Math.round(Math.abs(r) * 100) + "%", key = "m" + i;
         let h = `<button type="button" class="mprow${mpExp === key ? " on" : ""}" data-mpexp="${key}"><span class="mpn">${esc(n)}</span><span class="mpv">${usd(v)}</span>${mpBar(v, max, col)}<span class="mps">${vis(i).toLocaleString()} visits · ${ords(i)} order${ords(i) === 1 ? "" : "s"} · ${visO(i) && v ? usd2(v / visO(i)) : "$0"} per visit${tag ? ` · <em style="color:${col}">${tag}</em>` : ""}</span></button>`;
         if (mpExp === key){ const ix = i === S.src.length ? S.src.map((_, j) => j).slice(MPAPPS) : [i], P = {}, M = {};
@@ -3192,7 +3197,7 @@ function mpView(){
       const max = Math.max(1, ...L.flatMap(([, i]) => Object.values(cur.prod[i])));
       body = L.length ? `<div class="mplist">${L.map(([n, i]) => { const P = Object.entries(cur.prod[i]).sort((p, q) => q[1] - p[1]), key = "b" + i, open = mpExp === key, show = open ? P : P.slice(0, 3);
         return `<button type="button" class="mprow${open ? " on" : ""}" data-mpexp="${key}"><span class="mpn">${esc(n)}${i >= MPAPPS ? ' <small class="mu">(not an app)</small>' : ""}</span><span class="mpv">${cur.ord[i]} order${cur.ord[i] === 1 ? "" : "s"} · ${usd(cur.rev[i])}</span>`
-          + `<span class="mptri" style="grid-template-columns:96px minmax(0,1fr) 30px">${show.map(([k, c]) => `<span>${esc(k)}</span>${mpBar(c, max, MPC[n] || "#0F766E")}<b>${c}</b>`).join("")}</span>${!open && P.length > 3 ? `<span class="mps">and ${P.length - 3} more: tap to see all</span>` : ""}</button>`; }).join("")}</div><span class="tn" style="text-align:center">Items bought in orders traced to each source (an order can hold a bump or upsell too).</span>`
+          + `<span class="mptri" style="grid-template-columns:96px minmax(0,1fr) 30px">${show.map(([k, c]) => `<span>${esc(k)}</span>${mpBar(c, max, MPC[n] || "var(--ka0F766E)")}<b>${c}</b>`).join("")}</span>${!open && P.length > 3 ? `<span class="mps">and ${P.length - 3} more: tap to see all</span>` : ""}</button>`; }).join("")}</div><span class="tn" style="text-align:center">Items bought in orders traced to each source (an order can hold a bump or upsell too).</span>`
         : none("No paid orders traced to a source in this period.");
     }
   } else {
@@ -3227,12 +3232,12 @@ function weekScreen(seg){
   let last = "", tiles = "";
   for (const t of L){ if (sortBy === "imp" && t.date !== last){ tiles += `<span class="day pday">${esc(dayLabel(t.date))}</span>`; last = t.date; } tiles += tile(t); }
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}</span></div>
-    <div class="msec" style="--cc:#D19A12"><h4>${sub === "next" ? "Next week" : "This week"} <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4>
+    <div class="msec" style="--cc:var(--kaD19A12)"><h4>${sub === "next" ? "Next week" : "This week"} <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4>
     <div class="chgrid">${tiles || '<b style="font-size:16px">Nothing planned this week.</b>'}</div></div></div>`;
 }
 /* (Oct 13) homeQs: tried and REMOVED the same day (Chris: no text questions on the page; decisions come in chat as pictures, one at a time) */
 function homeQs(){ const Q = needList().filter(x => x.k === "q"); if (!Q.length) return "";
-  return `<div class="msec" style="--cc:#1FA598"><h4>Questions <span class="hr"><i>${Q.length}</i></span></h4><div class="chgrid">${Q.map(x => `<button type="button" class="chc" data-need="q:${esc(x.v.id)}"><b>${esc(String(x.t).length > 60 ? String(x.t).slice(0, 60) + "…" : x.t)}</b><span>${esc(x.v.project || "question")}</span></button>`).join("")}</div></div>`; }
+  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Questions <span class="hr"><i>${Q.length}</i></span></h4><div class="chgrid">${Q.map(x => `<button type="button" class="chc" data-need="q:${esc(x.v.id)}"><b>${esc(String(x.t).length > 60 ? String(x.t).slice(0, 60) + "…" : x.t)}</b><span>${esc(x.v.project || "question")}</span></button>`).join("")}</div></div>`; }
 function morningScreen(seg){
   const sd = SD(), yday = sd && sd.days.find(d => d.d === addD(azToday(), -1));
   const nNeed = needsItems().length;
@@ -3251,10 +3256,10 @@ function morningScreen(seg){
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}${labTestPill()}</span></div>
-    <div class="mgrid"><div class="mleft">${homeStuck()}${homeReplies()}<div class="msec" style="--cc:#D19A12"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
+    <div class="mgrid"><div class="mleft">${homeStuck()}${homeReplies()}<div class="msec" style="--cc:var(--kaD19A12)"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
       <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
-    ${next.length ? `<div class="msec" style="--cc:#6AA84F"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
+    ${next.length ? `<div class="msec" style="--cc:var(--ka6AA84F)"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
     ${homeLater()}
     ${homeQueue()}
     ${homeShorts()}
@@ -3280,50 +3285,50 @@ function homeLater(){
   // (Oct 8) Chris: "I need to see everything that's DUE this week" = deadlines (task.due) up to Sunday + this week's chores, soonest first, late ones on top
   // (Oct 8, 2nd) Chris: not "due" (tasks are due every day): the BIG things that SHIP this week (video posts, Lab chapter, Shorts start, song release) = task.ships
   const D = tasks.filter(t => !t.done && !t.removed && t.ships && t.ships <= wkEnd && !t.labKey)   /* (Oct 13) Chris: per-lesson/per-song test rows are for Today only, never in Ships this week */.sort((a, b) => a.ships.localeCompare(b.ships) || (a.order ?? 99) - (b.order ?? 99));
-  const due = `<div class="msec" style="--cc:#B4582F"><h4>Ships this week <span class="hr"><i>${D.length || ""}</i></span></h4><div class="chgrid">${D.map(t => { const inner = `<b>${esc(t.short || t.title)}${labTag(t)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>'}</div></div>`;
+  const due = `<div class="msec" style="--cc:var(--kaB4582F)"><h4>Ships this week <span class="hr"><i>${D.length || ""}</i></span></h4><div class="chgrid">${D.map(t => { const inner = `<b>${esc(t.short || t.title)}${labTag(t)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>'}</div></div>`;
   return due;   /* (Oct 13) Chris: Home = Today + Ships this week only; This week / This month folders removed */
 }
 // (Oct 10) Chris: a Home folder "Cadence tasks" = every open to-do Cadence can do (has a cost), with Cadence's own time (cmins) so he can sort and hand them over
 // (Oct 10) Chris: each Cadence task shows where it stands, in words AND a colour (edge + dot)
-function cadStatus(t){ if (reviews.some(r => r.group === t.id && r.status === "fix")) return ["Fix sent", "#E07A45"];
-  if (t.handoff === "review") return ["Ready to check", "#1FA598"];
+function cadStatus(t){ if (reviews.some(r => r.group === t.id && r.status === "fix")) return ["Fix sent", "var(--kaE07A45)"];
+  if (t.handoff === "review") return ["Ready to check", "var(--ka1FA598)"];
   if (t.handoff === "cadence" || t.handoff === "teach"){
     /* (Oct 20, Chris) the pill tells the truth: 'In progress' only while a queue row naming this task is working; else the task's own progress text */
-    if ((queueRows || []).some(q => q.status === "working" && ((q.ref || "").indexOf(t.id) >= 0 || (q.title || "").indexOf(t.id) >= 0))) return ["In progress", "#E8B53A"];
+    if ((queueRows || []).some(q => q.status === "working" && ((q.ref || "").indexOf(t.id) >= 0 || (q.title || "").indexOf(t.id) >= 0))) return ["In progress", "var(--kaE8B53A)"];
     const pg = String(t.progress || "").trim().toLowerCase();
-    if (pg.indexOf("waiting") === 0) return ["Waiting on you", "#7A8FD6"];
-    if (pg.indexOf("queued") === 0) return ["Queued", "#9AA3AD"];
+    if (pg.indexOf("waiting") === 0) return ["Waiting on you", "var(--ka7A8FD6)"];
+    if (pg.indexOf("queued") === 0) return ["Queued", "var(--ka9AA3AD)"];
   }
-  return ["Not started", "#B9BEC5"]; }
+  return ["Not started", "var(--kaB9BEC5)"]; }
 /* (Oct 13) Chris: automations report themselves. Red/gold cards on top of Home = a job missed, failed or to-dos look stale; tap = details in place */
 function healthLine(){ const h = stats.find(x => x.id === "health") || {}; if (!h.checkedAt) return "";
   const t = new Date(h.checkedAt), old = Date.now() - t > 45 * 60e3;
   if (!old && !(+h.failed) && !(+h.missed)) return "";   /* (Oct 13) Chris: the line made Home shift when a folder opened; show it only when something is wrong */
   /* (Oct 13) shown as a red folder card like the alert cards, so opening a folder never shifts Home */
-  return `<div class="msec" style="--cc:#D9534F;border-left:6px solid var(--cc)"><h4>${old ? "Checks stopped at " + t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : esc(h.line || "")}<span class="hr"><i>1</i></span></h4></div>`; }
+  return `<div class="msec" style="--cc:var(--kaD9534F);border-left:6px solid var(--cc)"><h4>${old ? "Checks stopped at " + t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : esc(h.line || "")}<span class="hr"><i>1</i></span></h4></div>`; }
 /* (Oct 13) alert cards are normal folders: tap opens the list (the folder system opens/closes them) */
 function alertCards(){ return alerts.filter(a => a.kind !== "stale").map(a => {   /* (Oct 13) stale to-dos are Cadence's morning job, never a card on Chris's Home */ const items = a.items || [];
-  return `<div class="msec" style="--cc:${a.level === "red" ? "#D9534F" : "#E8B53A"};border-left:6px solid var(--cc)"><h4>${esc(a.title || a.id)} <span class="hr"><i>${items.length || 1}</i></span></h4><div class="chgrid">${a.detail ? `<span class="tn">${esc(a.detail)}</span>` : ""}${items.map(x => `<button type="button" class="chc" data-tlinks="${esc(x.id)}"><b>${esc(x.title || x.id)}</b><span>${esc(x.why || "")}</span></button>`).join("")}</div></div>`; }).join(""); }
+  return `<div class="msec" style="--cc:${a.level === "red" ? "var(--kaD9534F)" : "var(--kaE8B53A)"};border-left:6px solid var(--cc)"><h4>${esc(a.title || a.id)} <span class="hr"><i>${items.length || 1}</i></span></h4><div class="chgrid">${a.detail ? `<span class="tn">${esc(a.detail)}</span>` : ""}${items.map(x => `<button type="button" class="chc" data-tlinks="${esc(x.id)}"><b>${esc(x.title || x.id)}</b><span>${esc(x.why || "")}</span></button>`).join("")}</div></div>`; }).join(""); }
 /* (Oct 13) Chris: chapter testing lives on the Front Desk too. One folder = every Lab lesson on Test not approved yet, by chapter;
    tap a lesson = it opens in Lab Test, where he leaves Fix notes and approves at the end of the lesson */
 function homeLabTest(){ const lab = stats.find(x => x.id === "lab"); if (!lab || !lab.chapters) return "";
-  const ST = {fix: ["Fix sent", "#E8B53A"], fixed: ["Fixed, check again", "#1FA598"]};
+  const ST = {fix: ["Fix sent", "var(--kaE8B53A)"], fixed: ["Fixed, check again", "var(--ka1FA598)"]};
   const rows = []; lab.chapters.forEach((c, ci) => (c.lessons || []).filter(L => L.s !== "good").forEach(L => rows.push([ci, c, L])));
   if (!rows.length) return "";
   const LAB_NOW = ["chords", "speed", "songs"];   /* chapters being tested now, in ship order; update after each ship */
   const rk = c => { const i = LAB_NOW.indexOf(c.id); return i < 0 ? 99 : i; };
   rows.sort((x, y) => rk(x[1]) - rk(y[1]) || x[0] - y[0] || (x[2].n || 0) - (y[2].n || 0));
-  const row = ([ci, c, L]) => { const st = ST[L.s] || ["Not checked", "#B9BEC5"];
+  const row = ([ci, c, L]) => { const st = ST[L.s] || ["Not checked", "var(--kaB9BEC5)"];
     return `<a class="chc" style="text-decoration:none;color:inherit" href="${esc(L.u || "")}" target="_blank" rel="noopener"><b>Ch ${ci + 1} · L${L.n || ""} ${esc(L.t || "")}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${st[1]};margin-right:6px;vertical-align:middle"></i>${esc(c.short || c.name || "")} · ${st[0]}</span></a>`; };
-  return `<div class="msec" style="--cc:#1FA598"><h4>Lab testing <span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(row).join("")}</div></div>`; }
+  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Lab testing <span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(row).join("")}</div></div>`; }
 function homeAutomations(){ if (!autoJobs.length) return "";
   const when = s => { if (!s) return "never"; const d = new Date(s); return (d.toDateString() === new Date().toDateString() ? "Today " : d.toLocaleDateString([], {weekday: "short"}) + " ") + d.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}); };
   const bad = autoJobs.filter(j => alerts.some(a => a.id === "job-" + j.id)).length;
   const row = j => { const r = autoRuns.find(x => x.id === j.id) || {}, off = j.enabled === false, red = alerts.some(a => a.id === "job-" + j.id) || r.last_status === "failed";
-    const dot = off || j.paused || !j.heartbeat ? "#B9BEC5" : red ? "#D9534F" : r.last_status === "running" ? "#E8B53A" : r.last_status === "ok" ? "#6AA84F" : "#B9BEC5";
+    const dot = off || j.paused || !j.heartbeat ? "var(--kaB9BEC5)" : red ? "var(--kaD9534F)" : r.last_status === "running" ? "var(--kaE8B53A)" : r.last_status === "ok" ? "var(--ka6AA84F)" : "var(--kaB9BEC5)";
     /* row like Cadence tasks: name on the left, dot + trigger + last run on the right; one tap turns it On/Off (tap again to undo) */
     return `<button type="button" class="chc" data-autotoggle="${esc(j.id)}"><b>${esc(j.name || j.id)}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${dot};margin-right:6px;vertical-align:middle"></i>${off ? "Off · " : ""}${esc(j.trigger || "")} · ${esc(when(r.last_start))}</span></button>`; };
-  return `<div class="msec" style="--cc:#6AA84F"><h4>Automations${bad ? `<span class="n">${bad}</span>` : ""} <span class="hr"><i>${autoJobs.length}</i></span></h4><div class="chgrid">${autoJobs.map(row).join("")}</div></div>`; }
+  return `<div class="msec" style="--cc:var(--ka6AA84F)"><h4>Automations${bad ? `<span class="n">${bad}</span>` : ""} <span class="hr"><i>${autoJobs.length}</i></span></h4><div class="chgrid">${autoJobs.map(row).join("")}</div></div>`; }
 function homeCadence(){
   const L0 = tasks.filter(t => !t.done && !t.removed && withCad(t) && !t.test);   /* (Oct 13) only 100%-Cadence work, plus work handed back for his check */
   const L1 = sortBy === "time" ? L0.slice().sort((a, b) => (+a.cmins || 9999) - (+b.cmins || 9999) || byImp(a, b)) : sortL(L0);
@@ -3331,7 +3336,7 @@ function homeCadence(){
   const rank = t => ({"Ready to check": 0, "Fix sent": 1, "Waiting on you": 2, "Not started": 3, "Queued": 3, "In progress": 4})[cadStatus(t)[0]] ?? 3;
   const L = L1.map((t, i) => [t, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
   const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}" data-cad="1"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
-  return `<div class="msec" style="--cc:#0F766E"><h4>Cadence tasks <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("") || '<span class="tn">Nothing for Cadence right now.</span>'}</div></div>`;
+  return `<div class="msec" style="--cc:var(--ka0F766E)"><h4>Cadence tasks <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("") || '<span class="tn">Nothing for Cadence right now.</span>'}</div></div>`;
 }
 function homeProjects(){
   const wOf = p => p.when || ({chore: "weekly", active: "now", later: "next", idea: "someday"})[p.status] || "now";
@@ -3339,7 +3344,7 @@ function homeProjects(){
   if (!L.length) return "";
   const row = p => { const n = tasks.filter(t => !t.done && t.project === p.name).length;
     return `<div class="pc3"><button type="button" class="pc3t" data-popproj="${esc(p.name)}"><b>${esc(p.name)}</b><span>${esc([p.category, n ? n + (n === 1 ? " task" : " tasks") : ""].filter(Boolean).join(" · "))}</span></button></div>`; };
-  return `<div class="msec" style="--cc:#1FA598"><h4>Current projects<span class="hr"><i>${L.length}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("")}</div></div>`;
+  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Current projects<span class="hr"><i>${L.length}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("")}</div></div>`;
 }
 function labPop(){
   const lab = stats.find(x => x.id === "lab"), c = lab && lab.chapters[labOpen]; if (!c) return "";
@@ -3353,7 +3358,7 @@ function msgLeft(r){ if (r.kind !== "message" || !(r.status === "draft" || r.sta
   return (Date.parse(r.expires || r.posted) + (r.expires ? 0 : 864e5) - Date.now()) / 36e5; }
 function repRow(){ const P = pendingReplies(); if (!P.length) return ""; const apps = [...new Set(P.map(r => r.platform || ""))].filter(Boolean).join(", ");
   const soon = P.map(msgLeft).filter(x => x != null && x > 0).sort((a, b) => a - b)[0];
-  return `<button type="button" class="chc ledge${repOpen ? " rowon" : ""}" data-repopen="1" style="--lc:#D19A12"><b>Replies</b><span>${P.length} to approve${apps ? " · " + esc(apps) : ""}${soon != null ? ` · <b style="color:${soon < 4 ? "var(--red)" : "#97710F"}">a message expires in ${Math.max(1, Math.floor(soon))}h</b>` : ""}</span></button>`; }
+  return `<button type="button" class="chc ledge${repOpen ? " rowon" : ""}" data-repopen="1" style="--lc:var(--kaD19A12)"><b>Replies</b><span>${P.length} to approve${apps ? " · " + esc(apps) : ""}${soon != null ? ` · <b style="color:${soon < 4 ? "var(--red)" : "var(--ka97710F)"}">a message expires in ${Math.max(1, Math.floor(soon))}h</b>` : ""}</span></button>`; }
 // (Oct 8) Chris: tapping it opens the replies right under it, like every other folder (no Home / Handled bar)
 let repOpen = false;
 /* (Oct 11) Chris: replies to approve are their OWN Home folder, first, with the count; gone when none wait. Expiring messages first. */
@@ -3363,7 +3368,7 @@ const PORDER = ["Email", "Facebook", "Instagram", "YouTube", "TikTok", "X"];
 const pRank = r => { const i = PORDER.indexOf(/twitter/i.test(r.platform || "") ? "X" : (r.platform || "")); return i < 0 ? 99 : i; };
 const repSorted = () => pendingReplies().slice().sort((a, b) => pRank(a) - pRank(b) || (repEnd(a) ?? 9e15) - (repEnd(b) ?? 9e15));
 function homeReplies(){ const P = repSorted(); if (!P.length) return ""; setTimeout(() => loadThumbs(P), 0);
-  return `<div class="msec repfold" style="--cc:#D19A12"><h4>Replies <span class="hr"><i><span class="n" style="margin:0">${P.length}</span></i></span></h4><div class="repf">${P.map(replyCard).join("")}</div></div>`; }
+  return `<div class="msec repfold" style="--cc:var(--kaD19A12)"><h4>Replies <span class="hr"><i><span class="n" style="margin:0">${P.length}</span></i></span></h4><div class="repf">${P.map(replyCard).join("")}</div></div>`; }
 const repList = () => `<div class="sublist replist">${repSorted().map(replyCard).join("") || '<span class="tn">No replies waiting.</span>'}</div>`;
 const alsoRow = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
 // (Oct 9) Chris: if it can't be sent from here, don't show it: messages past Meta's 24 h window drop off
@@ -3517,12 +3522,12 @@ function itemCard(i){
 }
 /* (Oct 11) Chris: each platform shows as its own small colour icon (name kept for screen readers) */
 const PICON = {
-  YouTube: '<rect x="1" y="4" width="22" height="16" rx="5" fill="#FF0000"/><path d="M10 8.5v7l6-3.5z" fill="#fff"/>',
-  Instagram: '<defs><linearGradient id="igG" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#FEDA75"/><stop offset=".35" stop-color="#FA7E1E"/><stop offset=".6" stop-color="#D62976"/><stop offset=".85" stop-color="#962FBF"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="6" fill="url(#igG)"/><rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="16.3" cy="7.7" r="1" fill="#fff"/>',
-  TikTok: '<rect x="1" y="1" width="22" height="22" rx="5" fill="#000"/><path d="M13 5v9.5a2.6 2.6 0 1 1-2.6-2.6" fill="none" stroke="#25F4EE" stroke-width="2" transform="translate(-.7 -.5)"/><path d="M13 5v9.5a2.6 2.6 0 1 1-2.6-2.6" fill="none" stroke="#FE2C55" stroke-width="2" transform="translate(.7 .5)"/><path d="M13 5v9.5a2.6 2.6 0 1 1-2.6-2.6M13 5c.4 2 1.8 3.3 3.8 3.4" fill="none" stroke="#fff" stroke-width="2"/>',
-  Facebook: '<circle cx="12" cy="12" r="11" fill="#1877F2"/><path d="M13.3 20v-6.2h2.1l.3-2.5h-2.4V9.8c0-.7.2-1.2 1.2-1.2h1.3V6.4c-.2 0-1-.1-1.9-.1-1.9 0-3.2 1.2-3.2 3.3v1.8H8.6v2.5h2.1V20z" fill="#fff"/>',
-  Email: '<rect x="1" y="4" width="22" height="16" rx="3" fill="#fff" stroke="#ddd"/><path d="M2.5 6.5 12 13.5l9.5-7" fill="none" stroke="#EA4335" stroke-width="2.2" stroke-linejoin="round"/><path d="M2.5 6.5v12" stroke="#4285F4" stroke-width="2.2"/><path d="M21.5 6.5v12" stroke="#34A853" stroke-width="2.2"/>',
-  X: '<rect x="1" y="1" width="22" height="22" rx="5" fill="#000"/><path d="M7 6.5h2.6l8 11h-2.6zM16.8 6.5 7.6 17.5" stroke="#fff" stroke-width="1.6" fill="#fff"/>'
+  YouTube: '<rect x="1" y="4" width="22" height="16" rx="5" fill="var(--kaFF0000)"/><path d="M10 8.5v7l6-3.5z" fill="var(--kaFFF)"/>',
+  Instagram: '<defs><linearGradient id="igG" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="var(--kbFEDA75)"/><stop offset=".35" stop-color="var(--kbFA7E1E)"/><stop offset=".6" stop-color="var(--kbD62976)"/><stop offset=".85" stop-color="var(--kb962FBF)"/><stop offset="1" stop-color="var(--kb4F5BD5)"/></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="6" fill="url(#igG)"/><rect x="6" y="6" width="12" height="12" rx="3.5" fill="none" stroke="var(--klFFF)" stroke-width="1.8"/><circle cx="12" cy="12" r="3" fill="none" stroke="var(--klFFF)" stroke-width="1.8"/><circle cx="16.3" cy="7.7" r="1" fill="var(--kaFFF)"/>',
+  TikTok: '<rect x="1" y="1" width="22" height="22" rx="5" fill="var(--ka000)"/><path d="M13 5v9.5a2.6 2.6 0 1 1-2.6-2.6" fill="none" stroke="var(--kl25F4EE)" stroke-width="2" transform="translate(-.7 -.5)"/><path d="M13 5v9.5a2.6 2.6 0 1 1-2.6-2.6" fill="none" stroke="var(--klFE2C55)" stroke-width="2" transform="translate(.7 .5)"/><path d="M13 5v9.5a2.6 2.6 0 1 1-2.6-2.6M13 5c.4 2 1.8 3.3 3.8 3.4" fill="none" stroke="var(--klFFF)" stroke-width="2"/>',
+  Facebook: '<circle cx="12" cy="12" r="11" fill="var(--ka1877F2)"/><path d="M13.3 20v-6.2h2.1l.3-2.5h-2.4V9.8c0-.7.2-1.2 1.2-1.2h1.3V6.4c-.2 0-1-.1-1.9-.1-1.9 0-3.2 1.2-3.2 3.3v1.8H8.6v2.5h2.1V20z" fill="var(--kaFFF)"/>',
+  Email: '<rect x="1" y="4" width="22" height="16" rx="3" fill="var(--kaFFF)" stroke="var(--klDDD)"/><path d="M2.5 6.5 12 13.5l9.5-7" fill="none" stroke="var(--klEA4335)" stroke-width="2.2" stroke-linejoin="round"/><path d="M2.5 6.5v12" stroke="var(--kl4285F4)" stroke-width="2.2"/><path d="M21.5 6.5v12" stroke="var(--kl34A853)" stroke-width="2.2"/>',
+  X: '<rect x="1" y="1" width="22" height="22" rx="5" fill="var(--ka000)"/><path d="M7 6.5h2.6l8 11h-2.6zM16.8 6.5 7.6 17.5" stroke="var(--klFFF)" stroke-width="1.6" fill="var(--kaFFF)"/>'
 };
 const pIcon = p => { const k = /twitter/i.test(p || "") ? "X" : /gmail|email/i.test(p || "") ? "Email" : p; return PICON[k] ? `<svg class="picon" viewBox="0 0 24 24" width="18" height="18" role="img" aria-label="${esc(p)}"><title>${esc(p)}</title>${PICON[k]}</svg>` : esc(p || ""); };
 /* (Oct 11) Chris: a small picture of the video/post the comment is on. Pictures live in db 'thumbs' (data: URIs; the page can't load outside images), fetched only for replies on screen */
@@ -3539,7 +3544,7 @@ function replyCard(r){
     <span class="pill${r.status==="flagged"||r.status==="failed"?" bad":r.status==="sent"?" fin":r.status==="denied"?" fin":""}">${esc(r.status==="draft"?"to approve":r.status)}</span></div>`;
   // (Oct 8) Chris: comments not in English show the English right under them (filled in when the reply is drafted)
   // (Oct 9) Chris: a private message can only be answered within 24 h of when it was sent: show the time left
-  const left = msgLeft(r), clock = left == null ? "" : left <= 0 ? `<p class="note" style="color:var(--red);font-weight:700">Too late to reply from here: answer in the Meta Business Suite app</p>` : `<p class="note" style="font-weight:700;color:${left < 4 ? "var(--red)" : "#97710F"}">Answer by ${new Date(repEnd(r)).toLocaleString("en-US", {timeZone: "America/Phoenix", weekday: "short", hour: "numeric", minute: "2-digit"})} (${left < 1 ? "under an hour" : Math.floor(left) + "h"} left)</p>`;
+  const left = msgLeft(r), clock = left == null ? "" : left <= 0 ? `<p class="note" style="color:var(--red);font-weight:700">Too late to reply from here: answer in the Meta Business Suite app</p>` : `<p class="note" style="font-weight:700;color:${left < 4 ? "var(--red)" : "var(--ka97710F)"}">Answer by ${new Date(repEnd(r)).toLocaleString("en-US", {timeZone: "America/Phoenix", weekday: "short", hour: "numeric", minute: "2-digit"})} (${left < 1 ? "under an hour" : Math.floor(left) + "h"} left)</p>`;
   // (Oct 21, Chris) side-thread replies: the earlier comments in that conversation sit above the comment (cream box)
   const thr = r.side && Array.isArray(r.thread) && r.thread.length ? `<div class="thrd"><p class="tl">Earlier in this thread</p>${r.thread.map(t => `<p class="te"><b>${esc(t.who)}:</b> ${esc(t.text)}</p>`).join("")}</div>` : "";
   const said = clock + thr + `<p class="said clamp">"${esc(r.text)}"</p>${r.en ? `<p class="tn"><b>In English:</b> ${esc(r.en)}</p>` : ""}${r.subject ? `<p class="tn"><b>Subject:</b> ${esc(r.subject)}</p>` : ""}${safeUrl(r.link) && r.kind !== "message" ? `<a class="ron rlink" href="${esc(r.link)}" target="_blank" rel="noopener">${thumbImg(r)}<span class="from clamp" style="white-space:normal">On: ${esc(r.post || "the video")}</span><span class="rwatch">Watch</span></a>` : r.post || thumbImg(r) ? `<span class="ron">${thumbImg(r)}${r.post ? `<span class="from clamp" style="white-space:normal">On: ${esc(r.post)}</span>` : ""}</span>` : ""}`;   // (Oct 26, Chris) every reply: tap the video (picture, title or Watch) = that post on its own platform, at the comment
@@ -4405,14 +4410,14 @@ function kidsView(){
   const sdays = Object.keys(K.days).filter(d => d >= from && d <= to && Object.keys(KN).some(k => K.days[d][k] && K.days[d][k].day)).sort().reverse();
   const dayHTML = sdays.map(d => { const dl = d === T ? "Today" : sShort(d);
     return Object.entries(KN).map(([k, name]) => { const y = (K.days[d][k] || {}).day; if (!y) return "";
-      return `<div class="kday" style="border-left:4px solid ${KIDC[k] || "#5B6470"}"><b>${esc(name)}${fPer === "day" ? "" : ` <em>· ${esc(dl)}</em>`}</b>${y.built ? `<span>${esc(y.built)}</span>` : ""}${(y.asked || []).length ? `<ul>${y.asked.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}${y.flag ? `<span class="kflag">Check this: ${esc(y.flag)}</span>` : ""}</div>`; }).join(""); }).join("");
+      return `<div class="kday" style="border-left:4px solid ${KIDC[k] || "var(--ka5B6470)"}"><b>${esc(name)}${fPer === "day" ? "" : ` <em>· ${esc(dl)}</em>`}</b>${y.built ? `<span>${esc(y.built)}</span>` : ""}${(y.asked || []).length ? `<ul>${y.asked.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : ""}${y.flag ? `<span class="kflag">Check this: ${esc(y.flag)}</span>` : ""}</div>`; }).join(""); }).join("");
   const sumBox = dayHTML ? `<h5>${fPer === "day" ? (from === T ? "Today" : esc(sShort(from))) : "Each day"}</h5><div class="kdays${fPer === "day" ? " kone" : ""}">${dayHTML}</div>` : (fPer === "day" ? `<p class="tn">No summary for this day yet (written at 9pm).</p>` : "");
   const pct = (w, t) => t ? Math.round(100 * w / t) : 0;
   const rows = Object.entries(K.kids || {}).map(([k, name]) => {
     const p = pct(cur.w[k] || 0, cur.t), q = pct(prv.w[k] || 0, prv.t), L = (cur.S[k] || []).sort((x, y) => (y.d + y.l).localeCompare(x.d + x.l)), days = new Set(L.map(s => s.d)).size;
     const tag = !cur.t || (!p && !q) ? "" : p === q ? "same as before" : (p > q ? "▲" : "▼") + " was " + q + "% before";
     const list = L.length ? `<div class="kalist">${L.map(s => `<div class="kas"><b>${esc(sShort(s.d))} · ${kTime(s.f)}${s.l !== s.f ? "-" + kTime(s.l) : ""}</b><span>${esc(s.sum || s.t)}</span></div>`).join("")}</div>` : `<p class="tn">No sessions in this period.</p>`;
-    return `<div class="mprow" style="cursor:default"><span class="mpn">${esc(name)}</span><span class="mpv">${p || !cur.w[k] ? p : "under 1"}%</span>${mpBar(cur.t ? 100 * (cur.w[k] || 0) / cur.t : 0, 100, KIDC[k] || "#5B6470")}<span class="mps">${L.length} session${L.length === 1 ? "" : "s"} · ${days} day${days === 1 ? "" : "s"}${tag ? " · " + tag : ""}</span></div><h5>What ${esc(name)} worked on</h5>${list}`; }).join("");
+    return `<div class="mprow" style="cursor:default"><span class="mpn">${esc(name)}</span><span class="mpv">${p || !cur.w[k] ? p : "under 1"}%</span>${mpBar(cur.t ? 100 * (cur.w[k] || 0) / cur.t : 0, 100, KIDC[k] || "var(--ka5B6470)")}<span class="mps">${L.length} session${L.length === 1 ? "" : "s"} · ${days} day${days === 1 ? "" : "s"}${tag ? " · " + tag : ""}</span></div><h5>What ${esc(name)} worked on</h5>${list}`; }).join("");
   return `<div class="today1 mpa kapp"><div class="fcard" style="gap:8px">${head}</div>${sumBox}${cur.t ? rows : `<p class="note">No Claude use on this Mac in this period.</p>`}<span class="tn" style="text-align:center">Share of all Claude Code use on this Mac. Updates hourly${K.updated ? " (last " + esc(kTime(K.updated.slice(11))) + ")" : ""}.</span></div>`;
 }
 // (Oct 8) Chris picked B (Money Map picker): on the phone Money Map = 2 folders like Projects; each row opens its chart in place
@@ -4442,7 +4447,7 @@ function mDraw(){ if (!mRow) return;
   const f = $("fBudget"); if (f && f.dataset.bv) f.onload = () => { try { f.contentWindow.show(f.dataset.bv); } catch {} }; }
 function moneyFolders(){ $("bar").innerHTML = "";
   const nS = toSort().length, sub = k => k === "sort" ? (nS ? nS + " waiting" : "all sorted") : (Object.values(MROWS).flat().find(r => r[0] === k) || [])[2] || "";
-  $("list").innerHTML = Object.entries(MROWS).map(([f, rows]) => `<div class="msec" style="--cc:${f === "Business" ? "#0F766E" : f === "Family" ? "#B4582F" : "#1FA598"}"><h4>${f}${f === "Family" && nS ? `<span class="n">${nS}</span>` : ""}<span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(([k, t]) =>
+  $("list").innerHTML = Object.entries(MROWS).map(([f, rows]) => `<div class="msec" style="--cc:${f === "Business" ? "var(--ka0F766E)" : f === "Family" ? "var(--kaB4582F)" : "var(--ka1FA598)"}"><h4>${f}${f === "Family" && nS ? `<span class="n">${nS}</span>` : ""}<span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(([k, t]) =>
     `<button type="button" class="chc mrow${mRow === k ? " rowon" : ""}" data-mrow="${k}"><b>${t}${k === "sort" && nS ? `<span class="n">${nS}</span>` : ""}</b><span>${esc(sub(k))}</span></button>` + (mRow === k && oneOpen() === f ? `<div class="mbody">${mBody(k)}</div>` : "")).join("")}</div></div>`).join("");
   mDraw(); }
 // (Oct 11, Chris) pin the open folder header (CSS) and the innermost open row header (here) to the top of the list;
@@ -4896,7 +4901,7 @@ function renderMain(){
     const hz = g => { const s = String(g.horizon || "").toLowerCase(); return s.includes("month") || s.includes("week") ? "m" : s.includes("quarter") ? "q" : "y"; };
     const SP = {"on track": "ok", "at risk": "risk", "behind": "behind"};
     const gc = g => { const st = (g.status || "").toLowerCase(); return `<div class="pc3"><button type="button" class="pc3t" data-popgoal="${esc(g.id)}"><b>${esc(g.title)}</b><span>${esc([g.project, g.by ? "by " + dayLabel(g.by) : ""].filter(Boolean).join(" · "))}</span></button>${st ? `<span class="pill ${SP[st] || ""}">${esc(st)}</span>` : ""}</div>`; };
-    const GC = {m: "#D19A12", q: "#6AA84F", y: "#B42318"};
+    const GC = {m: "var(--kaD19A12)", q: "var(--ka6AA84F)", y: "var(--kaB42318)"};
     const gcol = (k, cls, title) => { const L = srtBy(open.filter(g => hz(g) === k), g => g.imp, g => minsOf(tasks.filter(t => !t.done && g.project && t.project === g.project))); return phone()
       ? `<div class="msec" style="--cc:${GC[k]}"><h4>${title}<span class="hr"><i>${L.length}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(gc).join("") || '<span class="tn">Nothing here.</span>'}</div></div>`
       : `<div class="pcol ${cls}"><h4>${title}</h4>${L.map(gc).join("") || '<span class="tn">Nothing here.</span>'}</div>`; };
@@ -4934,7 +4939,7 @@ function renderMain(){
       const tile = i => `<button type="button" class="chc" data-ideaopen="${esc(i.id)}"><b>${esc(i.short || i.title)}</b><span>${[tasks.some(t => t.fromIdea === i.id && !t.done) ? "added" : ""].filter(Boolean).join(" · ") || "idea"}</span>${tmR(i.mins)}</button>`;
       bar = pseg;
       body = cats.length ? `<div class="today1 morning">${cats.map(c => { const L = srt(ideas.filter(i => icat(i) === c)), open = ideaCatOpen.has(c);
-        return `<div class="msec${open ? "" : " icl"}" style="--cc:#D19A12"><h4 data-icatopen="${esc(c)}" style="cursor:pointer">${esc(c)} <span class="hr"><i>${L.length}</i>${open ? sortCtl() : ""}</span></h4>${open ? `<div class="chgrid">${L.map(tile).join("")}</div>` : ""}</div>`; }).join("")}</div>` : `<div class="empty"><b>No ideas yet</b><span>Tell Cadence your ideas.</span></div>`;
+        return `<div class="msec${open ? "" : " icl"}" style="--cc:var(--kaD19A12)"><h4 data-icatopen="${esc(c)}" style="cursor:pointer">${esc(c)} <span class="hr"><i>${L.length}</i>${open ? sortCtl() : ""}</span></h4>${open ? `<div class="chgrid">${L.map(tile).join("")}</div>` : ""}</div>`; }).join("")}</div>` : `<div class="empty"><b>No ideas yet</b><span>Tell Cadence your ideas.</span></div>`;
       $("bar").innerHTML = bar; $("list").innerHTML = body; return;
     }
     // Chris (Oct 3: "organized based on category", "I'm a visual person"): one column per category, every project in it
@@ -4962,7 +4967,7 @@ function renderMain(){
     const tc = t => `<div class="pc3 td" draggable="true" data-dragtask="${esc(t.id)}"><button type="button" class="pc3t" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>To-do</span></button></div>`;
     const loose = tasks.filter(t => !t.done && !t.date && !projects.some(p => p.name === t.project)).sort(byOrder);
     // (Oct 7) Chris: on the phone the project folders look exactly like To do today: coloured card, title, count (#), sort, collapsible
-    const colH = (title, sub2, html, size, m) => phone() ? `<div class="msec" style="--cc:${size === "quick" ? "#6AA84F" : size === "long" ? "#B42318" : size === "rest" ? "#5B6470" : "#D19A12"}"${size === "quick" || size === "long" ? ` data-dropsize="${size}"` : ""}><h4>${title}<span class="hr"><i>${(html.match(/class="pc3[ "]/g) || []).length}</i>${size ? sortCtl() : ""}</span></h4><div class="chgrid">${html || '<span class="tn">Nothing here.</span>'}</div></div>` : `<div class="pcol ${size === "quick" ? "cq" : size === "long" ? "cl" : "cw"}"${size ? ` data-dropsize="${size}"` : ""}><h4>${title}<i>${sub2}</i>${size ? sortCtl() : ""}</h4>${html || '<span class="tn">Nothing here.</span>'}</div>`;
+    const colH = (title, sub2, html, size, m) => phone() ? `<div class="msec" style="--cc:${size === "quick" ? "var(--ka6AA84F)" : size === "long" ? "var(--kaB42318)" : size === "rest" ? "var(--ka5B6470)" : "var(--kaD19A12)"}"${size === "quick" || size === "long" ? ` data-dropsize="${size}"` : ""}><h4>${title}<span class="hr"><i>${(html.match(/class="pc3[ "]/g) || []).length}</i>${size ? sortCtl() : ""}</span></h4><div class="chgrid">${html || '<span class="tn">Nothing here.</span>'}</div></div>` : `<div class="pcol ${size === "quick" ? "cq" : size === "long" ? "cl" : "cw"}"${size ? ` data-dropsize="${size}"` : ""}><h4>${title}<i>${sub2}</i>${size ? sortCtl() : ""}</h4>${html || '<span class="tn">Nothing here.</span>'}</div>`;
     // (Oct 7) Chris: every folder looks exactly the same, so on the phone the rest are a 4th (slate) folder
     const restCards = projects.filter(p => p.status !== "done" && !["weekly", "now"].includes(whenOf(p))).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? (minsOf(tasks.filter(t => !t.done && t.project === a.name)) || 9999) - (minsOf(tasks.filter(t => !t.done && t.project === b.name)) || 9999) : (a.imp ?? 3) - (b.imp ?? 3) || String(a.name).localeCompare(String(b.name))).map(p => ({n: p.name, w: whenOf(p), next: "", about: p.about || ""}));
     const nRest = projects.filter(p => p.status !== "done" && !["weekly", "now"].includes(whenOf(p))).length;
@@ -4993,7 +4998,7 @@ function renderMain(){
       const openP = projects.filter(p => p.status !== "done");
       const pIn = c => srtBy(openP.filter(p => (p.category || "More") === c), p => p.imp, p => minsOf(tasks.filter(t => !t.done && t.project === p.name)));
       const CATS = ["YouTube and Shorts", "Worship Piano Lab", "Courses", "Sales and Email", "Systems", "Family and Money"];
-      const CC = {"YouTube and Shorts": "#B42318", "Worship Piano Lab": "#1FA598", "Courses": "#6AA84F", "Sales and Email": "#D19A12", "Systems": "#5B6470", "Family and Money": "#B4582F"};
+      const CC = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)"};
       const nReq = requests.filter(r => !r.done).length;
       const extra = {"YouTube and Shorts": row(`data-popproj="@@req"`, "Viewer requests", nReq + (nReq === 1 ? " request" : " requests") + " · most asked first"),
         "Worship Piano Lab": row(`data-popproj="@@lab"`, "Lab testing", chs.length + (chs.length === 1 ? " chapter" : " chapters")) + row(`data-popproj="@@songs"`, "Songs", songsLine()) + row(`data-popproj="@@lablinks"`, "Lab links", llLine()),
@@ -5001,11 +5006,11 @@ function renderMain(){
       const others = [...new Set(openP.map(p => p.category || "More"))].filter(c => !CATS.includes(c) && c !== "Ideas");
       const looseRows = loose.map(tc).join("");
       let out = CATS.map(c => { const L = pIn(c); return fold(c, CC[c], L.map(pRow).join("") + (extra[c] || ""), L.length + (extra[c] ? (extra[c].match(/class="pc3[ "]/g) || []).length : 0)); }).join("");
-      out += fold("Goals", "#0F766E", gRows, ogoals.length);
+      out += fold("Goals", "var(--ka0F766E)", gRows, ogoals.length);
       const sideP = pIn("Ideas");
-      out += fold("Ideas", "#E07A45", iRows + sideP.map(pRow).join(""), icats.length + sideP.length);
+      out += fold("Ideas", "var(--kaE07A45)", iRows + sideP.map(pRow).join(""), icats.length + sideP.length);
       const moreRows = others.flatMap(c => pIn(c)).map(pRow).join("") + looseRows;
-      if (moreRows) out += fold("More", "#5B6470", moreRows, (moreRows.match(/class="pc3[ "]/g) || []).length);
+      if (moreRows) out += fold("More", "var(--ka5B6470)", moreRows, (moreRows.match(/class="pc3[ "]/g) || []).length);
       body = `<div class="pboard">${out}</div>`;
     }
   } else {
@@ -5086,19 +5091,19 @@ const SABBR = t => { const w = String(t).replace(/^Starter\s+/i, "").split(/\s+/
 /* (Oct 16, Chris) song check rows: Submitted (grey) the moment he approves, Fixing (gold) while Cadence works, Ready (teal) = his turn */
 /* (Oct 20, Chris + GPT) ACK PILLS: the fix monitor (launchd fixmon.py) writes stats/fixmonitor.ack {coll: {doc: ack}} for every fix it tracks:
    Received (grey) = someone has it, Fixing (gold) = a helper is working, Retrying (gold), Stuck (red) = failed. Replaces guessing from fixJob. */
-const FMA = {received: ["Received", "#ECEAE4", "#5B5648"], waiting: ["Received", "#ECEAE4", "#5B5648"], working: ["Fixing", "#FBEFD0", "#8A6508"], retrying: ["Retrying", "#FBEFD0", "#8A6508"], failed: ["Stuck", "#FBE2DC", "#B4362A"]};
+const FMA = {received: ["Received", "var(--kaECEAE4)", "var(--ka5B5648)"], waiting: ["Received", "var(--kaECEAE4)", "var(--ka5B5648)"], working: ["Fixing", "var(--kaFBEFD0)", "var(--ka8A6508)"], retrying: ["Retrying", "var(--kaFBEFD0)", "var(--ka8A6508)"], failed: ["Stuck", "var(--kaFBE2DC)", "var(--kaB4362A)"]};
 function fmAck(coll, id){ const a = ((stats.find(x => x.id === "fixmonitor") || {}).ack || {})[coll]; return a && id && a[id] ? FMA[a[id]] || null : null; }
-const SCTAG = {submitted: ["Submitted", "#ECEAE4", "#5B5648"], fixing: ["Fixing", "#FBEFD0", "#8A6508"], ready: ["Ready", "#DDF1EE", "#0F766E"]};
+const SCTAG = {submitted: ["Submitted", "var(--kaECEAE4)", "var(--ka5B5648)"], fixing: ["Fixing", "var(--kaFBEFD0)", "var(--ka8A6508)"], ready: ["Ready", "var(--kaDDF1EE)", "var(--ka0F766E)"]};
 function labTag(t){ const scs = t && !t.done && (scFixingTitle(t) ? "fixing" : SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
   if (scs){ const [w, bg, fg] = (scs !== "ready" && fmAck("tasks", t.id)) || SCTAG[scs]; return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
   /* (Oct 17, Chris + ChatGPT) a Lab ship task shows the full ship checks for the EXACT Test version (stats/labchecks, lab-checks-status.py):
      Passed (green), Passed* = only failures Chris approved (green), Running (grey), Failed / Not run (red). Missing = Not run. */
   if (t && !t.done && t.shipChecks){ const L = stats.find(x => x.id === "labchecks") || {}, R = L.result || "NOT RUN", ok = /^PASSED/.test(R), run = R === "RUNNING";
     const w = R === "PASSED WITH KNOWN" ? "Passed*" : R === "NOT RUN" ? "Not run" : R.charAt(0) + R.slice(1).toLowerCase();
-    return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ok ? "#DDF1EE" : run ? "#ECEAE4" : "#FBE2DC"};color:${ok ? "#0F766E" : run ? "#555" : "#B4362A"}">Checks v${L.version || "?"} \u00b7 ${w}</span>`; }
+    return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ok ? "var(--kaDDF1EE)" : run ? "var(--kaECEAE4)" : "var(--kaFBE2DC)"};color:${ok ? "var(--ka0F766E)" : run ? "var(--ka555)" : "var(--kaB4362A)"}">Checks v${L.version || "?"} \u00b7 ${w}</span>`; }
   if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing" || labLessonS(t.labKey) === "fix", ak = f && fmAck("tasks", t.id);
   if (ak) return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ak[1]};color:${ak[2]}">V${r} \u00b7 ${ak[0]}</span>`;   /* (Oct 16, Chris) Fixing the moment he sends a Lab note (labFresh reads review_notes directly) */
-  return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "#FBEFD0" : "#DDF1EE"};color:${f ? "#8A6508" : "#0F766E"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
+  return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "var(--kaFBEFD0)" : "var(--kaDDF1EE)"};color:${f ? "var(--ka8A6508)" : "var(--ka0F766E)"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
 /* (Oct 15, Chris) SHORTS board on Home, like Songs: one row per Short, a box per step (teal done, gold = your turn: tap = its check page,
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
 let shBoard = null, scBoard = null;
@@ -5131,7 +5136,7 @@ function homeQueue(){
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
   /* (Oct 20, Chris) ONE pill on the left = status + job stacked; no Top button (press and hold a row, drag it where it goes); title gets the room */
   /* (Oct 21, Chris) the label says exactly what is happening: Working teal, Queued grey, Paused amber, On hold purple, Waiting on you blue, Retrying gold, Stuck red, Done green */
-  const QS = {working: ["Working", "#1FA598", "#fff"], queued: ["Queued", "#EFEBE3", "#5C5A55"], paused: ["Paused", "#F7E3B5", "#7A5200"], hold: ["On hold", "#E6DAF5", "#5B2E91"], wait: ["Waiting on you", "#D8E7FA", "#1F4E8C"], retry: ["Retrying", "#FBEFD0", "#8A6508"], stuck: ["Stuck", "#F6D6D3", "#B3261E"], done: ["Done", "#DDF1E5", "#2E7D4F"]};
+  const QS = {working: ["Working", "var(--ka1FA598)", "var(--kaFFF)"], queued: ["Queued", "var(--kaEFEBE3)", "var(--ka5C5A55)"], paused: ["Paused", "var(--kaF7E3B5)", "var(--ka7A5200)"], hold: ["On hold", "var(--kaE6DAF5)", "var(--ka5B2E91)"], wait: ["Waiting on you", "var(--kaD8E7FA)", "var(--ka1F4E8C)"], retry: ["Retrying", "var(--kaFBEFD0)", "var(--ka8A6508)"], stuck: ["Stuck", "var(--kaF6D6D3)", "var(--kaB3261E)"], done: ["Done", "var(--kaDDF1E5)", "var(--ka2E7D4F)"]};
   const qkey = q => q.status === "working" ? "working" : q.status === "paused" ? "paused" : q.status === "stuck" ? "stuck" : q.status === "waiting-chris" ? "wait" : q.status === "done" ? "done"
     : q.holdUntil && (Date.parse(q.holdUntil) || 0) > Date.now() && !q.retry ? "hold" : q.retry ? "retry" : "queued";
   const pill = (q, job) => { const [t, bg, fg] = QS[qkey(q)]; return `<span class="qpill" data-qs="${t}" style="flex:0 0 auto;width:74px;text-align:center;padding:3px 4px;border-radius:12px;line-height:1.15;background:${bg};color:${fg}"><b style="display:block;font-size:${t.length > 8 ? 10 : 12}px">${t}</b>${job ? `<span style="display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;opacity:.75">${esc(job)}</span>` : ""}</span>`; };
@@ -5151,12 +5156,12 @@ function homeQueue(){
     return (q.status === "queued" || q.status === "paused") && q._eta ? "ETA " + new Date(q._eta).toLocaleTimeString([], AZT) : ""; };
   const dp = q => { const [t, bg, fg] = QS[qkey(q)]; return `<span class="qd" data-qs="${t}" style="flex:0 0 auto;width:112px;text-align:center;padding:4px 6px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;background:${bg};color:${fg}">${t}</span>`; };
   const dst = q => dp(q);
-  const row = q => { const [tt, pc] = sp(q.title); return `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}${dst(q)}<span class="qd qh" style="flex:0 0 auto;width:64px;font-size:13px;font-weight:600;color:var(--muted,#8A9099);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(q.helper || "")}</span><span class="qd" style="flex:0 0 auto;width:90px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)">${esc(q.lane || q.job || "")}</span><b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span class="qt" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span>${q.helper ? `<span class="qhp" style="display:block;font-size:11px;font-weight:600;color:var(--muted,#8A9099)">${esc(q.helper)}</span>` : ""}<span class="qd qt2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tt)}</span>${takes(q) || eta(q) ? `<span class="qeta" style="display:block">${esc([takes(q), eta(q)].filter(Boolean).join(" · "))}</span>` : ""}${(q.status === "stuck" || q.status === "waiting-chris") && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:${q.status === "stuck" ? "#B3261E" : "var(--muted,#8A9099)"}">${esc(q.why)}</span>` : ""}</b><span class="qd qfor" style="flex:0 0 auto;width:130px;font-size:13px;color:var(--muted,#8A9099);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(forOf(q))}</span><span class="qd qtk" style="flex:0 0 auto;width:64px;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap">${esc(takes(q))}</span><span class="qd qwh" style="flex:0 0 auto;width:128px;text-align:right;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tm(q))}<span style="display:block;font-weight:700">${esc(eta(q))}</span></span>${q.status === "working" || q.status === "done" ? `<span class="qtop0" style="flex:0 0 auto;width:116px"></span>` : `<button type="button" class="tpill qtop" data-qtop="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Top</button><button type="button" class="tpill qlat" data-qsave="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Later</button>`}</div>`; };   /* (Oct 22, Chris: "a button to remove things from the queue ... a place to keep those ... until there's more time") Later = status 'later', kept in Saved for later, never run until Run */
+  const row = q => { const [tt, pc] = sp(q.title); return `<div class="qrow${q.status === "queued" ? " qdrag" : ""}" data-qrow="${esc(q.id)}" style="${RS};touch-action:${q.status === "queued" ? "pan-y" : "auto"};user-select:none;-webkit-user-select:none;-webkit-touch-callout:none">${st(q)}${dst(q)}<span class="qd qh" style="flex:0 0 auto;width:64px;font-size:13px;font-weight:600;color:var(--muted,#8A9099);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(q.helper || "")}</span><span class="qd" style="flex:0 0 auto;width:90px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)">${esc(q.lane || q.job || "")}</span><b style="flex:1;min-width:0;font-size:14px;line-height:1.3"><span class="qt" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(q.title || "")}</span>${q.helper ? `<span class="qhp" style="display:block;font-size:11px;font-weight:600;color:var(--muted,#8A9099)">${esc(q.helper)}</span>` : ""}<span class="qd qt2" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tt)}</span>${takes(q) || eta(q) ? `<span class="qeta" style="display:block">${esc([takes(q), eta(q)].filter(Boolean).join(" · "))}</span>` : ""}${(q.status === "stuck" || q.status === "waiting-chris") && q.why ? `<span style="display:block;font-size:12px;font-weight:500;color:${q.status === "stuck" ? "var(--kaB3261E)" : "var(--muted,#8A9099)"}">${esc(q.why)}</span>` : ""}</b><span class="qd qfor" style="flex:0 0 auto;width:130px;font-size:13px;color:var(--muted,#8A9099);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(forOf(q))}</span><span class="qd qtk" style="flex:0 0 auto;width:64px;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap">${esc(takes(q))}</span><span class="qd qwh" style="flex:0 0 auto;width:128px;text-align:right;font-size:12px;color:var(--muted,#8A9099);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(tm(q))}<span style="display:block;font-weight:700">${esc(eta(q))}</span></span>${q.status === "working" || q.status === "done" ? `<span class="qtop0" style="flex:0 0 auto;width:116px"></span>` : `<button type="button" class="tpill qtop" data-qtop="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Top</button><button type="button" class="tpill qlat" data-qsave="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Later</button>`}</div>`; };   /* (Oct 22, Chris: "a button to remove things from the queue ... a place to keep those ... until there's more time") Later = status 'later', kept in Saved for later, never run until Run */
   const n = W.length + U.length + P.length;
   /* (Oct 20, Chris "Ask me every time"): Shorts renders wait for night unless Chris taps Run now (sets dayOk on each waiting one) */
   const NK = {"words-make": 1, "final-make": 1}, hr = new Date().getHours(), NW = hr >= 6 ? U.filter(q => NK[q.kind] && !q.dayOk) : [];
-  const ask = NW.length ? `<div class="qrow" style="${RS};background:#F0C75A22"><span style="flex:1;min-width:0;font-size:14px;line-height:1.3">${NW.length} Shorts render${NW.length > 1 ? "s" : ""} wait for tonight<span style="display:block;font-size:12px;color:var(--muted,#8A9099)">Running now slows your Mac while you work</span></span><button type="button" class="tpill" data-qdayok="1" style="flex:0 0 auto;background:#F0C75A;color:#3a2a00;font-weight:700">Run now</button></div>` : "";
-  return `<div class="msec" style="--cc:#1FA598"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length + P.length} waiting</i></span></h4><div class="qhead qd2" style="position:sticky;top:15px;z-index:2;background:var(--card,#fff);border-bottom:1px solid var(--line,#E7E1D6);padding:6px 20px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;width:112px">Status</span><span style="flex:0 0 auto;width:64px">Helper</span><span style="flex:0 0 auto;width:90px">Lane</span><span style="flex:1;min-width:0">Job</span><span class="qfor" style="flex:0 0 auto;width:130px">For</span><span style="flex:0 0 auto;width:64px">Takes</span><span style="flex:0 0 auto;width:128px;text-align:right">When</span><span style="flex:0 0 auto;width:116px;text-align:center">Move</span></div><div class="chgrid qlist">${ask}${W.concat(REST).map(row).join("")}</div>${H.length ? `<div class="qlater" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" class="qlaterb" data-qlater="1" style="background:none;border:0;padding:4px 0;font-size:12px;font-weight:600;color:var(--muted,#8A9099);cursor:pointer">${H.length} scheduled later</button><div class="qlaterl" hidden style="margin-top:4px">${H.map(q => `<div class="qlr" style="display:flex;gap:10px;font-size:12px;line-height:1.4;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;white-space:nowrap">${esc(new Date(q.holdUntil).toLocaleDateString([], {month: "short", day: "numeric", timeZone: "America/Phoenix"}))}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span></div>`).join("")}</div></div>` : ""}${LT.length ? `<div class="qsaved" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" data-qsavedt="1" style="background:none;border:0;padding:4px 0;font-size:13px;font-weight:700;color:var(--muted,#8A9099);cursor:pointer">Saved for later (${LT.length})</button><div class="qsavedl" hidden style="margin-top:4px">${LT.map(q => `<div class="qsr" style="display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;line-height:1.3"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span><button type="button" class="tpill" data-qrun="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Run</button></div>`).join("")}</div></div>` : ""}</div>`; }
+  const ask = NW.length ? `<div class="qrow" style="${RS};background:var(--kbF0C75A22)"><span style="flex:1;min-width:0;font-size:14px;line-height:1.3">${NW.length} Shorts render${NW.length > 1 ? "s" : ""} wait for tonight<span style="display:block;font-size:12px;color:var(--muted,#8A9099)">Running now slows your Mac while you work</span></span><button type="button" class="tpill" data-qdayok="1" style="flex:0 0 auto;background:var(--kbF0C75A);color:var(--kt3A2A00);font-weight:700">Run now</button></div>` : "";
+  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length + P.length} waiting</i></span></h4><div class="qhead qd2" style="position:sticky;top:15px;z-index:2;background:var(--card,#fff);border-bottom:1px solid var(--line,#E7E1D6);padding:6px 20px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;width:112px">Status</span><span style="flex:0 0 auto;width:64px">Helper</span><span style="flex:0 0 auto;width:90px">Lane</span><span style="flex:1;min-width:0">Job</span><span class="qfor" style="flex:0 0 auto;width:130px">For</span><span style="flex:0 0 auto;width:64px">Takes</span><span style="flex:0 0 auto;width:128px;text-align:right">When</span><span style="flex:0 0 auto;width:116px;text-align:center">Move</span></div><div class="chgrid qlist">${ask}${W.concat(REST).map(row).join("")}</div>${H.length ? `<div class="qlater" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" class="qlaterb" data-qlater="1" style="background:none;border:0;padding:4px 0;font-size:12px;font-weight:600;color:var(--muted,#8A9099);cursor:pointer">${H.length} scheduled later</button><div class="qlaterl" hidden style="margin-top:4px">${H.map(q => `<div class="qlr" style="display:flex;gap:10px;font-size:12px;line-height:1.4;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;white-space:nowrap">${esc(new Date(q.holdUntil).toLocaleDateString([], {month: "short", day: "numeric", timeZone: "America/Phoenix"}))}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span></div>`).join("")}</div></div>` : ""}${LT.length ? `<div class="qsaved" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" data-qsavedt="1" style="background:none;border:0;padding:4px 0;font-size:13px;font-weight:700;color:var(--muted,#8A9099);cursor:pointer">Saved for later (${LT.length})</button><div class="qsavedl" hidden style="margin-top:4px">${LT.map(q => `<div class="qsr" style="display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;line-height:1.3"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span><button type="button" class="tpill" data-qrun="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Run</button></div>`).join("")}</div></div>` : ""}</div>`; }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qsavedt]"); if (!b) return; const l = b.parentNode.querySelector(".qsavedl"); if (l) l.hidden = !l.hidden; });
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qsave],[data-qrun]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   const id = b.dataset.qsave || b.dataset.qrun, me = (queueRows || []).find(q => q.id === id); if (!me) return;
@@ -5264,7 +5269,7 @@ function homeSocial(){
       else { val = usd(d.rev); sub = `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"}`; }
       return `<button type="button" class="socrow" data-socapp="${c}:${a}" title="${a}"><span class="socn">${pIcon(a)}<em>${a}</em></span><b class="socv">${val}</b><span class="soct"><i style="width:${d.none ? 0 : Math.max(d.v > 0 || d.rev > 0 ? 3 : 0, Math.round((c === "clk" ? d.rev || 0 : d.v) / (c === "clk" ? Math.max(1, ...rows.map(x => x.d.none ? 0 : x.d.rev)) : max) * 100))}%"></i></span><small class="${cc}">${esc(sub)}</small></button>`; };
     return `<div class="soccol${socCol === c ? " pick" : ""}" data-soccolbox="${c}"><button type="button" class="soctop" data-soccolgo="${c}"><span class="socname">${name}</span><b class="socbig">${big}</b><small>${esc(small)}</small>${src}</button><div class="socrows">${rows.map(rowH).join("")}</div></div>`; };
-  return `<div class="msec" style="--cc:#0F766E"><h4>Social</h4><div class="socbody"><div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}${cust}</span></div>
+  return `<div class="msec" style="--cc:var(--ka0F766E)"><h4>Social</h4><div class="socbody"><div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}${cust}</span></div>
     <span class="seg socsw" role="group" aria-label="Which numbers">${SOCCOLS.map(([c, n]) => `<button type="button" data-socsw="${c}" aria-pressed="${socCol === c}">${n}</button>`).join("")}</span>
     <div class="soccols">${SOCCOLS.map(col).join("")}</div></div></div>`;
 }
@@ -5393,37 +5398,37 @@ document.addEventListener("change", e => { const i = e.target.closest && e.targe
 /* (Oct 23, Chris YES Oct 21, t-1012-agent-plan step 1) API SPEND: money spent on the Claude API for drafts (not the Max plan). Data: db stats/apispend, written by claude-tasks/api_meter.py on every API call; hard cap in api-cap.json (20 USD/month to start). */
 function apiSpendBody(A){ const tot = A.total || 0, cap = A.cap || 1, p = Math.min(100, 100 * tot / cap), mx = Math.max(0.0001, ...(A.days || []).map(d => d.cost)), m2 = v => "$" + v.toFixed(2);
   const row = (n, v, pc, c, sub) => `<div class="mprow" style="cursor:default"><span class="mpn">${esc(n)}</span><span class="mpv">${m2(v)}</span>${mpBar(pc, 100, c)}<span class="mps">${sub}</span></div>`;
-  return `<div class="mbody today1 mpa usg"><b>${m2(tot)} of ${m2(cap)} this month</b>${row("Month", tot, p, p >= 90 ? "#B42318" : "#1FA598", Math.round(p) + "%")}<h5>Today</h5>${row("Today", A.today || 0, 100 * (A.today || 0) / Math.max(cap / 20, 0.0001), "#1FA598", "")}<h5>By day</h5>${(A.days || []).slice(0, 10).map(d => row(d.day.slice(5), d.cost, 100 * d.cost / mx, "#1FA598", "")).join("") || '<span class="tn">No calls yet</span>'}<h5>By job</h5>${(A.jobs || []).slice(0, 8).map(j => row(j.job, j.cost, tot ? 100 * j.cost / tot : 0, "#D19A12", "")).join("") || '<span class="tn">No calls yet</span>'}<span class="tn" style="text-align:center">Claude API credits, not the Max plan. Drafts only. The job stops by itself at the cap${A.updated ? " (last " + esc(kTime(A.updated.slice(11))) + ")" : ""}.</span></div>`; }
+  return `<div class="mbody today1 mpa usg"><b>${m2(tot)} of ${m2(cap)} this month</b>${row("Month", tot, p, p >= 90 ? "var(--kaB42318)" : "var(--ka1FA598)", Math.round(p) + "%")}<h5>Today</h5>${row("Today", A.today || 0, 100 * (A.today || 0) / Math.max(cap / 20, 0.0001), "var(--ka1FA598)", "")}<h5>By day</h5>${(A.days || []).slice(0, 10).map(d => row(d.day.slice(5), d.cost, 100 * d.cost / mx, "var(--ka1FA598)", "")).join("") || '<span class="tn">No calls yet</span>'}<h5>By job</h5>${(A.jobs || []).slice(0, 8).map(j => row(j.job, j.cost, tot ? 100 * j.cost / tot : 0, "var(--kaD19A12)", "")).join("") || '<span class="tn">No calls yet</span>'}<span class="tn" style="text-align:center">Claude API credits, not the Max plan. Drafts only. The job stops by itself at the cap${A.updated ? " (last " + esc(kTime(A.updated.slice(11))) + ")" : ""}.</span></div>`; }
 function homeUsage(){
   const U = stats.find(x => x.id === "usage"); if (!U || !U.groups) return "";
   const A = stats.find(x => x.id === "apispend") || {};
   const W = uPer === "last" && U.last ? U.last : U, tot = W.weekCost || 0, max = Math.max(1, ...(W.days || []).map(d => d.cost));
-  const GC = {cadence: "#1FA598", helpers: "#6CB8F5", chats: "#D19A12", routines: "#B4582F", other: "#8A9099"};
+  const GC = {cadence: "var(--ka1FA598)", helpers: "var(--ka6CB8F5)", chats: "var(--kaD19A12)", routines: "var(--kaB4582F)", other: "var(--ka8A9099)"};
   const usd = v => "$" + Math.round(v).toLocaleString();
   const pb = (k, l) => `<button type="button" class="small${uPer === k ? " on" : ""}" data-uper="${k}">${l}</button>`;
   const row = (n, v, p, c, sub) => `<div class="mprow" style="cursor:default"><span class="mpn">${esc(n)}</span><span class="mpv">${usd(v)}</span>${mpBar(p, 100, c)}<span class="mps">${sub}</span></div>`;
   const sub1 = (L, c) => L.length ? `<div class="udet" style="display:grid;gap:6px;padding:4px 0 4px 10px;border-left:3px solid ${c}">${L.join("")}</div>` : "";
-  const items = (L, g) => (L || []).filter(t => !g || t.group === g).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "#8A9099", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : "")));
+  const items = (L, g) => (L || []).filter(t => !g || t.group === g).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "var(--ka8A9099)", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : "")));
   const dayRows = (W.days || []).map(d => { const k = uPer + d.date, on = uDay === k;
-    const inner = on ? `<div class="udet" style="display:grid;gap:6px;padding:4px 0 6px 10px;border-left:3px solid #1FA598"><h5 style="margin:2px 0">Who used it</h5>${(d.groups || []).map(g => row(g.name, g.cost, g.pct, GC[g.group] || "#8A9099", Math.round(g.pct) + "%")).join("") || '<span class="tn">Nothing this day</span>'}<h5 style="margin:2px 0">Biggest</h5>${items(d.top).join("")}</div>` : "";
-    return `<button type="button" class="mprow${on ? " on" : ""}" data-uday="${esc(k)}"><span class="mpn">${esc(d.day)}</span><span class="mpv">${usd(d.cost)}</span>${mpBar(d.cost, max, "#1FA598")}<span class="mps">${on ? "tap to close" : ""}</span></button>${inner}`; }).join("");
+    const inner = on ? `<div class="udet" style="display:grid;gap:6px;padding:4px 0 6px 10px;border-left:3px solid var(--kl1FA598)"><h5 style="margin:2px 0">Who used it</h5>${(d.groups || []).map(g => row(g.name, g.cost, g.pct, GC[g.group] || "var(--ka8A9099)", Math.round(g.pct) + "%")).join("") || '<span class="tn">Nothing this day</span>'}<h5 style="margin:2px 0">Biggest</h5>${items(d.top).join("")}</div>` : "";
+    return `<button type="button" class="mprow${on ? " on" : ""}" data-uday="${esc(k)}"><span class="mpn">${esc(d.day)}</span><span class="mpv">${usd(d.cost)}</span>${mpBar(d.cost, max, "var(--ka1FA598)")}<span class="mps">${on ? "tap to close" : ""}</span></button>${inner}`; }).join("");
   const groups = (W.groups || []).map(g => { const k = uPer + g.group, on = uGrp === k, L = (W.top || []).filter(t => t.group === g.group);
-    return `<button type="button" class="mprow${on ? " on" : ""}" data-ugrp="${esc(k)}"><span class="mpn">${esc(g.name)}</span><span class="mpv">${usd(g.cost)}</span>${mpBar(g.pct, 100, GC[g.group] || "#8A9099")}<span class="mps">${Math.round(g.pct)}%${on ? " · tap to close" : ""}</span></button>${on ? sub1(L.slice(0, 10).map(t => row(t.name, t.cost, g.cost ? 100 * t.cost / g.cost : 0, GC[t.group] || "#8A9099", Math.round(g.cost ? 100 * t.cost / g.cost : 0) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))), GC[g.group] || "#8A9099") : ""}`; }).join("");
-  const top = (W.top || []).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "#8A9099", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))).join("");
+    return `<button type="button" class="mprow${on ? " on" : ""}" data-ugrp="${esc(k)}"><span class="mpn">${esc(g.name)}</span><span class="mpv">${usd(g.cost)}</span>${mpBar(g.pct, 100, GC[g.group] || "var(--ka8A9099)")}<span class="mps">${Math.round(g.pct)}%${on ? " · tap to close" : ""}</span></button>${on ? sub1(L.slice(0, 10).map(t => row(t.name, t.cost, g.cost ? 100 * t.cost / g.cost : 0, GC[t.group] || "var(--ka8A9099)", Math.round(g.cost ? 100 * t.cost / g.cost : 0) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))), GC[g.group] || "var(--ka8A9099)") : ""}`; }).join("");
+  const top = (W.top || []).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "var(--ka8A9099)", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))).join("");
   const vs = uPer === "now" && U.lastWeekCost ? " · last week " + usd(U.lastWeekCost) : "";
-  return `<div class="msec" style="--cc:#D19A12"><h4>Usage <span class="hr"><i>${usd(U.weekCost || 0)} this week</i></span></h4><div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button>${A.cap ? `<button type="button" class="chc mrow${aOpen ? " rowon" : ""}" data-aopen="1"><b>API spend</b><span>${aOpen ? "tap to close" : "$" + (A.total || 0).toFixed(2) + " of $" + A.cap + " this month"}</span></button>` : ""}</div>${aOpen && A.cap ? apiSpendBody(A) : ""}${uOpen ? `<div class="mbody today1 mpa usg"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API value (Max plan, not billed): ccusage dollars at API prices, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}</div>`; }
+  return `<div class="msec" style="--cc:var(--kaD19A12)"><h4>Usage <span class="hr"><i>${usd(U.weekCost || 0)} this week</i></span></h4><div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button>${A.cap ? `<button type="button" class="chc mrow${aOpen ? " rowon" : ""}" data-aopen="1"><b>API spend</b><span>${aOpen ? "tap to close" : "$" + (A.total || 0).toFixed(2) + " of $" + A.cap + " this month"}</span></button>` : ""}</div>${aOpen && A.cap ? apiSpendBody(A) : ""}${uOpen ? `<div class="mbody today1 mpa usg"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API value (Max plan, not billed): ccusage dollars at API prices, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}</div>`; }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-uper],[data-uopen],[data-aopen],[data-uday],[data-ugrp]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.aopen){ aOpen = !aOpen; if (aOpen) uOpen = false; } else if (b.dataset.uopen){ uOpen = !uOpen; if (uOpen) aOpen = false; } else if (b.dataset.uday) { uDay = uDay === b.dataset.uday ? "" : b.dataset.uday; uGrp = ""; } else if (b.dataset.ugrp) { uGrp = uGrp === b.dataset.ugrp ? "" : b.dataset.ugrp; uDay = ""; } else { uPer = b.dataset.uper; uDay = uGrp = ""; } liveRender(); }, true);
 function homeShorts(){
   if (shBoard === null) fdShLoad();
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
   const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
-  const blk = (bg, bd, txt, rid, view) => `<i class="sblk"${rid ? ` data-shortrow="${esc(rid)}"${view ? ` data-shview="${view}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${rid ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${txt ? `<span class="sfw">${txt}</span>` : ""}</i>`;
+  const blk = (bg, bd, txt, rid, view) => `<i class="sblk"${rid ? ` data-shortrow="${esc(rid)}"${view ? ` data-shview="${view}"` : ""} role="button" tabindex="0"` : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${rid ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${txt ? `<span class="sfw">${txt}</span>` : ""}</i>`;
   /* (Oct 20, Chris) DATES IN THE BUTTONS: Scheduled box = the day it was scheduled (schedOn), Posted box = the day it posts (outlined = still to come) or posted (teal) */
   const dtx = (d, c) => d ? `<span class="sfw" style="color:${c};font-weight:600">${md(d)}</span><span class="sdtp" style="color:${c}">${+String(d).slice(5, 7)}/${+String(d).slice(8, 10)}</span>` : "";
-  const cells = (k, you, rid, fixing, id, dt) => SHS.map((t, i) => dt && dt[i] ? (i < k ? blk("#1FA598", "#1FA598", dtx(dt[i], "#fff"), id && i < 5 ? id : "", id && i < 5 ? ["hands", "start", "words", "thumb", "final"][i] : "") : blk("transparent", "#1FA598", dtx(dt[i], "#14786F"))) : i < k ? (id && i < 5 ? blk("#1FA598", "#1FA598", `<span style="color:#fff;font-weight:600">Approved</span>`, id, ["hands", "start", "words", "thumb", "final"][i]) : blk("#1FA598", "#1FA598")) : i === k && fixing ? (ak => blk(ak && ak[0] === "Stuck" ? "#FBE2DC" : "#FDE8E4", ak && ak[0] === "Stuck" ? "#B4362A" : "#D85A30", `<span style="color:#B23B17;font-weight:600">${ak ? ak[0] : "Fixing"}</span>`))(fmAck("shortcheck", id)) : i === k && rid === "final" ? blk("#E8B53A", "#E8B53A", "Check", id, "final") : i === k && you ? blk("#E8B53A", "#E8B53A", "Check", rid) : i === k && you !== null ? blk("#FBEFD0", "#E8B53A", `<span style="color:#8A6508;font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
+  const cells = (k, you, rid, fixing, id, dt) => SHS.map((t, i) => dt && dt[i] ? (i < k ? blk("var(--ka1FA598)", "var(--ka1FA598)", dtx(dt[i], "var(--kaFFF)"), id && i < 5 ? id : "", id && i < 5 ? ["hands", "start", "words", "thumb", "final"][i] : "") : blk("transparent", "var(--ka1FA598)", dtx(dt[i], "var(--ka14786F)"))) : i < k ? (id && i < 5 ? blk("var(--ka1FA598)", "var(--ka1FA598)", `<span style="color:var(--ktFFF);font-weight:600">Approved</span>`, id, ["hands", "start", "words", "thumb", "final"][i]) : blk("var(--ka1FA598)", "var(--ka1FA598)")) : i === k && fixing ? (ak => blk(ak && ak[0] === "Stuck" ? "var(--kaFBE2DC)" : "var(--kaFDE8E4)", ak && ak[0] === "Stuck" ? "var(--kaB4362A)" : "var(--kaD85A30)", `<span style="color:var(--ktB23B17);font-weight:600">${ak ? ak[0] : "Fixing"}</span>`))(fmAck("shortcheck", id)) : i === k && rid === "final" ? blk("var(--kaE8B53A)", "var(--kaE8B53A)", "Check", id, "final") : i === k && you ? blk("var(--kaE8B53A)", "var(--kaE8B53A)", "Check", rid) : i === k && you !== null ? blk("var(--kaFBEFD0)", "var(--kaE8B53A)", `<span style="color:var(--kt8A6508);font-weight:600">Making</span>`) : blk("transparent", "var(--line,#D8D2C4)")).join("");
   /* (Oct 20, Chris) AUTO STEP PILL: db shortcheck.auto {step,state,text} from desk-queue short_stages; Waiting light gold, Working gold, Ready teal, Failed red */
-  const apill = au => { if (!au || !au.state) return ""; const C = {Waiting: ["#FBEFD0", "#8A6508"], Working: ["#FBEFD0", "#8A6508"], Ready: ["#E8B53A", "#3a2a00"], Failed: ["#FBE2DC", "#B4362A"]}[au.state]; if (!C) return ""; return `<span class="apill" title="${esc(au.text || "")}" style="display:inline-block;margin-top:2px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em;background:${C[0]};color:${C[1]};max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top">${esc((au.step ? au.step + ": " : "") + (au.state === "Ready" ? "Check" : au.state))}</span>`; };   /* (Oct 21, Chris) teal = ONLY his Approve: his turn = gold 'Check', Cadence working = light gold */
+  const apill = au => { if (!au || !au.state) return ""; const C = {Waiting: ["var(--kaFBEFD0)", "var(--ka8A6508)"], Working: ["var(--kaFBEFD0)", "var(--ka8A6508)"], Ready: ["var(--kaE8B53A)", "var(--ka3A2A00)"], Failed: ["var(--kaFBE2DC)", "var(--kaB4362A)"]}[au.state]; if (!C) return ""; return `<span class="apill" title="${esc(au.text || "")}" style="display:inline-block;margin-top:2px;padding:1px 7px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em;background:${C[0]};color:${C[1]};max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top">${esc((au.step ? au.step + ": " : "") + (au.state === "Ready" ? "Check" : au.state))}</span>`; };   /* (Oct 21, Chris) teal = ONLY his Approve: his turn = gold 'Check', Cadence working = light gold */
   const row = (title, sub, k, you, rid, fixing, id, dt, au) => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(title)}${sub ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(sub)}</span>` : ""}${apill(au)}</b><span class="sbar" style="display:flex;gap:4px">${cells(k, you, rid, fixing, id, dt)}</span></div>`;
   const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SHS.map((t, i) => `<i class="sblk" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SHAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
@@ -5437,7 +5442,7 @@ function homeShorts(){
   /* (Oct 24, Chris) POSTING CHECK: one row per Short, 5 pills (YT FB IG X TT): solid green = the app says LIVE (tap opens the post), outline = the app confirms scheduled, red = missing/failed, grey = not due / by hand (TikTok).
      Read only: stats/posting from shorts-posting-check.py (hourly chores). Tap-free; the red pill's reason is its tooltip. */
   const PK = (stats.find(x => x.id === "posting") || {}).shorts || [], PA = [["youtube", "YT"], ["facebook", "FB"], ["instagram", "IG"], ["x", "X"], ["tiktok", "TT"]];
-  const pc = {green: ["#1FA598", "#1FA598", "#fff"], sched: ["transparent", "#1FA598", "#14786F"], red: ["#FBE2DC", "#D85A30", "#B3261E"], grey: ["transparent", "#C9C4B8", "var(--muted,#8A9099)"]};
+  const pc = {green: ["var(--ka1FA598)", "var(--ka1FA598)", "var(--kaFFF)"], sched: ["transparent", "var(--ka1FA598)", "var(--ka14786F)"], red: ["var(--kaFBE2DC)", "var(--kaD85A30)", "var(--kaB3261E)"], grey: ["transparent", "var(--kaC9C4B8)", "var(--muted,#8A9099)"]};
   /* (Oct 25, Chris) Posting check = only Shorts due today or before (a future Short stays in Scheduled, no duplicates); pill letters 13px */ const PDAY = new Date().toLocaleDateString("en-CA", {timeZone: "America/Phoenix"}), PR = PK.filter(o => o.date <= PDAY && Object.values(o.apps || {}).some(a => a.c !== "grey")).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
   const prow = o => `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(o.title)}<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099)">${md(o.date)}</span></b><span class="sbar" style="display:flex;gap:4px">${PA.map(([k, ab]) => { const a = (o.apps || {})[k] || {c: "grey"}, c = pc[a.c] || pc.grey, why = [a.s === false ? "not scheduled/posted" : "", a.t === false ? "no custom thumbnail" : "", a.m === false ? "not at 5am" : "", a.note || ""].filter(Boolean).join(", ");
     const tg = a.c === "green" && a.url ? "a" : "i", lab = {green: "live", sched: "scheduled", red: "missing", grey: "not checked"}[a.c] || a.c;
@@ -5450,7 +5455,7 @@ function homeShorts(){
   const fold = (key, t, sub, body) => `<div class="pc3${sfo === key ? " subon" : ""}"><button type="button" class="pc3t" data-sgfold="${key}"><b>${t}</b><span>${esc(sub)}</span></button></div><div class="sublist" data-sgfoldbody="${key}" style="${sfo === key ? "" : "display:none"}">${body}</div>`;
   const wRows = W.length ? head + W.map(x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto)).join("") : head + `<div class="tn" style="${RS}"><span style="color:var(--muted,#8A9099);font-size:13px">No Shorts in the works yet. New cuts land here and move through the checklist.</span></div>`;
   const nextS = S.length ? S[S.length - 1] : null, lastS = S.length ? S[0] : null;
-  return `<div class="msec" style="--cc:#D85A30"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
+  return `<div class="msec" style="--cc:var(--kaD85A30)"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
     + fold("shworks", `Upcoming (${W.length})`, W.length ? (yours ? yours + " to check" : "in the checklist") : "nothing in the works", wRows)
     + (S.length ? fold("shsched", `Scheduled (${S.length})`, `next ${md(nextS.date)} · last ${md(lastS.date)}`, head + S.map(x => row(x.title, shNeed(x), x.schedOn ? 6 : 5, null, "", false, "", {5: x.schedOn, 6: x.date})).join("")) : "")
     + (PR.length ? fold("shpost", `Posting check (${PR.length})`, pRed ? pRed + " red" : "all good", PR.map(prow).join("")) : "")   /* (Oct 25, Chris: i do not need it) Posted this week dropped; the Posting check shows what posted */
@@ -5544,9 +5549,9 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
   const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
   return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => { if (i === 1 && !q.nt) return `<i class="sblk sgc" data-sgcol="1" data-sgst="none" title="Notes" style="background:transparent;border-color:transparent"></i>`;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
-    const bg = q.c === "ok" ? "#1FA598" : q.c === "chk" ? "#E8B53A" : q.c === "mk" ? "#FBEFD0" : q.c === "fx" ? (stk ? "#FBE2DC" : "#FBEFD0") : "transparent", bd = q.c === "ok" ? "#1FA598" : q.c === "fx" ? (stk ? "#B4362A" : "#E8B53A") : q.c ? "#E8B53A" : "var(--line,#D8D2C4)";
-    const tx = q.c === "ok" ? `<span class="sfw" style="color:#fff;font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:#8A6508;font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "#B23B17" : "#8A6508"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:#3a2a00;${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
+    const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -6019,8 +6024,8 @@ function homeSongs(only){
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
   const CR = [].filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
   const secCR = CR.length ? label("Copyright check", CR.length) + CR.map(r => { const np = /^NOT/i.test(String(r.lyricsCheck).trim());
-    return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:#FDE8E4;border:1.5px solid #B4362A;color:#B23B17" : "background:#FBEFD0;border:1.5px solid #E8B53A;color:#8A6508"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
-  return `<div class="msec" style="--cc:#7F77DD"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${secN}</div></div>`; }
+    return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:var(--kbFDE8E4);border:1.5px solid var(--klB4362A);color:var(--ktB23B17)" : "background:var(--kbFBEFD0);border:1.5px solid var(--klE8B53A);color:var(--kt8A6508)"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
+  return `<div class="msec" style="--cc:var(--ka7F77DD)"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${secN}</div></div>`; }
 document.addEventListener("click", e => { const b = e.target.closest("[data-sgfold]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   const k = b.dataset.sgfold, pr0 = b.closest(".pc3") || b, body = pr0.nextElementSibling, open = !!body && body.style.display === "none";
   document.querySelectorAll("[data-sgfold]").forEach(f => { const o = f === b && open, pr = f.closest(".pc3") || f, bd = pr.nextElementSibling; pr.classList.toggle("subon", o); if (bd && bd.dataset.sgfoldbody) bd.style.display = o ? "" : "none"; });
@@ -6096,7 +6101,7 @@ function subHTML(name){ const sp = name.startsWith("@@") ? subSpecial(name) : nu
 // (Oct 8) Chris picked B (Home row picker): short title, ONE grey line (chore · time · open N days · X of Y checked),
 // thin colour edge on the left = automation %. No chip, no time on the right, no Today button (Today is inside the open to-do).
 // (Oct 8) Chris: the dark colours all looked the same: the edge (and the % strip) use the LIGHT palette shades
-const LVL = {cant: "#B9BEC5", teach: "#E8B53A", checked: "#1FA598", auto: "#6AA84F"};
+const LVL = {cant: "var(--kaB9BEC5)", teach: "var(--kaE8B53A)", checked: "var(--ka1FA598)", auto: "var(--ka6AA84F)"};
 function rowB(){ document.querySelectorAll("#list .chc[data-tlinks], #list .pc3t[data-tlinks], #pop .plist .chc[data-tlinks], #list .chc[data-ideaopen]").forEach(b => {
   if (b.dataset.rowb) return; b.dataset.rowb = "1"; const sp = b.querySelector(":scope > span"), tm = b.querySelector(".tmr"); if (tm) tm.remove();
   if (b.dataset.ideaopen){ const i = ideas.find(x => x.id === b.dataset.ideaopen); if (i && sp) sp.textContent = ["idea", fmtMins(i.mins)].filter(Boolean).join(" · "); return; }
@@ -6684,13 +6689,14 @@ document.addEventListener("click", e => { const b = e.target.closest && e.target
 const fdPick = a => a[Math.floor(Math.random() * a.length)];
 function fdBanner(title, sub){ document.querySelectorAll(".fdban").forEach(x => x.remove()); const b = document.createElement("div"); b.className = "fdban"; b.setAttribute("role", "status");
   b.innerHTML = esc(title) + "<small>" + esc(sub) + "</small>"; document.body.appendChild(b); clearTimeout(fdBanT); fdBanT = setTimeout(() => b.remove(), 2600); }
-function fdConfetti(){ if (FD_RM.matches) return; const box = document.createElement("div"); box.className = "fdconf"; const colors = ["#0F766E", "#F2B518", "#e39a62", "#7fb069", "#cdeaf2"];
+function fdConfetti(){ if (FD_RM.matches) return; const box = document.createElement("div"); box.className = "fdconf"; const colors = ["var(--ka0F766E)", "var(--kaF2B518)", "var(--kaE39A62)", "var(--ka7FB069)", "var(--kaCDEAF2)"];
   for (let n = 0; n < 40; n++){ const el = document.createElement("i"); el.style.left = Math.random() * 100 + "%"; el.style.background = colors[n % colors.length];
     el.style.animationDuration = (1.4 + Math.random() * 1.2) + "s"; el.style.animationDelay = (Math.random() * 0.25) + "s"; box.appendChild(el); }
   document.body.appendChild(box); setTimeout(() => box.remove(), 3000); }
 function fdCannons(){ if (FD_RM.matches) return; const cv = document.createElement("canvas"); cv.className = "fdcannon"; document.body.appendChild(cv);
   const W = cv.width = cv.clientWidth * 2, H = cv.height = cv.clientHeight * 2, ctx = cv.getContext("2d"), t0 = performance.now(), ms = 3200, ps = [];
-  const cols = ["#0F766E", "#F2B518", "#E07B3A", "#6FA05A", "#5FB3A8", "#D64545"];
+  const fdNight = document.documentElement.dataset.theme === "dark" || (document.documentElement.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);   /* (Oct 26) palette v3 at night: a canvas cannot read CSS colours */
+  const cols = fdNight ? ["#3FB8AA", "#F0D58A", "#F4B4A8", "#B8DBA9", "#BCE8E5", "#E8948F"] : ["#0F766E", "#F2B518", "#E07B3A", "#6FA05A", "#5FB3A8", "#D64545"];
   for (const side of [0, 1]) for (let i = 0; i < 110; i++){ const a = side ? -2.2 + Math.random() * 0.45 : -1.4 + Math.random() * 0.45, sp = (16 + Math.random() * 18) * Math.max(W, 700) / 900;
     ps.push({x: side ? W : 0, y: H, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, c: cols[i % 6], r: Math.random() * 6, vr: Math.random() * 0.6 - 0.3, w: 10 + Math.random() * 8, h: 6 + Math.random() * 4}); }
   (function frame(now){ const t = now - t0; ctx.clearRect(0, 0, W, H); ctx.globalAlpha = Math.max(0, Math.min(1, (ms - t) / 500));
