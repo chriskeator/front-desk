@@ -870,6 +870,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kbtns .kb{flex:1 1 0;min-width:0;height:36px;display:flex;align-items:center;justify-content:center;border:0;border-radius:8px;font:inherit;font-size:13px;font-weight:700;color:var(--ktFFF);cursor:pointer;text-decoration:none;white-space:nowrap;padding:0 2px}
 .kbtns .kgo{background:var(--kb0F766E)}.kbtns .kdone{background:var(--kb4A7F37)}.kbtns .kmove{background:var(--kbD19A12)}.kbtns .krem{background:var(--kbB42318)}.kbtns .kedit{background:var(--kb5B6470)}
 .kbtns .kb.off{opacity:.35;cursor:default}
+.kbtns+.kbtns{margin-top:6px}.kbtns .kappr{background:var(--kb1F8A4C)}.kbtns .kfixb{background:var(--kbE07A45)}.kbtns .kcad{background:var(--kb4F5BD5)}
 .kidrow .tdetail{margin:8px -12px -10px}
 .chc span b.kidn{display:inline;font-size:12px;font-weight:800;color:var(--kt1FA598)}
 #fderr{display:none;position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:var(--kbB42318);color:var(--ktFFF);font-size:12px;line-height:1.3;padding:8px 10px;border-radius:8px;word-break:break-word}
@@ -2548,7 +2549,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v332</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v333</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6225,15 +6226,27 @@ const lvOf = t => t.level || (t.cadence === false ? "cant" : t.teach ? "teach" :
 function lvBar(t){ if (t.project === "Worship Piano Lab") return "";   /* (Oct 26, Chris) no 0/25/50/100% on anything in the Lab */ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
   return `<div class="lvbar">${TLV.map(([kk, h, c]) => `<span class="${kk === k ? "on" : ""}" style="--lc:${LVL[kk] || c}">${TLVP[kk]}%</span>`).join("")}</div>`; }
 // (Oct 7) Chris: every to-do has a Go button that opens where the work happens; the Front Desk stays on this to-do
+/* (Oct 27, Chris picked A: 'the same template for every possible scenario so I don't have to keep changing it') EVERY to-do, approval, question and
+   chapter lesson row = these TWO lines, always all 8 buttons; one that does not apply to this item is greyed out (no link = grey Go).
+   Line 1 Go | Done | Move | Remove | Edit, line 2 Approve | Fix | To Cadence. Buttons keep the actions they already had. */
+function eightBtns(t){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
+  const B = (c, l, a) => a ? `<button type="button" class="kb ${c}" ${a}>${l}</button>` : `<span class="kb ${c} off">${l}</span>`;
+  const ask = k === "review" || k === "yesno" || (k && k !== "go" && k !== "ab");
+  const done = t.done || k === "ab" ? "" : k ? `data-kans="done|${id}"` : `data-task="${id}" data-done="0"`;
+  const appr = k === "yesno" ? `data-kans="yes|${id}"` : k === "ab" ? `data-abans="use|${id}"` : ask ? `data-kans="good|${id}"` : "";
+  const fix = k === "yesno" ? `data-kans="no|${id}"` : k === "ab" ? `data-abans="note|${id}"` : ask ? `data-kans="fix|${id}"` : "";
+  const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : t.cost && t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
+  return `<div class="kbtns">${u ? `<a class="kb kgo" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : B("kgo", "Go", "")}${B("kdone", "Done", done)}${B("kmove", "Move", `data-tdcal="${id}"`)}${B("krem", "Remove", `data-delyes="${id}"`)}${B("kedit", "Edit", `data-edopen="${id}"`)}</div>`
+    + `<div class="kbtns">${B("kappr", "Approve", appr)}${B("kfixb", "Fix", fix)}${B("kcad", "To Cadence", cad)}</div>`; }
 function kindHTML(t){
   const k = t.kind, pics = Array.isArray(t.pics) ? t.pics : [], files = Array.isArray(t.files) ? t.files : [];
   const pg = pics.length ? `<div class="kpics">${pics.map((p, i) => `<button type="button" class="kthumb" data-kbig="${esc(p.url || p)}" aria-label="Picture ${i + 1}, tap for big"><img src="${esc(p.url || p)}" alt="" loading="lazy"></button>`).join("")}</div>` : "";
   const fl = files.map(f => safeUrl(f.url) ? `<a class="tb" href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label || "Open")}</a>` : "").join("");
-  if (k === "go"){ const u = safeUrl(t.url) && t.url !== FDURL ? t.url : "";
-    return (u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : "") + (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : "") + `<div class="kyn"><button type="button" class="tb go" data-kans="done|${esc(t.id)}">Done</button></div>`; }   /* (Oct 25, Chris: 'Stop putting things on my to-do list that I can't get rid of') every go row has its own Done */
+  if (k === "go"){
+    return (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : ""); }   /* (Oct 25, Chris: 'Stop putting things on my to-do list that I can't get rid of') every go row has its own Done */
   if (k === "ab") return abHTML(t);
-  if (k === "yesno") return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="yes|${esc(t.id)}">Yes</button><button type="button" class="tb" data-kans="no|${esc(t.id)}">No</button></div>`;
-  return pg + fl + `<div class="kyn"><button type="button" class="tb go" data-kans="good|${esc(t.id)}">Looks good</button><button type="button" class="tb gold" data-kans="fix|${esc(t.id)}">Fix</button></div><textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>`; }
+  if (k === "yesno") return pg + fl;
+  return pg + fl + `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>`; }
 document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-kbig], [data-kans], [data-asknext]"); if (!b) return;
   if (b.dataset.asknext){ const a = askList()[0]; if (a){ const i = askSkip.indexOf(a.id); if (i >= 0) askSkip.splice(i, 1); askSkip.push(a.id); } render(); return; }
   if (b.dataset.kbig){ const o = document.createElement("div"); o.className = "kbig"; o.innerHTML = `<img src="${esc(b.dataset.kbig)}" alt="">`; o.addEventListener("click", () => o.remove()); document.body.appendChild(o); return; }
@@ -6254,7 +6267,7 @@ function abHTML(t){ const a = t.ab || {}, d = s => s ? dayLabel(String(s).slice(
   <div class="abcards">${abCard(a.a, a.aLabel || "A", win === "a", a.picA)}${abCard(a.b, a.bLabel || "B", win === "b", a.picB)}</div>
   <p class="abverdict ${a.verdict === "Clear winner" ? "clear" : "close"}"><b>${esc(a.verdict || "Too close")}</b>${a.pick ? " · " + esc(a.pick) : ""}</p>
   <textarea class="kfix" data-abnote="${esc(t.id)}" placeholder="Type or talk: any note for Cadence"></textarea>
-  <div class="kyn"><button type="button" class="tb go" data-abans="use|${esc(t.id)}">Use winner</button><button type="button" class="tb gold" data-abans="note|${esc(t.id)}">Send note</button></div>`; }
+`; }
 document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-abans]"); if (!b) return;
   const [ans, id] = b.dataset.abans.split("|"), t = allTasks.find(x => x.id === id); if (!t || !db) return;
   const ta = document.querySelector(`[data-abnote="${CSS.escape(id)}"]`), note = ta ? ta.value.trim() : "";
@@ -6293,7 +6306,7 @@ function kidsHTML(t){ const K = sortL(allTasks.filter(x => x.parent === t.id && 
   /* (Oct 26, Chris) each lesson row carries Go | Done | Move | Remove | Edit on ONE colour-coded line, no need to open it; Move / Edit open their panel right under the row */
   if (/^lab-ch\d+$/.test(t.wait || "")) return `<div class="sublist kidsub">${K.map(k => { const id = esc(k.id), u = safeUrl(k.url) ? fdLink(k.url) : "";
     const sub = [fmtMins(k.mins), k.date ? "due " + dayLabel(k.date).replace(/^[A-Z][a-z]{2}, /, "") : ""].filter(Boolean).join(" · ");
-    return `<div class="kidrow"><div class="kidt"><b>${esc(k.short || k.title)}</b><span>${esc(sub)}</span></div><div class="kbtns">${u ? `<a class="kb kgo" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : `<span class="kb kgo off">Go</span>`}<button type="button" class="kb kdone" data-task="${id}" data-done="0">Done</button><button type="button" class="kb kmove" data-tdcal="${id}">Move</button><button type="button" class="kb krem" data-delyes="${id}">Remove</button><button type="button" class="kb kedit" data-edopen="${id}">Edit</button></div>${editOpen === k.id ? editHTML(k) : moving === k.id ? `<div class="tdetail" data-tdof="${id}"><div class="tdpanel">${moveCal(k)}</div></div>` : ""}</div>`; }).join("")}</div>`;
+    return `<div class="kidrow"><div class="kidt"><b>${esc(k.short || k.title)}</b><span>${esc(sub)}</span></div>${eightBtns(k)}${editOpen === k.id ? editHTML(k) : moving === k.id ? `<div class="tdetail" data-tdof="${id}"><div class="tdpanel">${moveCal(k)}</div></div>` : ""}</div>`; }).join("")}</div>`;
   return `<div class="kids"><b>To-dos inside (${K.length})</b>${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`; }
 // (Oct 10) the open to-do has the Give to Cadence button too (only on to-dos Cadence can really do = has a cost)
 function cadBtn(t){ if (t.done || t.cadence === false || t.test || !(t.cost || t.teach)) return "";
@@ -6351,8 +6364,11 @@ function taskDetail(t){
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", t.date ? (t.date < plus(0) ? "late, from " : "") + dayLabel(t.date) : "no day yet"].filter(Boolean).join(" · ");
   const bt = (attr, l, go) => `<button type="button" class="tb${go ? " go" : ""}" ${attr}>${l}</button>`;
   const [cd, ca] = checkCount(t), isToday = t.date && t.date <= plus(0);
+  /* (Oct 27, Chris: 'every item on my to-do list needs Go, Done, Move, Remove, Edit like the chapters') EVERY plain to-do = the chapter row's ONE colour-coded
+     line: Go | Done | Move | Remove | Edit. No link = Go greyed out, so a to-do with nowhere to go shows at once. */
+  const plain = !t.wait, five = plain ? eightBtns(t) : "";
   return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
-    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) + (safeUrl(t.url) && t.url !== FDURL ? `<a class="tb go gobtn" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : "") : goBtn(t)}${kidsHTML(t)}${t.wait || t.kind ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
+    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) : goBtn(plain ? {...t, url: ""} : t)}${kidsHTML(t)}${t.wait ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${plain ? five : t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${!plain && cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : t.handoff === "cadence" || t.handoff === "teach" ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind || plain ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
