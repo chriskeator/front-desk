@@ -2529,7 +2529,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v330</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v331</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5595,13 +5595,14 @@ function fnOpen(id, lv){ const r = (scBoard || []).find(x => x.id === id); if (!
 const MCN = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 let mcDoc = null, mcCtx = null, mcT = null;
 function mcStop(){ clearTimeout(mcT); if (mcCtx){ try { mcCtx.close(); } catch (x) {} mcCtx = null; } document.querySelectorAll("[data-mcplay]").forEach(b => { b.innerHTML = "&#9654; Play"; }); }
-async function mcPlay(which, btn){
-  const was = btn.dataset.on === "1"; mcStop(); document.querySelectorAll("[data-mcplay]").forEach(b => { b.dataset.on = "0"; }); if (was) return;
+function mcPlay(which, btn){
+  /* (Oct 27, Chris) THE MELODY CHECK PLAYS IN THE STUDENT PLAYER: this pop-up has no piano of its own. Play opens the same doorway desk Play uses
+     (SGPREVIEW -> Test player in check mode) with this melody as one temporary song (#mc=...); press Play there. Nothing is saved. */
   const L = (which === "d" ? mcDoc.rebuildLines : mcDoc.lines) || [], N = L.flat().filter(n => n && n.m > 0).sort((p, q) => p.g - q.g); if (!N.length) return;
-  btn.dataset.on = "1"; btn.innerHTML = "&#9632; Stop"; const c = mcCtx = new AudioContext(); await scPLoad(N.map(n => n.m)); if (mcCtx !== c) return;
-  const B = 60 / (mcDoc.bpm || 90), g0 = N[0].g, T = c.currentTime + .3;
-  N.forEach((n, k) => scPiano(c, T + (n.g - g0) * B, 0, n.m, 1, k + 1 < N.length ? T + (N[k + 1].g - g0) * B : T + (n.g - g0 + n.L) * B));
-  const end = N[N.length - 1]; mcT = setTimeout(mcStop, ((end.g - g0 + end.L) * B + 1.5) * 1000); }
+  const W = ((which === "d" ? mcDoc.rebuildWords : mcDoc.words) || []).flat().filter(w => w && (w.w || "").trim()), wAt = n => (W.find(w => Math.abs(w.g - n.g) < 1e-3) || {}).w || n.w || "";
+  const pay = {name: (mcDoc.name || "Song") + (which === "d" ? " (hymnal draft)" : " (your melody)"), bpm: mcDoc.bpm || 90, meter: mcDoc.meter || 4, notes: N.map(n => [n.m, +(+n.g).toFixed(4), +(+n.L).toFixed(4), wAt(n)])};
+  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(pay)))).replace(/\+/g, "-").replace(/\//g, "_");
+  window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_mc") + "#mc=" + b64, "_blank", "noopener"); }
 /* the two versions split rows differently, so notes are matched by beat position (g), pitch and length across the whole song */
 const mcKey = n => n.m + "@" + (+n.g).toFixed(3) + "/" + (+n.L).toFixed(3), mcFlat = L => (L || []).flat().filter(n => n && n.m > 0).sort((p, q) => p.g - q.g);
 function mcRowHTML(notes, otherKeys, words, gold){
