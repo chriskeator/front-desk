@@ -1495,7 +1495,7 @@ async function scApprove(){
   /* (Oct 16, Chris) Approve = back to the list AT ONCE with the song's row closed and its pill saying Submitted;
      Cadence turns it to Fixing when she starts, Ready when it's his turn again. The db writes follow (proven by desk-songcheck-test.py) */
   if (t){ t.scState = "submitted"; t.scAt = now; }
-  sgCelebrate(id, st === 1 ? 2 : ({easy: 4, medium: 5, hard: 6})[scLv] || 4); waitBusy.add("songs"); scClose(); render();   /* (Oct 21, Chris) Approve = back to the SAME open board he came from (its row stays open), never the Home list */
+  sgCelebrate(id, st === 1 ? 2 : ({easy: 4, medium: 6, hard: 7})[scLv] || 4); waitBusy.add("songs"); scClose(); render();   /* (Oct 21, Chris) Approve = back to the SAME open board he came from (its row stays open), never the Home list */
   if (t) db.collection("tasks").doc(t.id).update({scState: "submitted", scAt: now, heard: false}).catch(() => {});
   const SC0 = db.collection("songcheck").doc(id), SC = {update: o => { scLocal(id, o); return SC0.update(o); }}, done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); }, lv = scLv;
   try {
@@ -2549,7 +2549,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v333</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v334</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5510,7 +5510,7 @@ document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Chec
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
    Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
    NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songs + db songcheck, matched by name. */
-const SGCOLS = ["Lyrics", "Notes", "Melody", "Player", "Level 1", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "No", "Me", "Pl", "L1", "L2", "L3", "Fn"];   /* (Oct 22, Chris) Player = hear the approved melody in the real Lab song player (preview copy) before chords */
+const SGCOLS = ["Lyrics", "Notes", "Melody", "Player", "Level 1", "Intro", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "No", "Me", "Pl", "L1", "In", "L2", "L3", "Fn"];   /* (Oct 27, Chris) Intro between Level 1 and Level 2 */   /* (Oct 22, Chris) Player = hear the approved melody in the real Lab song player (preview copy) before chords */
 const SGPREVIEW = "https://lab.worshippianoacademy.com/a14d315000dc/";   /* = ~/Library/Scripts/claude-tasks/song-preview-path.txt (song-preview-push.sh publishes only that folder) */   /* (Oct 22, Chris) Beats = step 2: the | text box per verse, before the melody */   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
 const SGLIVE = ["twinkletwinklelittlestar", "jesuslovesme", "maryhadalittlelamb"];   /* = PP_SONG_OK in the Lab (twinkle, jesusloves, mary) */
 const SGXM = /christmas|silent night|o come,? all|hark|away in a manger|deck the halls|jingle|jolly old|joy to the world|angels we have|first noel|go tell it|we wish you/i;
@@ -5569,8 +5569,10 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
   if (sc && sc.melodyOK && !scVersesLeft(sc)) C[3] = sc.playerOK && !(sc.melodyEditedAt && String(sc.melodyEditedAt) > String(sc.playerOK)) ? {c: "ok", id: sc.id, pl: 1} : !sc.previewAt || String(sc.previewAt) < String(sc.updated || "") ? {c: "mk"} : {c: "chk", id: sc.id, pl: 1};   /* (Oct 23, Chris) the player not rebuilt with his latest approval yet = light gold Making, never a Check that opens an old player */   /* (Oct 22, Chris) an edit to the approved melody = Check again */   /* (Oct 22, Chris) PLAYER: gold Check once the melody and every verse are approved; teal after his Approve (playerOK) */
-  const LV = ["chordsOK", "mediumOK", "hardOK"], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK || (sc.melodyOK && sc.previewAt && !scVersesLeft(sc))); if (sc && sc[f]) C[4 + j] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[4 + j] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; });   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */   /* (Oct 24, Chris) Level 1 opens once the song HAS a player (melodyOK + previewAt), not only after playerOK: he fixes intro chords before approving the Player */
+  const LV = ["chordsOK", "mediumOK", "hardOK"], LVC = [4, 6, 7], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : sc.playerOK || (sc.melodyOK && sc.previewAt && !scVersesLeft(sc))); if (sc && sc[f]) C[LVC[j]] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[LVC[j]] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; });
+  /* (Oct 27, Chris: "set every song's intro to gold check intro") INTRO: gold Check on every song with an intro row until his own Approve tap (songcheck.introOK); his row ticks are untouched */
+  if (sc && sc.intro) C[5] = sc.introOK ? {c: "ok", id: sc.id, pl: 1, f: "introOK"} : {c: "chk", id: sc.id, pl: 1, f: "introOK"};   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */   /* (Oct 24, Chris) Level 1 opens once the song HAS a player (melodyOK + previewAt), not only after playerOK: he fixes intro chords before approving the Player */
   /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
   { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
     /* (Oct 22, Chris) FINAL = the song preview player with the approved chords: gold 'Check L#' once song-preview-auto.py has put that level's
@@ -5579,9 +5581,9 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
     const ready = L => !!(lvOk[L] && pv[L] && String(pv[L]) >= String(lvOk[L])), heard = L => !!(fo[L] && String(fo[L]) >= String(lvOk[L]));
     const todo = ["L1", "L2", "L3"].find(L => ready(L) && !heard(L)), done = ["L3", "L2", "L1"].find(L => lvOk[L] && heard(L));
     const making = ["L1", "L2", "L3"].find(L => lvOk[L] && !ready(L) && !heard(L));   /* (Oct 23, Chris: an empty Final looked like a mistake) level approved, player not updated yet (chores.sh, hourly) = light gold Making */
-    if (todo) C[7] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (making) C[7] = {c: "mk"}; else if (done) C[7] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
+    if (todo) C[8] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (making) C[8] = {c: "mk"}; else if (done) C[8] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
-  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "L2" ? 5 : k === "L3" ? 6 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
+  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "intro" ? 5 : k === "L2" ? 6 : k === "L3" ? 7 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
   return C; }
 function sgUniverse(){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -5596,7 +5598,7 @@ function sgRow(x){ const RS = "display:flex!important;flex-direction:row!importa
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}" role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -5665,7 +5667,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (x.dataset.fnx === "back") return lyrClose();
   if (x.dataset.fnx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return lyrClose(); }   /* (Oct 22, Chris) the song preview player, approved chords on it; (Oct 26) the pop-up closes so no Approve waits behind the player */
   const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo, updated: new Date().toISOString()};
-  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 7); lyrClose(); render(); }, true);
+  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 8); lyrClose(); render(); }, true);
 /* (Oct 22, Chris: "it's probably just easier to see the song as a chord chart ... chords above the lyrics") CHORD SHEET = the Level 1/2/3 check.
    Every verse on one page, the chord over the word it starts on (the chart is shared: a change shows in every verse). Tap a chord, type
    (1 4 5 6m 1/5 57 ...; two chords on one word = '4 1'; empty = no chord), Approve. Approve copies the chart DOWN to every later level
@@ -5829,19 +5831,19 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (tag) up.tag = tag;
   Object.assign(r, up); scLocal(r.id, up); chS.dirty.delete(lv); chS.unl.delete(lv); render();
   try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {}
-  sgCelebrate(r.id, 4 + j); chS = null; lyrClose(); }, true);   /* (Oct 24, Chris) Approve closes the sheet: back on the same song, the box glows teal + confetti (was: the next level opened in place) */
+  sgCelebrate(r.id, [4, 6, 7][j]); chS = null; lyrClose(); }, true);   /* (Oct 24, Chris) Approve closes the sheet: back on the same song, the box glows teal + confetti (was: the next level opened in place) */
 /* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens once the player exists, Oct 24) */
-function plOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
-  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id;
+function plOpen(id, f){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();   /* (Oct 27) f = "introOK": the same pop-up approves the Intro */
+  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.f = f || "playerOK";
   o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Songs tab &gt; ${esc(r.name)} &gt; Play</span></div><div class="lyrbt"><button type="button" class="tb" data-plx="back">Back</button><button type="button" class="tb" data-plx="open">Open player</button><button type="button" class="tb go" data-plx="ok">Approve</button></div></div>`;
   document.body.appendChild(o); }
-document.addEventListener("click", async e => { const b = e.target.closest("[data-plchk]"); if (b){ e.preventDefault(); e.stopPropagation(); plOpen(b.dataset.plchk); return; }
+document.addEventListener("click", async e => { const b = e.target.closest("[data-plchk]"); if (b){ e.preventDefault(); e.stopPropagation(); plOpen(b.dataset.plchk, b.dataset.plf); return; }
   const x = e.target.closest("[data-plx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.plx === "back") return lyrClose();
   if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return lyrClose(); }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; Oct 24: the player's own id = songcheck.labId from song-preview-auto.py, e.g. jesuslittle) */
-  const now = new Date().toISOString(), up = {playerOK: now, updated: now};
-  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 3); lyrClose(); render(); }, true);
+  const f = o.dataset.f === "introOK" ? "introOK" : "playerOK", now = new Date().toISOString(), up = {[f]: now, updated: now};
+  try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, f === "introOK" ? 5 : 3); lyrClose(); render(); }, true);
 /* (Oct 26, Chris: "this style of checker for the melody on these 8 check songs ... an extra row in between the lyrics and melody columns")
    NOTES CHECK: the melody as numbers over every syllable, like the chord sheet. Only these 8 songs get the Notes column (the old hidden 2nd slot);
    every other song's slot stays empty. Tap a box, type the numbers (1-7, b/# in front, ' = high octave, , = low; a held syllable = 3 2; no mark =
@@ -6803,6 +6805,9 @@ function deskVerCheck(){ const cur = +((document.querySelector("header .deskver"
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
     if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
+/* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
+(function melcmpLink(){ const m = /#melcmp=([\w-]+)/.exec(location.hash); if (!m) return; let n = 0;
+  const go = () => { if (db && deskReady){ history.replaceState(null, "", location.pathname + location.search); mcOpen(m[1]); } else if (n++ < 60) setTimeout(go, 500); }; go(); })();
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") deskVerCheck(); });
 (async () => {
   db = await window.claude?.use?.("db") ?? null;
