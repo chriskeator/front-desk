@@ -2529,7 +2529,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v328</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v329</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5801,7 +5801,10 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
     Object.assign(r, up); scLocal(r.id, up); chS.dirty.delete(lv); chS.saved = lv; chS.arm = false; render(); chDraw();
     try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {} return; }
   const up = {[CHLV[lv][1]]: now, updated: now}; put(lv, chS.charts[lv]);
-  CHL.slice(j + 1).forEach(L => { if (!r[CHLV[L][1]]){ chS.charts[L] = chCloneSet(chS.charts[lv]); if (L !== "L1" && lv === "L1") chS.charts[L].V = {}; put(L, chS.charts[L]); up[CHLV[L][0] + "Edited"] = now; } });   /* copy DOWN only into levels he has not approved */
+  const chJ = L => { const v = r[CHLV[L][0] + "V"]; return JSON.stringify([r[CHLV[L][0]] || null, v && Object.keys(v).length ? v : null]); }, chHas = L => { const c = r[CHLV[L][0]]; return Array.isArray(c) ? c.some(x => x && (Array.isArray(x) ? x.length : true)) : !!c; };
+  const chMine = L => { const i = CHL.indexOf(L); return chHas(L) && i > 0 && chJ(L) !== chJ(CHL[i - 1]); };   /* (Oct 26, Chris: never change a chord he placed) a later level that differs from its parent level = his own chords */
+  const mine = new Set(CHL.slice(j + 1).filter(chMine));
+  CHL.slice(j + 1).forEach(L => { if (!r[CHLV[L][1]] && !mine.has(L)){ chS.charts[L] = chCloneSet(chS.charts[lv]); if (L !== "L1" && lv === "L1") chS.charts[L].V = {}; put(L, chS.charts[L]); up[CHLV[L][0] + "Edited"] = now; } });   /* copy DOWN only into levels he has not approved AND has not changed by hand */
   if (tag) up.tag = tag;
   Object.assign(r, up); scLocal(r.id, up); chS.dirty.delete(lv); chS.unl.delete(lv); render();
   try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {}
