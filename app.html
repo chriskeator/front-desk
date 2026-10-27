@@ -1065,6 +1065,9 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .mcn b{font-size:12px}.mcn i{font-style:normal;font-size:10px;color:var(--muted);white-space:nowrap}
 .mcn.d{background:var(--gold-soft);border-color:var(--gold)}.mcn.d b{color:var(--gold)}
 .mcbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mcbtns .tb{padding:10px}
+
+/* (Oct 26) two-tap approve: the armed button turns gold and reads 'Tap again' */
+button.armed{background:#D19A12 !important;border-color:#D19A12 !important;color:#fff !important;white-space:nowrap}
 </style>
 
 <div id="pop"></div>
@@ -2526,7 +2529,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v327</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v328</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5047,6 +5050,28 @@ async function setReply(id, data, btn){
   try { await db.collection("replies").doc(id).update({...data, decided: new Date().toISOString()}); editing = null; }
   catch { if (btn){ btn.disabled = false; btn.textContent = "Try again"; } }
 }
+/* (Oct 26, Chris: "things are getting approved that I haven't approved") TWO-TAP APPROVE. Every button that approves, says yes
+   or posts needs a 2nd tap ("Tap again", 0.4 to 4 s later). A tap on such a button drawn under 0.7 s ago is ignored (a double-tap
+   landing on a pop-up or redraw), and so is a tap that started on a different button. Window capture: runs before every handler. */
+(function(){
+  const SEL = '[data-fnx="ok"],[data-plx="ok"],[data-chx="ok"],[data-se="ok"],[data-se="okc"],[data-lyrx="ok"],[data-ntx="ok"],[data-shx="ok"],[data-kans^="yes|"],[data-kans^="good|"],[data-kans^="done|"],[data-approve],[data-save],[data-qdayok]';
+  let drawnAt = 0, down = null;
+  new MutationObserver(ms => { for (const m of ms){ const n0 = m.target; if (m.type === "attributes"){ if (n0.matches && n0.matches(SEL)) drawnAt = Date.now(); continue; }
+    for (const n of m.addedNodes) if (n.nodeType === 1 && (n.matches(SEL) || n.querySelector(SEL))){ drawnAt = Date.now(); return; } } })
+    .observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ["data-shx", "data-se", "hidden"]});
+  const disarm = b => { if (!b.dataset.armed) return; delete b.dataset.armed; b.innerHTML = b.dataset.lbl || b.innerHTML; delete b.dataset.lbl; b.classList.remove("armed"); b.style.minWidth = ""; };
+  window.addEventListener("pointerdown", e => { down = e.target.closest ? e.target.closest("button, a") : null; }, true);
+  window.addEventListener("click", e => {
+    const d0 = down; down = null;
+    const b = e.target.closest ? e.target.closest(SEL) : null; if (!b) return;
+    const t = Date.now(), stop = () => { e.preventDefault(); e.stopImmediatePropagation(); };
+    if (d0 && d0 !== b) return stop();
+    if (b.dataset.armed){ if (t - +b.dataset.armed < 400) return stop(); disarm(b); return; }
+    if (t - drawnAt < 700) return stop();
+    stop(); b.style.minWidth = b.offsetWidth + "px"; b.dataset.lbl = b.innerHTML; b.dataset.armed = String(t); b.classList.add("armed"); b.textContent = "Tap again";
+    setTimeout(() => { if (b.dataset.armed === String(t)) disarm(b); }, 4000);
+  }, true);
+})();
 // touch: remember which button the finger went DOWN on. A tap whose click lands on a different button (e.g. the View
 // bubble that appeared under the finger) is ignored; a tap outside a chart clears its selection.
 let downBtn = null, downType = "mouse";
@@ -5617,7 +5642,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const x = e.target.closest("[data-fnx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, lv = o && o.dataset.lv, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.fnx === "back") return lyrClose();
-  if (x.dataset.fnx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return; }   /* (Oct 22, Chris) the song preview player, approved chords on it */
+  if (x.dataset.fnx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return lyrClose(); }   /* (Oct 22, Chris) the song preview player, approved chords on it; (Oct 26) the pop-up closes so no Approve waits behind the player */
   const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo, updated: new Date().toISOString()};
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 7); lyrClose(); render(); }, true);
 /* (Oct 22, Chris: "it's probably just easier to see the song as a chord chart ... chords above the lyrics") CHORD SHEET = the Level 1/2/3 check.
@@ -5790,7 +5815,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const x = e.target.closest("[data-plx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.plx === "back") return lyrClose();
-  if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return; }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; Oct 24: the player's own id = songcheck.labId from song-preview-auto.py, e.g. jesuslittle) */
+  if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return lyrClose(); }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; Oct 24: the player's own id = songcheck.labId from song-preview-auto.py, e.g. jesuslittle) */
   const now = new Date().toISOString(), up = {playerOK: now, updated: now};
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 3); lyrClose(); render(); }, true);
 /* (Oct 26, Chris: "this style of checker for the melody on these 8 check songs ... an extra row in between the lyrics and melody columns")
