@@ -2542,7 +2542,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v338</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v339</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2667,9 +2667,9 @@ function asksHTML(){ const L = askList(), a = L[0]; if (!a) return `<p class="no
 function waitLive(t){
   if (t.wait === "asks"){ const L = askList(); return {n: L.length, first: L[0], title: "Questions for you: " + L.length}; }
   if (waitBusy.has(t.wait)) return null;
-  if (t.wait === "songs"){ if (scBoard === null) return null; const L = sgUniverse(); let n = 0, first = null;   /* (Oct 21) live songs count too: their Level 1-3 cells are tappable gold */
+  if (t.wait === "songs"){ if (scBoard === null) return null; const L = sgUniverse().filter(sgNow); let n = 0, first = null;   /* (Oct 21) live songs count too: their Level 1-3 cells are tappable gold */
     L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => x.cells.forEach(q => { if (q.c === "chk" && q.id){ n++; if (!first) first = q; } }));
-    return {n, first, title: "Songs: " + n + " to check"}; }
+    return {n, first, title: "Songs to check: " + n}; }
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
   /* (Oct 25, Chris: 'Chapter 7 is not in my Today folder') desk-wait-rows.py groups ready lessons into t-wait-lab-chN (wait 'lab-chN', lessons = its kids); count the open kids live */
@@ -6129,13 +6129,18 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   else { up = btUpApprove(r, v, tx, now); if (!up) return; if (up.err){ o.querySelector(".btfl").innerHTML = "<i>" + esc(up.err) + "</i>"; return; } sgCelebrate(id, 1); }
   Object.assign(r, up); lyrClose(); render();
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
+/* (Oct 28, Chris: "only have one song in each folder that goes back and forth ... so it can be in my today to-do list") ONE test, read by the
+   Today row 'Songs to check' (waitLive + goBtn) and the Songs folder (homeSongs): a song is going out now when it has a gold Check box and
+   ships within 7 days (a release date, the Nov 1 Christmas list) or is already live. Going out now = Today only; every other song = the Songs folder. */
+function sgNow(x){ if (!x || !x.cells || !x.cells.some(q => q.c === "chk")) return false; if (SGLIVE.includes(x.k)) return true;
+  const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-01" : "")).slice(0, 10); return !!r && r <= plus(7); }
 function homeSongs(only){
   const RS = SGRS;
   const head = sgHead(SGCOLS, SGAB);
   const U = sgUniverse(), byK = new Map(U.map(x => [x.k, x]));
   const ord = (a, b) => (b.cells.some(q => q.c === "chk") - a.cells.some(q => q.c === "chk")) || b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title);
   /* inside a song-check task: the same template, only its songs */
-  if (only){ const W = only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
+  if (only){ const W = only === "now" ? U.filter(sgNow).sort(ord) : only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(x => sgRow(x)).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
   const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
   /* (Oct 21, Chris) SONGS BOARD = 5 FOLDERS: Christmas (Nov 1 list), Church songs, Kids, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
@@ -6144,12 +6149,13 @@ function homeSongs(only){
   /* (Oct 21, Chris) KIDS folder: nursery and children's songs that are not church songs (fixed id set, like SGCH) */
   const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
-  const fX = U.filter(inXm).sort(ord), fK = U.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = U.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
+  const UF = U.filter(x => !sgNow(x));   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check */
+  const fX = UF.filter(inXm).sort(ord), fK = UF.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = UF.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = UF.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = UF.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0);
     return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
-  const mine = U.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
+  const mine = UF.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
   const CR = [].filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
@@ -6361,7 +6367,8 @@ function goBtn(t){
   if (/^lab-ch\d+$/.test(t.wait || "") || t.wait === "lessons") return `<div class="chgrid songtaskgrid songgrid lcgrid">${lessonsInner()}</div>`;   /* (Oct 28) Lessons to check opens its board, like Songs to check */
   if (t.wait === "asks") return asksHTML();
   if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked"); return `<div class="revlist"><p class="tn">${items.length} drafts to check</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
-  if (t.wait === "songs" || t.wait === "shorts") return `<div class="revlist"><button type="button" class="tb go gobtn" data-waitgo="${t.wait}">Open first</button></div>`;
+  if (t.wait === "songs") return homeSongs("now");   /* (Oct 28, Chris) Songs to check opens right here: only the songs going out now (sgNow) */
+  if (t.wait === "shorts") return `<div class="revlist"><button type="button" class="tb go gobtn" data-waitgo="${t.wait}">Open first</button></div>`;
   if (t.shortcheck) return `<div class="revlist"><button type="button" class="tb go gobtn" data-shortchk="${esc(t.id)}">Start checking</button></div>`;   /* (Oct 15) Chris: one Shorts check session */
   if (Array.isArray(t.songcheck) && t.songcheck.length) return homeSongs(t.songcheck);   /* (Oct 20, Chris) the ONE song template, only this task's songs (no plain song buttons ever) */
   // (Oct 7) Chris: things to check (review items / lesson links) sit right inside the open to-do, all the same size
@@ -6372,7 +6379,7 @@ function goBtn(t){
   const u = safeUrl(t.url) && t.url !== FDURL ? t.url : "";
   return u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : ""; }
 /* (Oct 21, Chris: "changed without my approval") the Shorts / Songs Today rows open that board's OWN existing folder on Home (column checklist), no pop-up, no Open first, no % bar */
-const WAITFOLD = {"t-wait-shorts": "Shorts", "t-wait-songs": "Songs"};
+const WAITFOLD = {"t-wait-shorts": "Shorts"};   /* (Oct 28, Chris) Songs to check opens in place (goBtn), its songs are not in the Songs folder */
 function waitFolderGo(k){ foldSet(topKey(k), 1); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
   const h = [...document.querySelectorAll("#list .msec > h4[data-ck]")].find(x => x.dataset.ck === k); if (h) h.scrollIntoView({block: "start"}); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-tlinks]"); if (!b || !WAITFOLD[b.dataset.tlinks] || !b.closest("#list")) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); waitFolderGo(WAITFOLD[b.dataset.tlinks]); }, true);
