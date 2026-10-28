@@ -484,16 +484,6 @@ a.tb{text-decoration:none;display:inline-flex;align-items:center;justify-content
 a.tb.rs-fixed{flex-direction:column}
 .rs-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:999px;white-space:nowrap}
 .rs-tag.rs-none,.rs-tag.rs-fixed{border:1px solid var(--kl5B6470);color:var(--ink)} .rs-tag.rs-fix{background:var(--kbD19A12);color:var(--ktFFF)} .rs-tag.rs-good{background:var(--kb4A7F37);color:var(--ktFFF)}
-.labdots{display:flex;flex-wrap:wrap;gap:3px}
-.labdots i,.rs-key i{display:inline-block;width:10px;height:10px;border-radius:3px}
-.rs-key{display:inline-flex;gap:6px;align-items:center;flex-wrap:wrap}
-.labdots i.rs-none,.labdots i.rs-fixed,.rs-key i.rs-none,.rs-key i.rs-fixed{border:1.5px solid var(--kl5B6470);box-sizing:border-box}
-.labdots i.rs-fixed,.rs-key i.rs-fixed{background:repeating-linear-gradient(45deg,transparent 0 2px,var(--ka5B6470) 2px 3px)}
-.labdots i.rs-fix,.rs-key i.rs-fix{background:var(--kbD19A12)} .labdots i.rs-good,.rs-key i.rs-good{background:var(--kb4A7F37)}
-.labboard{display:flex;flex-direction:column;gap:6px;min-height:0}
-.labrow{flex:none;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;cursor:pointer;min-height:40px}
-.labrow .tn{grid-column:1}.labrow .labdots{grid-column:2;grid-row:1/3;align-self:center;max-width:220px;justify-content:flex-end}
-.labrow.on{border-color:var(--kl5B6470);box-shadow:inset 0 0 0 1px var(--kl5B6470)}
 .labbtns .tb,.readybox .tb{font-size:12.5px;padding:6px 9px}
 .readybox{gap:4px}
 .readybox .tlinks{padding-top:0}
@@ -515,7 +505,7 @@ a.tb.rs-fixed{flex-direction:column}
 @media (max-width:760px){.revgrid{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}}
 .emailprev{height:100%;min-height:220px;width:100%;border:1px solid var(--line);border-radius:10px;background:var(--kbF4F4F4)}
 .task[data-tid],.onecard[data-tid]{cursor:pointer}
-@media all{ .labrow .labdots{display:none} .labrow{grid-template-columns:1fr;padding:6px 10px} .labrow b{font-size:14px} .labboard > .tn{font-size:12px} .labbtns .tb{padding:5px 8px} }
+@media all{ .labbtns .tb{padding:5px 8px} }
 .supd{text-transform:none;letter-spacing:0;font-weight:600}
 /* to-do pills (Chris, Oct 4): small like the Today tab button, several per row, wrapping */
 .nightc{display:flex;flex-direction:column;gap:8px;margin:6px 0;min-width:0}
@@ -658,14 +648,12 @@ a.tb.rs-fixed{flex-direction:column}
 .msec h4{font-size:14px;letter-spacing:.03em;line-height:1.25}
 /* (Oct 7) Chris: on the phone EVERY folder and every card inside looks identical: same card, same sizes, same text */
 @media all{
- .pc3,.chc,.labrow{height:auto!important;min-height:54px;box-sizing:border-box;border:1px solid var(--line);border-left:4px solid var(--cc,#D19A12);border-radius:9px;background:var(--card);box-shadow:none}
+ .pc3,.chc{height:auto!important;min-height:54px;box-sizing:border-box;border:1px solid var(--line);border-left:4px solid var(--cc,#D19A12);border-radius:9px;background:var(--card);box-shadow:none}
  .pc3{padding:0 8px 0 0;align-items:center}
  .pc3t,.chc{padding:6px 10px!important;gap:1px}
- .labrow{padding:6px 10px!important;--cc:var(--ka1FA598);display:flex;flex-direction:column;justify-content:center;gap:1px}
- .pc3t b,.chc b,.labrow b{font-size:14px!important;font-weight:700;line-height:1.25;white-space:normal!important;overflow:visible!important}
- .pc3t span,.chc span,.labrow .tn{font-size:12px!important;color:var(--muted);white-space:normal!important;overflow:visible!important}
+ .pc3t b,.chc b{font-size:14px!important;font-weight:700;line-height:1.25;white-space:normal!important;overflow:visible!important}
+ .pc3t span,.chc span{font-size:12px!important;color:var(--muted);white-space:normal!important;overflow:visible!important}
  .msec .chgrid{display:flex!important;flex-direction:column;gap:8px}
- .labrow.on{border-color:var(--line);border-left-color:var(--kl5B6470);box-shadow:none}
 }
 /* (Oct 7) Chris picked B (Gmail list) for EVERY folder on the phone: one card, header row with a colour square,
    count + time centred, sort on the right; items = plain rows with thin lines between, lined up under the title */
@@ -684,8 +672,8 @@ a.tb.rs-fixed{flex-direction:column}
  .msec > h4{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
  .msec.fdrag{box-shadow:0 8px 24px rgba(0,0,0,.35);outline:2px solid var(--cc);opacity:.95}
  .msec .chgrid{gap:0!important}
- .msec .chgrid > .pc3,.msec .chgrid > .chc,.msec .chgrid > .labrow{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;min-height:50px}
- .msec .chgrid > .chc,.msec .chgrid > .labrow{padding:9px 12px 9px 34px!important}
+ .msec .chgrid > .pc3,.msec .chgrid > .chc{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;min-height:50px}
+ .msec .chgrid > .chc{padding:9px 12px 9px 34px!important}
  .msec .chgrid > .pc3 .pc3t{padding:9px 10px 9px 34px!important}
  .msec .chgrid > .tn,.msec .chgrid > b,.msec .chgrid > .day{display:block;border-top:1px solid var(--line);padding:9px 12px 9px 34px}
  .msec .chgrid > .day{padding:8px 12px 2px 34px;color:var(--muted);font-size:12px;font-weight:700}
@@ -842,8 +830,6 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kids .tdetail{padding-left:12px}
 /* (Oct 26) the colour edge (left 14px) never sits on the words: rows inside a to-do start after it */
 #list .kids .chc.ledge{padding-left:34px!important}
-#list .tdetail .kidsub{margin:0 -12px;border-top:1px solid var(--line)}
-#list .kidsub .chc.ledge::before{left:30px}
 /* (Oct 26, Chris) chapter lesson rows: title, then Go | Done | Move | Remove | Edit on one colour-coded line */
 .kidrow{border-top:1px solid var(--line);padding:9px 12px 10px}
 .kidt b{display:block;font-size:14px;font-weight:700;color:var(--ink);line-height:1.25}.kidt span{display:block;font-size:12px;color:var(--muted)}
@@ -999,7 +985,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .rowon,#list .rowon:hover,#list .rowon > .chc,#list .rowon > .chc:hover,#list .rowon > .pc3t,#list .rowon > .pc3t:hover,#list .msec .chgrid > .chc.rowon,#list .msec .chgrid > .chc.rowon:hover,#list .subon,#list .subon > .pc3t,#list .subon > .pc3t:hover{background:var(--card)!important}   /* (Oct 12, Chris) open things are WHITE inside the gold ring, no soft green */
 #list .tdetail,#list .sublist,#list .mbody,#list .replist{cursor:default}
 /* (Oct 11) Chris: the grey line under a row title is clearly SMALLER than the title (title 14px, line ~80%) */
-#list .msec .chc > span,#list .msec .pc3t > span,#list .chc[data-rowb] > span,#pop .chc[data-rowb] > span,#list .chc > span,#pop .chc > span,#list .pc3t > span,.labrow .tn{font-size:11.5px!important;line-height:1.3!important}
+#list .msec .chc > span,#list .msec .pc3t > span,#list .chc[data-rowb] > span,#pop .chc[data-rowb] > span,#list .chc > span,#pop .chc > span,#list .pc3t > span{font-size:11.5px!important;line-height:1.3!important}
 #list .chc > span b.chk,#list .chc > span b.kidn,#pop .chc > span b.chk{font-size:inherit}
 /* (Oct 11, Chris) the header he just closed keeps the open colour until he scrolls, then fades back */
 #list .justclosed,#list .justclosed > .chc,#list .justclosed > .pc3t,#list .msec .chgrid > .chc.justclosed,#list .msec > h4.justclosed{background:var(--soft)!important}
@@ -1042,6 +1028,13 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 /* (Oct 14, Chris) phone: the Songs column labels show the whole word at 45 degrees (computer keeps full words flat) */
 @media (max-width:999px){ #list .tn .sblk{height:46px!important;position:relative;overflow:visible}#list .tn .sblk .sab{display:none}#list .tn .sblk .sfw{display:block;position:absolute;left:5px;bottom:2px;transform-origin:0 100%;transform:rotate(-45deg);white-space:nowrap;font-size:11px;letter-spacing:0} }
 @media (min-width:1000px){ #list .songgrid .sname{flex:0 0 200px!important}#list .songgrid .srow .sblk .sfw{font-size:11.5px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important;min-width:0!important;overflow:hidden}#list .srow .sbar{min-width:0}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
+/* (Oct 28) Lessons to check = the Songs board rows: on a computer its 4 boxes are exactly as wide as the song boxes, the lesson name takes the rest.
+   A song row = name 200px + 9 boxes, 8 of them with a border B each side (the screen draws 1.5px as 1px on a 1x screen, 1.5px on a 2x screen):
+   song box = (row - 232 - 80 - 16B) / 9 + 2B, so the 4-box bar = 4/9 row - (1312/9 - 38)px on 1x, 4/9 row - (1344/9 - 42)px on 2x.
+   A folder title inside an open to-do keeps the folder look. */
+@media (min-width:1000px){ #list .lcgrid .sname{flex:1 1 auto!important;min-width:0}#list .lcgrid .sbar{flex:0 0 calc(400% / 9 - 970px / 9)!important} }
+@media (min-width:1000px) and (min-resolution:1.75dppx){ #list .lcgrid .sbar{flex:0 0 calc(400% / 9 - 966px / 9)!important} }
+#list .tdetail .pc3t > b{color:var(--ink)}
 .qrow .qd{display:none}
 .qhead{display:none}
 @media (min-width:1000px){.qhead{display:flex!important;gap:14px!important}.qrow .qd{display:inline-block}.qrow .qt2{display:block}.qrow .qpill,.qrow .qt,.qrow .qhp,.qrow .qeta{display:none!important}.qrow{gap:14px!important;padding:11px 20px!important}.qfor{display:none!important}}
@@ -2530,7 +2523,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v335</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v336</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2545,14 +2538,25 @@ const $ = id => document.getElementById(id);
 let stats = [], fam = null, answering = null, showRest = false, inbox = [];
 // (Oct 9) Chris: a lesson he just checked must show its colour the moment he comes back to the Front Desk, not after the
 // hourly refresh. Same rules as Money Map/app/lab_status.py, using the Lab's PUBLIC read key on the review_notes table.
+/* (Oct 28) the Lab's own notes table (public key, same as the Lab): the Lessons to check board reads every note (labNotes) and sends Fix notes
+   and the whole-lesson approval in the Lab's own shape */
+const LABK = "sb_publishable_jpFAEpr5DI-L95Vln1N2kg_37s0r1Ak", LABSB = "https://trrcspedvsmibdpzwkxt.supabase.co/rest/v1/review_notes";
+let labNotes = [], labNotesMax = 0, labNotesSig = "", labLabels = new Map(), labLabelMax = 0, lessonChecks = [], lcMemo = new Map();
 let labFreshAt = 0;
 async function labFresh(force){
   const lab = stats.find(x => x.id === "lab"); if (!lab || !lab.chapters) return;
-  if (!force && Date.now() - labFreshAt < 20000) return; labFreshAt = Date.now();
+  if (!force && Date.now() - labFreshAt < 20000) return; if (labFresh.busy) return; labFreshAt = Date.now(); labFresh.busy = true;
   try {
-    const K = "sb_publishable_jpFAEpr5DI-L95Vln1N2kg_37s0r1Ak";
-    const r = await fetch("https://trrcspedvsmibdpzwkxt.supabase.co/rest/v1/review_notes?select=id,mark,lesson,card,fp,created_at&mark=neq.survey&order=id.asc&limit=5000", {headers: {apikey: K, Authorization: "Bearer " + K}});
-    if (!r.ok) return; const notes = await r.json();
+    /* (Oct 28) the table hands back at most 1000 rows per ask (the old one-ask read stopped at note 1000): read in pages, and after the
+       first read only the notes newer than the last one held (notes are only ever added) */
+    const K = LABK, H = {headers: {apikey: K, Authorization: "Bearer " + K}}, got = [];
+    for (let i = 0; i < 30; i++){ const mx = got.length ? got[got.length - 1].id : labNotesMax; const r = await fetch(LABSB + "?select=id,mark,lesson,card,fp,created_at&mark=neq.survey&id=gt." + mx + "&order=id.asc&limit=1000", H); if (!r.ok) return; const d = await r.json(); got.push(...d); if (d.length < 1000) break; }
+    if (got.length) labNotesMax = got[got.length - 1].id;
+    const notes = labNotes = labNotes.filter(n => !n.tmp).concat(got);
+    /* labels only of the Lab 'open' rows (which desk box opened the lesson, screen width) and sign-offs, only the new ones */
+    for (let i = 0; i < 30; i++){ const r2 = await fetch(LABSB + "?select=id,label&mark=in.(diag,good,ungood)&id=gt." + labLabelMax + "&order=id.asc&limit=1000", H).catch(() => null);
+      const nl = r2 && r2.ok ? await r2.json() : []; for (const x of nl){ labLabels.set(x.id, String(x.label || "")); labLabelMax = Math.max(labLabelMax, +x.id); } if (nl.length < 1000) break; }
+    const sig = notes.length + ":" + labNotesMax + ":" + labLabelMax, nsCh = sig !== labNotesSig; labNotesSig = sig; if (nsCh) lcMemo.clear();
     const handled = lab.handled || 0, live = lab.live || "", perFp = {};
     for (const n of notes){ const mk = n.mark, fp = n.fp || "", lesson = n.lesson || fp.split("|")[0];
       if (!lesson || !["good","ungood","fix","done"].includes(mk)) continue; const k = fp || lesson + "|" + n.card, at = String(n.created_at || "").slice(0, 16);
@@ -2562,10 +2566,10 @@ async function labFresh(force){
       else delete perFp[k]; }
     const signoff = {}; for (const [k, [lesson, st, id]] of Object.entries(perFp)) if (k.endsWith("|lesson") && st === "good") signoff[lesson] = Math.max(signoff[lesson] || 0, id);
     const status = {}; for (const [lesson, st0, id] of Object.values(perFp)){ const st = st0 === "fixed" && id < (signoff[lesson] || 0) ? "good" : st0; (status[lesson] = status[lesson] || {fix:0, fixed:0, good:0})[st]++; }
-    let changed = false;
+    let changed = nsCh;
     for (const c of lab.chapters) for (const L of c.lessons){ const t = status[L.id] || {}, st = t.fix ? "fix" : t.fixed ? "fixed" : t.good ? "good" : "none"; if (L.s !== st){ L.s = st; changed = true; } }
     if (changed && !editing && !sorting && !answering && !revFix && !bulkPick) render();
-  } catch (e) {}
+  } catch (e) {} finally { labFresh.busy = false; }
 }
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") labFresh(true); });
 addEventListener("focus", () => labFresh(true));
@@ -2650,7 +2654,8 @@ function waitLive(t){
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
   /* (Oct 25, Chris: 'Chapter 7 is not in my Today folder') desk-wait-rows.py groups ready lessons into t-wait-lab-chN (wait 'lab-chN', lessons = its kids); count the open kids live */
-  if (/^lab-ch\d+$/.test(t.wait)){ const n = (allTasks || []).filter(x => x.parent === t.id && !x.done && !x.removed).length; return {n, title: "Ch" + t.wait.slice(6) + ": " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
+  /* (Oct 28, Chris) the chapter row IS the Lessons to check board now: ONE row (the first chapter row; another chapter's row hides), count = gold boxes */
+  if (/^lab-ch\d+$/.test(t.wait) || t.wait === "lessons"){ const f = tasks.find(x => x.wait && (/^lab-ch\d+$/.test(x.wait) || x.wait === "lessons") && !x.done && !x.removed); return {n: f && f.id !== t.id ? 0 : lcToCheck(), title: "Lessons to check"}; }
   if (t.wait === "lab"){ const n = (t.links || []).length; return {n, title: "Lab: " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
   return null; }
 /* (Oct 22, Chris) ZERO = HIDDEN EVERYWHERE: a wait row with nothing waiting is never shown in any list (Today, week, next, later) */
@@ -2700,7 +2705,7 @@ function trainPop(){
   return popTop(TLVP[k] + "% · " + esc(h.replace("100% automatic", "Automatic"))) + `<div class="llist">${T.map(t => lrow("", t.short || t.title, false, fmtMins(t.mins))).join("") || '<p class="note" style="padding:12px 14px">No to-dos here yet.</p>'}</div>`
     + (L.length ? `<p class="tn" style="margin-top:8px">Jobs</p><div class="llist">${L.map(x => lrow("", x.title, false, (k === "teach" || k === "checked") && x.trainMins ? fmtMins(x.trainMins) + " to train" : "")).join("")}</div>` : "");
 }
-let ideaCatOpen = (() => { try { return new Set(JSON.parse(localStorage.getItem("fd-ideacats") || "[]")); } catch { return new Set(); } })(), openIdea = null;
+let openIdea = null;
 function ideaPop(){
   const i = ideas.find(x => x.id === openIdea); if (!i) return "";
   const url = /^https:\/\//.test(i.note || "") ? i.note : "", had = tasks.some(t => t.fromIdea === i.id && !t.done);
@@ -2761,12 +2766,11 @@ function moveList(t){
 }
 // (Oct 7) Project = a list of every open project
 // (Oct 7) Chris: the project picker shows the same folders as Projects (folder look, not Gmail); tap a folder, then a project
-let pickCat = null;
 const PCOL = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)", "Ideas": "var(--kaE07A45)"};
 function projList(t){
   const open = projects.filter(p => p.status !== "done"), cats = [...new Set(open.map(p => p.category || "More"))].sort(byAZ);
-  const f = c => { const L = open.filter(p => (p.category || "More") === c).sort(byAZ), on = pickCat === c || L.some(p => p.name === t.project) && pickCat == null;
-    return `<div class="msec pfold" style="--cc:${PCOL[c] || "var(--ka5B6470)"}"><h4 data-pickcat="${esc(c)}" style="cursor:pointer">${esc(c)}<span class="hr"><i>${L.length}</i></span></h4>${on ? `<div class="chgrid">${L.map(p => `<button type="button" class="chc${p.name === t.project ? " cur" : ""}" data-setproj="${esc(p.name)}"><b>${esc(p.name)}</b><span>${p.name === t.project ? "now here" : "move here"}</span></button>`).join("")}</div>` : ""}</div>`; };
+  const f = c => { const L = open.filter(p => (p.category || "More") === c).sort(byAZ);
+    return deskFold("pick:" + c, esc(c), L.length, L.map(p => `<button type="button" class="chc${p.name === t.project ? " cur" : ""}" data-setproj="${esc(p.name)}"><b>${esc(p.name)}</b><span>${p.name === t.project ? "now here" : "move here"}</span></button>`).join(""), {top: 1, cls: "pfold", cc: PCOL[c] || "var(--ka5B6470)", h4: ' style="cursor:pointer"', def: L.some(p => p.name === t.project)}); };
   return `<div class="pfolds">${cats.map(f).join("")}</div>` + lfoot('data-projcancel="1"');
 }
 function moveCal(t){
@@ -2879,6 +2883,9 @@ const readyCount = () => readyGroups().reduce((a, g) => a + g.items.length, 0);
 // Chris (Oct 4): no side buttons up top; "Ready to check" is a to-do pill in To do, like Replies.
 const readyPill = () => { const n = readyCount(); return n ? `<button type="button" class="tpill" data-ready="1">Ready to check<span class="n">${n}</span></button>` : ""; };
 /* (Oct 13) Chris: Lab checks happen in Lab Test. A Lab check to-do = a Worship Piano Lab to-do waiting for his review or pointing at Lab Test */
+/* (Oct 28) a Lab lesson to-do (labKey) whose lesson sits on the Lessons to check board (a chapter on Test) is hidden from Today and every folder */
+const lcOnBoard = t => { if (!t.labKey || t.wait) return false; for (const x of lcChs()) if (!x.live && (x.c.lessons || []).some(L => L.id === t.labKey)) return true; return false; };
+const topTasks = v => v.filter(t => !t.removed && !isLabCheck(t) && !lcOnBoard(t)).filter(t => !t.parent || !v.some(p => p.id === t.parent && !p.done && !p.removed));
 const isLabCheck = t => !t.test && t.project === "Worship Piano Lab" && (t.handoff === "review" || !!t.review || (t.links || []).some(l => /lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//.test(l.url || "")));
 /* (Oct 13) ONE pill: lessons on Test not yet approved (stats/lab, s !== "good"); opens Lab Test in a new tab; hidden at 0 */
 const labToTest = () => { const lab = stats.find(x => x.id === "lab"); return ((lab && lab.chapters) || []).reduce((a, c) => a + (c.lessons || []).filter(L => L.s !== "good").length, 0); };
@@ -2930,17 +2937,7 @@ function toggle(label){return `<button type="button" class="small" id="toggleDon
 // (Oct 7) Chris: on the phone Goals, Ideas, Lab testing and Training are folders under the project folders (no switch)
 const psegHTML = () => phone() ? (psub === "projects" ? "" : `<button type="button" class="small" data-psub="projects">‹ Projects</button>`) : `<span class="seg" role="group" aria-label="Projects, goals or ideas"><button type="button" data-psub="projects" aria-pressed="${psub==="projects"}">Projects</button><button type="button" data-psub="goals" aria-pressed="${psub==="goals"}">Goals</button><button type="button" data-psub="ideas" aria-pressed="${psub==="ideas"}">Ideas ${ideas.length||""}</button><button type="button" data-psub="lab" aria-pressed="${psub==="lab"}">Lab testing</button><button type="button" data-psub="train" aria-pressed="${psub==="train"}">Training</button></span>`;
 // Lab testing board (Chris, Oct 4): every chapter, its lessons as status-coloured buttons that open the lesson on Test
-let labOpen = null, labPg = 0, labCap = null;   // labCap: lessons shown at once, shrinks until the board fits
-function labBoard(){
-  const lab = stats.find(x => x.id === "lab");
-  if (!lab) return `<div class="empty"><b>Lab status shows up after the next hourly refresh</b></div>`;
-  const ch = lab.chapters || [];
-  const rows = ch.map((c, i) => { const cnt = revCounts(c.lessons);
-    const head = `<button type="button" class="labrow${labOpen === i ? " on" : ""}" data-labch="${i}" aria-expanded="${labOpen === i}"><b>Chapter ${i + 1}: ${esc(c.name)}</b><span class="tn">${esc(countLine(cnt))}</span><span class="labdots">${c.lessons.map(L => `<i class="rs-${L.s}"></i>`).join("")}</span></button>`;
-    return head; });
-  if (phone()) return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Lab chapters<span class="hr"><i>${rows.length}</i>${sortCtl()}</span></h4><div class="chgrid">${srtBy(rows.map((r, i) => [r, i]), () => 3, ([, i]) => (ch[i].lessons || []).filter(L => L.s !== "good").length * 5).map(([r]) => r).join("")}</div></div>`;
-  return `<div class="labboard"><p class="tn">Tap a lesson to open it on Test. Use Good or Fix on its cards; colours update hourly. <span class="rs-key"><i class="rs-none"></i>not checked <i class="rs-fix"></i>fix sent <i class="rs-good"></i>good <i class="rs-fixed"></i>fixed, check again</span></p>${rows.join("")}</div>`;
-}
+function labBoard(){ return deskFold("", "Lessons to check", lcToCheck() + " to check", lessonsInner(), {top: 1, cc: "var(--ka1FA598)", grid: "songgrid lcgrid"}); }
 // (Oct 4) every project he isn't working on: one tap puts it on the board (Work on now), Quick / Longer set its size
 function restPop(){
   const wOf = p => p.when || ({chore:"weekly", active:"now", later:"next", idea:"someday"})[p.status] || "now";
@@ -3236,12 +3233,8 @@ function weekScreen(seg){
   let last = "", tiles = "";
   for (const t of L){ if (sortBy === "imp" && t.date !== last){ tiles += `<span class="day pday">${esc(dayLabel(t.date))}</span>`; last = t.date; } tiles += tile(t); }
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}</span></div>
-    <div class="msec" style="--cc:var(--kaD19A12)"><h4>${sub === "next" ? "Next week" : "This week"} <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4>
-    <div class="chgrid">${tiles || '<b style="font-size:16px">Nothing planned this week.</b>'}</div></div></div>`;
+    ${deskFold("", sub === "next" ? "Next week" : "This week", L.length || "", tiles || '<b style="font-size:16px">Nothing planned this week.</b>', {top: 1, cc: "var(--kaD19A12)", ctl: sortCtl()})}</div>`;
 }
-/* (Oct 13) homeQs: tried and REMOVED the same day (Chris: no text questions on the page; decisions come in chat as pictures, one at a time) */
-function homeQs(){ const Q = needList().filter(x => x.k === "q"); if (!Q.length) return "";
-  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Questions <span class="hr"><i>${Q.length}</i></span></h4><div class="chgrid">${Q.map(x => `<button type="button" class="chc" data-need="q:${esc(x.v.id)}"><b>${esc(String(x.t).length > 60 ? String(x.t).slice(0, 60) + "…" : x.t)}</b><span>${esc(x.v.project || "question")}</span></button>`).join("")}</div></div>`; }
 function morningScreen(seg){
   const sd = SD(), yday = sd && sd.days.find(d => d.d === addD(azToday(), -1));
   const nNeed = needsItems().length;
@@ -3260,10 +3253,8 @@ function morningScreen(seg){
   const also = [];
   const pill = t => `<button type="button" class="tpill" data-tlinks="${esc(t.id)}">${esc(t.short || t.title)}${t.mins ? ` · ${fmtMins(t.mins)}` : ""}</button>`;
   return `<div class="today1 morning"><div class="hello"><b>Good morning, Chris</b><span class="row homectl">${seg}${labTestPill()}</span></div>
-    <div class="mgrid"><div class="mleft">${homeStuck()}${homeReplies()}<div class="msec" style="--cc:var(--kaD19A12)"><h4>Today <span class="hr"><i>${(wk.length + also.length) || ""}</i>${sortCtl()}</span></h4>
-      <div class="chgrid">${wk.map(chc).join("")}${also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')}</div></div>
+    <div class="mgrid"><div class="mleft">${homeStuck()}${homeReplies()}${deskFold("", "Today", (wk.length + also.length) || "", wk.map(chc).join("") + (also.map(alsoRow).join("") || (wk.length ? "" : '<b style="font-size:16px">Nothing left today. You\'re all done.</b>')), {top: 1, cc: "var(--kaD19A12)", ctl: sortCtl()})}
     ${one ? `<button type="button" class="onebig" data-tlinks="${esc(one.id)}"><span><small>Your one thing (after chores)</small><b>${esc(one.short || one.title)}</b><span>${esc([fmtMins(one.mins), one.project].filter(Boolean).join(" · "))}</span></span><em>Start</em></button>` : ""}
-    ${next.length ? `<div class="msec" style="--cc:var(--ka6AA84F)"><h4>Next up on ${esc(fp)} <i>${next.length} tasks${minsOf(next) ? " · " + fmtMins(minsOf(next)) + " of your time" : ""}</i></h4><div class="pills">${next.map(pill).join("")}</div></div>` : ""}
     ${homeLater()}
     ${homeQueue()}
     ${homeShorts()}
@@ -3285,11 +3276,10 @@ function homeLater(){
   const open = tasks.filter(t => !t.done && !t.removed && !withCad(t) && t.date && t.date > td);
   const W = sortL(open.filter(t => t.date <= wkEnd)), M = sortL(open.filter(t => t.date > wkEnd && t.date.slice(0, 7) === mo));
   const tile = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${esc([dayLabel(t.date), t.chore ? "chore" : ""].filter(Boolean).join(" · "))}</span>${tmR(t.mins)}</button>`;
-  const f = (title, color, L, empty) => `<div class="msec" style="--cc:${color}"><h4>${title} <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(tile).join("") || `<span class="tn">${empty}</span>`}</div></div>`;
   // (Oct 8) Chris: "I need to see everything that's DUE this week" = deadlines (task.due) up to Sunday + this week's chores, soonest first, late ones on top
   // (Oct 8, 2nd) Chris: not "due" (tasks are due every day): the BIG things that SHIP this week (video posts, Lab chapter, Shorts start, song release) = task.ships
   const D = tasks.filter(t => !t.done && !t.removed && t.ships && t.ships <= wkEnd && !t.labKey)   /* (Oct 13) Chris: per-lesson/per-song test rows are for Today only, never in Ships this week */.sort((a, b) => a.ships.localeCompare(b.ships) || (a.order ?? 99) - (b.order ?? 99));
-  const due = `<div class="msec" style="--cc:var(--kaB4582F)"><h4>Ships this week <span class="hr"><i>${D.length || ""}</i></span></h4><div class="chgrid">${D.map(t => { const inner = `<b>${esc(t.short || t.title)}${labTag(t)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>'}</div></div>`;
+  const due = deskFold("", "Ships this week", D.length || "", D.map(t => { const inner = `<b>${esc(t.short || t.title)}${labTag(t)}</b><em class="shipday">${esc(dayLabel(t.ships).replace(",", ""))}</em>`; return (t.url || t.handoff === "review") ? `<button type="button" class="chc shiprow" data-tlinks="${esc(t.id)}">${inner}</button>` : `<div class="chc shiprow">${inner}</div>`; }).join("") || '<span class="tn">Nothing ships this week.</span>', {top: 1, cc: "var(--kaB4582F)"});
   return due;   /* (Oct 13) Chris: Home = Today + Ships this week only; This week / This month folders removed */
 }
 // (Oct 10) Chris: a Home folder "Cadence tasks" = every open to-do Cadence can do (has a cost), with Cadence's own time (cmins) so he can sort and hand them over
@@ -3304,35 +3294,6 @@ function cadStatus(t){ if (reviews.some(r => r.group === t.id && r.status === "f
     if (pg.indexOf("queued") === 0) return ["Queued", "var(--ka9AA3AD)"];
   }
   return ["Not started", "var(--kaB9BEC5)"]; }
-/* (Oct 13) Chris: automations report themselves. Red/gold cards on top of Home = a job missed, failed or to-dos look stale; tap = details in place */
-function healthLine(){ const h = stats.find(x => x.id === "health") || {}; if (!h.checkedAt) return "";
-  const t = new Date(h.checkedAt), old = Date.now() - t > 45 * 60e3;
-  if (!old && !(+h.failed) && !(+h.missed)) return "";   /* (Oct 13) Chris: the line made Home shift when a folder opened; show it only when something is wrong */
-  /* (Oct 13) shown as a red folder card like the alert cards, so opening a folder never shifts Home */
-  return `<div class="msec" style="--cc:var(--kaD9534F);border-left:6px solid var(--cc)"><h4>${old ? "Checks stopped at " + t.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}) : esc(h.line || "")}<span class="hr"><i>1</i></span></h4></div>`; }
-/* (Oct 13) alert cards are normal folders: tap opens the list (the folder system opens/closes them) */
-function alertCards(){ return alerts.filter(a => a.kind !== "stale").map(a => {   /* (Oct 13) stale to-dos are Cadence's morning job, never a card on Chris's Home */ const items = a.items || [];
-  return `<div class="msec" style="--cc:${a.level === "red" ? "var(--kaD9534F)" : "var(--kaE8B53A)"};border-left:6px solid var(--cc)"><h4>${esc(a.title || a.id)} <span class="hr"><i>${items.length || 1}</i></span></h4><div class="chgrid">${a.detail ? `<span class="tn">${esc(a.detail)}</span>` : ""}${items.map(x => `<button type="button" class="chc" data-tlinks="${esc(x.id)}"><b>${esc(x.title || x.id)}</b><span>${esc(x.why || "")}</span></button>`).join("")}</div></div>`; }).join(""); }
-/* (Oct 13) Chris: chapter testing lives on the Front Desk too. One folder = every Lab lesson on Test not approved yet, by chapter;
-   tap a lesson = it opens in Lab Test, where he leaves Fix notes and approves at the end of the lesson */
-function homeLabTest(){ const lab = stats.find(x => x.id === "lab"); if (!lab || !lab.chapters) return "";
-  const ST = {fix: ["Fix sent", "var(--kaE8B53A)"], fixed: ["Fixed, check again", "var(--ka1FA598)"]};
-  const rows = []; lab.chapters.forEach((c, ci) => (c.lessons || []).filter(L => L.s !== "good").forEach(L => rows.push([ci, c, L])));
-  if (!rows.length) return "";
-  const LAB_NOW = ["chords", "speed", "songs"];   /* chapters being tested now, in ship order; update after each ship */
-  const rk = c => { const i = LAB_NOW.indexOf(c.id); return i < 0 ? 99 : i; };
-  rows.sort((x, y) => rk(x[1]) - rk(y[1]) || x[0] - y[0] || (x[2].n || 0) - (y[2].n || 0));
-  const row = ([ci, c, L]) => { const st = ST[L.s] || ["Not checked", "var(--kaB9BEC5)"];
-    return `<a class="chc" style="text-decoration:none;color:inherit" href="${esc(L.u || "")}" target="_blank" rel="noopener"><b>Ch ${ci + 1} · L${L.n || ""} ${esc(L.t || "")}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${st[1]};margin-right:6px;vertical-align:middle"></i>${esc(c.short || c.name || "")} · ${st[0]}</span></a>`; };
-  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Lab testing <span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(row).join("")}</div></div>`; }
-function homeAutomations(){ if (!autoJobs.length) return "";
-  const when = s => { if (!s) return "never"; const d = new Date(s); return (d.toDateString() === new Date().toDateString() ? "Today " : d.toLocaleDateString([], {weekday: "short"}) + " ") + d.toLocaleTimeString([], {hour: "numeric", minute: "2-digit"}); };
-  const bad = autoJobs.filter(j => alerts.some(a => a.id === "job-" + j.id)).length;
-  const row = j => { const r = autoRuns.find(x => x.id === j.id) || {}, off = j.enabled === false, red = alerts.some(a => a.id === "job-" + j.id) || r.last_status === "failed";
-    const dot = off || j.paused || !j.heartbeat ? "var(--kaB9BEC5)" : red ? "var(--kaD9534F)" : r.last_status === "running" ? "var(--kaE8B53A)" : r.last_status === "ok" ? "var(--ka6AA84F)" : "var(--kaB9BEC5)";
-    /* row like Cadence tasks: name on the left, dot + trigger + last run on the right; one tap turns it On/Off (tap again to undo) */
-    return `<button type="button" class="chc" data-autotoggle="${esc(j.id)}"><b>${esc(j.name || j.id)}</b><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${dot};margin-right:6px;vertical-align:middle"></i>${off ? "Off · " : ""}${esc(j.trigger || "")} · ${esc(when(r.last_start))}</span></button>`; };
-  return `<div class="msec" style="--cc:var(--ka6AA84F)"><h4>Automations${bad ? `<span class="n">${bad}</span>` : ""} <span class="hr"><i>${autoJobs.length}</i></span></h4><div class="chgrid">${autoJobs.map(row).join("")}</div></div>`; }
 function homeCadence(){
   const L0 = tasks.filter(t => !t.done && !t.removed && withCad(t) && !t.test);   /* (Oct 13) only 100%-Cadence work, plus work handed back for his check */
   const L1 = sortBy === "time" ? L0.slice().sort((a, b) => (+a.cmins || 9999) - (+b.cmins || 9999) || byImp(a, b)) : sortL(L0);
@@ -3340,20 +3301,15 @@ function homeCadence(){
   const rank = t => ({"Ready to check": 0, "Fix sent": 1, "Waiting on you": 2, "Not started": 3, "Queued": 3, "In progress": 4})[cadStatus(t)[0]] ?? 3;
   const L = L1.map((t, i) => [t, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
   const row = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}" data-cad="1"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
-  return `<div class="msec" style="--cc:var(--ka0F766E)"><h4>Cadence tasks <span class="hr"><i>${L.length || ""}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("") || '<span class="tn">Nothing for Cadence right now.</span>'}</div></div>`;
+  return deskFold("", "Cadence tasks", L.length || "", L.map(row).join("") || '<span class="tn">Nothing for Cadence right now.</span>', {top: 1, cc: "var(--ka0F766E)", ctl: sortCtl()});
 }
 function homeProjects(){
   const wOf = p => p.when || ({chore: "weekly", active: "now", later: "next", idea: "someday"})[p.status] || "now";
   const L = srtBy(projects.filter(p => p.status !== "done" && p.when === "now"), p => p.imp, p => minsOf(tasks.filter(t => !t.done && t.project === p.name)));
   if (!L.length) return "";
   const row = p => { const n = tasks.filter(t => !t.done && t.project === p.name).length;
-    return `<div class="pc3"><button type="button" class="pc3t" data-popproj="${esc(p.name)}"><b>${esc(p.name)}</b><span>${esc([p.category, n ? n + (n === 1 ? " task" : " tasks") : ""].filter(Boolean).join(" · "))}</span></button></div>`; };
-  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Current projects<span class="hr"><i>${L.length}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(row).join("")}</div></div>`;
-}
-function labPop(){
-  const lab = stats.find(x => x.id === "lab"), c = lab && lab.chapters[labOpen]; if (!c) return "";
-  return popTop(`Chapter ${labOpen + 1}: ${esc(c.name)}`) + `<p class="tn">${esc(countLine(revCounts(c.lessons)))}. Tap a lesson to open it on Test.</p>`
-    + popPaged(c.lessons.map(L => rsBtn(L.s, L.n + " " + L.t, `href="${esc(L.u)}" target="_blank" rel="noopener" title="${esc(L.t)}"`, "a")));
+    return deskFold("p:" + p.name, esc(p.name), esc([p.category, n ? n + (n === 1 ? " task" : " tasks") : ""].filter(Boolean).join(" · ")), "", {src: p.name}); };
+  return deskFold("", "Current projects", L.length, L.map(row).join(""), {top: 1, cc: "var(--ka1FA598)", ctl: sortCtl()});
 }
 function goalCard(g){ const st=(g.status||"").toLowerCase(), PILL={"on track":"ok","at risk":"risk","behind":"behind"};
   return `<div class="goal job"><div class="top"><b>Goal: ${esc(g.title)}</b>${st?`<span class="pill ${PILL[st]||""}">${esc(st)}</span>`:""}</div><span class="tn">${esc([g.horizon, g.by?("by "+dayLabel(g.by)):""].filter(Boolean).join(" "))}${g.why?" · "+esc(g.why):""}</span></div>`; }
@@ -3372,7 +3328,7 @@ const PORDER = ["Email", "Facebook", "Instagram", "YouTube", "TikTok", "X"];
 const pRank = r => { const i = PORDER.indexOf(/twitter/i.test(r.platform || "") ? "X" : (r.platform || "")); return i < 0 ? 99 : i; };
 const repSorted = () => pendingReplies().slice().sort((a, b) => pRank(a) - pRank(b) || (repEnd(a) ?? 9e15) - (repEnd(b) ?? 9e15));
 function homeReplies(){ const P = repSorted(); if (!P.length) return ""; setTimeout(() => loadThumbs(P), 0);
-  return `<div class="msec repfold" style="--cc:var(--kaD19A12)"><h4>Replies <span class="hr"><i><span class="n" style="margin:0">${P.length}</span></i></span></h4><div class="repf">${P.map(replyCard).join("")}</div></div>`; }
+  return deskFold("", "Replies", `<span class="n" style="margin:0">${P.length}</span>`, `<div class="repf">${P.map(replyCard).join("")}</div>`, {top: 1, cls: "repfold", cc: "var(--kaD19A12)", raw: 1}); }
 const repList = () => `<div class="sublist replist">${repSorted().map(replyCard).join("") || '<span class="tn">No replies waiting.</span>'}</div>`;
 const alsoRow = t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span></span></button>`;
 // (Oct 9) Chris: if it can't be sent from here, don't show it: messages past Meta's 24 h window drop off
@@ -3963,7 +3919,6 @@ function popHTML(){
   else if (openLinks && (tab === "today" || tab === "projects")){ const t = allTasks.find(x => x.id === openLinks); h = t ? taskPop(t) : ""; }
   else if (openNeed && tab === "today") h = needPop();
   else if (readyOpen && tab === "today") h = readyPop();
-  else if (labOpen != null && labOpen >= 0 && tab === "projects" && (psub === "lab" || phone())) h = labPop();
   else if (restOpen && tab === "projects") h = restPop();
   else if (popProj && (tab === "projects" || tab === "today")) h = projPop();   // (Oct 7) also from Home's Current projects
   else if (needsOpen && tab === "today") h = needsPop();
@@ -3999,7 +3954,7 @@ function renderPop(){
   // no automatic focus on the phone: it pops the keyboard up on its own (Chris, Oct 4). Keep focus if he is already typing.
   if (!phone()){ if (revFix) $("revnote")?.focus(); else if (answering) $("ans")?.focus(); else if (sorting) $("sortq")?.focus(); }
 }
-function closePop(){ socDrill = null; sortPick = false;fDet = null; needsOpen = false; popGoal = null; recapOpen = false; popProj = null; restOpen = false; openNeed = null; bulkPick = false; if (talking){ try { talkRec && talkRec.stop(); } catch {} talking = null; } sCal = false; if (exDetail != null) exDetail = null; openRev = null; revFix = false; answering = null; openTx = null; sorting = null; sDet = null; openLinks = null; readyOpen = false; labOpen = -1; moving = null; moveCalOn = false; pickingProj = null; restPick = null; perPick = null; icatPick = false; trainLv = null; openIdea = null; confirmDel = null; popCap = null; popPg = 0; }
+function closePop(){ socDrill = null; sortPick = false;fDet = null; needsOpen = false; popGoal = null; recapOpen = false; popProj = null; restOpen = false; openNeed = null; bulkPick = false; if (talking){ try { talkRec && talkRec.stop(); } catch {} talking = null; } sCal = false; if (exDetail != null) exDetail = null; openRev = null; revFix = false; answering = null; openTx = null; sorting = null; sDet = null; openLinks = null; readyOpen = false; moving = null; moveCalOn = false; pickingProj = null; restPick = null; perPick = null; icatPick = false; trainLv = null; openIdea = null; confirmDel = null; popCap = null; popPg = 0; }
 // (Oct 7) Chris: more numbers on the left of every graph (about 4-8 even steps, not just 0 / half / top)
 function axTicks(max, intOnly){ const nice = v => { if (!(v > 0)) return false; const e = Math.pow(10, Math.floor(Math.log10(v) + 1e-9)); return [1, 2, 2.5, 5].some(m => Math.abs(v / e - m) < 1e-6); };
   for (const k of [5, 6, 4, 8, 3, 2]){ const st = max / k; if (nice(st) && (!intOnly || Number.isInteger(st))) return Array.from({length: k + 1}, (_, i) => max - i * st); }
@@ -4372,18 +4327,32 @@ addEventListener("popstate", () => {
 });
 // (Oct 7) Chris: tap a section's header to shrink it to the header + how many items it holds; tap again to open.
 // Remembered on this device. Works on every section with a header (Home, Projects columns, Training...).
-let collapsed = (() => { try { return new Set(JSON.parse(localStorage.getItem("fd-collapsed") || "[]")); } catch { return new Set(); } })();
-// (Oct 7) Chris: on the phone only ONE folder is open at a time; opening another closes the one before (per screen)
-let openOne = (() => { try { return JSON.parse(localStorage.getItem("fd-open1") || "{}"); } catch { return {}; } })();
 const oneKey = () => tab + ":" + (tab === "projects" ? psub : tab === "money" ? msub : "");
-const oneOpen = () => { const v = openOne[oneKey()]; return v === "To do today" ? "Today" : v ?? (tab === "today" ? "Today" : ""); };
+/* (Oct 28, Chris: "one template that applies to every folder on my front desk ... not different copies that look similar") ONE FOLDER TEMPLATE.
+   deskFold() draws EVERY folder on Home, Projects, Money Map and inside to-dos: a top folder (o.top: colour square, title, count in the middle,
+   sort button) or a sub-folder (the 54px row: bold title + grey line, its list right under it). ONE click handler (foldClick, below applyCollapse)
+   opens and closes it IN PLACE and never closes another folder (Chris compares Scheduled and Posting check one above the other). Every folder
+   keeps its own open/closed state on this device in ONE map (localStorage fd-fold, keyed by folder key); o.def = open the first time it shows.
+   o.src = a sub-folder whose list is built only when it opens (project to-dos, Lab links). Top folders on a screen are keyed by title (topKey). */
+let fdFold = (() => { try { const m = JSON.parse(localStorage.getItem("fd-fold") || "null"); if (m && typeof m === "object") return m; } catch {}
+  const m = {}; try { const o = JSON.parse(localStorage.getItem("fd-open1") || "{}"); for (const k of Object.keys(o)) if (o[k]) m["top:" + k + "|" + (o[k] === "To do today" ? "Today" : o[k])] = 1;
+    for (const n of JSON.parse(localStorage.getItem("fd-subopen") || "[]")) m["p:" + n] = 1; const sf = localStorage.getItem("fd-songfolder"); if (sf) m["sg:" + sf] = 1; } catch {}
+  return m; })();
+const foldOn = (k, def) => fdFold[k] == null ? !!def : !!fdFold[k];
+function foldSet(k, on){ fdFold[k] = on ? 1 : 0; try { localStorage.setItem("fd-fold", JSON.stringify(fdFold)); } catch {} }
+const topKey = ck => "top:" + oneKey() + "|" + ck;
+function deskFold(key, title, sub, body, o = {}){
+  if (o.top){ const on = !key || foldOn(key, o.def);
+    return `<div class="msec${o.cls ? " " + o.cls : ""}${on ? "" : " collapsed"}" style="--cc:${o.cc}"${o.box || ""}><h4${key ? ` data-fold="${esc(key)}"${o.def ? ' data-fdef="1"' : ""}` : ""}${o.h4 || ""}>${title}${o.nohr ? "" : `<span class="hr"><i>${sub}</i>${o.ctl || ""}</span>`}</h4>${o.raw ? body : `<div class="chgrid${o.grid ? " " + o.grid : ""}">${body}</div>`}</div>`; }
+  const on = foldOn(key, o.def);
+  return `<div class="pc3${on ? " subon" : ""}"><button type="button" class="pc3t" data-fold="${esc(key)}"${o.src ? ` data-foldsrc="${esc(o.src)}"` : ""}><b>${title}</b><span>${sub}</span></button></div><div class="sublist" data-foldbody="${esc(key)}"${on ? "" : ' style="display:none"'}>${o.src ? (on ? foldSrc(o.src) : "") : body}</div>`; }
+function foldRefresh(){ document.querySelectorAll("#list [data-foldsrc]").forEach(b => { const row = b.closest(".pc3") || b, body = row.nextElementSibling; if (body && body.dataset.foldbody != null && body.style.display !== "none") body.innerHTML = foldSrc(b.dataset.foldsrc); }); addTodayBtns(); applyTaskOpen(); applyFocus(); }
 // (Oct 7) Chris: on the phone, whatever is open stays sharp and everything else gets a light blur:
 // an open folder = that folder sharp, other folders blurred; an open project inside it = that project + its to-dos sharp
 // (Oct 7) Chris: opening/closing things must not throw the screen around. The tapped thing stays where it was;
 // when something OPENS, the list glides so that thing sits near the top and what opened is in view.
 // (Oct 7) Chris: opening/closing things must not throw the screen around. The tapped thing stays where it was;
 // when something OPENS, the list glides so that thing sits near the top and what opened is in view. (v229 "slide just enough" tried and undone)
-let scrollStack = [];
 // (Oct 8) Chris: the phone's scroll bar was too faint and sat on the card; this one sits just outside the card edge, darker
 let sbT = null;
 function fdSB(){ const L = $("list"); if (!L || !phone()) return; let b = $("fdsb"); if (!b){ b = document.createElement("div"); b.id = "fdsb"; document.body.appendChild(b); }
@@ -4451,8 +4420,8 @@ function mDraw(){ if (!mRow) return;
   const f = $("fBudget"); if (f && f.dataset.bv) f.onload = () => { try { f.contentWindow.show(f.dataset.bv); } catch {} }; }
 function moneyFolders(){ $("bar").innerHTML = "";
   const nS = toSort().length, sub = k => k === "sort" ? (nS ? nS + " waiting" : "all sorted") : (Object.values(MROWS).flat().find(r => r[0] === k) || [])[2] || "";
-  $("list").innerHTML = Object.entries(MROWS).map(([f, rows]) => `<div class="msec" style="--cc:${f === "Business" ? "var(--ka0F766E)" : f === "Family" ? "var(--kaB4582F)" : "var(--ka1FA598)"}"><h4>${f}${f === "Family" && nS ? `<span class="n">${nS}</span>` : ""}<span class="hr"><i>${rows.length}</i></span></h4><div class="chgrid">${rows.map(([k, t]) =>
-    `<button type="button" class="chc mrow${mRow === k ? " rowon" : ""}" data-mrow="${k}"><b>${t}${k === "sort" && nS ? `<span class="n">${nS}</span>` : ""}</b><span>${esc(sub(k))}</span></button>` + (mRow === k && oneOpen() === f ? `<div class="mbody">${mBody(k)}</div>` : "")).join("")}</div></div>`).join("");
+  $("list").innerHTML = Object.entries(MROWS).map(([f, rows]) => deskFold("", f + (f === "Family" && nS ? `<span class="n">${nS}</span>` : ""), rows.length, rows.map(([k, t]) =>
+    `<button type="button" class="chc mrow${mRow === k ? " rowon" : ""}" data-mrow="${k}"><b>${t}${k === "sort" && nS ? `<span class="n">${nS}</span>` : ""}</b><span>${esc(sub(k))}</span></button>` + (mRow === k && foldOn(topKey(f), false) ? `<div class="mbody">${mBody(k)}</div>` : "")).join(""), {top: 1, cc: f === "Business" ? "var(--ka0F766E)" : f === "Family" ? "var(--kaB4582F)" : "var(--ka1FA598)"})).join("");
   mDraw(); }
 // (Oct 11, Chris) pin the open folder header (CSS) and the innermost open row header (here) to the top of the list;
 // a pinned row header is pushed off by the end of its open body, like a section header
@@ -4534,7 +4503,7 @@ function fitBack(L, outer){
   glideBy(L, -s, () => { kbSet(L, 0); L.dataset.jct = L.scrollTop; setTimeout(() => { L._fitting = false; }, 50); }); }
 /* (Oct 18) what is open ABOVE the tapped row before a tap: each open to-do / list body and each open folder, with the row it hangs under
    (found again after a redraw by its data- key) and how far that row reaches down (to the next row) */
-const FDKEYS = ["data-tlinks", "data-popproj", "data-allsongs", "data-sgfold", "data-mrow", "data-repopen", "data-songopen", "data-ideaopen", "data-icatopen"];
+const FDKEYS = ["data-tlinks", "data-fold", "data-allsongs", "data-mrow", "data-repopen", "data-songopen", "data-ideaopen"];
 function fdKeyOf(a){ const t = a.matches(FDKEYS.map(k => "[" + k + "]").join(",")) ? a : a.querySelector(FDKEYS.map(k => "[" + k + "]").join(",")); if (!t) return null;
   const k = FDKEYS.find(x => t.hasAttribute(x)); return `[${k}="${CSS.escape(t.getAttribute(k))}"]`; }
 function fdReach(a){ const n = a.nextElementSibling; return n && n.getClientRects().length ? n.getBoundingClientRect().top : a.parentElement.getBoundingClientRect().bottom; }
@@ -4633,7 +4602,7 @@ function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   const boxes = [...document.querySelectorAll("#list .msec:not(.pfold)")], open = boxes.filter(b => !b.classList.contains("collapsed"));
   if (!open.length) return;
   boxes.forEach(b => { if (!open.includes(b)) b.classList.add("fdim"); });
-  const sub = document.querySelector("#list .msec:not(.collapsed):not(.pfold) .sublist:not([data-sgfoldbody])");   // (Oct 21, Chris: tapping a Songs folder blurred its siblings) Songs board folders are not a blur-the-others sub-list
+  const sub = document.querySelector("#list .msec:not(.collapsed):not(.pfold) .sublist:not([data-foldbody])");   // (Oct 21, Chris: tapping a Songs folder blurred its siblings; Oct 28: every folder) a folder body (deskFold) never blurs the folders next to it
   if (sub){ const row = sub.previousElementSibling, grid = sub.parentElement, box = sub.closest(".msec");
     [...grid.children].forEach(c => { if (c !== row && c !== sub) c.classList.add("fdim"); });
     const h = box && box.querySelector(":scope > h4"); if (h) h.classList.add("fdim"); }
@@ -4647,12 +4616,13 @@ function applyFocus(){ try { fdRelock(); stickUpdate(); } catch {}
   if (isDesktop() && box2){ let n = box2.nextElementSibling; while (n){ if (n.matches(".msec")) n.classList.add("fdhide"); n = n.nextElementSibling; } }
 }
 function applyCollapse(){
-  document.querySelectorAll(".msec:not(.pfold) > h4:not([data-icatopen]), .pcol > h4, .wkcol > h4").forEach(h => {
+  document.querySelectorAll(".msec:not(.pfold) > h4:not([data-fold]), .pcol > h4, .wkcol > h4").forEach(h => {
     const box = h.parentElement, key = (h.childNodes[0] && h.childNodes[0].textContent || h.textContent).trim().slice(0, 40);
     h.dataset.ck = key; h.style.cursor = "pointer"; h.setAttribute("role", "button");
     if (!h.querySelector("i") && !h.querySelector(".ccount")){ const n = [...box.children].filter(c => c !== h && !c.classList.contains("tn")).reduce((a, c) => a + (c.classList.contains("chgrid") || c.classList.contains("pills") ? c.children.length : 1), 0); h.insertAdjacentHTML("beforeend", ` <i class="ccount">${n}</i>`); }
-    box.classList.toggle("collapsed", phone() && box.closest("#list") && box.classList.contains("msec") ? key !== oneOpen() : collapsed.has(key));
+    box.classList.toggle("collapsed", !foldOn(topKey(key), box.closest("#list") && box.classList.contains("msec") ? tab === "today" && key === "Today" : true));
   });
+  document.querySelectorAll(".msec > h4[data-fold]").forEach(h => { h.setAttribute("role", "button"); h.parentElement.classList.toggle("collapsed", !foldOn(h.dataset.fold, h.dataset.fdef === "1")); });
   oneItemOpen();
   applyFocus();
 }
@@ -4664,9 +4634,6 @@ function oneItemOpen(){
     box.classList.toggle("one1", one);
     if (one && !rows[0].classList.contains("rowon") && !box.dataset.one1T){ box.dataset.one1T = "1"; setTimeout(() => { delete box.dataset.one1T; if (box.isConnected && !box.classList.contains("collapsed") && !rows[0].classList.contains("rowon") && rows[0].isConnected) rows[0].click(); }, 0); } });
 }
-document.addEventListener("click", e => { const h = e.target.closest("[data-pickcat]"); if (!h) return; const c = h.dataset.pickcat; pickCat = pickCat === c ? "" : c; if (pickingProj && !openLinks) refreshDetail(); else renderPop(); });
-document.addEventListener("click", e => { const h = e.target.closest("[data-icatopen]"); if (!h || e.target.closest("button,a")) return; const c = h.dataset.icatopen;
-  const opening = !ideaCatOpen.has(c); keepPos(h, () => { ideaCatOpen = new Set(opening ? [c] : []); try { localStorage.setItem("fd-ideacats", JSON.stringify([...ideaCatOpen])); } catch {} render(); }, opening); });
 /* (Oct 16, Chris: a folder sometimes needs 3 clicks; not reproduced) a press on a folder header that doesn't open/close it within 1s
    writes a db 'alerts' row with what happened (moved px, drag state, what was under the pointer), so Cadence can see the real cause */
 let fdMiss = null;
@@ -4677,16 +4644,20 @@ document.addEventListener("pointerdown", e => { const h = e.target.closest && e.
 // (Oct 20) a swipe that scrolls the page ends in pointercancel, not a tap: not a missed click (all 9 alerts were this)
 document.addEventListener("pointercancel", () => { if (fdMiss) fdMiss.cancel = true; }, true);
 document.addEventListener("pointerup", e => { if (!fdMiss || fdMiss.up) return; const el = document.elementFromPoint(e.clientX, e.clientY); fdMiss.up = {x: e.clientX, y: e.clientY, under: el ? (el.tagName + "." + [...el.classList].join(".")).slice(0, 80) : ""}; }, true);
-document.addEventListener("click", e => { const h = e.target.closest("[data-ck]"); if (!h || e.target.closest("button,a")) return;
-  const k = h.dataset.ck;
-  if (fdMiss && fdMiss.k === k) fdMiss.ok = true;
-  if (phone() && h.closest("#list .msec")){ const opening = oneOpen() !== k; if (opening && oneOpen()) scrollStack = scrollStack.slice(0, 1); if (opening && !oneOpen()) scrollStack = []; if (!opening) scrollStack = scrollStack.slice(0, 1); return keepPos(h, () => { openOne[oneKey()] = oneOpen() === k ? "" : k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {}
-    // (Oct 7) Chris: opening or closing a folder closes everything inside it (project lists, to-do details)
-    taskOpen = null; saveTaskOpen(); subOpen = new Set(); try { localStorage.setItem("fd-subopen", "[]"); } catch {}
-    mRow = ""; saveMRow(); document.querySelectorAll("#list .tdetail, #list .sublist:not([data-sgfoldbody]), #list .mbody").forEach(x => x.remove()); document.querySelectorAll("#list .rowon, #list .subon").forEach(x => x.classList.remove("rowon", "subon"));
-    /* (Oct 21) Songs board folder bodies are part of the board: close them, never remove them (removing left the folders with nothing to open) */
-    document.querySelectorAll("#list [data-sgfoldbody]").forEach(x => { x.style.display = "none"; }); try { localStorage.setItem("fd-songfolder", ""); } catch {} applyCollapse(); applyFocus(); }, opening); }   // (Oct 8) blur in the same moment it opens
-  collapsed.has(k) ? collapsed.delete(k) : collapsed.add(k); try { localStorage.setItem("fd-collapsed", JSON.stringify([...collapsed])); } catch {} applyCollapse(); });
+/* ONE folder click handler (deskFold): the tapped folder opens or closes in place; every other folder stays as it is. Open to-do details close
+   (as before), except the one the folder sits in (the Lessons board inside its Today row). */
+document.addEventListener("click", function foldClick(e){ const h = e.target.closest("[data-fold], h4[data-ck]"); if (!h) return; const bt = e.target.closest("button,a"); if (bt && bt !== h) return;
+  e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+  const top = h.tagName === "H4", k = h.dataset.fold || topKey(h.dataset.ck), box = top ? h.parentElement : (h.closest(".pc3") || h), body = top ? null : box.nextElementSibling;
+  const opening = top ? box.classList.contains("collapsed") : !!body && body.style.display === "none", inL = !!h.closest("#list");
+  if (top && fdMiss && fdMiss.k === h.dataset.ck) fdMiss.ok = true;
+  const go = () => { foldSet(k, opening);
+    if (inL && !h.closest(".tdetail")){ taskOpen = null; saveTaskOpen(); document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); document.querySelectorAll("#list .rowon").forEach(x => x.classList.remove("rowon"));
+      if (top && mRow){ mRow = ""; saveMRow(); document.querySelectorAll("#list .mbody").forEach(x => x.remove()); } }
+    if (top){ if (h.dataset.fold) box.classList.toggle("collapsed", !opening); else applyCollapse(); }
+    else { box.classList.toggle("subon", opening); if (body){ if (opening && h.dataset.foldsrc){ body.innerHTML = foldSrc(h.dataset.foldsrc); addTodayBtns(); } body.style.display = opening ? "" : "none"; } }
+    applyFocus(); };
+  if (inL) return keepPos(top ? h : box, go, opening); go(); }, true);
 // (Oct 7) Chris: move any folder by pressing and holding its header, then dragging. Order is kept per screen on this device.
 const fKey = box => { const h = box.querySelector(":scope > h4"); return h ? ((h.childNodes[0] && h.childNodes[0].textContent) || h.textContent).trim().slice(0, 40) : ""; };
 function applyOrder(){
@@ -4770,7 +4741,7 @@ function render(){ const L1 = $("list"), st1 = L1 ? L1.scrollTop : 0, k1 = L1 ? 
   // (Oct 8) each step is guarded: one broken extra can never stop the page's buttons from working
   try { $("list").classList.toggle("roomy", tab === "today" || tab === "projects"); } catch {}
   const keepSt = () => { if (L1 && L1.isConnected && k1 === tab + "|" + (sub || "") && Math.abs(L1.scrollTop - st1) > 1){ L1.scrollTop = st1; L1.dataset.lst = L1.scrollTop; } };
-  for (const f of [renderMain, renderPop, applyOrder, applyCollapse, () => phone() && applySubOpen(), addTodayBtns, applyTaskOpen, keepSt, applyFocus, sgApply]){ try { f(); } catch (err){ fdErr(err); } }
+  for (const f of [renderMain, renderPop, applyOrder, applyCollapse, addTodayBtns, applyTaskOpen, keepSt, applyFocus, sgApply]){ try { f(); } catch (err){ fdErr(err); } }
   // (Oct 8) Chris: coming back from the Lab (or any Go link) = the same spot: the to-do he left is open AND in view
   if (!backDone && phone() && taskOpen){ const det = document.querySelector("#list .tdetail"), L = $("list");
     if (det && L){ backDone = true; let moved = false; L.addEventListener("touchstart", () => { moved = true; }, {once: true});
@@ -4782,7 +4753,7 @@ function render(){ const L1 = $("list"), st1 = L1 ? L1.scrollTop : 0, k1 = L1 ? 
 }
 function renderMain(){
   if (drag) { drag.pending = true; return; }
-  if (!fitting){ deskPer = null; sRowsCap = null; labCap = null; sProdCap = null; }
+  if (!fitting){ deskPer = null; sRowsCap = null; sProdCap = null; }
   const nRep = pendingReplies().length, nNeeds = openInbox().length + openQs().filter(q => q.kind !== "big").length + needJobs().length + items.filter(i=>!i.done).length;
   const nTodo = tasks.filter(inToday).length, nWeek = tasks.filter(t=>!t.done && t.date>plus(0) && t.date<=plus(7)).length, nToday = nTodo + (nRep ? 1 : 0), nLater = tasks.filter(t=>!t.done && !t.date).length;
   $("tToday").innerHTML = "Home";   /* (Oct 13) Chris: never a badge on the Home tab */
@@ -4908,7 +4879,7 @@ function renderMain(){
     const gc = g => { const st = (g.status || "").toLowerCase(); return `<div class="pc3"><button type="button" class="pc3t" data-popgoal="${esc(g.id)}"><b>${esc(g.title)}</b><span>${esc([g.project, g.by ? "by " + dayLabel(g.by) : ""].filter(Boolean).join(" · "))}</span></button>${st ? `<span class="pill ${SP[st] || ""}">${esc(st)}</span>` : ""}</div>`; };
     const GC = {m: "var(--kaD19A12)", q: "var(--ka6AA84F)", y: "var(--kaB42318)"};
     const gcol = (k, cls, title) => { const L = srtBy(open.filter(g => hz(g) === k), g => g.imp, g => minsOf(tasks.filter(t => !t.done && g.project && t.project === g.project))); return phone()
-      ? `<div class="msec" style="--cc:${GC[k]}"><h4>${title}<span class="hr"><i>${L.length}</i>${sortCtl()}</span></h4><div class="chgrid">${L.map(gc).join("") || '<span class="tn">Nothing here.</span>'}</div></div>`
+      ? deskFold("", title, L.length, L.map(gc).join("") || '<span class="tn">Nothing here.</span>', {top: 1, cc: GC[k], ctl: sortCtl()})
       : `<div class="pcol ${cls}"><h4>${title}</h4>${L.map(gc).join("") || '<span class="tn">Nothing here.</span>'}</div>`; };
     bar = psegHTML();
     body = `<div class="pboard">${gcol("m", "cw", "This month")}${gcol("q", "cq", "This quarter")}${gcol("y", "cl", "This year or longer")}</div>`;
@@ -4930,10 +4901,7 @@ function renderMain(){
       const n = k => skills.filter(x => (x.level || "teach") === k).length;
       body = `<div class="fcard"><div class="fhead"><b>Move jobs down to Automatic</b>${sortCtl()}</div><div class="fbars">${TLV.map(([k, h, c], i) => `<button type="button" class="fbar" data-trainlv="${k}" style="width:${100 - i * 10}%;background:${c}"><span>${h} · ${TLVP[k]}%</span><small>${n(k)}</small></button>` + (i < 3 ? `<div class="fstep">↓</div>` : "")).join("")}</div><span class="tn" style="text-align:center">Tap a step to see its jobs</span></div>`;
       $("bar").innerHTML = bar; $("list").innerHTML = body; return; }
-    if (psub === "lab"){ bar = pseg; body = labBoard(); $("bar").innerHTML = bar; $("list").innerHTML = body;
-      const L = $("list"), lab = stats.find(x => x.id === "lab"), n = lab && lab.chapters[labOpen] ? lab.chapters[labOpen].lessons.length : 0;
-      if (L.scrollHeight > L.clientHeight + 1 && (labCap ?? n) > 2){ fitting = true; labCap = Math.min(labCap ?? n, n) - 1; render(); fitting = false; }
-      return; }
+    if (psub === "lab"){ bar = pseg; body = labBoard(); $("bar").innerHTML = bar; $("list").innerHTML = body; return; }
     if (psub === "ideas"){
       // (Oct 7) Chris: one card per category (like To do today), closed until tapped; tap an idea for its pop-up
       const srt = L => L.slice().sort((a, b) => sortBy === "az" || sortBy === "due" ? byAZ(a, b) : sortBy === "date" ? String(b.added).localeCompare(String(a.added)) : sortBy === "time" ? minsKey(a) - minsKey(b) || (a.imp ?? 3) - (b.imp ?? 3) : (a.imp ?? 3) - (b.imp ?? 3) || (a.order ?? 99) - (b.order ?? 99) || String(b.added).localeCompare(String(a.added)));
@@ -4943,8 +4911,8 @@ function renderMain(){
       const cats = [...new Set(ideas.map(icat))].sort((a, b) => (a === "More") - (b === "More") || ideas.filter(i => icat(i) === b).length - ideas.filter(i => icat(i) === a).length);
       const tile = i => `<button type="button" class="chc" data-ideaopen="${esc(i.id)}"><b>${esc(i.short || i.title)}</b><span>${[tasks.some(t => t.fromIdea === i.id && !t.done) ? "added" : ""].filter(Boolean).join(" · ") || "idea"}</span>${tmR(i.mins)}</button>`;
       bar = pseg;
-      body = cats.length ? `<div class="today1 morning">${cats.map(c => { const L = srt(ideas.filter(i => icat(i) === c)), open = ideaCatOpen.has(c);
-        return `<div class="msec${open ? "" : " icl"}" style="--cc:var(--kaD19A12)"><h4 data-icatopen="${esc(c)}" style="cursor:pointer">${esc(c)} <span class="hr"><i>${L.length}</i>${open ? sortCtl() : ""}</span></h4>${open ? `<div class="chgrid">${L.map(tile).join("")}</div>` : ""}</div>`; }).join("")}</div>` : `<div class="empty"><b>No ideas yet</b><span>Tell Cadence your ideas.</span></div>`;
+      body = cats.length ? `<div class="today1 morning">${cats.map(c => { const L = srt(ideas.filter(i => icat(i) === c));
+        return deskFold("icat:" + c, esc(c), L.length, L.map(tile).join(""), {top: 1, cc: "var(--kaD19A12)", h4: ' style="cursor:pointer"', ctl: sortCtl()}); }).join("")}</div>` : `<div class="empty"><b>No ideas yet</b><span>Tell Cadence your ideas.</span></div>`;
       $("bar").innerHTML = bar; $("list").innerHTML = body; return;
     }
     // Chris (Oct 3: "organized based on category", "I'm a visual person"): one column per category, every project in it
@@ -4972,7 +4940,7 @@ function renderMain(){
     const tc = t => `<div class="pc3 td" draggable="true" data-dragtask="${esc(t.id)}"><button type="button" class="pc3t" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>To-do</span></button></div>`;
     const loose = tasks.filter(t => !t.done && !t.date && !projects.some(p => p.name === t.project)).sort(byOrder);
     // (Oct 7) Chris: on the phone the project folders look exactly like To do today: coloured card, title, count (#), sort, collapsible
-    const colH = (title, sub2, html, size, m) => phone() ? `<div class="msec" style="--cc:${size === "quick" ? "var(--ka6AA84F)" : size === "long" ? "var(--kaB42318)" : size === "rest" ? "var(--ka5B6470)" : "var(--kaD19A12)"}"${size === "quick" || size === "long" ? ` data-dropsize="${size}"` : ""}><h4>${title}<span class="hr"><i>${(html.match(/class="pc3[ "]/g) || []).length}</i>${size ? sortCtl() : ""}</span></h4><div class="chgrid">${html || '<span class="tn">Nothing here.</span>'}</div></div>` : `<div class="pcol ${size === "quick" ? "cq" : size === "long" ? "cl" : "cw"}"${size ? ` data-dropsize="${size}"` : ""}><h4>${title}<i>${sub2}</i>${size ? sortCtl() : ""}</h4>${html || '<span class="tn">Nothing here.</span>'}</div>`;
+    const colH = (title, sub2, html, size, m) => phone() ? deskFold("", title, (html.match(/class="pc3[ "]/g) || []).length, html || '<span class="tn">Nothing here.</span>', {top: 1, cc: size === "quick" ? "var(--ka6AA84F)" : size === "long" ? "var(--kaB42318)" : size === "rest" ? "var(--ka5B6470)" : "var(--kaD19A12)", box: size === "quick" || size === "long" ? ` data-dropsize="${size}"` : "", ctl: size ? sortCtl() : ""}) : `<div class="pcol ${size === "quick" ? "cq" : size === "long" ? "cl" : "cw"}"${size ? ` data-dropsize="${size}"` : ""}><h4>${title}<i>${sub2}</i>${size ? sortCtl() : ""}</h4>${html || '<span class="tn">Nothing here.</span>'}</div>`;
     // (Oct 7) Chris: every folder looks exactly the same, so on the phone the rest are a 4th (slate) folder
     const restCards = projects.filter(p => p.status !== "done" && !["weekly", "now"].includes(whenOf(p))).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? (minsOf(tasks.filter(t => !t.done && t.project === a.name)) || 9999) - (minsOf(tasks.filter(t => !t.done && t.project === b.name)) || 9999) : (a.imp ?? 3) - (b.imp ?? 3) || String(a.name).localeCompare(String(b.name))).map(p => ({n: p.name, w: whenOf(p), next: "", about: p.about || ""}));
     const nRest = projects.filter(p => p.status !== "done" && !["weekly", "now"].includes(whenOf(p))).length;
@@ -4983,31 +4951,28 @@ function renderMain(){
       ${phone() ? "" : `<div><button type="button" class="small" data-prest="1">Not working on now (${nRest})</button></div>`}`;
     if (phone()){
       const row = (attr, t, sub) => `<div class="pc3"><button type="button" class="pc3t" ${attr}><b>${esc(t)}</b><span>${esc(sub)}</span></button></div>`;
+      const pFold = (src, t, sub) => deskFold("p:" + src, esc(t), esc(sub), "", {src});   /* a project / list folder (the ONE template), its list built when opened */
       const ogoals = goals.filter(g => !g.done);
       // (Oct 7) Chris: every folder shows count · ~time like the project folders
       const gMin = g => minsOf(tasks.filter(t => !t.done && g.project && t.project === g.project));
       const gRows = srtBy(ogoals, g => g.imp, gMin).map(g => row(`data-popgoal="${esc(g.id)}"`, g.title, [g.status, g.project].filter(Boolean).join(" · "))).join("");
       const icnt = c => ideas.filter(i => (i.category || "Other") === c).length, icat = i => icnt(i.category || "Other") < 2 ? "More" : (i.category || "Other");
       const icats = [...new Set(ideas.map(icat))].sort((a, b) => (a === "More") - (b === "More") || ideas.filter(i => icat(i) === b).length - ideas.filter(i => icat(i) === a).length);
-      const iRows = srtBy(icats, c => Math.min(...ideas.filter(i => icat(i) === c).map(i => i.imp ?? 3)), c => ideas.filter(i => icat(i) === c).reduce((a, i) => a + (+i.mins || 0), 0)).map(c => { const L = ideas.filter(i => icat(i) === c), n = L.length, m = L.reduce((a, i) => a + (+i.mins || 0), 0); return row(`data-popproj="@@icat:${esc(c)}"`, c, n + (n === 1 ? " idea" : " ideas")); }).join("");
-      const lab = stats.find(x => x.id === "lab"), chs = (lab && lab.chapters) || [];
-      // Lab testing time = about 5 min of Chris's phone testing per lesson not yet marked good
-      const labM = c => (c.lessons || []).filter(L => L.s !== "good").length * 5;
-      const lRows = srtBy(chs.map((c, i) => [c, i]), () => 3, ([c]) => labM(c)).map(([c, i]) => row(`data-labgo="${i}"`, "Chapter " + (i + 1) + ": " + c.name, countLine(revCounts(c.lessons)))).join("");
+      const iRows = srtBy(icats, c => Math.min(...ideas.filter(i => icat(i) === c).map(i => i.imp ?? 3)), c => ideas.filter(i => icat(i) === c).reduce((a, i) => a + (+i.mins || 0), 0)).map(c => { const L = ideas.filter(i => icat(i) === c), n = L.length, m = L.reduce((a, i) => a + (+i.mins || 0), 0); return pFold("@@icat:" + c, c, n + (n === 1 ? " idea" : " ideas")); }).join("");
       const tRows = srtBy(TLV, () => 3, ([k]) => skills.filter(x => (x.level || "teach") === k).reduce((a, x) => a + (+x.trainMins || 0), 0)).map(([k, h]) => { const L = skills.filter(x => (x.level || "teach") === k), n = L.length, m = L.reduce((a, x) => a + (+x.trainMins || 0), 0); return row(`data-trainlv="${k}"`, h + " · " + TLVP[k] + "%", n + (n === 1 ? " job" : " jobs")); }).join("");
-      const fold = (title, color, html, n, m) => `<div class="msec" style="--cc:${color}"><h4>${title}<span class="hr"><i>${n}</i>${sortCtl()}</span></h4><div class="chgrid">${html || '<span class="tn">Nothing here.</span>'}</div></div>`;
+      const fold = (title, color, html, n, m) => deskFold("", title, n, html || '<span class="tn">Nothing here.</span>', {top: 1, cc: color, ctl: sortCtl()});
       // (Oct 7) Chris: 8 main folders by kind of work (projects.category), A to Z; Quick / Longer / Current removed on the phone.
       // Lab testing sits in Worship Piano Lab, Training in Cadence and Systems, side-business ideas in Ideas.
       const working = p => ["weekly", "now"].includes(whenOf(p));
-      const pRow = p => { const n = tasks.filter(t => !t.done && t.project === p.name).length; return row(`data-popproj="${esc(p.name)}"`, p.name, [working(p) ? "working on now" : "", n ? n + (n === 1 ? " task" : " tasks") : ""].filter(Boolean).join(" · ")); };
+      const pRow = p => { const n = tasks.filter(t => !t.done && t.project === p.name).length; return pFold(p.name, p.name, [working(p) ? "working on now" : "", n ? n + (n === 1 ? " task" : " tasks") : ""].filter(Boolean).join(" · ")); };
       const openP = projects.filter(p => p.status !== "done");
       const pIn = c => srtBy(openP.filter(p => (p.category || "More") === c), p => p.imp, p => minsOf(tasks.filter(t => !t.done && t.project === p.name)));
       const CATS = ["YouTube and Shorts", "Worship Piano Lab", "Courses", "Sales and Email", "Systems", "Family and Money"];
       const CC = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)"};
       const nReq = requests.filter(r => !r.done).length;
-      const extra = {"YouTube and Shorts": row(`data-popproj="@@req"`, "Viewer requests", nReq + (nReq === 1 ? " request" : " requests") + " · most asked first"),
-        "Worship Piano Lab": row(`data-popproj="@@lab"`, "Lab testing", chs.length + (chs.length === 1 ? " chapter" : " chapters")) + row(`data-popproj="@@songs"`, "Songs", songsLine()) + row(`data-popproj="@@lablinks"`, "Lab links", llLine()),
-        "Systems": row(`data-popproj="@@train"`, "Training", tasks.filter(t => !t.done && !t.removed).length + " to-dos by how automatic")};
+      const extra = {"YouTube and Shorts": pFold("@@req", "Viewer requests", nReq + (nReq === 1 ? " request" : " requests") + " · most asked first"),
+        "Worship Piano Lab": pFold("@@lab", "Lessons to check", lcToCheck() + " to check") + pFold("@@songs", "Songs", songsLine()) + pFold("@@lablinks", "Lab links", llLine()),
+        "Systems": pFold("@@train", "Training", tasks.filter(t => !t.done && !t.removed).length + " to-dos by how automatic")};
       const others = [...new Set(openP.map(p => p.category || "More"))].filter(c => !CATS.includes(c) && c !== "Ideas");
       const looseRows = loose.map(tc).join("");
       let out = CATS.map(c => { const L = pIn(c); return fold(c, CC[c], L.map(pRow).join("") + (extra[c] || ""), L.length + (extra[c] ? (extra[c].match(/class="pc3[ "]/g) || []).length : 0)); }).join("");
@@ -5056,7 +5021,7 @@ async function setReply(id, data, btn){
    or posts needs a 2nd tap ("Tap again", 0.4 to 4 s later). A tap on such a button drawn under 0.7 s ago is ignored (a double-tap
    landing on a pop-up or redraw), and so is a tap that started on a different button. Window capture: runs before every handler. */
 (function(){
-  const SEL = '[data-fnx="ok"],[data-plx="ok"],[data-chx="ok"],[data-se="ok"],[data-se="okc"],[data-lyrx="ok"],[data-ntx="ok"],[data-shx="ok"],[data-kans^="yes|"],[data-kans^="good|"],[data-kans^="done|"],[data-approve],[data-save],[data-qdayok]';
+  const SEL = '[data-fnx="ok"],[data-lcx="ok"],[data-plx="ok"],[data-chx="ok"],[data-se="ok"],[data-se="okc"],[data-lyrx="ok"],[data-ntx="ok"],[data-shx="ok"],[data-kans^="yes|"],[data-kans^="good|"],[data-kans^="done|"],[data-approve],[data-save],[data-qdayok]';
   let drawnAt = 0, down = null;
   new MutationObserver(ms => { for (const m of ms){ const n0 = m.target; if (m.type === "attributes"){ if (n0.matches && n0.matches(SEL)) drawnAt = Date.now(); continue; }
     for (const n of m.addedNodes) if (n.nodeType === 1 && (n.matches(SEL) || n.querySelector(SEL))){ drawnAt = Date.now(); return; } } })
@@ -5091,7 +5056,6 @@ document.addEventListener("click", e => {
 // (Oct 7) Chris picked D: on the phone, tapping a to-do, idea or project row in a folder drops a small menu right under
 // it: Open, Today, Pick a day, Later list, Remove (same words everywhere). Other rows (goals, categories, chapters) just open.
 // (Oct 7) Chris: a project (subfolder) opens IN PLACE: its to-dos list right under it (no pop-up); tap again to close
-let subOpen = (() => { try { return new Set(JSON.parse(localStorage.getItem("fd-subopen") || "[]")); } catch { return new Set(); } })();
 // (Oct 7) Chris: Training, Lab testing and idea categories also open IN PLACE under their row (no Back button screens)
 // (Oct 8) Chris: SONGS. Every song shows which step it's on ("2 of 4"); the steps live in db 'songsteps' so adding a 5th
 // step changes every song to "of 5". Sort: Almost done (most steps first) / Release date / A to Z. Tap a song = what's needed to move on.
@@ -5188,7 +5152,7 @@ function homeQueue(){
   /* (Oct 20, Chris "Ask me every time"): Shorts renders wait for night unless Chris taps Run now (sets dayOk on each waiting one) */
   const NK = {"words-make": 1, "final-make": 1}, hr = new Date().getHours(), NW = hr >= 6 ? U.filter(q => NK[q.kind] && !q.dayOk) : [];
   const ask = NW.length ? `<div class="qrow" style="${RS};background:var(--kbF0C75A22)"><span style="flex:1;min-width:0;font-size:14px;line-height:1.3">${NW.length} Shorts render${NW.length > 1 ? "s" : ""} wait for tonight<span style="display:block;font-size:12px;color:var(--muted,#8A9099)">Running now slows your Mac while you work</span></span><button type="button" class="tpill" data-qdayok="1" style="flex:0 0 auto;background:var(--kbF0C75A);color:var(--kt3A2A00);font-weight:700">Run now</button></div>` : "";
-  return `<div class="msec" style="--cc:var(--ka1FA598)"><h4>Queue <span class="hr"><i>${W.length} working · ${U.length + P.length} waiting</i></span></h4><div class="qhead qd2" style="position:sticky;top:15px;z-index:2;background:var(--card,#fff);border-bottom:1px solid var(--line,#E7E1D6);padding:6px 20px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;width:112px">Status</span><span style="flex:0 0 auto;width:64px">Helper</span><span style="flex:0 0 auto;width:90px">Lane</span><span style="flex:1;min-width:0">Job</span><span class="qfor" style="flex:0 0 auto;width:130px">For</span><span style="flex:0 0 auto;width:64px">Takes</span><span style="flex:0 0 auto;width:128px;text-align:right">When</span><span style="flex:0 0 auto;width:116px;text-align:center">Move</span></div><div class="chgrid qlist">${ask}${W.concat(REST).map(row).join("")}</div>${H.length ? `<div class="qlater" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" class="qlaterb" data-qlater="1" style="background:none;border:0;padding:4px 0;font-size:12px;font-weight:600;color:var(--muted,#8A9099);cursor:pointer">${H.length} scheduled later</button><div class="qlaterl" hidden style="margin-top:4px">${H.map(q => `<div class="qlr" style="display:flex;gap:10px;font-size:12px;line-height:1.4;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;white-space:nowrap">${esc(new Date(q.holdUntil).toLocaleDateString([], {month: "short", day: "numeric", timeZone: "America/Phoenix"}))}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span></div>`).join("")}</div></div>` : ""}${LT.length ? `<div class="qsaved" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" data-qsavedt="1" style="background:none;border:0;padding:4px 0;font-size:13px;font-weight:700;color:var(--muted,#8A9099);cursor:pointer">Saved for later (${LT.length})</button><div class="qsavedl" hidden style="margin-top:4px">${LT.map(q => `<div class="qsr" style="display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;line-height:1.3"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span><button type="button" class="tpill" data-qrun="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Run</button></div>`).join("")}</div></div>` : ""}</div>`; }
+  return deskFold("", "Queue", `${W.length} working · ${U.length + P.length} waiting`, `<div class="qhead qd2" style="position:sticky;top:15px;z-index:2;background:var(--card,#fff);border-bottom:1px solid var(--line,#E7E1D6);padding:6px 20px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;width:112px">Status</span><span style="flex:0 0 auto;width:64px">Helper</span><span style="flex:0 0 auto;width:90px">Lane</span><span style="flex:1;min-width:0">Job</span><span class="qfor" style="flex:0 0 auto;width:130px">For</span><span style="flex:0 0 auto;width:64px">Takes</span><span style="flex:0 0 auto;width:128px;text-align:right">When</span><span style="flex:0 0 auto;width:116px;text-align:center">Move</span></div><div class="chgrid qlist">${ask}${W.concat(REST).map(row).join("")}</div>${H.length ? `<div class="qlater" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" class="qlaterb" data-qlater="1" style="background:none;border:0;padding:4px 0;font-size:12px;font-weight:600;color:var(--muted,#8A9099);cursor:pointer">${H.length} scheduled later</button><div class="qlaterl" hidden style="margin-top:4px">${H.map(q => `<div class="qlr" style="display:flex;gap:10px;font-size:12px;line-height:1.4;color:var(--muted,#8A9099)"><span style="flex:0 0 auto;white-space:nowrap">${esc(new Date(q.holdUntil).toLocaleDateString([], {month: "short", day: "numeric", timeZone: "America/Phoenix"}))}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span></div>`).join("")}</div></div>` : ""}${LT.length ? `<div class="qsaved" style="padding:8px 14px;border-top:1px solid var(--line,#E7E1D6)"><button type="button" data-qsavedt="1" style="background:none;border:0;padding:4px 0;font-size:13px;font-weight:700;color:var(--muted,#8A9099);cursor:pointer">Saved for later (${LT.length})</button><div class="qsavedl" hidden style="margin-top:4px">${LT.map(q => `<div class="qsr" style="display:flex;align-items:center;gap:10px;padding:5px 0;font-size:13px;line-height:1.3"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(sp(q.title)[0])}</span><button type="button" class="tpill" data-qrun="${esc(q.id)}" style="flex:0 0 auto;width:54px;min-height:0;padding:6px 0;text-align:center;font-size:12px">Run</button></div>`).join("")}</div></div>` : ""}`, {top: 1, cc: "var(--ka1FA598)", raw: 1}); }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qsavedt]"); if (!b) return; const l = b.parentNode.querySelector(".qsavedl"); if (l) l.hidden = !l.hidden; });
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-qsave],[data-qrun]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   const id = b.dataset.qsave || b.dataset.qrun, me = (queueRows || []).find(q => q.id === id); if (!me) return;
@@ -5296,9 +5260,9 @@ function homeSocial(){
       else { val = usd(d.rev); sub = `${d.v.toLocaleString()} click${d.v === 1 ? "" : "s"}`; }
       return `<button type="button" class="socrow" data-socapp="${c}:${a}" title="${a}"><span class="socn">${pIcon(a)}<em>${a}</em></span><b class="socv">${val}</b><span class="soct"><i style="width:${d.none ? 0 : Math.max(d.v > 0 || d.rev > 0 ? 3 : 0, Math.round((c === "clk" ? d.rev || 0 : d.v) / (c === "clk" ? Math.max(1, ...rows.map(x => x.d.none ? 0 : x.d.rev)) : max) * 100))}%"></i></span><small class="${cc}">${esc(sub)}</small></button>`; };
     return `<div class="soccol${socCol === c ? " pick" : ""}" data-soccolbox="${c}"><button type="button" class="soctop" data-soccolgo="${c}"><span class="socname">${name}</span><b class="socbig">${big}</b><small>${esc(small)}</small>${src}</button><div class="socrows">${rows.map(rowH).join("")}</div></div>`; };
-  return `<div class="msec" style="--cc:var(--ka0F766E)"><h4>Social</h4><div class="socbody"><div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}${cust}</span></div>
+  return deskFold("", "Social", "", `<div class="socbody"><div class="socper"><span class="socl">${esc(R.lbl)}</span><span class="socbtns">${pb("1", "1D")}${pb("7", "7D")}${pb("mtd", "MTD")}${pb("ytd", "YTD")}${cust}</span></div>
     <span class="seg socsw" role="group" aria-label="Which numbers">${SOCCOLS.map(([c, n]) => `<button type="button" data-socsw="${c}" aria-pressed="${socCol === c}">${n}</button>`).join("")}</span>
-    <div class="soccols">${SOCCOLS.map(col).join("")}</div></div></div>`;
+    <div class="soccols">${SOCCOLS.map(col).join("")}</div></div>`, {top: 1, cc: "var(--ka0F766E)", nohr: 1, raw: 1});
 }
 /* (Oct 21, Chris, t-1010-drill-down) SOCIAL POP-UP: every tap goes 3 levels deep inside ONE pop-up. socDrill = the level stack:
    [{c}] = level 1 (a column: the 5 apps), [{c}, {a}] = level 2 (that app's posts or days, ranked), [.., .., {k}] = level 3 (one post / day / product).
@@ -5443,7 +5407,7 @@ function homeUsage(){
     return `<button type="button" class="mprow${on ? " on" : ""}" data-ugrp="${esc(k)}"><span class="mpn">${esc(g.name)}</span><span class="mpv">${usd(g.cost)}</span>${mpBar(g.pct, 100, GC[g.group] || "var(--ka8A9099)")}<span class="mps">${Math.round(g.pct)}%${on ? " · tap to close" : ""}</span></button>${on ? sub1(L.slice(0, 10).map(t => row(t.name, t.cost, g.cost ? 100 * t.cost / g.cost : 0, GC[t.group] || "var(--ka8A9099)", Math.round(g.cost ? 100 * t.cost / g.cost : 0) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))), GC[g.group] || "var(--ka8A9099)") : ""}`; }).join("");
   const top = (W.top || []).slice(0, 8).map(t => row(t.name, t.cost, t.pct, GC[t.group] || "var(--ka8A9099)", Math.round(t.pct) + "%" + (t.chats > 1 ? " · " + t.chats + " chats" : ""))).join("");
   const vs = uPer === "now" && U.lastWeekCost ? " · last week " + usd(U.lastWeekCost) : "";
-  return `<div class="msec" style="--cc:var(--kaD19A12)"><h4>Usage <span class="hr"><i>${usd(U.weekCost || 0)} this week</i></span></h4><div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button>${A.cap ? `<button type="button" class="chc mrow${aOpen ? " rowon" : ""}" data-aopen="1"><b>API spend</b><span>${aOpen ? "tap to close" : "$" + (A.total || 0).toFixed(2) + " of $" + A.cap + " this month"}</span></button>` : ""}</div>${aOpen && A.cap ? apiSpendBody(A) : ""}${uOpen ? `<div class="mbody today1 mpa usg"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API value (Max plan, not billed): ccusage dollars at API prices, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}</div>`; }
+  return deskFold("", "Usage", `${usd(U.weekCost || 0)} this week`, `<div class="chgrid"><button type="button" class="chc mrow${uOpen ? " rowon" : ""}" data-uopen="1"><b>Claude use</b><span>${uOpen ? "tap to close" : "by chat and job, this week vs last"}</span></button>${A.cap ? `<button type="button" class="chc mrow${aOpen ? " rowon" : ""}" data-aopen="1"><b>API spend</b><span>${aOpen ? "tap to close" : "$" + (A.total || 0).toFixed(2) + " of $" + A.cap + " this month"}</span></button>` : ""}</div>${aOpen && A.cap ? apiSpendBody(A) : ""}${uOpen ? `<div class="mbody today1 mpa usg"><div class="fpers">${pb("now", "This week")}${pb("last", "Last week")}</div><b>${usd(tot)}${esc(vs)}</b><h5>By day</h5>${dayRows}<h5>Who used it</h5>${groups}<h5>Biggest</h5>${top}<span class="tn" style="text-align:center">API value (Max plan, not billed): ccusage dollars at API prices, week Fri 6pm to Fri 6pm. Updates hourly${U.updated ? " (last " + esc(kTime(U.updated.slice(11))) + ")" : ""}.</span></div>` : ""}`, {top: 1, cc: "var(--kaD19A12)", raw: 1}); }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-uper],[data-uopen],[data-aopen],[data-uday],[data-ugrp]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.aopen){ aOpen = !aOpen; if (aOpen) uOpen = false; } else if (b.dataset.uopen){ uOpen = !uOpen; if (uOpen) aOpen = false; } else if (b.dataset.uday) { uDay = uDay === b.dataset.uday ? "" : b.dataset.uday; uGrp = ""; } else if (b.dataset.ugrp) { uGrp = uGrp === b.dataset.ugrp ? "" : b.dataset.ugrp; uDay = ""; } else { uPer = b.dataset.uper; uDay = uGrp = ""; } liveRender(); }, true);
 function homeShorts(){
@@ -5477,16 +5441,15 @@ function homeShorts(){
   const pRed = PR.reduce((t, o) => t + Object.values(o.apps || {}).filter(a => a.c === "red").length, 0);
   /* (Oct 24, Chris) Scheduled box fills only when YouTube AND Facebook gave back a real id (stats/shortsboard need/err from shorts-board.py) */
   const shNeed = x => !x.need || !x.need.length ? "" : x.err ? "Not scheduled: " + x.err : "Not on " + x.need.map(a => a === "youtube" ? "YouTube" : "Facebook").join(" + ") + " yet";
-  /* (Oct 26, Chris) Upcoming, Scheduled and Posting check are SUBFOLDERS (the Songs subfolder template, one open at a time); Upcoming always shows, even empty, so new Shorts always have the checklist */
-  let sfo = ""; try { sfo = localStorage.getItem("fd-songfolder") || ""; } catch {}
-  const fold = (key, t, sub, body) => `<div class="pc3${sfo === key ? " subon" : ""}"><button type="button" class="pc3t" data-sgfold="${key}"><b>${t}</b><span>${esc(sub)}</span></button></div><div class="sublist" data-sgfoldbody="${key}" style="${sfo === key ? "" : "display:none"}">${body}</div>`;
+  /* (Oct 26, Chris) Upcoming, Scheduled and Posting check are SUBFOLDERS; Upcoming always shows, even empty, so new Shorts always have the checklist.
+     (Oct 28) the ONE folder template (deskFold): opening one never closes another, so Scheduled and Posting check can be open together */
+  const fold = (key, t, sub, body) => deskFold("sg:" + key, t, esc(sub), body);
   const wRows = W.length ? head + W.map(x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto)).join("") : head + `<div class="tn" style="${RS}"><span style="color:var(--muted,#8A9099);font-size:13px">No Shorts in the works yet. New cuts land here and move through the checklist.</span></div>`;
   const nextS = S.length ? S[S.length - 1] : null, lastS = S.length ? S[0] : null;
-  return `<div class="msec" style="--cc:var(--kaD85A30)"><h4>Shorts <span class="hr"><i>${yours ? yours + " to check · " : ""}${S.length} scheduled</i></span></h4><div class="chgrid">`
-    + fold("shworks", `Upcoming (${W.length})`, W.length ? (yours ? yours + " to check" : "in the checklist") : "nothing in the works", wRows)
+  return deskFold("", "Shorts", `${yours ? yours + " to check · " : ""}${S.length} scheduled`, fold("shworks", `Upcoming (${W.length})`, W.length ? (yours ? yours + " to check" : "in the checklist") : "nothing in the works", wRows)
     + (S.length ? fold("shsched", `Scheduled (${S.length})`, `next ${md(nextS.date)} · last ${md(lastS.date)}`, head + S.map(x => row(x.title, shNeed(x), x.schedOn ? 6 : 5, null, "", false, "", {5: x.schedOn, 6: x.date})).join("")) : "")
     + (PR.length ? fold("shpost", `Posting check (${PR.length})`, pRed ? pRed + " red" : "all good", PR.map(prow).join("")) : "")   /* (Oct 25, Chris: i do not need it) Posted this week dropped; the Posting check shows what posted */
-    + `</div></div>`; }
+    , {top: 1, cc: "var(--kaD85A30)"}); }
 document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Check opens the Final check pop-up on the desk (view final), never Drive */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
@@ -5574,13 +5537,93 @@ function sgUniverse(){ if (scBoard === null) fdScLoad();
   (scBoard || []).forEach(r => add(r.name, {sc: r}));
   const gone = new Set((songs || []).filter(x => x.removed).map(x => sgKey(x.title))); gone.forEach(k => { const u = U.get(k); if (u && !u.sg) U.delete(k); });   /* (Oct 22, Chris: Ode to Joy came back) a song he removed stays off the board, whatever old list or row still names it */
   return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas */
-function sgRow(x){ const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
+const SGRS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
+/* the checklist header row (column names; phone = the whole word at 45 degrees): Songs board and Lessons board */
+const sgHead = (cols, ab) => `<div class="tn" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
+/* ONE checklist row for Songs (SGCOLS) and Lessons (LCCOLS): name + one box per column (q.c ok teal / chk gold / mk + fx light gold / blank) */
+function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = SGRS;
   const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
-  return `<div class="srow" style="${RS}"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => { if (i === 1 && !q.nt) return `<i class="sblk sgc" data-sgcol="1" data-sgst="none" title="Notes" style="background:transparent;border-color:transparent"></i>`;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
+  return `<div class="srow" style="${RS}"><b class="sname"${x.full ? ` data-lcname="${esc(x.full)}" title="${esc(x.title)}" role="button" tabindex="0"` : ""} style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => { if (q.blank || (cols === SGCOLS && i === 1 && !q.nt)) return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="none" title="${esc(cols[i])}" style="background:transparent;border-color:transparent${q.blank ? ";border:1.5px solid transparent;width:22px;height:14px;box-sizing:border-box;flex:0 0 22px" : ""}"></i>`;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
     const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
-    const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(SGCOLS[i])}"${tap ? (q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+/* (Oct 28, Chris approved design A) LESSONS TO CHECK: the Lab chapters on the Songs board code (sgHead + sgRow: same rows, boxes, colours, fonts).
+   Two folders (deskFold): Live (closed at first; every shipped chapter = one row, Status Live) and Testing (open at first; the chapter(s) on Test,
+   one row per lesson; 2+ chapters = one folder each). Columns Computer | Dev mode | Phone | Status. A chapter is live when the Live Lab's path.js
+   has it inside PP_BUILT (read from lab.worshippianoacademy.com/path.js, kept per device).
+   ONE SOURCE OF TRUTH = the Lab's own notes (review_notes) + db lessonchecks/<lesson> {computer|dev|phone: {s:"ok", v, at}}:
+   - desk Fix = a Lab Fix note {mark fix, note, label, lesson, card null, fp "<lesson>|chk-<check>-v<N>"}: the lab-note queue, fix monitor and the
+     done marks after a Test push handle it unchanged. A Fix note sent INSIDE the Lab counts for Computer, or for Dev mode / Phone when the Lab's
+     own 'open' row for that lesson just before it says the desk box opened it (?from=fd-dev / fd-phone) or the screen was under 600px wide (Phone).
+   - versions: each check counts its own fix rounds (done marks after a push, 10 min apart = one round; old notes the Lab marked handled = one).
+     Box: blank = not its turn (Computer, then Dev mode, then Phone) | gold Check (V1) | light gold Fixing V2 | gold Check V2 (fix on Test) | teal Approved.
+   - Approve = lessonchecks; the Lab's own end-of-lesson approval ("<lesson>|lesson" good) counts for the check picked by the same device rule;
+     all 3 approved = the desk sends that same Lab approval (label '(desk ...)') so the Lab and the desk agree. Status: blank, Approved, then Live. */
+const LCK = [["computer", "Computer"], ["dev", "Dev mode"], ["phone", "Phone"]], LCCOLS = ["Computer", "Dev mode", "Phone", "Status"], LCAB = ["Co", "Dv", "Ph", "St"];
+let labLiveN = (() => { try { return +localStorage.getItem("fd-lablive") || 0; } catch { return 0; } })(), labLiveAt = 0;
+function labLiveFetch(){ if (Date.now() - labLiveAt < 600000) return; labLiveAt = Date.now();
+  fetch("https://lab.worshippianoacademy.com/path.js", {headers: {Range: "bytes=0-120000"}}).then(r => r.ok ? r.text() : "").then(t => { const m = /const PP_BUILT = (\d+)/.exec(t);
+    if (m && +m[1] !== labLiveN){ labLiveN = +m[1]; try { localStorage.setItem("fd-lablive", String(labLiveN)); } catch {} lcMemo.clear(); tasks = topTasks(allTasks); if (!editing && !sorting && !answering && !revFix && !bulkPick) render(); } }).catch(() => {}); }
+const lcChs = () => { const lab = stats.find(x => x.id === "lab"); return ((lab && lab.chapters) || []).map((c, i) => ({c, i, live: i < labLiveN})); };
+function lcLesson(id){ for (const x of lcChs()) for (const L of x.c.lessons || []) if (L.id === id) return L; return null; }
+function lcWho(n){ const fp = String(n.fp || ""), m = /\|chk-(computer|dev|phone)-v\d+$/.exec(fp); if (m) return m[1];
+  const t = Date.parse(n.created_at || ""), go = "go=" + String(n.lesson || fp.split("|")[0]).replace(/#/g, "%23"); let best = "";
+  for (const o of labNotes){ if (+o.id >= +n.id) break; if (o.mark !== "diag" || o.lesson !== "open") continue; const lb = labLabels.get(o.id) || "", i = lb.indexOf(go);
+    if (i >= 0 && !/[\w%:]/.test(lb.charAt(i + go.length)) && Date.parse(o.created_at || "") > t - 3 * 36e5) best = lb; }
+  if (/from=fd-dev/.test(best)) return "dev"; if (/from=fd-phone/.test(best)) return "phone";
+  const w = /open shift (\d+)x/.exec(best); return w && +w[1] < 600 ? "phone" : "computer"; }
+function lcState(L){ const id = L.id, hit = lcMemo.get(id); if (hit) return hit;
+  const doc = lessonChecks.find(r => r.id === id) || {}, lab = stats.find(x => x.id === "lab") || {}, handled = +lab.handled || 0, R = {}, fpK = {}, fpId = {};
+  for (const [k] of LCK) R[k] = {open: new Set(), rounds: new Set(), lastFix: "", labOk: ""};
+  let lastFix = "", signed = "";
+  for (const n of labNotes){ const fp = String(n.fp || ""); if (n.lesson !== id && fp.indexOf(id + "|") !== 0) continue; const at = String(n.created_at || "");
+    if (n.mark === "fix"){ const k = lcWho(n); fpK[fp] = k; fpId[fp] = +n.id; R[k].open.add(fp); if (at > R[k].lastFix) R[k].lastFix = at; if (at > lastFix) lastFix = at; }
+    else if (n.mark === "done"){ const k = fpK[fp]; if (k && R[k].open.delete(fp)) R[k].rounds.add(Math.floor(Date.parse(at) / 6e5)); }
+    else if (fp === id + "|lesson" && (n.mark === "good" || n.mark === "ungood")){ if (n.mark === "good") signed = at;
+      if (!/\(desk/.test(labLabels.get(n.id) || "")){ const k = lcWho(n); R[k].labOk = n.mark === "good" ? at : ""; } } }
+  for (const [k] of LCK) for (const fp of [...R[k].open]) if (fpId[fp] <= handled){ R[k].open.delete(fp); R[k].rounds.add("h"); }
+  const out = {id}; let all = true;
+  LCK.forEach(([k], i) => { const r = R[k], d = doc[k] && doc[k].s === "ok" ? String(doc[k].at || "") : "", okAt = d > r.labOk ? d : r.labOk, v = 1 + r.rounds.size, open = r.open.size > 0;
+    const ok = !!okAt && !open && (!r.lastFix || okAt > r.lastFix), turn = i === 0 || out[LCK[i - 1][0]].c === "ok";
+    out[k] = Object.assign({id, lc: k, v}, ok ? {c: "ok", t: "Approved"} : open ? {c: "fx", t: "Fixing V" + (v + 1)} : v > 1 ? {c: "chk", t: "Check V" + v} : turn ? {c: "chk", t: "Check"} : {c: ""});
+    if (!ok) all = false; });
+  out.all = all; out.signed = !!signed && signed > lastFix; lcMemo.set(id, out); return out; }
+function lcToCheck(){ let n = 0; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk") n++; } return n; }
+function lcCount(c){ const S = (c.lessons || []).map(lcState); return S.length && S.every(s => s.all) ? "Approved" : LCK.map(([k, l]) => l + " " + S.filter(s => s[k].c === "ok").length + "/" + S.length).join(" · "); }
+function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) return '<span class="tn">Lab status shows after the next hourly refresh.</span>';
+  const head = sgHead(LCCOLS, LCAB), blank = {c: "", blank: 1}, nm = x => "Ch" + (x.i + 1) + " " + x.c.name;
+  const rows = x => (x.c.lessons || []).map(L => { const s = lcState(L); return sgRow({title: "L" + L.n + " " + L.t, full: L.id, cells: LCK.map(([k]) => s[k]).concat([{c: s.all ? "ok" : "", t: "Approved"}])}, LCCOLS); }).join("");
+  const live = X.filter(x => x.live), test = X.filter(x => !x.live), nT = test.reduce((a, x) => a + (x.c.lessons || []).length, 0);
+  const tBody = test.length === 1 ? head + rows(test[0]) : test.map(x => deskFold("lc:ch" + (x.i + 1), esc(nm(x)) + ` (${(x.c.lessons || []).length})`, esc(lcCount(x.c)), head + rows(x))).join("");
+  return (live.length ? deskFold("lc:live", `Live (${live.length})`, "shipped chapters", head + live.map(x => sgRow({title: nm(x), cells: [blank, blank, blank, {c: "ok", t: "Live"}]}, LCCOLS)).join("")) : "")
+    + (test.length ? deskFold("lc:test", `Testing (${test.length === 1 ? nT : test.length})`, esc(test.length === 1 ? "Ch" + (test[0].i + 1) + " · " + lcCount(test[0].c) : test.map(x => "Ch" + (x.i + 1)).join(", ")), tBody, {def: 1}) : ""); }
+/* a gold box = small pop-up (the song-check pop-up): Open | Approve | Fix. Open: Computer = the lesson on Test in a new tab, Dev mode = the same in a
+   phone-size window (no developer tools needed), Phone = the lesson link (tap it on the phone). Fix = his note (type or the keyboard mic) as a Lab Fix note. */
+function lcGo(L, k){ const u = safeUrl(L.u); if (!u) return; const v = u + (u.includes("?") ? "&" : "?") + "from=fd-" + (k === "dev" ? "dev" : k === "phone" ? "phone" : "pc");
+  if (k === "dev") window.open(v, "lcdev", "popup=yes,width=390,height=844"); else window.open(v, "_blank", "noopener"); }
+function lcSend(row){ try { return fetch(LABSB, {method: "POST", headers: {apikey: LABK, Authorization: "Bearer " + LABK, "Content-Type": "application/json", Prefer: "return=minimal"}, body: JSON.stringify(row)}).then(r => r.ok).catch(() => false); } catch (e) { return Promise.resolve(false); } }
+function lcOpen(id, k){ const L = lcLesson(id); if (!L) return; lyrClose(); const s = lcState(L), q = k ? s[k] : null, kl = k ? LCK.find(x => x[0] === k)[1] : "";
+  const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.lc = id; o.dataset.lck = k || "";
+  const btn = (a, l, go) => `<button type="button" class="tb${go ? " go" : ""}" data-lcx="${a}">${l}</button>`;
+  const B = !k ? [btn("open", "Open"), btn("close", "Close")] : q.c === "ok" ? [btn("open", "Open"), btn("fix", "Fix")] : [btn("open", "Open"), btn("ok", "Approve", 1), btn("fix", "Fix")];
+  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc("L" + L.n + (k ? " · " + kl : ""))}</b><span>${esc(L.t)}</span>${q ? `<span>${esc(q.t)}</span>` : ""}</div><textarea class="lyrnote lcnote" rows="3" placeholder="What should change? Type or tap the keyboard mic" style="display:none"></textarea><div class="lyrbt" style="grid-template-columns:repeat(${B.length},1fr)">${B.join("")}</div></div>`;
+  document.body.appendChild(o); }
+document.addEventListener("click", async e => { const c = e.target.closest("[data-lcchk],[data-lcname]"); if (c){ e.preventDefault(); e.stopPropagation(); lcOpen(c.dataset.lcchk || c.dataset.lcname, c.dataset.lck || ""); return; }
+  const o = document.getElementById("lyrchk"); if (!o || !o.dataset.lc) return; if (e.target === o){ lyrClose(); return; }
+  const x = e.target.closest("[data-lcx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+  const id = o.dataset.lc, k = o.dataset.lck, L = lcLesson(id), a = x.dataset.lcx; if (!L || a === "close") return lyrClose();
+  const s = lcState(L), v = k ? s[k].v : 1, kl = k ? LCK.find(z => z[0] === k)[1] : "";
+  if (a === "open"){ lcGo(L, k || "computer"); return lyrClose(); }
+  if (a === "fix"){ const n = o.querySelector(".lcnote"); n.style.display = ""; n.focus(); x.textContent = "Send fix"; x.dataset.lcx = "send"; return; }
+  if (a === "send" && k){ const n = o.querySelector(".lcnote"), note = n.value.trim(); if (!note){ n.focus(); return; } x.disabled = true;
+    const row = {mark: "fix", note, label: L.t + " -- " + kl + " check V" + v + " (desk)", lesson: id, card: null, fp: id + "|chk-" + k + "-v" + v};
+    if (!(await lcSend(row))){ x.disabled = false; x.textContent = "Not sent, try again"; return; }
+    labNotes.push(Object.assign({id: (labNotes.length ? +labNotes[labNotes.length - 1].id : 0) + 0.5, tmp: 1, created_at: new Date().toISOString()}, row)); lcMemo.clear(); lyrClose(); render(); setTimeout(() => labFresh(true), 1500); return; }
+  if (a === "ok" && k){ const now = new Date().toISOString(), cur = lessonChecks.find(r => r.id === id), d = Object.assign({}, cur || {}); delete d.id;
+    d.lesson = id; d[k] = {s: "ok", v, at: now}; d.updated = now; lessonChecks = lessonChecks.filter(r => r.id !== id).concat([Object.assign({id}, d)]); lcMemo.clear();
+    sgCelebrate(id, LCK.findIndex(z => z[0] === k)); lyrClose(); render(); db.collection("lessonchecks").doc(id).set(d).catch(() => {});
+    const s2 = lcState(L); if (s2.all && !s2.signed) lcSend({mark: "good", note: "", label: L.t + " -- whole lesson (desk: all 3 checks approved)", lesson: id, card: null, fp: id + "|lesson"}).then(() => setTimeout(() => labFresh(true), 1500)); } }, true);
 /* (Oct 20, Chris: "I need to move step one before step two") LYRICS CHECK: tap the gold Lyrics box = the song's full words (from his Song Lyrics list,
    songcheck.lyricsText). Edit in place, then Approve (lyricsOK, words locked) or Send fixes (lyricsFix + note: Cadence's turn). */
 function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
@@ -6033,13 +6076,13 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   Object.assign(r, up); lyrClose(); render();
   db.collection("songcheck").doc(id).update(up).catch(() => {}); }, true);
 function homeSongs(only){
-  const RS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
-  const head = `<div class="tn" style="${RS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${SGCOLS.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${SGAB[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
+  const RS = SGRS;
+  const head = sgHead(SGCOLS, SGAB);
   const U = sgUniverse(), byK = new Map(U.map(x => [x.k, x]));
   const ord = (a, b) => (b.cells.some(q => q.c === "chk") - a.cells.some(q => q.c === "chk")) || b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title);
   /* inside a song-check task: the same template, only its songs */
   if (only){ const W = only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
-    return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(sgRow).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
+    return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(x => sgRow(x)).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
   const live = U.filter(x => SGLIVE.includes(x.k)), rest = U.filter(x => !SGLIVE.includes(x.k));
   /* (Oct 21, Chris) SONGS BOARD = 5 FOLDERS: Christmas (Nov 1 list), Church songs, Kids, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
   const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "joyfuljoyful", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
@@ -6048,9 +6091,8 @@ function homeSongs(only){
   const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
   const fX = U.filter(inXm).sort(ord), fK = U.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = U.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = U.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = U.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
-  let sfo = ""; try { sfo = localStorage.getItem("fd-songfolder") || ""; } catch {}
-  const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0), on = sfo === key;
-    return `<div class="pc3${on ? " subon" : ""}"><button type="button" class="pc3t" data-sgfold="${key}"><b>${t} (${L.length})</b><span>${g ? g + " to check" : sub}</span></button></div><div class="sublist" data-sgfoldbody="${key}" style="${on ? "" : "display:none"}">${head}${L.map(sgRow).join("")}</div>`; };   /* the desk's own subfolder template: .pc3 row (arrow when open) + .sublist body, same as the project folders */
+  const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0);
+    return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
   const mine = U.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
@@ -6059,12 +6101,8 @@ function homeSongs(only){
   const CR = [].filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
   const secCR = CR.length ? label("Copyright check", CR.length) + CR.map(r => { const np = /^NOT/i.test(String(r.lyricsCheck).trim());
     return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:var(--kbFDE8E4);border:1.5px solid var(--klB4362A);color:var(--ktB23B17)" : "background:var(--kbFBEFD0);border:1.5px solid var(--klE8B53A);color:var(--kt8A6508)"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
-  return `<div class="msec" style="--cc:var(--ka7F77DD)"><h4>Songs <span class="hr"><i>${mine} to check · ${live.length} live</i></span></h4><div class="chgrid songgrid">${secCR}${secN}</div></div>`; }
-document.addEventListener("click", e => { const b = e.target.closest("[data-sgfold]"); if (!b) return; e.preventDefault(); e.stopPropagation();
-  const k = b.dataset.sgfold, pr0 = b.closest(".pc3") || b, body = pr0.nextElementSibling, open = !!body && body.style.display === "none";
-  document.querySelectorAll("[data-sgfold]").forEach(f => { const o = f === b && open, pr = f.closest(".pc3") || f, bd = pr.nextElementSibling; pr.classList.toggle("subon", o); if (bd && bd.dataset.sgfoldbody) bd.style.display = o ? "" : "none"; });
-  try { localStorage.setItem("fd-songfolder", open ? k : ""); } catch {} }, true);
-function songsRefresh(){ document.querySelectorAll("#list .sublist:not([data-sgfoldbody])").forEach(x => x.remove()); applySubOpen(); }
+  return deskFold("", "Songs", `${mine} to check · ${live.length} live`, secCR + secN, {top: 1, cc: "var(--ka7F77DD)", grid: "songgrid"}); }
+function songsRefresh(){ foldRefresh(); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
 /* (Oct 11) Chris: LAB LINKS. Every ThriveCart video (db 'lablinks', one doc each) is linked, ready (a strong Lab match) or
@@ -6117,7 +6155,7 @@ function subSpecial(name){
   const row = (attr, t, sub, m) => `<button type="button" class="chc" ${attr}><b>${esc(t)}</b><span>${esc(sub)}</span>${m ? tmR(m) : ""}</button>`;
   if (name === "@@train") return TLV.map(([k, h]) => { const n = tasks.filter(t => !t.done && !t.removed && lvOf(t) === k).length;
     return row(`data-trainlv="${k}" style="border-left:4px solid ${TLV.find(x => x[0] === k)[2]}"`, TLVP[k] + "% · " + h.replace("100% automatic", "Automatic"), n + (n === 1 ? " to-do" : " to-dos")); }).join("");
-  if (name === "@@lab"){ const lab = stats.find(x => x.id === "lab"), chs = (lab && lab.chapters) || []; return chs.map((c, i) => row(`data-labch="${i}"`, "Chapter " + (i + 1) + ": " + c.name, countLine(revCounts(c.lessons)))).join("") || '<span class="tn">Lab status shows after the next hourly refresh.</span>'; }
+  if (name === "@@lab") return `<div class="chgrid songgrid lcgrid">${lessonsInner()}</div>`;   /* (Oct 28) Projects > Worship Piano Lab > Lessons to check = the same board */
   if (name === "@@songs") return songsHTML();
   if (name === "@@lablinks") return llHTML();
   // (Oct 9) Chris: viewer requests get their own folder (not ideas), most-asked first
@@ -6127,9 +6165,9 @@ function subSpecial(name){
     return sortL(ideas.filter(i => icat(i) === c)).map(i => row(`data-ideaopen="${esc(i.id)}"`, i.title, tasks.some(t => t.fromIdea === i.id && !t.done) ? "added" : "idea", i.mins)).join(""); }
   return null;
 }
-function subHTML(name){ const sp = name.startsWith("@@") ? subSpecial(name) : null; if (sp != null) return `<div class="sublist" data-subof="${esc(name)}">${sp}</div>`;
+function foldSrc(name){ const sp = name.startsWith("@@") ? subSpecial(name) : null; if (sp != null) return sp;
   const L = sortL(projTasks(name));
-  return `<div class="sublist" data-subof="${esc(name)}">${L.map(t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${t.date ? esc(dayLabel(t.date)) : "no day yet"}</span>${tmR(t.mins)}</button>`).join("") || '<span class="tn">No to-dos yet. Tell Cadence what this needs.</span>'}</div>`; }
+  return L.map(t => `<button type="button" class="chc" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${t.date ? esc(dayLabel(t.date)) : "no day yet"}</span>${tmR(t.mins)}</button>`).join("") || '<span class="tn">No to-dos yet. Tell Cadence what this needs.</span>'; }
 // (Oct 7) Chris: every to-do / idea row has ONE button on its right: "Today" (not shown when it's already today)
 // (Oct 7) Chris: every to-do row shows its automation % (Training colour) without opening it
 // (Oct 8) Chris picked B (Home row picker): short title, ONE grey line (chore · time · open N days · X of Y checked),
@@ -6141,7 +6179,7 @@ function rowB(){ document.querySelectorAll("#list .chc[data-tlinks], #list .pc3t
   if (b.dataset.ideaopen){ const i = ideas.find(x => x.id === b.dataset.ideaopen); if (i && sp) sp.textContent = ["idea", fmtMins(i.mins)].filter(Boolean).join(" · "); return; }
   const t = allTasks.find(x => x.id === b.dataset.tlinks); if (!t) return; const k = lvOf(t), c = LVL[k] || LVL.cant;
   b.classList.add("ledge"); b.style.setProperty("--lc", c);
-  const [dn, all] = checkCount(t), nk = allTasks.filter(x => x.parent === t.id && !x.done && !x.removed).length;
+  const [dn, all] = checkCount(t), nk = /^lab-ch\d+$/.test(t.wait || "") ? 0 : allTasks.filter(x => x.parent === t.id && !x.done && !x.removed).length;
   if (b.dataset.cad){ const [w, sc] = cadStatus(t); b.style.setProperty("--lc", sc);
     if (sp) sp.innerHTML = `<b class="cadst"><i style="background:${sc}"></i>${esc(w)}</b> · ` + (t.chore ? '<b class="chw">chore</b> · ' : "") + esc([fmtMins(t.cmins), t.due ? "due " + dayLabel(t.due).replace(/^[A-Z][a-z]{2}, /, "") : ""].filter(Boolean).join(" · ")); return; }
   if (sp) sp.innerHTML = (t.chore ? '<b class="chw">chore</b> · ' : "") + esc([fmtMins(t.mins), t.ships ? "ships " + dayLabel(t.ships).replace(",", "") : (t.due || t.date) ? "due " + dayLabel(t.due || t.date).replace(/^[A-Z][a-z]{2}, /, "") : "", all ? dn + " of " + all + " checked" : "", nk ? nk + " to-dos inside" : ""].filter(Boolean).join(" · ")); }); }
@@ -6266,6 +6304,7 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
     db.collection("queue").doc(qi).set({kind: "ask", ref: "ask/" + qi, key: now, title: ((ans === "use" ? "A/B use winner: " : "A/B note: ") + (a.name || "")).slice(0, 70), job: "desk", lane: "desk", status: "queued", order: 0, addedAt: now, tries: 0, model: "sonnet", limit: 45, extra: {detail: what}}).catch(() => {});
     if ($("pop") && $("pop").innerHTML) closePop(); taskOpen = null; saveTaskOpen(); render(); } catch { b.disabled = false; } });
 function goBtn(t){
+  if (/^lab-ch\d+$/.test(t.wait || "") || t.wait === "lessons") return `<div class="chgrid songtaskgrid songgrid lcgrid">${lessonsInner()}</div>`;   /* (Oct 28) Lessons to check opens its board, like Songs to check */
   if (t.wait === "asks") return asksHTML();
   if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked"); return `<div class="revlist"><p class="tn">${items.length} drafts to check</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
   if (t.wait === "songs" || t.wait === "shorts") return `<div class="revlist"><button type="button" class="tb go gobtn" data-waitgo="${t.wait}">Open first</button></div>`;
@@ -6280,18 +6319,14 @@ function goBtn(t){
   return u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : ""; }
 /* (Oct 21, Chris: "changed without my approval") the Shorts / Songs Today rows open that board's OWN existing folder on Home (column checklist), no pop-up, no Open first, no % bar */
 const WAITFOLD = {"t-wait-shorts": "Shorts", "t-wait-songs": "Songs"};
-function waitFolderGo(k){ openOne[oneKey()] = k; try { localStorage.setItem("fd-open1", JSON.stringify(openOne)); } catch {} collapsed.delete(k); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
+function waitFolderGo(k){ foldSet(topKey(k), 1); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
   const h = [...document.querySelectorAll("#list .msec > h4[data-ck]")].find(x => x.dataset.ck === k); if (h) h.scrollIntoView({block: "start"}); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-tlinks]"); if (!b || !WAITFOLD[b.dataset.tlinks] || !b.closest("#list")) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); waitFolderGo(WAITFOLD[b.dataset.tlinks]); }, true);
 document.addEventListener("click", e => { const b = e.target.closest("[data-waitgo]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.waitgo === "shorts") return shOpen(null);
   const w = waitLive({wait: "songs"}), q = w && w.first; if (!q) return; if (q.bt) btOpen(q.id); else if (q.lyr) lyrOpen(q.id); else scOpen(q.id, q.v); }, true);   /* (Oct 20 night) opens the board at the FIRST item waiting */
 function kidsHTML(t){ const K = sortL(allTasks.filter(x => x.parent === t.id && !x.done && !x.removed)); if (!K.length) return "";
-  /* (Oct 26, Chris: 'I asked you to make these lessons as a subfolder') a chapter folder (t-wait-lab-chN) lists its lessons in the desk's own subfolder template (project to-do rows), no 'To-dos inside' box */
-  /* (Oct 26, Chris) each lesson row carries Go | Done | Move | Remove | Edit on ONE colour-coded line, no need to open it; Move / Edit open their panel right under the row */
-  if (/^lab-ch\d+$/.test(t.wait || "")) return `<div class="sublist kidsub">${K.map(k => { const id = esc(k.id), u = safeUrl(k.url) ? fdLink(k.url) : "";
-    const sub = [fmtMins(k.mins), k.date ? "due " + dayLabel(k.date).replace(/^[A-Z][a-z]{2}, /, "") : ""].filter(Boolean).join(" · ");
-    return `<div class="kidrow"><div class="kidt"><b>${esc(k.short || k.title)}</b><span>${esc(sub)}</span></div>${eightBtns(k)}${editOpen === k.id ? editHTML(k) : moving === k.id ? `<div class="tdetail" data-tdof="${id}"><div class="tdpanel">${moveCal(k)}</div></div>` : ""}</div>`; }).join("")}</div>`;
+  if (/^lab-ch\d+$/.test(t.wait || "") || t.wait === "lessons") return "";   /* (Oct 28, Chris) the Lessons to check board replaces the lesson to-dos inside the chapter row */
   return `<div class="kids"><b>To-dos inside (${K.length})</b>${K.map(k => `<button type="button" class="chc" data-tlinks="${esc(k.id)}"><b>${esc(k.short || k.title)}</b><span></span>${tmR(k.mins)}</button>` + (taskKid === k.id ? taskDetail(k) : "")).join("")}</div>`; }
 // (Oct 10) the open to-do has the Give to Cadence button too (only on to-dos Cadence can really do = has a cost)
 function cadBtn(t){ if (t.done || t.cadence === false || t.test || !(t.cost || t.teach)) return "";
@@ -6321,7 +6356,7 @@ function edFit(){ const x = document.activeElement; if (!x || !x.closest || !x.c
     const r = x.getBoundingClientRect(), br = B.getBoundingClientRect(); if (r.bottom > br.bottom - 8) B.scrollTop += r.bottom - br.bottom + 8; else if (r.top < br.top) B.scrollTop -= br.top - r.top + 8; } }
 /* (Oct 11 fix: Edit "didn't work") the same to-do can sit in two folders (Today + Cadence tasks; the hidden copy came first),
    so EVERY copy of its open body is swapped, not just the first one found */
-function edSwap(id){ const t = allTasks.find(x => x.id === id), olds = [...document.querySelectorAll(`#list .tdetail[data-tdof="${CSS.escape(id)}"]`)]; if (!t || !olds.length || olds.some(o => o.closest(".kidsub")) || (editOpen === id && allTasks.some(x => x.id === t.parent && /^lab-ch\d+$/.test(x.wait || "")))) return render();
+function edSwap(id){ const t = allTasks.find(x => x.id === id), olds = [...document.querySelectorAll(`#list .tdetail[data-tdof="${CSS.escape(id)}"]`)]; if (!t || !olds.length || (editOpen === id && allTasks.some(x => x.id === t.parent && /^lab-ch\d+$/.test(x.wait || "")))) return render();
   const L = $("list"); let keep = null;
   olds.forEach(old => { old.insertAdjacentHTML("afterend", taskDetail(t)); if (L && L._lock === old) keep = old.scrollTop; old.remove(); });
   try { applyFocus(); } catch {} if (keep != null && L._lock) L._lock.scrollTop = keep; if (L) L._edST = editOpen ? L.scrollTop : null;
@@ -6359,8 +6394,6 @@ function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x 
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
   document.querySelectorAll(`#list [data-tlinks="${CSS.escape(taskOpen)}"]`).forEach(b => { if (!b.matches(".chc, .pc3t")) return; const c = b.closest(".trow") || b.closest(".pc3") || b;
     if (c.nextElementSibling && c.nextElementSibling.classList.contains("tdetail")) return; c.classList.add("rowon"); c.insertAdjacentHTML("afterend", taskDetail(t)); }); }
-function applySubOpen(){ document.querySelectorAll("#list .msec .chgrid .pc3t[data-popproj]").forEach(b => { const row = b.closest(".pc3") || b, n = b.dataset.popproj;
-  row.classList.toggle("subon", subOpen.has(n)); if (subOpen.has(n) && !(row.nextElementSibling && row.nextElementSibling.dataset.subof === n)) row.insertAdjacentHTML("afterend", subHTML(n)); }); applyFocus(); }
 function rowMenuOff(){ document.querySelectorAll(".rowmenu").forEach(m => m.remove()); document.querySelectorAll(".rowon").forEach(r => r.classList.remove("rowon")); }
 function rowMenuFor(b){ return null;   // (Oct 7) Chris: no drop-down; tap a row = open it (all choices inside), plus one Today button on the right
 }
@@ -6386,9 +6419,6 @@ document.addEventListener("click", e => {
     return keepPos(b, () => { mRow = opening ? k : ""; saveMRow(); document.querySelectorAll("#list .mbody").forEach(x => x.remove()); document.querySelectorAll("#list .mrow.rowon").forEach(x => x.classList.remove("rowon"));
       if (mRow){ b.classList.add("rowon"); b.insertAdjacentHTML("afterend", `<div class="mbody">${mBody(mRow)}</div>`); mDraw(); } applyFocus(); }, opening); }
   const row = b.closest(".pc3") || b, was = row.nextElementSibling && row.nextElementSibling.classList.contains("rowmenu");
-  if (b.dataset.popproj){ e.preventDefault(); e.stopPropagation(); rowMenuOff(); const n = b.dataset.popproj;
-    const was = subOpen.has(n); return keepPos(row, () => { subOpen = new Set(was ? [] : [n]); taskOpen = null; document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); try { localStorage.setItem("fd-subopen", JSON.stringify([...subOpen])); } catch {}
-    document.querySelectorAll("#list .sublist:not([data-sgfoldbody])").forEach(x => x.remove()); applySubOpen(); addTodayBtns(); applyTaskOpen(); }, !was); }
   if (b.dataset.tlinks && b.closest("#list .tdetail")){ e.preventDefault(); e.stopPropagation(); const id = b.dataset.tlinks, opening = taskKid !== id; return keepPos(b, () => { taskKid = opening ? id : null; refreshDetail(); }, opening); }
   if (b.dataset.tlinks && b.closest("#list")){ e.preventDefault(); e.stopPropagation(); rowMenuOff(); const id = b.dataset.tlinks; taskKid = null;
     const c = b.closest(".trow") || b.closest(".pc3") || b, opening = taskOpen !== id;
@@ -6523,10 +6553,9 @@ document.addEventListener("click", async e => {
     document.querySelectorAll("[data-sertog]").forEach(b => b.classList.toggle("off", serOff.has(b.dataset.sertog))); fDrawLines(); return; }
   if (d.tdcal || d.tdproj){ const det = t.closest(".tdetail"), row = det && det.previousElementSibling;
     keepPos(row, () => { if (d.tdcal){ const id = d.tdcal; moving = moving === id ? null : id; moveMonth = null; moveCalOn = true; pickingProj = null; }
-      else { const id = d.tdproj; pickingProj = pickingProj === id ? null : id; pickCat = null; moving = null; } openLinks = null; refreshDetail(); }, !((d.tdcal && moving === d.tdcal) || (d.tdproj && pickingProj === d.tdproj))); return; }
+      else { const id = d.tdproj; pickingProj = pickingProj === id ? null : id; moving = null; } openLinks = null; refreshDetail(); }, !((d.tdcal && moving === d.tdcal) || (d.tdproj && pickingProj === d.tdproj))); return; }
   if (d.psub){ psub = d.psub; page = 0; render(); return; }
-  if (d.ideago !== undefined){ psub = "ideas"; page = 0; ideaCatOpen = new Set([d.ideago]); try { localStorage.setItem("fd-ideacats", JSON.stringify([...ideaCatOpen])); } catch {} render(); return; }
-  if (d.labgo !== undefined){ closePop(); psub = "lab"; page = 0; labOpen = +d.labgo; render(); return; }
+  if (d.ideago !== undefined){ psub = "ideas"; page = 0; foldSet("icat:" + d.ideago, 1); render(); return; }
   if (d.msub){ if (d.msub === "sort") { setTab("sort"); return; } msub = d.msub; if (tab !== "money") setTab("money"); else render(); return; }
   if (d.icat){ icat = d.icat; page = 0; render(); return; }
   if (d.ideadel && db){ t.disabled = true; try { await db.collection("ideas").doc(d.ideadel).update({removed: true, removedAt: new Date().toISOString()}); confirmDel = null; openIdea = null; render(); } catch { t.disabled = false; } return; }
@@ -6581,8 +6610,6 @@ document.addEventListener("click", async e => {
   if (d.revok && db){ t.disabled = true; try { await db.collection("reviews").doc(d.revok).update({status: "good", noteAt: new Date().toISOString()}); openRev = null; render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
   if (d.revsend && db){ const v = ($("revnote")?.value || "").trim(); if (!v){ $("revnote")?.focus(); return; } t.disabled = true;
     try { await db.collection("reviews").doc(d.revsend).update({status: "fix", note: v, noteAt: new Date().toISOString(), heard: false}); revFix = false; openRev = null; render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
-  if (d.labch !== undefined){ closePop(); labOpen = +d.labch; render(); return; }
-  if (d.labpg){ labPg += +d.labpg; render(); return; }
   if (d.tlinks){ closePop(); openLinks = d.tlinks; render(); return; }
   if (d.need){ closePop(); openNeed = d.need; render(); return; }
   if (d.tlinksclose){ closePop(); render(); return; }
@@ -6594,7 +6621,7 @@ document.addEventListener("click", async e => {
   if (d.givecad && db){ t.disabled = true; try { await db.collection("tasks").doc(d.givecad).update({handoff: "cadence", handoffAt: new Date().toISOString(), heard: false}); render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
   if (d.movecal){ moveCalOn = true; render(); return; }
   if (d.movecancel){ moving = null; moveMonth = null; moveCalOn = false; render(); return; }
-  if (d.pickproj){ pickCat = null; pickingProj = d.pickproj; moving = null; confirmDel = null; openLinks = d.pickproj; render(); return; }
+  if (d.pickproj){ pickingProj = d.pickproj; moving = null; confirmDel = null; openLinks = d.pickproj; render(); return; }
   if (d.projcancel){ pickingProj = null; render(); return; }
   if (d.setproj !== undefined && db && pickingProj){ const id = pickingProj; t.disabled = true;
     try { await db.collection("tasks").doc(id).update({project: d.setproj}); pickingProj = null; render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
@@ -6805,9 +6832,10 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("items", ["added","desc"], v => items = v);
   live("replies", ["added","desc"], v => replies = v);
   // (Oct 7) Chris: a to-do can sit INSIDE another (task.parent), e.g. Chapter 5's fix checks inside "Test Lab Chapter 5"; lists show only the top one
-  live("tasks", ["date","asc"], v => { allTasks = v; tasks = v.filter(t => !t.removed && !isLabCheck(t)).filter(t => !t.parent || !v.some(p => p.id === t.parent && !p.done && !p.removed)); });
+  live("tasks", ["date","asc"], v => { allTasks = v; tasks = topTasks(v); });
   live("goals", ["added","asc"], v => goals = v);
-  live("stats", ["updated","desc"], v => { stats = v; labFresh(); });
+  live("stats", ["updated","desc"], v => { stats = v; lcMemo.clear(); tasks = topTasks(allTasks); labFresh(); });
+  live("lessonchecks", ["updated","desc"], v => { lessonChecks = v; lcMemo.clear(); });
   live("pins", ["added","desc"], v => pins = v);
   live("jobsexpected", ["order","asc"], v => autoJobs = v); live("jobruns", ["order","asc"], v => autoRuns = v); live("alerts", ["order","asc"], v => alerts = v);
   live("reviews", ["order","asc"], v => reviews = v.filter(r => r.status !== "retired" && !/lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//.test(r.url || "")));   /* (Oct 13) Chris: Lab checks live in Lab Test, never on the Front Desk */
