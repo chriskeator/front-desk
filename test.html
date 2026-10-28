@@ -2542,7 +2542,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v339</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v340</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2669,6 +2669,7 @@ function waitLive(t){
   if (waitBusy.has(t.wait)) return null;
   if (t.wait === "songs"){ if (scBoard === null) return null; const L = sgUniverse().filter(sgNow); let n = 0, first = null;   /* (Oct 21) live songs count too: their Level 1-3 cells are tappable gold */
     L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => x.cells.forEach(q => { if (q.c === "chk" && q.id){ n++; if (!first) first = q; } }));
+    n = L.length;   /* (Oct 28, Chris: '85 songs to check') the count is SONGS going out now, not their gold boxes */
     return {n, first, title: "Songs to check: " + n}; }
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
@@ -5566,7 +5567,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
     if (todo) C[8] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (making) C[8] = {c: "mk"}; else if (done) C[8] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
   FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "intro" ? 5 : k === "L2" ? 6 : k === "L3" ? 7 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
-  if (sc && sc.beltDiff && Array.isArray(sc.lines) && sc.lines.length) C[2] = {c: "fx", ak: ["Differs"], red: 1, tip: "Words differ from Lyrics"};   /* (Oct 28, Chris) song belt: the melody words must equal the Lyrics words (song_belt.py); red until fixed */
+  /* (Oct 28, Chris: "whatever I approved needs to be saved") no red Differs cell on his board: beltDiff is Cadence's list (desk alert song-belt), his approved cell stays as he left it */
   return C; }
 function sgUniverse(){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -6873,9 +6874,11 @@ setTimeout(deskGo, 5000);
 /* (Oct 15) Chris: the host caches the page ~10 min, so a refresh can show an old version. On open (and when he comes back to the tab)
    ask for the newest copy; if its v number is higher, load it. Never while a song check is open. */
 function deskVerCheck(){ const cur = +((document.querySelector("header .deskver") || {}).textContent || "").replace(/\D/g, "") || 0; if (!cur || scId) return;
+  const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
     if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
+setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); }, 120000);   /* (Oct 28, Chris saw v337 after v339 went live: the window never left the screen) also every 2 min while open */
 /* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
 (function melcmpLink(){ const m = /#melcmp=([\w-]+)/.exec(location.hash); if (!m) return; let n = 0;
   const go = () => { if (db && deskReady){ history.replaceState(null, "", location.pathname + location.search); mcOpen(m[1]); } else if (n++ < 60) setTimeout(go, 500); }; go(); })();
