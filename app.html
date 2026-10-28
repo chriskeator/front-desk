@@ -216,7 +216,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk .chcp{display:grid;grid-template-columns:72px repeat(8,52px) 88px;grid-template-rows:34px;gap:6px;align-items:center;margin:4px 0 0;width:max-content;max-width:100%}#lyrchk .chcpl{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}#lyrchk .chcp .tb{height:34px;min-height:0;padding:0 4px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap}#lyrchk .chcpx{display:block;height:34px}#lyrchk .chcpb[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}#lyrchk .chcp .tb[disabled]{opacity:.45;cursor:default}#lyrchk .chcpn{height:18px;line-height:18px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
 @media (max-width:759px){#lyrchk .chcp{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:34px 34px 34px;width:auto}#lyrchk .chcpl{grid-column:1/4;grid-row:1}#lyrchk .chap{grid-column:4;grid-row:1}}
 #lyrchk[data-chlock="0"] .chz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .chz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .chz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .chz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .chsh{border-radius:10px;padding:8px!important}#lyrchk[data-chlock="1"] .chsh{background:var(--soft,#EEF6F5)}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
-#lyrchk .ntz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 3px}#lyrchk[data-chlock="0"] .ntz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .ntz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .ntz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .ntz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}   /* (Oct 26) Notes check boxes = the chord boxes */
+#lyrchk .ntz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 3px}#lyrchk[data-chlock="0"] .ntz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .ntz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .ntz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .ntz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .ntz.ntplay{background:var(--gold-soft,#FDF3D3)!important;box-shadow:0 0 0 2px var(--gold,#D19A12)}   /* (Oct 26) Notes check boxes = the chord boxes */
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
 :root{--hov:rgba(0,0,0,.07)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.09)}}
@@ -2152,7 +2152,7 @@ function seLockSync(){const c=document.querySelector('#songchk .secard');if(!c||
  if(!b){const m=document.getElementById('se-okm');if(!m)return;b=document.createElement('button');b.type='button';b.className='tb';b.id='se-unl';m.parentNode.insertBefore(b,m)}
  b.hidden=!(L||un);b.textContent=L?'Edit (locked)':'Approve again';b.classList.toggle('go',!L);if(L)hint('Approved and locked. Tap Edit to change it.')}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#se-unl');if(!b||!ON)return;e.preventDefault();e.stopPropagation();const k=seLkKey();
- if(seLocked()){UNL.add(k);hint('Unlocked: change it, then tap Approve again.')}else{flush();UNL.delete(k);hint('Approved again and locked.')}seLockSync()},true);
+ if(seLocked()){UNL.add(k);scUnlock(DID,k==='tag'?['tagOk']:k===1?['melodyOK','lyricsOK']:['versesOk']);hint('Unlocked: change it, then tap Approve again.')}else{flush();UNL.delete(k);hint('Approved again and locked.')}seLockSync()},true);
 document.addEventListener('keydown',e=>{if(!seLocked())return;if(e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName||''))return;const mod=e.metaKey||e.ctrlKey;if(e.key===' '||e.key==='Escape'||(mod&&/^[ac]$/i.test(e.key)))return;e.preventDefault();e.stopPropagation();hint('Locked: tap Edit to change it.')},true);
 /* (Oct 21, Chris: 'why is this still the old template?') ONE header + footer for the melody AND chords steps, so they can never drift apart: song name (+ small meter) left, centre group (Levels on chords, Verse buttons on melody), Approve far right; bottom row Melody on / Chords on centred, Play far right. Check: desk-songcheck-test.js 'one frame' tests */
 function seFrame(doc){const mid=CS?'<span class="selv2"><span class="selv">'+LVS.map(k=>'<button type="button" class="tb" data-se="lv" data-lv="'+k+'"><span class="lvn"></span>'+(k==='easy'?'':'<span class="lkb" role="button" tabindex="0" data-se="lk" data-lv="'+k+'"></span>')+'</button>').join('')+'</span><span class="selv" id="se-vt"></span></span>':'<span class="selv" id="se-vt"></span>';
@@ -2523,7 +2523,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v336</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v337</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2541,7 +2541,7 @@ let stats = [], fam = null, answering = null, showRest = false, inbox = [];
 /* (Oct 28) the Lab's own notes table (public key, same as the Lab): the Lessons to check board reads every note (labNotes) and sends Fix notes
    and the whole-lesson approval in the Lab's own shape */
 const LABK = "sb_publishable_jpFAEpr5DI-L95Vln1N2kg_37s0r1Ak", LABSB = "https://trrcspedvsmibdpzwkxt.supabase.co/rest/v1/review_notes";
-let labNotes = [], labNotesMax = 0, labNotesSig = "", labLabels = new Map(), labLabelMax = 0, lessonChecks = [], lcMemo = new Map();
+let labNotes = [], labNotesMax = 0, labNotesSig = "", labLabels = new Map(), labLabelMax = 0, lessonChecks = [], lcMemo = new Map(), labNotesIn = false;   /* labNotesIn: the first full read of the Lab notes is in (Lessons boxes stay blank until then) */
 let labFreshAt = 0;
 async function labFresh(force){
   const lab = stats.find(x => x.id === "lab"); if (!lab || !lab.chapters) return;
@@ -2556,7 +2556,7 @@ async function labFresh(force){
     /* labels only of the Lab 'open' rows (which desk box opened the lesson, screen width) and sign-offs, only the new ones */
     for (let i = 0; i < 30; i++){ const r2 = await fetch(LABSB + "?select=id,label&mark=in.(diag,good,ungood)&id=gt." + labLabelMax + "&order=id.asc&limit=1000", H).catch(() => null);
       const nl = r2 && r2.ok ? await r2.json() : []; for (const x of nl){ labLabels.set(x.id, String(x.label || "")); labLabelMax = Math.max(labLabelMax, +x.id); } if (nl.length < 1000) break; }
-    const sig = notes.length + ":" + labNotesMax + ":" + labLabelMax, nsCh = sig !== labNotesSig; labNotesSig = sig; if (nsCh) lcMemo.clear();
+    const sig = notes.length + ":" + labNotesMax + ":" + labLabelMax, nsCh = sig !== labNotesSig || !labNotesIn; labNotesSig = sig; labNotesIn = true; if (nsCh) lcMemo.clear();
     const handled = lab.handled || 0, live = lab.live || "", perFp = {};
     for (const n of notes){ const mk = n.mark, fp = n.fp || "", lesson = n.lesson || fp.split("|")[0];
       if (!lesson || !["good","ungood","fix","done"].includes(mk)) continue; const k = fp || lesson + "|" + n.card, at = String(n.created_at || "").slice(0, 16);
@@ -3258,6 +3258,7 @@ function morningScreen(seg){
     ${homeLater()}
     ${homeQueue()}
     ${homeShorts()}
+    ${homeYouTube()}
     ${homeSongs()}
     ${homeProjects()}
     ${homeCadence()}
@@ -5103,6 +5104,8 @@ let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null;
 function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); waitBusy.delete("shorts"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; waitBusy.delete("shorts"); }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
 /* (Oct 21, Chris: approved, still said Check) every song save/approve patches the board row on screen AT ONCE; the db write follows. Global: the song editor calls it too */
 /* (Oct 23, Chris: "once I approve something... automatically mark the next column") every song approval asks the queue (queue.py preview_now) to rebuild the player within a minute */
+/* (Oct 28, Chris yes) SONG LOCK IN THE DATABASE (song-lock.sql): an Edit tap on an approved part writes unlock.<approval> = now; the next Approve of it clears it (desk-db.js lockFix). Keys: lyricsOK, melodyOK, versesOk, tagOk, chordsOK, mediumOK, hardOK. */
+function scUnlock(id, keys){ try { const now = new Date().toISOString(), u = {}; (keys || []).forEach(k => { if (k) u[k] = now; }); if (id && Object.keys(u).length) return db.collection("songcheck").doc(id).update({unlock: u}).catch(() => {}); } catch (er) {} }
 function scLocal(id, o){ try { const sr = (scBoard || []).find(x => x.id === id); if (o && (["melodyOK", "versesOk", "tagOk", "chordsOK", "mediumOK", "hardOK"].some(k => o[k]) || (sr && sr.melodyOK && ["lines", "words", "tag", "melodyEditedAt", "chords", "chordsMedium", "chordsHard", "chordsV", "chordsMediumV", "chordsHardV"].some(k => k in o)))) db.collection("stats").doc("preview-want").set({at: new Date().toISOString(), id}).catch(() => {}); } catch (e) {} try { [scBoard, fdScOld].forEach(B => { const r = (B || []).find(x => x.id === id); if (r) Object.assign(r, o); }); } catch (e) {} }   /* (Oct 24, Chris: 'can the approval button be a ping to start the player build') any save that changes an approved song's player pings too (his tag + 'Approve again' on Mary never pinged); the queue builds 20 s after the last ping */
 function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())); waitBusy.delete("songs"); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; waitBusy.delete("songs"); }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
@@ -5450,6 +5453,21 @@ function homeShorts(){
     + (S.length ? fold("shsched", `Scheduled (${S.length})`, `next ${md(nextS.date)} · last ${md(lastS.date)}`, head + S.map(x => row(x.title, shNeed(x), x.schedOn ? 6 : 5, null, "", false, "", {5: x.schedOn, 6: x.date})).join("")) : "")
     + (PR.length ? fold("shpost", `Posting check (${PR.length})`, pRed ? pRed + " red" : "all good", PR.map(prow).join("")) : "")   /* (Oct 25, Chris: i do not need it) Posted this week dropped; the Posting check shows what posted */
     , {top: 1, cc: "var(--kaD85A30)"}); }
+/* (Oct 28, Chris: "a folder called YouTube for my long-form videos ... the same videos on the first column and then more columns to walk me through
+   till I get a final long-form video") YOUTUBE folder: one row per Saturday long video (db ytcheck: n, title, date, lesson, file, mins, kind, ytTitle,
+   steps {cut, clip, final, thumb, sched, posted}), loaded from the Riffs course posting order. The ONE checklist template (sgHead + sgRow, like Songs
+   and Lessons). A box: ok teal, chk gold = his check, mk light gold = Cadence making, fx Fixing, blank = not started; helpers write ytcheck steps. */
+const YTCOLS = ["Cut plan", "Check clip", "Final", "Thumbnail", "Scheduled", "Posted"], YTAB = ["Cut", "Clp", "Fin", "Thm", "Sch", "Pst"], YTK = ["cut", "clip", "final", "thumb", "sched", "posted"];
+var ytRows = [];
+function homeYouTube(){
+  if (!ytRows.length) return "";
+  const md = d => { const p = String(d || "").slice(5, 10).split("-"); return p.length < 2 ? "" : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
+  const L = ytRows.slice().sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))), st = r => r.steps || {};
+  const up = L.filter(r => st(r).posted !== "ok"), P = L.filter(r => st(r).posted === "ok").reverse(), you = up.filter(r => YTK.some(k => st(r)[k] === "chk")).length;
+  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { const c = st(r)[k] || ""; return {c, t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
+  const head = sgHead(YTCOLS, YTAB);
+  return deskFold("", "YouTube", `${you ? you + " to check · " : ""}${up.length} to ship`, deskFold("yt:up", `Upcoming (${up.length})`, esc(up.length ? "next Sat " + md(up[0].date) : "nothing planned"), head + up.map(row).join(""), {def: 1})
+    + (P.length ? deskFold("yt:posted", `Posted (${P.length})`, esc("last Sat " + md(P[0].date)), head + P.map(row).join("")) : ""), {top: 1, cc: "var(--kaB4362A)"}); }
 document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Check opens the Final check pop-up on the desk (view final), never Drive */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
@@ -5529,6 +5547,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
     if (todo) C[8] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (making) C[8] = {c: "mk"}; else if (done) C[8] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
   const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
   FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "player" ? 3 : k === "L1" ? 4 : k === "intro" ? 5 : k === "L2" ? 6 : k === "L3" ? 7 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
+  if (sc && sc.beltDiff && Array.isArray(sc.lines) && sc.lines.length) C[2] = {c: "fx", ak: ["Differs"], red: 1, tip: "Words differ from Lyrics"};   /* (Oct 28, Chris) song belt: the melody words must equal the Lyrics words (song_belt.py); red until fixed */
   return C; }
 function sgUniverse(){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -5542,9 +5561,9 @@ const SGRS = "display:flex!important;flex-direction:row!important;align-items:ce
 const sgHead = (cols, ab) => `<div class="tn" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
 /* ONE checklist row for Songs (SGCOLS) and Lessons (LCCOLS): name + one box per column (q.c ok teal / chk gold / mk + fx light gold / blank) */
 function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = SGRS;
-  const rel = x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
+  const rel = x.sub ? x.sub : x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
   return `<div class="srow" style="${RS}"><b class="sname"${x.full ? ` data-lcname="${esc(x.full)}" title="${esc(x.title)}" role="button" tabindex="0"` : ""} style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px">${x.cells.map((q, i) => { if (q.blank || (cols === SGCOLS && i === 1 && !q.nt)) return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="none" title="${esc(cols[i])}" style="background:transparent;border-color:transparent${q.blank ? ";border:1.5px solid transparent;width:22px;height:14px;box-sizing:border-box;flex:0 0 22px" : ""}"></i>`;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
-    const stk = q.c === "fx" && q.ak && q.ak[0] === "Stuck", tap = (q.c === "chk" || q.c === "ok") && q.id;
+    const stk = q.c === "fx" && q.ak && (q.ak[0] === "Stuck" || q.red), tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
     return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
@@ -5574,6 +5593,8 @@ function lcWho(n){ const fp = String(n.fp || ""), m = /\|chk-(computer|dev|phone
   if (/from=fd-dev/.test(best)) return "dev"; if (/from=fd-phone/.test(best)) return "phone";
   const w = /open shift (\d+)x/.exec(best); return w && +w[1] < 600 ? "phone" : "computer"; }
 function lcState(L){ const id = L.id, hit = lcMemo.get(id); if (hit) return hit;
+  /* (Oct 28, Chris: "lesson one and two turn gold, then snap back to approved") before the Lab notes are read, an approval made in the Lab is unknown: blank boxes, never a gold Check */
+  if (!labNotesIn){ const b = {id, all: false, signed: false}; LCK.forEach(([k]) => { b[k] = {c: ""}; }); return b; }
   const doc = lessonChecks.find(r => r.id === id) || {}, lab = stats.find(x => x.id === "lab") || {}, handled = +lab.handled || 0, R = {}, fpK = {}, fpId = {};
   for (const [k] of LCK) R[k] = {open: new Set(), rounds: new Set(), lastFix: "", labOk: ""};
   let lastFix = "", signed = "";
@@ -5691,7 +5712,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, lv = o && o.dataset.lv, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.fnx === "back") return lyrClose();
   if (x.dataset.fnx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return lyrClose(); }   /* (Oct 22, Chris) the song preview player, approved chords on it; (Oct 26) the pop-up closes so no Approve waits behind the player */
-  const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo, updated: new Date().toISOString()};
+  const fo = Object.assign({}, r.finalOK || {}, {[lv]: new Date().toISOString()}), up = {finalOK: fo};   /* (Oct 28, Chris: Jesus Loves Me Player stuck on Making) an approval that changes nothing in the player never bumps updated (Player/Final turned Making again) */
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, 8); lyrClose(); render(); }, true);
 /* (Oct 22, Chris: "it's probably just easier to see the song as a chord chart ... chords above the lyrics") CHORD SHEET = the Level 1/2/3 check.
    Every verse on one page, the chord over the word it starts on (the chart is shared: a change shows in every verse). Tap a chord, type
@@ -5840,7 +5861,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
     if (lvx){ chS.lv = lvx.dataset.chlvx; chS.cpNote = {}; } if (sc) chS.scope = sc.dataset.chsc; if (dr){ delete chS.charts[chS.lv].V[dr.dataset.chdrop]; chS.dirty.add(chS.lv); } chS.arm = false; chDraw(); return; }
   const x = e.target.closest("[data-chx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
   const act = x.dataset.chx; if (act === "back"){ if (chS.dirty.size && !chS.arm){ chS.arm = true; chDraw(); return; } chS = null; return lyrClose(); }
-  if (act === "edit"){ chS.unl.add(chS.lv); chS.arm = false; chDraw(); return; }
+  if (act === "edit"){ scUnlock(chS.id, [CHLV[chS.lv][1]]); chS.unl.add(chS.lv); chS.arm = false; chDraw(); return; }
   const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
   const r = chS.r, lv = chS.lv, j = CHL.indexOf(lv), now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, tag = r.tag ? JSON.parse(JSON.stringify(r.tag)) : null;
   const put = (L, X) => { const f = CHLV[L][0]; up[f] = chRows(X.S, M, r.intro); if (L !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)])); if (tag) tag[f] = chRows(X.T, TM, false); };
@@ -5867,7 +5888,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   if (x.dataset.plx === "back") return lyrClose();
   if (x.dataset.plx === "open"){ window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_" + (r.labId || id)), "_blank", "noopener"); return lyrClose(); }   /* (Oct 22, Chris) opens THIS song in the player, not the Lab Today page (Lab deep link ?go=songs:song_<id>; Oct 24: the player's own id = songcheck.labId from song-preview-auto.py, e.g. jesuslittle) */
-  const f = o.dataset.f === "introOK" ? "introOK" : "playerOK", now = new Date().toISOString(), up = {[f]: now, updated: now};
+  const f = o.dataset.f === "introOK" ? "introOK" : "playerOK", now = new Date().toISOString(), up = {[f]: now};   /* (Oct 28) no updated: see finalOK */
   try { await db.collection("songcheck").doc(id).update(up); } catch (er) {} Object.assign(r, up); sgCelebrate(id, f === "introOK" ? 5 : 3); lyrClose(); render(); }, true);
 /* (Oct 26, Chris: "this style of checker for the melody on these 8 check songs ... an extra row in between the lyrics and melody columns")
    NOTES CHECK: the melody as numbers over every syllable, like the chord sheet. Only these 8 songs get the Notes column (the old hidden 2nd slot);
@@ -5897,8 +5918,21 @@ function ntSheetHTML(){ const r = ntS.r, L = ntS.lines, ed = !ntS.lock, S = chSe
 function ntDraw(){ const o = document.getElementById("lyrchk"); if (!o || !ntS) return; const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = ntSheetHTML(); n.scrollTop = y;
   o.dataset.chlock = ntS.lock ? "1" : "0";
   const bt = o.querySelector(".lyrbt"), act = ntS.lock ? `<button type="button" class="tb" data-ntx="edit">Edit (locked)</button>` : `<button type="button" class="tb go" data-ntx="ok"${ntS.bad.size ? " disabled" : ""}>Approve</button>`;
-  const bh = `<button type="button" class="tb" data-ntx="back">${ntS.arm ? "Close without saving" : "Back"}</button>` + (ntS.lock ? "" : `<button type="button" class="tb" data-ntx="save"${ntS.dirty && !ntS.bad.size ? "" : " disabled"}>${ntS.saved && !ntS.dirty ? "Saved" : "Save"}</button>`) + act;
-  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ntS.lock ? "1fr 1fr" : "1fr 1fr 1fr"; }
+  const bh = `<button type="button" class="tb" data-ntx="back">${ntS.arm ? "Close without saving" : "Back"}</button><button type="button" class="tb" data-ntx="play">${ntP ? "&#9632; Stop" : "&#9654; Play"}</button>` + (ntS.lock ? "" : `<button type="button" class="tb" data-ntx="save"${ntS.dirty && !ntS.bad.size ? "" : " disabled"}>${ntS.saved && !ntS.dirty ? "Saved" : "Save"}</button>`) + act;
+  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ntS.lock ? "1fr 1fr 1fr" : "1fr 1fr 1fr 1fr"; if (ntP && ntP.key){ const e = o.querySelector(`.ntz[data-ntk="${ntP.key}"]`); if (e) e.classList.add("ntplay"); } }
+/* (Oct 28, Chris: "a play button ... that would highlight the notes as it's going through") PLAY on the Notes sheet: the sheet's own (unsaved) notes on the
+   song board's piano (scPLoad / scPiano, one sound everywhere), at the song's bpm; the box being played lights gold and scrolls into view. Stop / Back / closing stops it. */
+let ntP = null;
+function ntStop(){ if (!ntP) return; try { ntP.c.close(); } catch (e) {} ntP.tm.forEach(clearTimeout); ntP = null; document.querySelectorAll("#lyrchk .ntz.ntplay").forEach(e => e.classList.remove("ntplay")); if (ntS) ntDraw(); }
+async function ntPlay(){ ntStop(); if (!ntS || window.DESK_TEST) return; const r = ntS.r, B = 60 / (+r.bpm || 90), N = [];
+  ntS.lines.forEach((row, li) => ntGroups(row, li).forEach(gp => gp.js.forEach(j => { const n = row[j]; N.push({g: n.g, m: n.m, key: li + ":" + gp.js[0]}); })));
+  N.sort((p, q) => p.g - q.g); if (!N.length) return;
+  const c = new AudioContext(), P = ntP = {c, tm: [], key: null}; ntDraw(); await scPLoad(N.map(n => n.m)); if (ntP !== P) return;
+  const g0 = N[0].g, T = c.currentTime + .3, at = g => T + (g - g0) * B, w0 = performance.now() + 300;
+  N.forEach((n, k) => { scPiano(c, at(n.g), 0, n.m, 1, k + 1 < N.length ? at(N[k + 1].g) : null);
+    P.tm.push(setTimeout(() => { if (ntP !== P) return; document.querySelectorAll("#lyrchk .ntz.ntplay").forEach(e => e.classList.remove("ntplay")); P.key = n.key;
+      const e = document.querySelector(`#lyrchk .ntz[data-ntk="${n.key}"]`); if (e){ e.classList.add("ntplay"); e.scrollIntoView({block: "nearest", behavior: "smooth"}); } }, w0 - performance.now() + (n.g - g0) * B * 1000)); });
+  const last = N[N.length - 1]; P.tm.push(setTimeout(() => { if (ntP === P) ntStop(); }, w0 - performance.now() + ((last.g - g0) * B + 2) * 1000)); }
 function ntOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r || !Array.isArray(r.lines)) return; lyrClose();
   ntS = {id, r, lines: JSON.parse(JSON.stringify(r.lines)), lock: !!r.notesOK, dirty: false, saved: false, arm: false, bad: new Set()};
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.nt = "1";
@@ -5920,16 +5954,17 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-ntch
   const x = e.target.closest("[data-ntx]"); if (!x || !ntS) return; e.preventDefault(); e.stopPropagation();
   const foc = document.querySelector("#lyrchk .ntz:focus"); if (foc) ntSet(foc);
   const act = x.dataset.ntx, r = ntS.r, now = new Date().toISOString();
-  if (act === "back"){ if (ntS.dirty && !ntS.arm){ ntS.arm = true; ntDraw(); return; } ntS = null; return lyrClose(); }
-  if (act === "edit"){ ntS.lock = false; ntDraw(); return; }
+  if (act === "play"){ if (ntP) ntStop(); else ntPlay(); return; }
+  if (act === "back"){ if (ntS.dirty && !ntS.arm){ ntS.arm = true; ntDraw(); return; } ntStop(); ntS = null; return lyrClose(); }
+  if (act === "edit"){ scUnlock(r.id, ["melodyOK"]); ntS.lock = false; ntDraw(); return; }
   if (ntS.bad.size) return;
   const up = {updated: now}; if (ntS.dirty){ up.lines = ntS.lines; up.melodyEditedAt = now; }
-  if (act === "ok") up.notesOK = now; else if (!ntS.dirty) return;
+  if (act === "ok"){ up.notesOK = now; up.unlock = {melodyOK: null}; } else if (!ntS.dirty) return;
   Object.assign(r, up); scLocal(r.id, up); render();
   try { db.collection("songcheck").doc(r.id).update(up).catch(() => {}); } catch (er) {}
   if (act === "save"){ ntS.lines = JSON.parse(JSON.stringify(r.lines)); ntS.dirty = false; ntS.saved = true; ntDraw(); return; }
   sgCelebrate(r.id, 1); ntS = null; lyrClose(); }, true);
-function lyrClose(){ const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); } }
+function lyrClose(){ if (typeof ntStop === "function") ntStop(); const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); } }
 /* (Oct 24, Chris) SONG CHECK RETURN: every Approve closes the check at once, back on the SAME song at the SAME spot (the box sits where it was on screen,
    even if the board re-sorted); the approved box waits a beat gold, flashes the Lab's gold glow, turns teal, then the desk confetti falls. Phone Back closes only the check. */
 let sgMk = null, sgCel = null, sgNavSkip = false;
@@ -5954,7 +5989,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const o = document.getElementById("lyrchk"), id = o && o.dataset.id, r = (scBoard || []).find(q => q.id === id); if (!r) return lyrClose();
   const tx = o.querySelector(".lyrtx").value.trim(), note = o.querySelector(".lyrnote").value.trim(), now = new Date().toISOString(), ed = tx !== String(r.lyricsText || "").trim();
   if (x.dataset.lyrx === "back") return lyrClose();
-  if (x.dataset.lyrx === "unlock"){ o.dataset.lock = "0"; const ta = o.querySelector(".lyrtx"); ta.readOnly = false; ta.focus(); return; }
+  if (x.dataset.lyrx === "unlock"){ scUnlock(id, ["lyricsOK"]); o.dataset.lock = "0"; const ta = o.querySelector(".lyrtx"); ta.readOnly = false; ta.focus(); return; }
   const up = x.dataset.lyrx === "ok" ? {lyricsText: tx, lyricsOK: now, lyricsFix: false, updated: now} : {lyricsText: tx, lyricsOK: "", lyricsFix: true, lyricsNote: note || "(see edits)", lyricsFixAt: now, updated: now};
   if (ed) up.lyricsEdited = now;
   if (x.dataset.lyrx === "ok") sgCelebrate(id, 0); Object.assign(r, up); lyrClose(); render();
@@ -6836,6 +6871,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("goals", ["added","asc"], v => goals = v);
   live("stats", ["updated","desc"], v => { stats = v; lcMemo.clear(); tasks = topTasks(allTasks); labFresh(); });
   live("lessonchecks", ["updated","desc"], v => { lessonChecks = v; lcMemo.clear(); });
+  live("ytcheck", ["date","asc"], v => ytRows = v);
   live("pins", ["added","desc"], v => pins = v);
   live("jobsexpected", ["order","asc"], v => autoJobs = v); live("jobruns", ["order","asc"], v => autoRuns = v); live("alerts", ["order","asc"], v => alerts = v);
   live("reviews", ["order","asc"], v => reviews = v.filter(r => r.status !== "retired" && !/lab\.worshippianoacademy\.com\/[0-9a-f]{12}\//.test(r.url || "")));   /* (Oct 13) Chris: Lab checks live in Lab Test, never on the Front Desk */

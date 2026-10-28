@@ -6,6 +6,12 @@
   "use strict";
   const isObj = v => v && typeof v === "object" && !Array.isArray(v);
   const clone = v => v === undefined ? undefined : JSON.parse(JSON.stringify(v));
+  /* (Oct 28, Chris yes) SONG LOCK RELOCK: song-lock.sql lets a change to an approved part through only while the stored doc carries unlock.<approval>
+     (the Edit tap writes it: window.deskUnlock). Approving again (the approval value changes to something set) clears that unlock in the same write. */
+  function lockFix(name, old, body) {
+    if (name !== "songcheck" || !old || !isObj(body.unlock)) return;
+    for (const k of Object.keys(body.unlock)) if (body.unlock[k] && body[k] && JSON.stringify(body[k]) !== JSON.stringify(old[k])) body.unlock[k] = null;
+  }
   function merge(a, b) {
     const out = Object.assign({}, a);
     for (const k of Object.keys(b)) {
@@ -119,6 +125,7 @@
         async set(data) {
           if (!isObj(data)) throw err("invalid_argument", "set needs an object");
           const body = clone(data), c = cols.get(name), before = c && c.map.get(id);
+          lockFix(name, before && before.data, body);
           put(name, id, body, before ? before.version : 0, true);
           try { const v = await backend.upsert(name, id, body); put(name, id, body, v, true); }
           catch (e) { if (c) { if (before) put(name, id, before.data, before.version, true); else drop(name, id); } throw err("unavailable", String(e && e.message || e)); }
@@ -132,6 +139,7 @@
               const r = await backend.getOne(name, id);
               if (!r) throw err("invalid_argument", "no such document " + name + "/" + id);
               const body = merge(r.data || {}, data);
+              lockFix(name, r.data, body);
               const v = await backend.updateIf(name, id, body, r.version);
               if (v != null) { put(name, id, body, v, true); return; }
             }
