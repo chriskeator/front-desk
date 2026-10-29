@@ -2525,7 +2525,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v345</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v346</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6123,7 +6123,10 @@ function homeSongs(only){
   const RS = SGRS;
   const head = sgHead(SGCOLS, SGAB);
   const U = sgUniverse(), byK = new Map(U.map(x => [x.k, x]));
-  const ord = (a, b) => (b.cells.some(q => q.c === "chk") - a.cells.some(q => q.c === "chk")) || b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title);
+  /* (Oct 28, Chris: "first order is order of completion, second is alphabetical ... and stack those") most approved boxes first; songs whose
+     approved boxes match exactly sit together (earlier columns approved first); A to Z inside each group */
+  const okPat = x => x.cells.map(q => q.c === "ok" ? "1" : "0").join(""), okN = x => x.cells.filter(q => q.c === "ok").length;
+  const ord = (a, b) => okN(b) - okN(a) || okPat(b).localeCompare(okPat(a)) || a.title.localeCompare(b.title);
   /* inside a song-check task: the same template, only its songs */
   if (only){ const W = only === "now" ? U.filter(sgNow).sort(ord) : only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(x => sgRow(x)).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
