@@ -43,6 +43,21 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
 <title>Front Desk</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Figtree:wght@400;600;700;800&display=swap">
 <style>
+/* THE TYPE SCALE (Chris, Oct 28: "Looks good", the 9-step scale; Front Desk/Design scans/text-size-plan.md 7.1).
+   The ONE source of text sizes: every font-size reads one of these. qa/typescale.py reads this file for the scale and
+   stops a push that adds a size off it. Nothing under 11px: a label that does not fit gets shorter text or a wider box. */
+:root {
+  --fs-micro: 11px;   /* meta, key letters on black keys, counters */
+  --fs-small: 12px;   /* labels, tiny buttons, readout labels */
+  --fs-body: 14px;    /* sub lines, hints, row text, buttons */
+  --fs-ui: 15px;      /* answer buttons, lyric word, tile label (phone) */
+  --fs-lead: 18px;    /* tile label (computer), lyric word (wide), popup text */
+  --fs-title: 20px;   /* card heading, popup h3 */
+  --fs-hero: 24px;    /* page title (phone), Today title, count-in small */
+  --fs-big: 32px;     /* page title (computer), big counters */
+  --fs-count: 40px;   /* count-in, big numbers */
+}
+
 /* Daily home, one screen: title, three tabs (Today / Replies / Projects), a paged list. No page scrolling. */
 :root{
   --bg:#FFFDF8; --card:#FFFFFF; --ink:#2A2F34; --muted:#6B7280; --line:#E8E2D4;
@@ -216,26 +231,26 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:16px}
 #lyrchk .lyrbox{background:var(--card,#fff);color:var(--ink);border-radius:14px;width:100%;max-width:80vw;height:min(88vh,900px);display:flex;flex-direction:column;gap:10px;padding:14px;box-sizing:border-box}
 @media (max-width:999px){#lyrchk .lyrbox{max-width:100%}}
-#lyrchk .lyrhd{display:flex;flex-direction:column;gap:2px}#lyrchk .lyrhd b{font-size:17px}#lyrchk .lyrhd span{font-size:12.5px;color:var(--muted)}#lyrchk .lyrhd .lyrcp{color:var(--ink);font-weight:600}
+#lyrchk .lyrhd{display:flex;flex-direction:column;gap:2px}#lyrchk .lyrhd b{font-size:var(--fs-lead)}#lyrchk .lyrhd span{font-size:var(--fs-small);color:var(--muted)}#lyrchk .lyrhd .lyrcp{color:var(--ink);font-weight:600}
 #lyrchk .lyrtx{flex:1;min-height:0;resize:none;font:15px/1.5 inherit;font-family:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
 #lyrchk .lyrnote{font:14px inherit;font-family:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
-#lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--kbFBEFD0);color:var(--kt8A6508)}
-#lyrchk .btfl b.btap{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft,#EEF6F5);color:var(--teal,#0F766E);border:1.5px solid var(--teal,#0F766E)}#lyrchk[data-appr="1"] .bttx{background:var(--soft,#EEF6F5)}#lyrchk[data-appr="1"] [data-btx="fix"],#lyrchk[data-appr="1"] [data-btx="ok"],#lyrchk[data-appr="1"] .lyrnote{display:none}#lyrchk[data-appr="1"] .lyrbt{grid-template-columns:1fr}
+#lyrchk .bttabs{display:flex;gap:6px;flex-wrap:wrap}#lyrchk .bttabs .tb{min-height:36px;padding:4px 12px}#lyrchk .bttabs .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .bttx{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:var(--fs-ui);white-space:pre-wrap}#lyrchk .btfl{display:flex;gap:6px;flex-wrap:wrap;max-height:64px;overflow:auto}#lyrchk .btfl i{font-style:normal;font-size:var(--fs-small);font-weight:600;padding:3px 8px;border-radius:999px;background:var(--kbFBEFD0);color:var(--kt8A6508)}
+#lyrchk .btfl b.btap{font-size:var(--fs-small);font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft,#EEF6F5);color:var(--teal,#0F766E);border:1.5px solid var(--teal,#0F766E)}#lyrchk[data-appr="1"] .bttx{background:var(--soft,#EEF6F5)}#lyrchk[data-appr="1"] [data-btx="fix"],#lyrchk[data-appr="1"] [data-btx="ok"],#lyrchk[data-appr="1"] .lyrnote{display:none}#lyrchk[data-appr="1"] .lyrbt{grid-template-columns:1fr}
 #lyrchk .lyrbt{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 /* (Oct 22, Chris: "apply that lock feature to everything") APPROVED = LOCKED: approved lyrics open read-only with Edit; Approve again locks them */
 #lyrchk[data-lock="1"] [data-lyrx="fix"],#lyrchk[data-lock="1"] [data-lyrx="ok"],#lyrchk[data-lock="1"] .lyrnote,#lyrchk:not([data-lock="1"]) [data-lyrx="unlock"]{display:none}#lyrchk[data-lock="1"] .lyrbt{grid-template-columns:1fr 1fr}#lyrchk[data-lock="1"] .lyrtx{background:var(--soft,#EEF6F5)}
 #songchk .secard.selock #se-ed{pointer-events:none}#songchk .secard.selock .sescroll{background:var(--soft,#EEF6F5)}
 /* (Oct 22, Chris) CHORD SHEET (Levels 1-3): chords above the words, every verse on one page; tap a chord to change it */
-#lyrchk .chsh{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}#lyrchk .chv{margin:0 0 16px}#lyrchk .chv h3{font-size:12.5px;font-weight:700;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
-#lyrchk .chl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 9px;margin:0 0 8px}#lyrchk .chw{display:inline-flex;flex-direction:column;min-width:18px}#lyrchk .chw b{font-weight:500;font-size:16px;white-space:nowrap}
-#lyrchk .chlvb{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}#lyrchk .chlvs{display:flex;gap:8px}#lyrchk .chsc{display:inline-flex;gap:6px;align-items:center;justify-self:start;margin-left:6px;font-size:13px;font-weight:700;color:var(--muted)}#lyrchk .chlvs .tb{width:220px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}#lyrchk .chlvs .tb small{font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap}#lyrchk .chlvs .tb[aria-pressed="true"] small{color:rgba(255,255,255,.85)}#lyrchk .chlvn i{font-style:normal}@media (max-width:699px){#lyrchk .chlvb{grid-template-columns:1fr}#lyrchk .chlvb>span:first-child{display:none}#lyrchk .chlvs{justify-content:center}#lyrchk .chlvs .tb{width:auto;flex:1 1 0;min-width:0;padding:4px 6px}#lyrchk .chlvs .tb small{white-space:normal;font-size:10.5px}#lyrchk .chsc{justify-self:center;margin-left:0}}#lyrchk .chsc .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .chz sup{font-size:75%;vertical-align:super;line-height:0}#lyrchk .chv h3 .chown{font-style:normal;color:var(--gold,#D19A12);text-transform:none;margin-left:6px}#lyrchk .chv h3 .chdrop{min-height:26px;padding:2px 10px;font-size:12px;margin-left:8px;text-transform:none;letter-spacing:0}#lyrchk .chlvb .tb{min-height:38px;padding:4px 16px}#lyrchk .chlvb .tb[aria-pressed="true"]{background:var(--teal,#0F766E);color:var(--ktFFF);border-color:var(--teal,#0F766E)}#lyrchk .lyrbt .tb[disabled]{opacity:.55}
-#lyrchk .chz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 2px}#lyrchk .chi{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}#lyrchk .chi>span:first-child{font-size:13px;color:var(--muted);font-weight:700}
+#lyrchk .chsh{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}#lyrchk .chv{margin:0 0 16px}#lyrchk .chv h3{font-size:var(--fs-small);font-weight:700;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
+#lyrchk .chl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 9px;margin:0 0 8px}#lyrchk .chw{display:inline-flex;flex-direction:column;min-width:18px}#lyrchk .chw b{font-weight:500;font-size:var(--fs-ui);white-space:nowrap}
+#lyrchk .chlvb{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}#lyrchk .chlvs{display:flex;gap:8px}#lyrchk .chsc{display:inline-flex;gap:6px;align-items:center;justify-self:start;margin-left:6px;font-size:var(--fs-small);font-weight:700;color:var(--muted)}#lyrchk .chlvs .tb{width:220px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}#lyrchk .chlvs .tb small{font-size:var(--fs-small);font-weight:600;color:var(--muted);white-space:nowrap}#lyrchk .chlvs .tb[aria-pressed="true"] small{color:rgba(255,255,255,.85)}#lyrchk .chlvn i{font-style:normal}@media (max-width:699px){#lyrchk .chlvb{grid-template-columns:1fr}#lyrchk .chlvb>span:first-child{display:none}#lyrchk .chlvs{justify-content:center}#lyrchk .chlvs .tb{width:auto;flex:1 1 0;min-width:0;padding:4px 6px}#lyrchk .chlvs .tb small{white-space:normal;font-size:var(--fs-micro)}#lyrchk .chsc{justify-self:center;margin-left:0}}#lyrchk .chsc .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .chz sup{font-size:75%;vertical-align:super;line-height:0}#lyrchk .chv h3 .chown{font-style:normal;color:var(--gold,#D19A12);text-transform:none;margin-left:6px}#lyrchk .chv h3 .chdrop{min-height:26px;padding:2px 10px;font-size:var(--fs-small);margin-left:8px;text-transform:none;letter-spacing:0}#lyrchk .chlvb .tb{min-height:38px;padding:4px 16px}#lyrchk .chlvb .tb[aria-pressed="true"]{background:var(--teal,#0F766E);color:var(--ktFFF);border-color:var(--teal,#0F766E)}#lyrchk .lyrbt .tb[disabled]{opacity:.55}
+#lyrchk .chz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:var(--fs-ui);color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 2px}#lyrchk .chi{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}#lyrchk .chi>span:first-child{font-size:var(--fs-small);color:var(--muted);font-weight:700}
 #lyrchk .chsec{border-top:1px solid var(--line);padding-top:10px}#lyrchk .chsec:first-child,#lyrchk .chi+.chsec{border-top:0;padding-top:0}#lyrchk .chsec h3{display:flex;align-items:center;gap:6px;margin:0 0 6px}
-#lyrchk .chlab{width:112px;height:30px;min-height:0;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;background:var(--soft);color:var(--teal);border:1.5px solid var(--teal);box-sizing:border-box;white-space:nowrap}#lyrchk .chlab[data-sect="chorus"]{background:var(--gold-soft);color:var(--pick);border-color:var(--gold)}#lyrchk .chlab:hover{background:var(--hover)}
-#lyrchk .chcp{display:grid;grid-template-columns:72px repeat(8,52px) 88px;grid-template-rows:34px;gap:6px;align-items:center;margin:4px 0 0;width:max-content;max-width:100%}#lyrchk .chcpl{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap}#lyrchk .chcp .tb{height:34px;min-height:0;padding:0 4px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap}#lyrchk .chcpx{display:block;height:34px}#lyrchk .chcpb[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}#lyrchk .chcp .tb[disabled]{opacity:.45;cursor:default}#lyrchk .chcpn{height:18px;line-height:18px;font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
+#lyrchk .chlab{width:112px;height:30px;min-height:0;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;font-size:var(--fs-small);font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;background:var(--soft);color:var(--teal);border:1.5px solid var(--teal);box-sizing:border-box;white-space:nowrap}#lyrchk .chlab[data-sect="chorus"]{background:var(--gold-soft);color:var(--pick);border-color:var(--gold)}#lyrchk .chlab:hover{background:var(--hover)}
+#lyrchk .chcp{display:grid;grid-template-columns:72px repeat(8,52px) 88px;grid-template-rows:34px;gap:6px;align-items:center;margin:4px 0 0;width:max-content;max-width:100%}#lyrchk .chcpl{font-size:var(--fs-small);font-weight:700;color:var(--muted);white-space:nowrap}#lyrchk .chcp .tb{height:34px;min-height:0;padding:0 4px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;white-space:nowrap}#lyrchk .chcpx{display:block;height:34px}#lyrchk .chcpb[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}#lyrchk .chcp .tb[disabled]{opacity:.45;cursor:default}#lyrchk .chcpn{height:18px;line-height:18px;font-size:var(--fs-small);font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:4px}
 @media (max-width:759px){#lyrchk .chcp{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:34px 34px 34px;width:auto}#lyrchk .chcpl{grid-column:1/4;grid-row:1}#lyrchk .chap{grid-column:4;grid-row:1}}
 #lyrchk[data-chlock="0"] .chz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .chz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .chz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .chz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .chsh{border-radius:10px;padding:8px!important}#lyrchk[data-chlock="1"] .chsh{background:var(--soft,#EEF6F5)}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
-#lyrchk .ntz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 3px}#lyrchk[data-chlock="0"] .ntz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .ntz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .ntz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .ntz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .ntz.ntplay{background:var(--gold-soft,#FDF3D3)!important;box-shadow:0 0 0 2px var(--gold,#D19A12)}   /* (Oct 26) Notes check boxes = the chord boxes */
+#lyrchk .ntz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:var(--fs-ui);color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 3px}#lyrchk[data-chlock="0"] .ntz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .ntz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .ntz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .ntz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .ntz.ntplay{background:var(--gold-soft,#FDF3D3)!important;box-shadow:0 0 0 2px var(--gold,#D19A12)}   /* (Oct 26) Notes check boxes = the chord boxes */
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
 :root{--hov:rgba(0,0,0,.15)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.18)}}
@@ -635,7 +650,7 @@ a.tb.rs-fixed{flex-direction:column}
 .mbar{height:10px;border-radius:5px;background:var(--kbEEF0F2);overflow:hidden}.mbar i{display:block;height:10px;background:var(--cc)}
 .chgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .chc{height:54px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:1px;text-align:left;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-left:4px solid var(--cc);border-radius:9px;padding:6px 10px;cursor:pointer;min-width:0}
-.chc b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chc span{font-size:12px;color:var(--muted)}
+.chc b{font-size:var(--fs-body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chc span{font-size:var(--fs-small);color:var(--muted)}
 .chc.done{opacity:.55}.chc.done b::before{content:"\2713  ";color:var(--kt4A7F37)}
 .onebig{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;font:inherit;background:var(--teal);color:var(--teal-ink);border:0;border-radius:12px;padding:14px 16px;cursor:pointer}
 .onebig small{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.85}.onebig b{display:block;font-size:21px;margin:2px 0}.onebig span span{font-size:13px;opacity:.9}
@@ -672,7 +687,7 @@ a.tb.rs-fixed{flex-direction:column}
  .pc3,.chc{height:auto!important;min-height:54px;box-sizing:border-box;border:1px solid var(--line);border-left:4px solid var(--cc,#D19A12);border-radius:9px;background:var(--card);box-shadow:none}
  .pc3{padding:0 8px 0 0;align-items:center}
  .pc3t,.chc{padding:6px 10px!important;gap:1px}
- .pc3t b,.chc b{font-size:14px!important;font-weight:700;line-height:1.25;white-space:normal!important;overflow:visible!important}
+ .pc3t b,.chc b{font-size:var(--fs-body);font-weight:700;line-height:1.25;white-space:normal!important;overflow:visible!important}
  .pc3t span,.chc span{font-size:12px!important;color:var(--muted);white-space:normal!important;overflow:visible!important}
  .msec .chgrid{display:flex!important;flex-direction:column;gap:8px}
 }
@@ -870,16 +885,15 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  .cadwith{align-self:center;font-weight:700;color:var(--teal)} .cadok{margin:6px 0 0;font-weight:700}
  #list .chc.ledge::before,#pop .chc.ledge::before,#list .pc3t.ledge::before{content:"";position:absolute;left:14px;top:12px;bottom:12px;width:5px;border-radius:3px;background:var(--lc)}
  #list .chc[data-rowb],#pop .chc[data-rowb]{padding-right:14px!important}
- #list .chc[data-rowb] > span,#pop .chc[data-rowb] > span{font-size:13px!important}
- .chc b.chw{display:inline;font-size:13px!important;font-weight:700;color:var(--kt97710F)}
+ .chc b.chw{display:inline;font-size:var(--fs-body);font-weight:700;color:var(--kt97710F)}
  .tdetail .tfull{font-size:14px;font-weight:700;color:var(--ink)}
  /* (Oct 8) Chris: the scroll bar sits OUTSIDE the cards, in the right margin */
  #list{scrollbar-width:none}
  /* (Oct 8) Chris: every row inside every folder (Home, Projects, Money Map) is the SAME size: 14px bold title, 13px grey line, same padding and height */
  #list .msec .chgrid > .chc,#list .msec .chgrid > .trow > .chc,#list .msec .chgrid > .pc3 > .pc3t,#list .sublist > .chc,#list .sublist > .trow > .chc{padding-top:9px!important;padding-bottom:9px!important;padding-right:14px!important;min-height:54px!important;box-sizing:border-box}
  #list .msec .chgrid > .pc3,#list .msec .chgrid > .chc,#list .msec .chgrid > .trow{min-height:54px}
- #list .msec .chc > b,#list .msec .pc3t > b{font-size:14px!important;font-weight:700!important;line-height:1.25!important}
- #list .msec .chc > span,#list .msec .pc3t > span{font-size:13px!important;line-height:1.3!important}
+ #list .msec .chc > b,#list .msec .pc3t > b{font-size:var(--fs-body);font-weight:700!important;line-height:1.25!important}
+ #list .msec .chc > span,#list .msec .pc3t > span{line-height:1.3!important}
  /* (Oct 8) Chris: the SAME 10px gap between folders on every tab, so the 4th folder ends at the same spot everywhere */
  #list .msec{margin-top:0!important;margin-bottom:0!important}
  #list > .msec + .msec{margin-top:2px!important}
@@ -1006,8 +1020,8 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 #list .rowon,#list .rowon:hover,#list .rowon > .chc,#list .rowon > .chc:hover,#list .rowon > .pc3t,#list .rowon > .pc3t:hover,#list .msec .chgrid > .chc.rowon,#list .msec .chgrid > .chc.rowon:hover,#list .subon,#list .subon > .pc3t,#list .subon > .pc3t:hover{background:var(--card)!important}   /* (Oct 12, Chris) open things are WHITE inside the gold ring, no soft green */
 #list .tdetail,#list .sublist,#list .mbody,#list .replist{cursor:default}
 /* (Oct 11) Chris: the grey line under a row title is clearly SMALLER than the title (title 14px, line ~80%) */
-#list .msec .chc > span,#list .msec .pc3t > span,#list .chc[data-rowb] > span,#pop .chc[data-rowb] > span,#list .chc > span,#pop .chc > span,#list .pc3t > span{font-size:11.5px!important;line-height:1.3!important}
-#list .chc > span b.chk,#list .chc > span b.kidn,#pop .chc > span b.chk{font-size:inherit}
+#list .msec .chc > span,#list .msec .pc3t > span,#list .chc[data-rowb] > span,#pop .chc[data-rowb] > span,#list .chc > span,#pop .chc > span,#list .pc3t > span{font-size:var(--fs-small);line-height:1.3!important}
+#list .chc > span b.chk,#list .chc > span b.kidn,#pop .chc > span b.chk{font-size:var(--fs-body)}
 /* (Oct 11, Chris) the header he just closed keeps the open colour until he scrolls, then fades back */
 #list .justclosed,#list .justclosed > .chc,#list .justclosed > .pc3t,#list .msec .chgrid > .chc.justclosed,#list .msec > h4.justclosed{background:var(--soft)!important}
 #list .trow,#list .pc3,#list .msec .chgrid > .chc,#list .msec > h4{transition:background-color .2s}
@@ -2544,7 +2558,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v348</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v357</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
