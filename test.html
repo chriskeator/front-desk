@@ -240,9 +240,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 :root{--hov:rgba(0,0,0,.15)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.18)}}
 :root[data-theme="dark"]{--hov:rgba(255,255,255,.18)}
-/* (Oct 28, Chris: ONE hover, strength A; "I want entire rows on my desk to have a hover feature") ROWS: the whole row shades edge to edge when the mouse is anywhere on it; a button/cell under the mouse adds its own shade on top. Colour only: never size, move, filter or a drop shadow. Same tokens + look as the Lab's hover.css. */
-@media (hover:hover){ .trow:hover,.lrow:hover,.mprow:hover,.kidrow:hover,.llrow:hover,.srow:hover,.sublist > .trow:hover{box-shadow:inset 0 0 0 999px var(--hov)} }
-@media (hover:hover){ :is(.trow,.lrow,.mprow,.kidrow,.llrow,.srow) :is(.sname,b,span,div)[role=button]:hover{box-shadow:none} }   /* (Oct 28, Chris: "it's having two hover features") inside a shaded row the name/title adds NO second shade: one row shade only */
+/* (Oct 28, Chris: "The hover should only be on something that's tappable") ONE hover rule above (every [role=button], button, link): a row shades only where it can be tapped; nothing that does nothing shades. Never size or move. */
 
 .moneyframe[hidden]{display:none}
 .today1{display:flex;flex-direction:column;gap:10px;width:100%}
@@ -2546,7 +2544,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v342</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v343</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
