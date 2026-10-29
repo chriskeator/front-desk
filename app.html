@@ -2525,7 +2525,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v344</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v345</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5607,11 +5607,13 @@ function lcState(L){ const id = L.id, hit = lcMemo.get(id); if (hit) return hit;
       if (!/\(desk/.test(labLabels.get(n.id) || "")){ const k = lcWho(n); R[k].labOk = n.mark === "good" ? at : ""; } } }
   for (const [k] of LCK) for (const fp of [...R[k].open]) if (fpId[fp] <= handled){ R[k].open.delete(fp); R[k].rounds.add("h"); }
   const out = {id}; let all = true;
-  LCK.forEach(([k], i) => { const r = R[k], d = doc[k] && doc[k].s === "ok" ? String(doc[k].at || "") : "", okAt = d > r.labOk ? d : r.labOk, v = 1 + r.rounds.size, open = r.open.size > 0;
-    const ok = !!okAt && !open && (!r.lastFix || okAt > r.lastFix), turn = i === 0 || out[LCK[i - 1][0]].c === "ok";
+  LCK.forEach(([k], i) => { const r = R[k], d = doc[k] && doc[k].s === "ok" ? String(doc[k].at || "") : "", okAt = d > r.labOk ? d : r.labOk, open = r.open.size > 0;
+    /* (Oct 28, Chris) a Test push that changed this lesson (L.chg, stamped by lab_status.py) voids an approval older than it: gold Check V<n+1> */
+    const stale = !!okAt && !!L.chg && Date.parse(okAt) <= Date.parse(L.chg), v = 1 + r.rounds.size + (stale ? 1 : 0);
+    const ok = !!okAt && !stale && !open && (!r.lastFix || okAt > r.lastFix), turn = i === 0 || out[LCK[i - 1][0]].c === "ok";
     out[k] = Object.assign({id, lc: k, v}, ok ? {c: "ok", t: "Approved"} : open ? {c: "fx", t: "Fixing V" + (v + 1)} : v > 1 ? {c: "chk", t: "Check V" + v} : turn ? {c: "chk", t: "Check"} : {c: ""});
     if (!ok) all = false; });
-  out.all = all; out.signed = !!signed && signed > lastFix; lcMemo.set(id, out); return out; }
+  out.all = all; out.signed = !!signed && signed > lastFix && !(L.chg && Date.parse(signed) <= Date.parse(L.chg)); lcMemo.set(id, out); return out; }
 function lcToCheck(){ let n = 0; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk") n++; } return n; }
 function lcCount(c){ const S = (c.lessons || []).map(lcState); return S.length && S.every(s => s.all) ? "Approved" : LCK.map(([k, l]) => l + " " + S.filter(s => s[k].c === "ok").length + "/" + S.length).join(" · "); }
 function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) return '<span class="tn">Lab status shows after the next hourly refresh.</span>';
