@@ -225,6 +225,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 /* (Oct 22, Chris) CHORD SHEET (Levels 1-3): chords above the words, every verse on one page; tap a chord to change it */
 #lyrchk .chsh{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}#lyrchk .chv{margin:0 0 16px}#lyrchk .chv h3{font-size:var(--fs-small);font-weight:700;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
 #lyrchk .chl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 9px;margin:0 0 8px}#lyrchk .chw{display:inline-flex;flex-direction:column;min-width:18px}#lyrchk .chw b{font-weight:500;font-size:var(--fs-ui);white-space:nowrap}
+#lyrchk .chm{margin-left:-6px}#lyrchk .chm .chz{border-color:var(--line)}#lyrchk .chi{flex-wrap:wrap}   /* (Oct 29) a box for a chord that starts between words */
 #lyrchk .chlvb{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}#lyrchk .chlvs{display:flex;gap:8px}#lyrchk .chsc{display:inline-flex;gap:6px;align-items:center;justify-self:start;margin-left:6px;font-size:var(--fs-small);font-weight:700;color:var(--muted)}#lyrchk .chlvs .tb{width:220px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}#lyrchk .chlvs .tb small{font-size:var(--fs-small);font-weight:600;color:var(--muted);white-space:nowrap}#lyrchk .chlvs .tb[aria-pressed="true"] small{color:rgba(255,255,255,.85)}#lyrchk .chlvn i{font-style:normal}@media (max-width:699px){#lyrchk .chlvb{grid-template-columns:1fr}#lyrchk .chlvb>span:first-child{display:none}#lyrchk .chlvs{justify-content:center}#lyrchk .chlvs .tb{width:auto;flex:1 1 0;min-width:0;padding:4px 6px}#lyrchk .chlvs .tb small{white-space:normal;font-size:var(--fs-micro)}#lyrchk .chsc{justify-self:center;margin-left:0}}#lyrchk .chsc .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .chz sup{font-size:75%;vertical-align:super;line-height:0}#lyrchk .chv h3 .chown{font-style:normal;color:var(--gold,#D19A12);text-transform:none;margin-left:6px}#lyrchk .chv h3 .chdrop{min-height:26px;padding:2px 10px;font-size:var(--fs-small);margin-left:8px;text-transform:none;letter-spacing:0}#lyrchk .chlvb .tb{min-height:38px;padding:4px 16px}#lyrchk .chlvb .tb[aria-pressed="true"]{background:var(--teal,#0F766E);color:var(--ktFFF);border-color:var(--teal,#0F766E)}#lyrchk .lyrbt .tb[disabled]{opacity:.55}
 #lyrchk .chz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:var(--fs-ui);color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 2px}#lyrchk .chi{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}#lyrchk .chi>span:first-child{font-size:var(--fs-small);color:var(--muted);font-weight:700}
 #lyrchk .chsec{border-top:1px solid var(--line);padding-top:10px}#lyrchk .chsec:first-child,#lyrchk .chi+.chsec{border-top:0;padding-top:0}#lyrchk .chsec h3{display:flex;align-items:center;gap:6px;margin:0 0 6px}
@@ -2552,7 +2553,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v359</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v360</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5670,9 +5671,16 @@ function lcState(L){ const id = L.id, hit = lcMemo.get(id); if (hit) return hit;
   out.all = all; out.signed = !!signed && signed > lastFix && !(L.chg && Date.parse(signed) <= Date.parse(L.chg)); lcMemo.set(id, out); return out; }
 function lcToCheck(){ let n = 0; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk") n++; } return n; }
 function lcCount(c){ const S = (c.lessons || []).map(lcState); return S.length && S.every(s => s.all) ? "Approved" : LCK.map(([k, l]) => l + " " + S.filter(s => s[k].c === "ok").length + "/" + S.length).join(" · "); }
+/* (Oct 29, q-e8c06eb839: "Approve does not fire confetti") an approval made INSIDE the Lab (his end-of-lesson Approve, Oct 28: fcread, fcjesus) reached the
+   desk only through labFresh, so the box turned teal with no flash. Every box that turns teal while the board is on screen (or within 2 min of it) now
+   celebrates like a desk Approve (the same sgCelebrate); a desk tap already celebrating that box is left alone; never on load (no earlier state seen). */
+const lcSeen = new Map();
+function lcCel(L, s){ if (!labNotesIn) return; const t = Date.now();
+  LCK.forEach(([k], i) => { const key = L.id + "|" + k, was = lcSeen.get(key), c = s[k].c; lcSeen.set(key, [c, t]);
+    if (was && was[0] !== "ok" && c === "ok" && t - was[1] < 120000 && !(sgCel && sgCel.id === L.id && sgCel.col === String(i))) sgCelebrate(L.id, i); }); }
 function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) return '<span class="tn">Lab status shows after the next hourly refresh.</span>';
   const head = sgHead(LCCOLS, LCAB), blank = {c: "", blank: 1}, nm = x => "Ch" + (x.i + 1) + " " + x.c.name;
-  const rows = x => (x.c.lessons || []).map(L => { const s = lcState(L); return sgRow({title: "L" + L.n + " " + L.t, full: L.id, cells: LCK.map(([k]) => s[k]).concat([{c: s.all ? "ok" : "", t: "Approved"}])}, LCCOLS); }).join("");
+  const rows = x => (x.c.lessons || []).map(L => { const s = lcState(L); lcCel(L, s); return sgRow({title: "L" + L.n + " " + L.t, full: L.id, cells: LCK.map(([k]) => s[k]).concat([{c: s.all ? "ok" : "", t: "Approved"}])}, LCCOLS); }).join("");
   const live = X.filter(x => x.live), test = X.filter(x => !x.live), nT = test.reduce((a, x) => a + (x.c.lessons || []).length, 0);
   const tBody = test.length === 1 ? head + rows(test[0]) : test.map(x => deskFold("lc:ch" + (x.i + 1), esc(nm(x)) + ` (${(x.c.lessons || []).length})`, esc(lcCount(x.c)), head + rows(x))).join("");
   return (live.length ? deskFold("lc:live", `Live (${live.length})`, "shipped chapters", head + live.map(x => sgRow({title: nm(x), cells: [blank, blank, blank, {c: "ok", t: "Live"}]}, LCCOLS)).join("")) : "")
@@ -5819,18 +5827,21 @@ const chTxt = (A, a, b) => chRuns(chInA(A, a, b)).map(x => x.k).join(" ");
 function chParts(k){ const m = /^([b#♭♯]?[1-7])(m(?!aj))?(.*?)(\/[b#♭♯]?[1-7])?$/.exec(String(k)); if (!m) return [String(k), "", ""]; const x = (m[3] || "").replace(/^sus/, ""); return [m[1] + (m[2] || ""), x || (m[3] ? "4" : ""), m[4] || ""]; }
 const chFmt = t => t.split(" ").filter(Boolean).map(k => { const [a, x, s] = chParts(k); return esc(a) + (x ? `<sup>${esc(x)}</sup>` : "") + esc(s); }).join(" ");
 const chW = t => t.split(" ").filter(Boolean).reduce((n, k, i) => { const [a, x, s] = chParts(k); return n + (i ? 1 : 0) + a.length + s.length + Math.ceil(x.length * .75); }, 0);
+const chBoxes = (P, cwf, slotf, word) => P.map(([pa, pb], j) => `<span class="chw${j ? " chm" : ""}${cwf(pa, pb)}">${slotf(pa, pb, j)}<b>${j ? "&nbsp;" : esc(word)}</b></span>`).join("");
 function chSheetHTML(){ const r = chS.r, M = r.meter || 4, vs = btVerses(r).filter(v => v === 1 || chVerseWords(r, v).length), out = [], L = chS.lv, ed = chEditable(L), own = L !== "L1" && ed && chS.scope === "verse";
   const W1 = chVerseWords(r, 1), f1 = W1.length ? W1[0].g : 0, a0 = Math.min(f1 - 4 * M, ...CHL.flatMap(k => chInA(chArr(k, "S"), -1e9, f1).map(c => c.g)));
   const slot = (a, b, src, v, key) => { const t = chTxt(chArr(L, src, v), a, b), n = Math.max(1, ...CHL.map(k => chW(chTxt(chArr(k, src, v), a, b))));
     return `<span class="chz" style="min-width:calc(${n}ch + 6px)" data-chk="${key}" data-src="${src}" data-v="${v || ""}" data-a="${a}" data-b="${b === Infinity ? "inf" : b}" data-raw="${esc(t)}"${!ed || !(b > a) ? "" : ` contenteditable="true" spellcheck="false" inputmode="text"`}>${chFmt(t)}</span>`; };
+  /* (Oct 29, Chris) A BOX FOR EVERY CHORD: a chord that starts where no word starts (a held note, e.g. the 5 over bar 8 of "me!") gets its own small box right after the word, in time order; the word's own box holds only the chord on the word. Every level shares the same boxes so the levels line up. */
+  const pieces = (a, b, src, v) => { const gs = new Set(); CHL.forEach(k => chInA(chArr(k, src, v), a, b).forEach(c => { if (c.g > a + 1e-4) gs.add(chR6(c.g)); })); const m = [...gs].sort((p, q) => p - q); return [a, ...m].map((x, i) => [x, i < m.length ? m[i] : b]); };
   const CG = scChg(r, CHLV[L][1]), cw = (src, v, a, b) => CG.length && scChgIn(CG, src === "T" ? "T" : v || 1, a, b) ? " chgd" : "";   /* (Oct 29) changed spots */
   if (CG.length) out.push(scChgNote(CG));
   const words = (W, src, v, Mx) => chLines(r, W, Mx).map(l => `<div class="chl">` + l.map(i => { const [a, b] = chSpan(W, i), lo = src === "T" || v === 1 ? a : Math.max(a, 0), hi = src === "T" || v === 1 ? b : Math.max(b, 0);
-    return `<span class="chw${cw(src, v, a, b)}">${slot(lo, hi, src, v, (src === "T" ? "t" : "v" + v) + "w" + i)}<b>${esc(W[i].w)}</b></span>`; }).join("") + `</div>`).join("");
-  if (CHL.some(k => chInA(chArr(k, "S"), a0, f1).length) || ed) out.push(`<div class="chi${cw("V", 1, -1e9, f1)}"><span>Intro</span>${slot(a0, f1, "S", "", "intro")}</div>`);
+    return chBoxes(pieces(lo, hi, src, v), (pa, pb) => cw(src, v, pa, pb), (pa, pb, j) => slot(pa, pb, src, v, (src === "T" ? "t" : "v" + v) + "w" + i + (j ? "m" + j : "")), W[i].w); }).join("") + `</div>`).join("");
+  if (CHL.some(k => chInA(chArr(k, "S"), a0, f1).length) || ed) out.push(`<div class="chi${cw("V", 1, -1e9, f1)}"><span>Intro</span>${pieces(a0, f1, "S", "").map(([pa, pb], j) => slot(pa, pb, "S", "", j ? "intro" + j : "intro")).join("")}</div>`);
   const secs = vs.length === 1 ? chS.secs : null;   /* (Oct 23) sections split the one long verse into labelled blocks */
   const bwords = (W, ids, an) => chLines(r, ids.map(i => ({g: W[i].g - an, w: W[i].w})), M).map(l => `<div class="chl">` + l.map(x => { const i = ids[x], [a, b] = chSpan(W, i);
-    return `<span class="chw${cw("V", 1, a, b)}">${slot(a, b, "V", 1, "v1w" + i)}<b>${esc(W[i].w)}</b></span>`; }).join("") + `</div>`).join("");
+    return chBoxes(pieces(a, b, "V", 1), (pa, pb) => cw("V", 1, pa, pb), (pa, pb, j) => slot(pa, pb, "V", 1, "v1w" + i + (j ? "m" + j : "")), W[i].w); }).join("") + `</div>`).join("");
   vs.forEach(v => { const W = chVerseWords(r, v); if (!W.length) return; const mine = L !== "L1" && !!chView(L).V[v];
     if (secs && v === 1){ const by = secs.map(() => []); W.forEach((w, i) => by[chSecOf(secs, w.g)].push(i));
       secs.forEach((x, k) => { const ot = secs.map((q, j) => j).filter(j => j !== k && secs[j].t === x.t).slice(0, CHCP_N), sel = chS.cpSel[k] || new Set();
@@ -5910,7 +5921,7 @@ function chSetSlot(el){ if (!chS || !chEditable(chS.lv)) return true; const L = 
   if (T.join(" ") === (el.dataset.raw || "")) return true;
   if (T.some(k => !scParse(k))){ el.classList.add("bad"); return false; } el.classList.remove("bad");
   if (src === "T") X.T = chEdit(X.T, a, b, T, M);
-  else if (L === "L1" || chS.scope !== "verse" || el.dataset.chk === "intro"){ X.S = chEdit(X.S, a, b, T, M); if (el.dataset.chk !== "intro") Object.keys(X.V).forEach(k => { X.V[k] = chEdit(X.V[k], a, b, T, M); }); }   /* All verses = every verse, own charts too */
+  else if (L === "L1" || chS.scope !== "verse" || /^intro/.test(el.dataset.chk)){ X.S = chEdit(X.S, a, b, T, M); if (!/^intro/.test(el.dataset.chk)) Object.keys(X.V).forEach(k => { X.V[k] = chEdit(X.V[k], a, b, T, M); }); }   /* All verses = every verse, own charts too */
   else X.V[v] = chEdit(X.V[v] || X.S, a, b, T, M);   /* This verse: the verse gets its own chart */
   chS.dirty.add(L); chS.arm = false; chDraw(); return true; }
 function chRows(L, M, intro){ const B = 4 * M, off = (intro || L.some(c => c.g < 0)) ? 1 : 0, rows = [];
@@ -6062,6 +6073,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const tx = o.querySelector(".lyrtx").value.trim(), note = o.querySelector(".lyrnote").value.trim(), now = new Date().toISOString(), ed = tx !== String(r.lyricsText || "").trim();
   if (x.dataset.lyrx === "back") return lyrClose();
   if (x.dataset.lyrx === "unlock"){ scUnlock(id, ["lyricsOK"]); o.dataset.lock = "0"; const ta = o.querySelector(".lyrtx"); ta.readOnly = false; ta.focus(); return; }
+  /* (Oct 29, Chris: "do 1 tap") Lyrics Save = Approve in ONE tap: his own save keeps the words approved (no gold second step). Decided: never add a second Approve here. */
   const up = x.dataset.lyrx === "ok" ? {lyricsText: tx, lyricsOK: now, lyricsFix: false, updated: now} : {lyricsText: tx, lyricsOK: "", lyricsFix: true, lyricsNote: note || "(see edits)", lyricsFixAt: now, updated: now};
   if (ed) up.lyricsEdited = now;
   if (!(await scSave(id, up))) return;
