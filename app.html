@@ -2525,7 +2525,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v347</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v348</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2645,7 +2645,7 @@ function askList(){ const L = tasks.filter(x => x.heldOffToday && !x.done && !x.
   const sk = askSkip.filter(id => L.some(x => x.id === id)); if (sk.length >= L.length) askSkip.length = 0;
   return L.filter(x => !askSkip.includes(x.id)).concat(askSkip.map(id => L.find(x => x.id === id)).filter(Boolean)); }
 function asksHTML(){ const L = askList(), a = L[0]; if (!a) return `<p class="note">Nothing waiting.</p>`;
-  const done = "";
+  const done = eightBtns(a);   /* (Oct 28, Chris: "there's no approve button") the ask uses the one 8-button block like every row (Approve = Looks good / Yes, Fix = Fix / No) */
   return `<div class="askq" data-askof="${esc(a.id)}"><p class="tn">${esc([a.project, L.length + (L.length === 1 ? " question" : " questions") + " left"].filter(Boolean).join(" \u00b7 "))}</p><p class="askt"><b>${esc(a.short || a.title)}</b></p>${a.note ? `<p class="tn">${esc(String(a.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${kindHTML(a)}${done}${L.length > 1 ? `<div class="kyn"><button type="button" class="tb" data-asknext="1">Next</button></div>` : ""}</div>`; }
 function waitLive(t){
   if (t.wait === "asks"){ const L = askList(); return {n: L.length, first: L[0], title: "Questions for you: " + L.length}; }
