@@ -218,9 +218,12 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 #lyrchk[data-chlock="0"] .chz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .chz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .chz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .chz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .chsh{border-radius:10px;padding:8px!important}#lyrchk[data-chlock="1"] .chsh{background:var(--soft,#EEF6F5)}#lyrchk .lyrbt .tb{justify-content:center;text-align:center;min-height:44px}
 #lyrchk .ntz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:15px;color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 3px}#lyrchk[data-chlock="0"] .ntz{cursor:text;background:var(--soft,#EEF6F5)}#lyrchk[data-chlock="1"] .ntz{background:var(--card,#fff)}#lyrchk[data-chlock="0"] .ntz:focus{box-shadow:0 0 0 2px var(--teal,#0F766E)}#lyrchk .ntz.bad{background:var(--red-soft,#FDECEA)!important;color:var(--red,#B42318)}#lyrchk .ntz.ntplay{background:var(--gold-soft,#FDF3D3)!important;box-shadow:0 0 0 2px var(--gold,#D19A12)}   /* (Oct 26) Notes check boxes = the chord boxes */
 @media (hover:hover){ [role=button]:hover, [data-shortrow]:hover, [data-songchk]:hover{box-shadow:inset 0 0 0 999px var(--hov);cursor:pointer} }   /* (Oct 20, Chris) EVERY clickable thing (song + Shorts column boxes too) changes colour on hover: colour only, never moves; token --hov = light + dark */
-:root{--hov:rgba(0,0,0,.07)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.09)}}
-:root[data-theme="dark"]{--hov:rgba(255,255,255,.09)}
+:root{--hov:rgba(0,0,0,.15)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hov:rgba(255,255,255,.18)}}
+:root[data-theme="dark"]{--hov:rgba(255,255,255,.18)}
+/* (Oct 28, Chris: ONE hover, strength A; "I want entire rows on my desk to have a hover feature") ROWS: the whole row shades edge to edge when the mouse is anywhere on it; a button/cell under the mouse adds its own shade on top. Colour only: never size, move, filter or a drop shadow. Same tokens + look as the Lab's hover.css. */
+@media (hover:hover){ .trow:hover,.lrow:hover,.mprow:hover,.kidrow:hover,.llrow:hover,.srow:hover,.sublist > .trow:hover{box-shadow:inset 0 0 0 999px var(--hov)} }
+
 .moneyframe[hidden]{display:none}
 .today1{display:flex;flex-direction:column;gap:10px;width:100%}
 .today1.tdesk{flex:1;min-height:0}
@@ -280,7 +283,7 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 .txhead{display:none;font-size:12.5px;font-weight:700;color:var(--muted);border-bottom:2px solid var(--line);padding-block:7px}
 .txr{width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;min-height:50px}
 .txr:last-child{border-bottom:0}
-.txr:hover,.txr.on{background:var(--hover)}
+.txr.on{background:var(--hover)} @media (hover:hover){.txr:hover{box-shadow:inset 0 0 0 999px var(--hov)}}
 .c-date{font-size:13px;color:var(--muted);white-space:nowrap}
 .c-acct,.c-cat{display:none;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .c-desc{min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -574,7 +577,7 @@ a.tb.rs-fixed{flex-direction:column}
 .fcard h4{margin:0;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--teal);display:flex;justify-content:space-between}.fcard h4 i{font-style:normal;color:var(--muted);letter-spacing:0;text-transform:none;font-weight:700}
 .fbars{display:flex;flex-direction:column;align-items:center;width:100%}
 .fbar{border:0;font-family:inherit;cursor:pointer}
-@media (hover:hover){.fbar:hover{filter:brightness(.9);box-shadow:0 0 0 2px var(--ink)}}
+@media (hover:hover){.fbar:hover{box-shadow:inset 0 0 0 999px var(--hov)}}
 .fshare{display:flex;flex-direction:column;gap:5px}
 .fline{position:relative;flex:1;min-height:160px}.fline svg{position:absolute;inset:0}.fline .ax{font-size:11px;fill:var(--muted);font-family:var(--body)}.fbub{position:absolute;display:none;flex-direction:column;align-items:center;gap:1px;background:var(--card);border:1px solid var(--teal);border-radius:9px;padding:4px 8px;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,.12);pointer-events:none}
 .fsr{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr) 70px 44px;gap:10px;align-items:center;font-size:13.5px}
@@ -865,7 +868,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  #list .today1.morning,#list .pboard,#list .mleft{gap:10px!important;row-gap:10px!important}
  /* (Oct 8) Chris: Ships this week rows, ship day lined up on the far right. (Oct 12) Chris: each row OPENS like any to-do (Go to test, Done...) */
  #list .chc.shiprow{display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;cursor:default}
- #list .chc.shiprow[data-tlinks]{cursor:pointer} #list .chc.shiprow[data-tlinks]:hover{background:rgba(42,47,52,.06)!important}   /* (Oct 12) only rows with something to test open */
+ #list .chc.shiprow[data-tlinks]{cursor:pointer} #list .chc.shiprow[data-tlinks]:hover{box-shadow:inset 0 0 0 999px var(--hov)}   /* (Oct 12) only rows with something to test open */
  #list .chc.shiprow .shipday{font-style:normal;font-size:13px;font-weight:700;color:var(--ktB4582F);white-space:nowrap;margin-left:10px}
  /* (Oct 8) Songs: step count on the far right of each song, steps strip inside */
  #list .chc.songrow{position:relative;padding-right:74px!important}
@@ -901,11 +904,11 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 /* (Oct 8) Chris: anything clickable shows a hover (computer) */
 @media (hover:hover){
  #list .msec > h4{cursor:pointer;transition:background .12s}
- #list .msec > h4:hover{background:rgba(42,47,52,.05)}
+ #list .msec > h4:hover{box-shadow:inset 0 0 0 999px var(--hov)}
  #list .chc:not(.shiprow),#list .pc3t,#pop .chc{cursor:pointer;transition:background .12s}
- #list .chc:not(.shiprow):hover,#list .pc3t:hover,#pop .chc:hover{background:rgba(42,47,52,.06)!important}
- .sortbtn:hover,.sortmenu button:hover,.songsort .tb:hover,.tdbtns .tb:hover,.revlist .tb:hover,.replist .btn:hover,.repf .btn:hover,.sertog:hover,.fpers button:hover,#bar button:hover,.tabs button:hover,[data-tab]:hover{filter:brightness(.94)}
- .gobtn:hover,.tb.go:hover,.onebig:hover{filter:brightness(.88)}   /* (Oct 15) Chris: hover on EVERY clickable; 1.08 cancelled the inset shade */
+ #list .chc:not(.shiprow):hover,#list .pc3t:hover,#pop .chc:hover{box-shadow:inset 0 0 0 999px var(--hov)}
+ .sortbtn:hover,.sortmenu button:hover,.songsort .tb:hover,.tdbtns .tb:hover,.revlist .tb:hover,.replist .btn:hover,.repf .btn:hover,.sertog:hover,.fpers button:hover,#bar button:hover,.tabs button:hover,[data-tab]:hover{box-shadow:inset 0 0 0 999px var(--hov)}
+ .gobtn:hover,.tb.go:hover,.onebig:hover{box-shadow:inset 0 0 0 999px var(--hov)}   /* (Oct 15) Chris: hover on EVERY clickable; 1.08 cancelled the inset shade */
 }
 /* (Oct 10) Chris: Give to Cadence on its own full-width row under the to-do buttons (it ran off the phone screen) */
 .cadrow{margin-top:6px}.cadrow .tb{display:block;width:100%;box-sizing:border-box;text-align:center;font-size:15px;font-weight:800;padding:11px 8px;white-space:normal}.cadrow .cadwith{display:block;text-align:center;font-weight:700;color:var(--teal);padding:6px 0}
@@ -980,7 +983,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 .kapp .mprow{box-sizing:border-box}
 .mpdet .fsr{grid-template-columns:minmax(0,120px) minmax(0,1fr) 54px 36px;gap:6px;font-size:12.5px}
 .mpsort{display:flex;gap:4px;justify-content:center}.mpsort button{font-size:12px!important;padding:3px 10px}.mpsort button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-@media (hover:hover){ .mprow:hover,.mpseg button:hover,.mpsort button:hover{filter:brightness(.94)} }
+@media (hover:hover){ .mprow:hover,.mpseg button:hover,.mpsort button:hover{box-shadow:inset 0 0 0 999px var(--hov)} }
 /* (Oct 11) Chris: an OPEN row is ONE block: the header row gets the same colour as the part that opens (left colour edge kept) */
 #list .rowon,#list .rowon:hover,#list .rowon > .chc,#list .rowon > .chc:hover,#list .rowon > .pc3t,#list .rowon > .pc3t:hover,#list .msec .chgrid > .chc.rowon,#list .msec .chgrid > .chc.rowon:hover,#list .subon,#list .subon > .pc3t,#list .subon > .pc3t:hover{background:var(--card)!important}   /* (Oct 12, Chris) open things are WHITE inside the gold ring, no soft green */
 #list .tdetail,#list .sublist,#list .mbody,#list .replist{cursor:default}
@@ -994,7 +997,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
    while he scrolls through what opened; tap to close. overflow:clip (not hidden) so pinning works inside the rounded folder */
 #list .msec{overflow:clip!important}
 #list .msec > h4{position:sticky;top:0;z-index:3;background:inherit}
-@media (hover:hover){ #list .msec > h4:hover{background:inherit;background-image:linear-gradient(rgba(127,127,127,.08),rgba(127,127,127,.08))} }
+/* (Oct 28) the h4 hover is the shared shade above */
 #list .fdstick{position:sticky!important;z-index:4}   /* (Oct 18, Chris phone screenshot) the pinned open row sits ABOVE its blurred folder header (z 3), never under it */
 #list .msec > h4.nostick{position:relative;box-shadow:none}
 #list .msec:has(.tdetail) > h4{position:relative!important;box-shadow:none!important}   /* (Oct 18, Chris phone: header ghost after leaving the Lab) an OPEN TO-DO = its own header is the one frozen header; the folder header never pins over it (CSS, no timing) */
@@ -2523,7 +2526,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v340</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v341</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
