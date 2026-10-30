@@ -2553,7 +2553,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v365</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v366</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2679,7 +2679,7 @@ function waitLive(t){
   if (t.wait === "asks"){ const L = askList(); return {n: L.length, first: L[0], title: "Questions for you: " + L.length}; }
   if (waitBusy.has(t.wait)) return null;
   if (t.wait === "songs"){ if (scBoard === null) return null; const L = sgUniverse().filter(sgNow); let n = 0, first = null;   /* (Oct 21) live songs count too: their Level 1-3 cells are tappable gold */
-    L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => x.cells.forEach(q => { if (q.c === "chk" && q.id){ n++; if (!first) first = q; } }));
+    L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => sgChk(x).forEach(q => { if (q.id){ n++; if (!first) first = q; } }));
     n = L.length;   /* (Oct 28, Chris: '85 songs to check') the count is SONGS going out now, not their gold boxes */
     return {n, first, title: "Songs to check: " + n}; }
   if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
@@ -5621,7 +5621,7 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   else if (sc && sc.orig && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
   else if (sc && sc.orig) C[2] = {c: "mk"}; else if (plan) C[2] = {c: "mk"};   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
   const LV = ["chordsOK", "mediumOK", "hardOK"], LVC = [3, 5, 6], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : (sc.melodyOK && sc.previewAt && !scVersesLeft(sc))); if (sc && sc[f]) C[LVC[j]] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[LVC[j]] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; });
+  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : (sc.melodyOK && sc.previewAt && !scVersesLeft(sc))); if (sc && sc[f]) C[LVC[j]] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[LVC[j]] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; else if (!j && sc && sc.melodyOK && !lvOld && !scVersesLeft(sc)) C[3] = {c: "mk"}; });   /* (Oct 30, Chris: Row Row Row's Level 1 sat empty while its player built) Melody approved, player on its way = Making, never an empty box */
   /* (Oct 27, Chris: "set every song's intro to gold check intro") INTRO: gold Check on every song with an intro row until his own Approve tap (songcheck.introOK); his row ticks are untouched */
   /* (Oct 29, Chris chat 75: "if there's no level one chords, then the intro cannot be checked") the Intro plays Level 1's chords: white, no tap,
      until Level 1 is Approved; the database clears an Intro approval without Level 1 too (song-lock-map.json "needs", song_changed) */
@@ -6240,7 +6240,9 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
    ships within 7 days (a release date, the Nov 1 Christmas list) or is already live. Going out now = Today only; every other song = the Songs folder. */
 /* (Oct 30, Chris: "sort my 32 songs to check into two separate folders ... Christmas pushed to next week") ship list = today's Songs to check; every other song with a gold box coming up = the Next week folder. Change the list once per ship. */
 const SGSHIP = new Set(["jesuslovesthelittlechildren", "joyfuljoyful", "happybirthday", "rowrowrowyourboat"]);
-function sgSoon(x){ if (!x || !x.cells || !x.cells.some(q => q.c === "chk")) return false; if (SGLIVE.includes(x.k) || SGSHIP.has(x.k)) return true;
+/* (Oct 30, Chris: Level 2 is months away, "when the final check is okay, I want them removed from the list") a gold Level 2 / Level 3 box does not count as to check. Back on with the slash chords chapter: empty this set. */
+const SGLVWAIT = new Set([5, 6]), sgChk = x => x.cells.filter((q, i) => q.c === "chk" && !SGLVWAIT.has(i));
+function sgSoon(x){ if (!x || !x.cells || !sgChk(x).length) return false; if (SGLIVE.includes(x.k) || SGSHIP.has(x.k)) return true;
   const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
 function sgNow(x){ return sgSoon(x) && SGSHIP.has(x.k); }
 function sgNext(x){ return sgSoon(x) && !SGSHIP.has(x.k); }
@@ -6264,11 +6266,11 @@ function homeSongs(only){
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
   const UF = U.filter(x => !sgSoon(x)), fNext = U.filter(sgNext).sort(ord);   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check; the rest coming up only in Next week */
   const fX = UF.filter(inXm).sort(ord), fK = UF.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = UF.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = UF.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = UF.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
-  const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0);
+  const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
     return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   const secN = fold("next", "Next week", "after this ship", fNext) + fold("xmas", "Christmas", "Nov 8 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
-  const mine = UF.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
+  const mine = UF.reduce((t, x) => t + sgChk(x).length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
   const CR = [].filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
