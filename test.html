@@ -2572,7 +2572,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v362</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v363</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5536,15 +5536,46 @@ function homeShorts(){
    and Lessons). A box: ok teal, chk gold = his check, mk light gold = Cadence making, fx Fixing, blank = not started; helpers write ytcheck steps. */
 const YTCOLS = ["Cut plan", "Check clip", "Final", "Thumbnail", "Scheduled", "Posted"], YTAB = ["Cut", "Clp", "Fin", "Thm", "Sch", "Pst"], YTK = ["cut", "clip", "final", "thumb", "sched", "posted"];
 var ytRows = [];
+const YTPOP = ["cut", "clip", "final", "thumb"], YTNM = {cut: "Cut plan", clip: "Check clip", final: "Final", thumb: "Thumbnail"};
 function homeYouTube(){
   if (!ytRows.length) return "";
   const md = d => { const p = String(d || "").slice(5, 10).split("-"); return p.length < 2 ? "" : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
   const L = ytRows.slice().sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))), st = r => r.steps || {};
   const up = L.filter(r => st(r).posted !== "ok"), P = L.filter(r => st(r).posted === "ok").reverse(), you = up.filter(r => YTK.some(k => st(r)[k] === "chk")).length;
-  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { const c = st(r)[k] || ""; return {c, t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
+  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { const c = st(r)[k] || ""; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
   const head = sgHead(YTCOLS, YTAB);
   return deskFold("", "YouTube", `${you ? you + " to check · " : ""}${up.length} to ship`, deskFold("yt:up", `Upcoming (${up.length})`, esc(up.length ? "next Sat " + md(up[0].date) : "nothing planned"), head + up.map(row).join(""), {def: 1})
     + (P.length ? deskFold("yt:posted", `Posted (${P.length})`, esc("last Sat " + md(P[0].date)), head + P.map(row).join("")) : ""), {top: 1, cc: "var(--kaB4362A)"}); }
+/* (Oct 30, Chris: gold Check in Check clip did nothing) YouTube boxes (Cut plan, Check clip, Final, Thumbnail) open a pop-up IN PLACE in the ONE Short pop-up frame (#shortchk, shcard/shv/shnote/shbtns, like shOpen).
+   The file = ytcheck urls.<step> (helpers write it: a Drive file link, a direct video link or an image link); no link = the box says so. Approve writes steps.<k>='ok' ONLY on his tap;
+   Fix writes notes.<k> + steps.<k>='fx' + a queue row (same shape as the A/B note). */
+let ytOpen = null;
+function ytUrl(u){ u = String(u || "").trim(); if (!u) return ""; const m = u.match(/drive\.google\.com\/file\/d\/([^\/?#]+)/) || u.match(/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([^&#]+)/); return m ? "https://drive.google.com/file/d/" + m[1] + "/preview" : u; }
+function ytMedia(u, nm){ const d = ytUrl(u); if (!d) return `<div class="shfwait" style="padding:24px 12px;text-align:center;font-size:15px">No link on this row yet for ${esc(nm)}. Cadence has to add it before you can check it here.</div>`;
+  if (/drive\.google\.com\/file\/d\//.test(d)) return `<iframe src="${esc(d)}" allow="autoplay; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>`;
+  if (/\.(jpe?g|png|webp|gif)(\?|#|$)/i.test(d)) return `<img id="shthumb" src="${esc(d)}" alt="${esc(nm)}">`;
+  return `<video id="shvid" src="${esc(d)}" controls playsinline preload="auto"></video><span class="shtime" id="shtime">0:00.0</span>`; }
+function ytDraw(){ const r = (ytRows || []).find(x => x.id === ytOpen.id); if (!r){ ytClose(); return; } const k = ytOpen.k, nm = YTNM[k], ans = (r.steps || {})[k], url = (r.urls || {})[k], note = ytOpen.note != null ? ytOpen.note : ((r.notes || {})[k] || "");
+  const noUrl = !ytUrl(url), img = /\.(jpe?g|png|webp|gif)(\?|#|$)/i.test(ytUrl(url)) || k === "thumb";
+  const box = `<div class="shbody"><div class="shv${img && !noUrl ? " shimg" : ""}" style="${noUrl ? "aspect-ratio:auto;min-height:90px;background:var(--soft)" : "aspect-ratio:16/9;width:100%;flex:1"}">${ytMedia(url, nm)}</div></div>`;
+  const nb = `<input class="shnote" id="ytnote" type="text" placeholder="Fix note (what is wrong)" value="${esc(note)}"><div class="shbtns" style="grid-template-columns:1fr 1.4fr"><button type="button" class="tb" data-ytx="close">Close</button><button type="button" class="tb" id="ytmain" data-ytx="ok"></button></div>`;
+  document.getElementById("shortchk").innerHTML = `<div class="shbg" data-ytx="close"></div><div class="shcard${ans === "ok" ? " ok" : ""}" role="dialog" aria-modal="true" style="overflow:auto"><div class="shh"><span class="scpill">${esc(nm)}</span><button type="button" class="tb" data-ytx="close">Close</button></div>`
+    + (ans === "ok" ? `<div class="okbar">&#10003; ${esc(nm)} approved</div>` : "") + `<div class="sht">${esc(r.title || "")}</div>` + (r.ytTitle ? `<div class="shsrc">${esc(r.ytTitle)}</div>` : "") + box + nb + `</div>`; ytMain(); }
+function ytMain(){ const b = document.getElementById("ytmain"); if (!b || !ytOpen) return; const r = (ytRows || []).find(x => x.id === ytOpen.id), el = document.getElementById("ytnote"), fix = el && el.value.trim(), ok = r && (r.steps || {})[ytOpen.k] === "ok";
+  b.className = "tb " + (fix ? "drop on" : ok ? "okd" : "go"); b.dataset.ytx = fix ? "fix" : ok ? "close" : "ok"; b.innerHTML = fix ? "Send fix" : ok ? "&#10003; Approved" : "Approve"; }
+function ytClose(){ ytOpen = null; document.getElementById("shortchk").innerHTML = ""; }
+document.addEventListener("input", e => { if (ytOpen && e.target.id === "ytnote"){ ytOpen.note = e.target.value; ytMain(); } });
+document.addEventListener("click", e => {
+  const c = e.target.closest("[data-ytchk]"); if (c){ e.preventDefault(); e.stopPropagation(); ytOpen = {id: c.dataset.ytchk, k: c.dataset.ytk}; ytDraw(); return; }
+  if (!ytOpen || !e.target.closest("#shortchk")) return; const x = e.target.closest("[data-ytx]"); if (!x) return; e.stopPropagation(); const a = x.dataset.ytx;
+  const r = (ytRows || []).find(z => z.id === ytOpen.id), k = ytOpen.k; if (a === "close" || !r){ ytClose(); return; }
+  const now = new Date().toISOString(), steps = Object.assign({}, r.steps || {}), el = document.getElementById("ytnote");
+  if (a === "ok"){ steps[k] = "ok"; r.steps = steps; db.collection("ytcheck").doc(r.id).update({steps, updated: now}).catch(() => {}); ytDraw(); liveRender(); }
+  else if (a === "fix"){ const txt = (el && el.value.trim()) || "", notes = Object.assign({}, r.notes || {}, {[k]: txt}); steps[k] = "fx"; r.steps = steps; r.notes = notes;
+    db.collection("ytcheck").doc(r.id).update({steps, notes, updated: now}).catch(() => {});
+    const qi = "q-" + Math.random().toString(36).slice(2, 12);
+    db.collection("queue").doc(qi).set({kind: "ask", ref: "ask/" + qi, key: now, title: ("YouTube fix: " + (r.title || "") + " " + YTNM[k]).slice(0, 70), job: "desk", lane: "desk", status: "queued", order: 0, addedAt: now, tries: 0, model: "sonnet", limit: 45, extra: {detail: "Chris sent a fix on the YouTube board, ytcheck row " + r.id + ", step " + k + " (" + YTNM[k] + "). His note: " + txt + ". Fix it, write the new file link on the row (urls." + k + "), then set steps." + k + " to chk for his check. Never set ok."}}).catch(() => {});
+    ytClose(); liveRender(); } }, true);
 document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Check opens the Final check pop-up on the desk (view final), never Drive */ const b = e.target.closest("[data-shortrow]"); if (!b) return; e.preventDefault(); e.stopPropagation(); shOpen(null, b.dataset.shortrow, b.dataset.shview); }, true);
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
@@ -5644,7 +5675,7 @@ function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = 
     const stk = q.c === "fx" && q.ak && (q.ak[0] === "Stuck" || q.red), tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.yt ? ` data-ytchk="${esc(q.id)}" data-ytk="${q.yt}" role="button" tabindex="0"` : q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 28, Chris approved design A) LESSONS TO CHECK: the Lab chapters on the Songs board code (sgHead + sgRow: same rows, boxes, colours, fonts).
    Two folders (deskFold): Live (closed at first; every shipped chapter = one row, Status Live) and Testing (open at first; the chapter(s) on Test,
    one row per lesson; 2+ chapters = one folder each). Columns Computer | Dev mode | Phone | Status. A chapter is live when the Live Lab's path.js
@@ -6223,8 +6254,12 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
 /* (Oct 28, Chris: "only have one song in each folder that goes back and forth ... so it can be in my today to-do list") ONE test, read by the
    Today row 'Songs to check' (waitLive + goBtn) and the Songs folder (homeSongs): a song is going out now when it has a gold Check box and
    ships within 7 days (a release date, the Nov 1 Christmas list) or is already live. Going out now = Today only; every other song = the Songs folder. */
-function sgNow(x){ if (!x || !x.cells || !x.cells.some(q => q.c === "chk")) return false; if (SGLIVE.includes(x.k)) return true;
-  const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-01" : "")).slice(0, 10); return !!r && r <= plus(7); }
+/* (Oct 30, Chris: "sort my 32 songs to check into two separate folders ... Christmas pushed to next week") ship list = today's Songs to check; every other song with a gold box coming up = the Next week folder. Change the list once per ship. */
+const SGSHIP = new Set(["jesuslovesthelittlechildren", "joyfuljoyful", "happybirthday", "rowrowrowyourboat"]);
+function sgSoon(x){ if (!x || !x.cells || !x.cells.some(q => q.c === "chk")) return false; if (SGLIVE.includes(x.k) || SGSHIP.has(x.k)) return true;
+  const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
+function sgNow(x){ return sgSoon(x) && SGSHIP.has(x.k); }
+function sgNext(x){ return sgSoon(x) && !SGSHIP.has(x.k); }
 function homeSongs(only){
   const RS = SGRS;
   const head = sgHead(SGCOLS, SGAB);
@@ -6243,12 +6278,12 @@ function homeSongs(only){
   /* (Oct 21, Chris) KIDS folder: nursery and children's songs that are not church songs (fixed id set, like SGCH) */
   const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
-  const UF = U.filter(x => !sgNow(x));   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check */
+  const UF = U.filter(x => !sgSoon(x)), fNext = U.filter(sgNext).sort(ord);   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check; the rest coming up only in Next week */
   const fX = UF.filter(inXm).sort(ord), fK = UF.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = UF.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = UF.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = UF.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + x.cells.filter(q => q.c === "chk").length, 0);
     return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
-  const secN = fold("xmas", "Christmas", "Nov 1 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
+  const secN = fold("next", "Next week", "after this ship", fNext) + fold("xmas", "Christmas", "Nov 8 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO);
   const mine = UF.reduce((t, x) => t + x.cells.filter(q => q.c === "chk").length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
