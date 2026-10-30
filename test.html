@@ -2572,7 +2572,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v363</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v364</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5644,7 +5644,8 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   /* (Oct 27, Chris: "set every song's intro to gold check intro") INTRO: gold Check on every song with an intro row until his own Approve tap (songcheck.introOK); his row ticks are untouched */
   /* (Oct 29, Chris chat 75: "if there's no level one chords, then the intro cannot be checked") the Intro plays Level 1's chords: white, no tap,
      until Level 1 is Approved; the database clears an Intro approval without Level 1 too (song-lock-map.json "needs", song_changed) */
-  if (sc && sc.intro) C[4] = !sc.chordsOK ? {c: ""} : sc.introOK ? {c: "ok", id: sc.id, pl: 1, f: "introOK"} : {c: "chk", id: sc.id, pl: 1, f: "introOK"};   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */   /* (Oct 24, Chris) Level 1 opens once the song HAS a player (melodyOK + previewAt), not only after playerOK: he fixes intro chords before approving the Player */
+  /* (Oct 30, Chris: "if the intro isn't ready to check, that needs to say making") the same test as Final: gold only once the player has this Level 1 approval */
+  if (sc && sc.intro) C[4] = !sc.chordsOK ? {c: ""} : sc.introOK ? {c: "ok", id: sc.id, pl: 1, f: "introOK"} : !(sc.pvChords && sc.pvChords.L1 && String(sc.pvChords.L1) >= String(sc.chordsOK)) ? {c: "mk"} : {c: "chk", id: sc.id, pl: 1, f: "introOK"};   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */   /* (Oct 24, Chris) Level 1 opens once the song HAS a player (melodyOK + previewAt), not only after playerOK: he fixes intro chords before approving the Player */
   /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
   { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
     /* (Oct 22, Chris) FINAL = the song preview player with the approved chords: gold 'Check L#' once song-preview-auto.py has put that level's
