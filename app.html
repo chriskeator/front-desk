@@ -2425,6 +2425,7 @@ const shStep = r => !r.handsFileId ? null : !r.hands ? "hands" : r.hands === "ap
 /* (Oct 21, Chris) ONE SOURCE for Shorts "his turn": shStep = a desk check page; shFinal = the final package is made and waits in Drive (6 Final Review/b Chris checks). The column cell, the title pill and the Today count all use shReady. Check: desk-checks.py shorts-state. */
 const shFinal = r => !!(r.handsFileId && !r.moved && r.hands === "approved" && r.status === "approved" && r.words === "approved" && r.thumb === "approved" && r.final !== "approved" && r.final !== "fix" && r.auto && r.auto.step === "Final" && r.auto.state === "Ready");
 const shReady = r => shStep(r) || (shFinal(r) ? "final" : null);
+const shFixing = r => !r.moved && (r.hands === "fix" || r.status === "fix" || r.words === "fix" || r.thumb === "fix" || r.final === "fix");
 const shShow = r => (shView && shRows && r === shRows[shI] ? shView : null) || shStep(r) || (shFinal(r) || r.final ? "final" : r.words === "approved" && r.thumbUrl ? "thumb" : r.status === "approved" && r.wordsUrl ? "words" : r.hands === "approved" ? "start" : "hands");
 const shFx = (r, st) => (st === "hands" ? r.handsFixes : st === "words" ? r.wordsFixes : st === "thumb" ? r.thumbFixes : st === "final" ? r.finalFixes : r.fixes) || [];
 const shFk = st => st === "hands" ? "handsNote" : st === "words" ? "wordsNote" : st === "thumb" ? "thumbNote" : st === "final" ? "finalNote" : "note";
@@ -2553,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v369</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v370</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2682,15 +2683,15 @@ function waitLive(t){
     L.slice().sort((a, b) => b.cells.filter(q => q.c === "ok").length - a.cells.filter(q => q.c === "ok").length || a.title.localeCompare(b.title)).forEach(x => sgChk(x).forEach(q => { if (q.id){ n++; if (!first) first = q; } }));
     n = L.length;   /* (Oct 28, Chris: '85 songs to check') the count is SONGS going out now, not their gold boxes */
     return {n, first, title: "Songs to check: " + n}; }
-  if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady); return {n: R.length, title: "Shorts: " + R.length + " to check"}; }
-  if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length; return {n, title: "Review board: " + n + " drafts"}; }
+  if (t.wait === "shorts"){ if (shBoard === null) return null; const R = shBoard.filter(shReady), F = shBoard.filter(r => !shReady(r) && shFixing(r)); return {n: R.length + F.length, title: "Shorts: " + (R.length ? R.length + " to check" : "") + (R.length && F.length ? ", " : "") + (F.length ? F.length + " being fixed" : "")}; }   /* (Oct 31, Chris: "don't remove the item until it needs to be removed") a row stays, with its status, until finished */
+  if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length, x = reviews.filter(r => r.status === "fix").length; return {n: n + x, title: "Review board: " + (n ? n + " drafts" : "") + (n && x ? ", " : "") + (x ? x + " being fixed" : "")}; }
   /* (Oct 25, Chris: 'Chapter 7 is not in my Today folder') desk-wait-rows.py groups ready lessons into t-wait-lab-chN (wait 'lab-chN', lessons = its kids); count the open kids live */
   /* (Oct 28, Chris) the chapter row IS the Lessons to check board now: ONE row (the first chapter row; another chapter's row hides), count = gold boxes */
   if (/^lab-ch\d+$/.test(t.wait) || t.wait === "lessons"){ const f = tasks.find(x => x.wait && (/^lab-ch\d+$/.test(x.wait) || x.wait === "lessons") && !x.done && !x.removed); return {n: f && f.id !== t.id ? 0 : lcToCheck(), title: "Lessons to check"}; }
   if (t.wait === "lab"){ const n = (t.links || []).length; return {n, title: "Lab: " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
   return null; }
 /* (Oct 22, Chris) ZERO = HIDDEN EVERYWHERE: a wait row with nothing waiting is never shown in any list (Today, week, next, later) */
-const waitShow = t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return false; t.title = t.short = w.title; return w.n > 0; };
+const waitSeen = {}, waitShow = t => { if (!t.wait) return true; const w = waitLive(t); if (!w) return !!waitSeen[t.id];   /* (Oct 31, Chris) a board reloading never hides its row */ waitSeen[t.id] = w.n > 0; t.title = t.short = w.title; return w.n > 0; };
 const todayTasks = () => tasks.filter(t=>!t.heldOffToday && t.date && t.date<=plus(0) && (showDone ? t.done && t.date===plus(0) : !t.done)).filter(waitShow).sort(byOrder);
 const laterTasks = () => tasks.filter(t=>!t.date && (showDone ? t.done : !t.done)).filter(waitShow).sort(byOrder);
 const nextTasks = () => tasks.filter(t=>t.date && t.date>plus(7) && t.date<=plus(14) && (showDone ? t.done : !t.done)).filter(waitShow).sort((a,b)=>String(a.date).localeCompare(String(b.date))||byOrder(a,b));
@@ -5710,7 +5711,7 @@ function lcState(L){ const id = L.id, hit = lcMemo.get(id); if (hit) return hit;
     out[k] = Object.assign({id, lc: k, v: V}, p.ok ? {c: "ok", t: "Approved"} : p.open ? {c: "fx", t: "Fixing V" + (V + 1)} : turn ? {c: "chk", t: V > 1 ? "Check V" + V : "Check"} : {c: ""});
     if (!p.ok) all = false; });
   out.all = all; out.signed = !!signed && signed > lastFix && !(L.chg && Date.parse(signed) <= Date.parse(L.chg)); lcMemo.set(id, out); return out; }
-function lcToCheck(){ let n = 0; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk") n++; } return n; }
+function lcToCheck(){ let n = 0; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk" || s[k].c === "fx") n++; } return n; }   /* (Oct 31, Chris) Fixing boxes keep the row */
 function lcCount(c){ const S = (c.lessons || []).map(lcState); return S.length && S.every(s => s.all) ? "Approved" : LCK.map(([k, l]) => l + " " + S.filter(s => s[k].c === "ok").length + "/" + S.length).join(" · "); }
 /* (Oct 29, q-e8c06eb839: "Approve does not fire confetti") an approval made INSIDE the Lab (his end-of-lesson Approve, Oct 28: fcread, fcjesus) reached the
    desk only through labFresh, so the box turned teal with no flash. Every box that turns teal while the board is on screen (or within 2 min of it) now
@@ -6481,7 +6482,7 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
 function goBtn(t){
   if (/^lab-ch\d+$/.test(t.wait || "") || t.wait === "lessons") return `<div class="chgrid songtaskgrid songgrid lcgrid">${lessonsInner()}</div>`;   /* (Oct 28) Lessons to check opens its board, like Songs to check */
   if (t.wait === "asks") return asksHTML();
-  if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked"); return `<div class="revlist"><p class="tn">${items.length} drafts to check</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
+  if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked" || r.status === "fix"), xn = items.filter(r => r.status === "fix"); return `<div class="revlist"><p class="tn">${items.length - xn.length} drafts to check${xn.length ? ", being fixed: " + esc(xn.map(r => r.title).join(", ")) : ""}</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
   if (t.wait === "songs") return homeSongs("now");   /* (Oct 28, Chris) Songs to check opens right here: only the songs going out now (sgNow) */
   if (t.wait === "shorts") return `<div class="revlist"><button type="button" class="tb go gobtn" data-waitgo="${t.wait}">Open first</button></div>`;
   if (t.shortcheck) return `<div class="revlist"><button type="button" class="tb go gobtn" data-shortchk="${esc(t.id)}">Start checking</button></div>`;   /* (Oct 15) Chris: one Shorts check session */
