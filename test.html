@@ -2572,7 +2572,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v368</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v369</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6263,7 +6263,7 @@ const SGSHIP = new Set(["silentnight", "awayinamanger"]);   /* (Oct 31, Chris) N
 const SGLVWAIT = new Set([5, 6]), sgChk = x => x.cells.filter((q, i) => q.c === "chk" && !SGLVWAIT.has(i));
 function sgSoon(x){ if (!x || !x.cells || !sgChk(x).length) return false; if (SGLIVE.includes(x.k) || SGSHIP.has(x.k)) return true;
   const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
-function sgNow(x){ return sgSoon(x) && SGSHIP.has(x.k); }
+function sgNow(x){ return SGSHIP.has(x.k) && !(x.sc && x.sc.finalOK && x.sc.finalOK.L1); }   /* (Oct 31, Chris: "i like to see it there until it's finished") a ship song stays while it rebuilds (Making), and leaves only on its Final Approve */
 function sgNext(x){ return sgSoon(x) && !SGSHIP.has(x.k); }
 function homeSongs(only){
   const RS = SGRS;
@@ -6283,7 +6283,7 @@ function homeSongs(only){
   /* (Oct 21, Chris) KIDS folder: nursery and children's songs that are not church songs (fixed id set, like SGCH) */
   const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
-  const UF = U.filter(x => !sgSoon(x)), fNext = U.filter(sgNext).sort(ord);   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check; the rest coming up only in Next week */
+  const UF = U.filter(x => !sgSoon(x) && !sgNow(x)), fNext = U.filter(sgNext).sort(ord);   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check; the rest coming up only in Next week */
   const fX = UF.filter(inXm).sort(ord), fK = UF.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = UF.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = UF.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = UF.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
     return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
