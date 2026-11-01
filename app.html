@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v374</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v375</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2611,6 +2611,7 @@ fetch("budget.html").then(r => r.text()).then(t => { const m = t.match(/<script 
 let db = null, projects = [], jobs = [], items = [], replies = [], tasks = [], allTasks = [], goals = [], summaries = [], ideas = [], questions = [], sorts = [], sorting = null, sortPage = 0, openTx = null;
 let psub = "projects", icat = "All", msub = "biz", openCat = null;
 let sub = "todo", confirmDel = null, drag = null;
+const V16 = /[?&]v16=1/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch; off = today's desk exactly */
 let tab = "today", proj = null, showDone = false, page = 0, editing = null;
 function esc(s){return String(s ?? "").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function safeUrl(u){return /^https:\/\//.test(u||"") ? u : ""}
@@ -2826,7 +2827,7 @@ function taskPop(t){
   else if (moving === t.id && moveCalOn) acts = moveCal(t);
   else if (moving === t.id) return popTop("Move to") + `<p class="tn">${esc(t.short || t.title)}</p>` + moveList(t);
   else if (pickingProj === t.id) return popTop(t.project ? "Move to which project?" : "Put in which project?") + `<p class="tn">${esc(t.short || t.title)}${t.project ? " · now in " + esc(t.project) : ""}</p>` + projList(t);   // (Oct 7) Chris didn't understand "Project"
-  else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(t.url)}" target="_blank" rel="noopener">Open link</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}${t.done ? "" : `<button type="button" class="tb" data-delyes="${esc(t.id)}">Remove</button>`}${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
+  else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(V16 ? fdLink(t.url) : t.url)}" target="_blank" rel="noopener">${V16 ? "Go" : "Open link"}</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}${t.done ? "" : `<button type="button" class="tb" data-delyes="${esc(t.id)}">Remove</button>`}${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
   let list = "";
   if (t.review){ const items = revItems(t); list = `<p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>` + popPaged(revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`))); }
   else if (tLinks(t).length) list = popPaged(tLinks(t).map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labRef(l.url, l.label || "Link"), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }));
@@ -2836,7 +2837,7 @@ function taskPop(t){
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
   if (t.wait === "asks") return popTop(esc(t.title)) + asksHTML() + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
   if (t.kind === "ab") return popTop(esc(t.title)) + kindHTML(t) + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
-  if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t);
+  if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t) + (V16 ? `<div class="row" style="flex-wrap:wrap">${safeUrl(t.url) && t.url !== FDURL ? `<a class="tb" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : ""}${t.done ? "" : `<button type="button" class="tb go" data-task="${esc(t.id)}" data-done="0">Done</button><button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}</div>` : "");
   if (!isDesktop() && list && list.trim()) return popTop(esc(t.title)) + list + `<details class="whyd"><summary>What it's for</summary><div class="why">${whyIn}</div></details>` + acts;
   return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + acts + list;
 }
@@ -5656,7 +5657,7 @@ function sgKeep(x){ const N = stats.find(q => q.id === "nextsongs"); if (!N || !
   return Object.values(N.cats).flat().some(t => sgKey(t) === x.k) || !!x.xm || sgIsLive(x) || !!(x.sg && x.sg.release); }
 const SGRS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
 /* the checklist header row (column names; phone = the whole word at 45 degrees): Songs board and Lessons board */
-const sgHead = (cols, ab) => `<div class="tn" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
+const sgHead = (cols, ab) => `<div class="tn${V16 ? " v16hd" : ""}" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
 /* ONE checklist row for Songs (SGCOLS) and Lessons (LCCOLS): name + one box per column (q.c ok teal / chk gold / mk + fx light gold / blank) */
 function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = SGRS;
   const rel = x.sub ? x.sub : x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
@@ -6284,7 +6285,7 @@ function homeSongs(only){
   const CR = [].filter(r => /^(UNSURE|NOT PD)/i.test(String(r.lyricsCheck || "").trim()) && !r.lyricsOK && !r.lyricsDrop && !r.lyricsDropped && !r.dropped).sort((p, q) => (/^NOT/i.test(q.lyricsCheck) - /^NOT/i.test(p.lyricsCheck)) || String(p.name).localeCompare(String(q.name)));
   const secCR = CR.length ? label("Copyright check", CR.length) + CR.map(r => { const np = /^NOT/i.test(String(r.lyricsCheck).trim());
     return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:var(--kbFDE8E4);border:1.5px solid var(--klB4362A);color:var(--ktB23B17)" : "background:var(--kbFBEFD0);border:1.5px solid var(--klE8B53A);color:var(--kt8A6508)"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
-  return deskFold("", "Songs", `${mine} to check · ${live.length} live`, secCR + secN, {top: 1, cc: "var(--ka7F77DD)", grid: "songgrid"}); }
+  return deskFold("", "Songs", V16 ? [mine ? mine + " later" : "", live.length ? live.length + " live" : ""].filter(Boolean).join(" · ") : `${mine} to check · ${live.length} live`, secCR + secN, {top: 1, cc: "var(--ka7F77DD)", grid: "songgrid"}); }
 function songsRefresh(){ foldRefresh(); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
@@ -6382,7 +6383,7 @@ function openFor(t){ if (!t.added) return ""; const d = Math.floor((Date.parse(p
 function checkCount(t){ if (!t) return [0, 0]; const st = t.review ? revItems(t).map(r => r.status) : tLinks(t).map(l => labStatusOf(l.url)); return [st.filter(x => x === "good").length, st.length]; }
 function checksLeft(t){ if (!t) return 0; if (t.review) return revItems(t).filter(r => r.status !== "good").length; return tLinks(t).filter(l => labStatusOf(l.url) !== "good").length; }
 /* (Oct 21, Chris) every Today row has Move: the Shorts / Songs board rows jump straight to their board, so Move sits right under the row (hides the row until the date picked) */
-function addWaitMove(){ document.querySelectorAll("#list [data-tlinks]").forEach(b => { const id = b.dataset.tlinks; if ((id !== "t-wait-shorts" && id !== "t-wait-songs") || !b.closest("#list")) return; const c = b.closest(".trow") || b.closest(".pc3") || b;
+function addWaitMove(){ document.querySelectorAll("#list [data-tlinks]").forEach(b => { const id = b.dataset.tlinks; if ((id !== "t-wait-shorts" && (V16 || id !== "t-wait-songs")) || !b.closest("#list")) return;   /* V16: Songs to check opens in place and has its Move there: one Move per row */ const c = b.closest(".trow") || b.closest(".pc3") || b;
   if (c.querySelector(".waitmv") || (c.nextElementSibling && c.nextElementSibling.classList.contains("waitmv"))) return; c.insertAdjacentHTML(c === b ? "afterend" : "beforeend", `<div class="waitmv"><button type="button" class="tb" data-move="${esc(id)}">Move</button></div>`); }); }
 function addTodayBtns(){ addWaitMove(); addLvChips(); if (phone()) return;
   document.querySelectorAll("#list .chc[data-tlinks], #list .chc[data-ideaopen], #pop .plist .chc[data-tlinks], #list .pc3t[data-tlinks]").forEach(b => {
@@ -6429,24 +6430,26 @@ const fdLink = u =>/lab\.worshippianoacademy\.com/.test(u || "") && !/[?&]from=f
 // (Oct 7) Chris: the bottom of every to-do shows how much Cadence can do it, in the 4 Training colours
 const TLVP = {cant: 0, teach: 25, checked: 50, auto: 100};   // (Oct 7) Chris: each Training step = how automatic it is
 const lvOf = t => t.level || (t.cadence === false ? "cant" : t.teach ? "teach" : t.cost ? "checked" : "cant");
-function lvBar(t){ if (t.project === "Worship Piano Lab") return "";   /* (Oct 26, Chris) no 0/25/50/100% on anything in the Lab */ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
+function lvBar(t){ if (V16 || t.project === "Worship Piano Lab") return "";   /* (Oct 26, Chris) no 0/25/50/100% on anything in the Lab */ const k = lvOf(t), cur = TLV.find(x => x[0] === k) || TLV[0];
   return `<div class="lvbar">${TLV.map(([kk, h, c]) => `<span class="${kk === k ? "on" : ""}" style="--lc:${LVL[kk] || c}">${TLVP[kk]}%</span>`).join("")}</div>`; }
 // (Oct 7) Chris: every to-do has a Go button that opens where the work happens; the Front Desk stays on this to-do
 /* (Oct 27, Chris picked A: 'the same template for every possible scenario so I don't have to keep changing it') EVERY to-do, approval, question and
    chapter lesson row = these TWO lines, always all 8 buttons; one that does not apply to this item is greyed out (no link = grey Go).
    Line 1 Go | Done | Move | Remove | Edit, line 2 Approve | Fix | To Cadence. Buttons keep the actions they already had. */
 /* (Nov 1, V16 step 1) the note in an open row. Behind ?v16=1 every line shows (What it is / Why it matters / What you do); without the switch the old one short line. */
-function noteP(t){ if (/[?&]v16=1/.test(location.search)) return `<p class="v16note">${esc(String(t.note)).replace(/\n/g, "<br>")}</p>`;
+function noteP(t){ if (V16) return `<p class="v16note">${esc(String(t.note)).replace(/\n/g, "<br>")}</p>`;
   return `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>`; }
+/* (Nov 1, V16 step 2) a plain row that says it needs his approval: handed back for review, 'approve' in the title, or its note says tap Approve or Fix. Uses the existing answer action (data-kans). */
+const okAsk = t => V16 && !t.kind && !t.wait && !t.done && !t.review && (t.handoff === "review" || (!t.handoff && (/\bapprove\b/i.test(t.title || "") || /\b(Approve|Looks good) or Fix\b/i.test(t.note || ""))));
 function eightBtns(t){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
   const B = (c, l, a) => a ? `<button type="button" class="kb ${c}" ${a}>${l}</button>` : `<span class="kb ${c} off">${l}</span>`;
-  const ask = k === "review" || k === "yesno" || (k && k !== "go" && k !== "ab");
-  const done = t.done || k === "ab" ? "" : k ? `data-kans="done|${id}"` : `data-task="${id}" data-done="0"`;
+  const ask = k === "review" || k === "yesno" || (k && k !== "go" && k !== "ab") || okAsk(t);
+  const done = t.done || k === "ab" ? "" : k && !V16 ? `data-kans="done|${id}"` : `data-task="${id}" data-done="0"`;   /* V16: one Done, one tap, on every row */
   const appr = k === "yesno" ? `data-kans="yes|${id}"` : k === "ab" ? `data-abans="use|${id}"` : ask ? `data-kans="good|${id}"` : "";
   const fix = k === "yesno" ? `data-kans="no|${id}"` : k === "ab" ? `data-abans="note|${id}"` : ask ? `data-kans="fix|${id}"` : "";
-  const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : t.cost && t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
-  return `<div class="kbtns">${u ? `<a class="kb kgo" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : B("kgo", "Go", "")}${B("kdone", "Done", done)}${B("kmove", "Move", `data-tdcal="${id}"`)}${B("krem", "Remove", `data-delyes="${id}"`)}${B("kedit", "Edit", `data-edopen="${id}"`)}</div>`
-    + `<div class="kbtns">${B("kappr", "Approve", appr)}${B("kfixb", "Fix", fix)}${B("kcad", "To Cadence", cad)}</div>`; }
+  const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : (t.cost || V16) && t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
+  return `<div class="kbtns">${u ? `<a class="kb kgo" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : V16 ? "" : B("kgo", "Go", "")}${B("kdone", "Done", done)}${B("kmove", "Move", `data-tdcal="${id}"`)}${B("krem", "Remove", `data-delyes="${id}"`)}${B("kedit", "Edit", `data-edopen="${id}"`)}</div>`
+    + `<div class="kbtns">${B("kappr", V16 && k === "yesno" ? "Yes" : "Approve", appr)}${B("kfixb", V16 && k === "yesno" ? "No" : "Fix", fix)}${B("kcad", "To Cadence", cad)}</div>`; }
 function kindHTML(t){
   const k = t.kind, pics = Array.isArray(t.pics) ? t.pics : [], files = Array.isArray(t.files) ? t.files : [];
   const pg = pics.length ? `<div class="kpics">${pics.map((p, i) => `<button type="button" class="kthumb" data-kbig="${esc(p.url || p)}" aria-label="Picture ${i + 1}, tap for big"><img src="${esc(p.url || p)}" alt="" loading="lazy"></button>`).join("")}</div>` : "";
@@ -6506,7 +6509,7 @@ function goBtn(t){
   return u ? `<a class="tb go gobtn" href="${esc(fdLink(u))}" target="_blank" rel="noopener">Go</a>` : ""; }
 /* (Oct 21, Chris: "changed without my approval") the Shorts / Songs Today rows open that board's OWN existing folder on Home (column checklist), no pop-up, no Open first, no % bar */
 const WAITFOLD = {"t-wait-shorts": "Shorts"};   /* (Oct 28, Chris) Songs to check opens in place (goBtn), its songs are not in the Songs folder */
-function waitFolderGo(k){ foldSet(topKey(k), 1); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
+function waitFolderGo(k){ if (window.V16WS) return window.V16WS(k); foldSet(topKey(k), 1); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
   const h = [...document.querySelectorAll("#list .msec > h4[data-ck]")].find(x => x.dataset.ck === k); if (h) h.scrollIntoView({block: "start"}); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-tlinks]"); if (!b || !WAITFOLD[b.dataset.tlinks] || !b.closest("#list")) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); waitFolderGo(WAITFOLD[b.dataset.tlinks]); }, true);
 document.addEventListener("click", e => { const b = e.target.closest("[data-waitgo]"); if (!b) return; e.preventDefault(); e.stopPropagation();
@@ -6575,7 +6578,7 @@ function taskDetail(t){
      line: Go | Done | Move | Remove | Edit. No link = Go greyed out, so a to-do with nowhere to go shows at once. */
   const plain = !t.wait, five = plain ? eightBtns(t) : "";
   return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? noteP(t) : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
-    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) : goBtn(plain ? {...t, url: ""} : t)}${kidsHTML(t)}${t.wait ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${plain ? five : t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${!plain && cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : t.handoff === "cadence" || t.handoff === "teach" ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind || plain ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
+    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) : goBtn(plain ? {...t, url: ""} : t)}${okAsk(t) ? `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>` : ""}${kidsHTML(t)}${t.wait ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${plain ? five : t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${!plain && cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : t.handoff === "cadence" || t.handoff === "teach" ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind || plain ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
@@ -6761,7 +6764,8 @@ document.addEventListener("click", async e => {
           render(); } catch { t.disabled = false; t.textContent = "Try again"; } return; }
   if (d.task && db){ t.disabled = true; const finishing = d.done !== "1", tk = allTasks.find(x => x.id === d.task);
     const runAdd = finishing && tk && tk.runFrom ? {runFrom: null, worked: (+tk.worked || 0) + Math.max(1, Math.round((Date.now() - Date.parse(tk.runFrom)) / 60000))} : {};
-    try { await db.collection("tasks").doc(d.task).update({done: finishing, doneAt: finishing ? new Date().toISOString() : null, ...runAdd});
+    const ansAdd = V16 && tk && tk.kind ? {answer: finishing ? "done" : null, answeredAt: finishing ? new Date().toISOString() : null, heard: false} : {};
+    try { await db.collection("tasks").doc(d.task).update({done: finishing, doneAt: finishing ? new Date().toISOString() : null, ...runAdd, ...ansAdd});
       if (openLinks === d.task) openLinks = null;   // done: the pop-up closes
       await new Promise(r => setTimeout(r, 0));   /* (Oct 18, desk-film.py) the new task list first: one draw of the final state (it drew a half-updated frame first) */
       render();
@@ -7050,8 +7054,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* (Nov 1, Chris go) V16 STEP 1 SHELL, only with ?v16=1. Look = newest draft (Design scans/front-desk-design-newest.html, V16.5). No second system:
    rows and counts are READ from the real folders in #list, a workspace IS the real folder, every button in it is the existing one. Colours are tokens below. */
 (function(){ if (!/[?&]v16=1/.test(location.search)) return;
-  const FOLD = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue"};
-  const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["queue", "Queue"], ["projects", "Other projects"]];
+  const FOLD = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", lab: "Worship Piano Lab", personal: "Family and Money"};
+  const PTAB = {lab: "Worship Piano Lab", personal: "Personal"};   /* cards that are real db projects: they open in the Projects tab; Personal = one entry, its category folder shows only it */
+  const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["lab", "Worship Piano Lab"], ["queue", "Queue"], ["personal", "Personal"], ["projects", "Other projects"]];
   const TILES = [["today", "Needs attention"], ["songs", "Songs"], ["shorts", "Shorts"], ["queue", "Queue"]];
   const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
   const css = document.createElement("style"); css.textContent = `
@@ -7086,6 +7091,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16bar button{padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16bar b{font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   body.v16work .wrap>header,body.v16work .wrap>.tabs,body.v16work #list .hello{display:none!important}
   body.v16ws #list .msec:not(.v16keep),body.v16ws #list .mgrid>:not(.mleft):not(.v16keep):not(:has(.v16keep)),body.v16ws #list .mleft>:not(.v16keep):not(:has(.v16keep)){display:none!important}
+  body.v16sub #list .v16keep .chgrid>.pc3:not(.v16one),body.v16sub #list .v16keep .chgrid>.sublist:not(.v16one){display:none!important}
+  body.v16work #list .v16hd{position:sticky;top:var(--fd-head-h,50px);z-index:2;background:var(--card)} body.v16work #list .qhead{top:var(--fd-head-h,50px)!important} body.v16work #list.fdlock .v16hd{top:0}
   body.v16ws #list .v16keep>h4{pointer-events:none} body.v16ws #list .v16keep>h4 .hr>*{pointer-events:auto}
   body.v16work #list .chc:hover{background:var(--v-hover)} body.v16work #list .chgrid>.chc:nth-of-type(even){background:var(--v-b)} body.v16work #list .chc.rowon{background:var(--v-sel)}
   .v16note{margin:4px 0 8px;line-height:1.4}
@@ -7099,33 +7106,48 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const esc2 = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
   const folder = name => [...document.querySelectorAll("#list .msec")].find(m => { const h = m.querySelector(":scope > h4"); return h && h.firstChild && h.firstChild.textContent.trim() === name; });
   const countOf = name => { const m = folder(name), i = m && m.querySelector(":scope > h4 .hr i"); return i ? i.textContent.trim() : ""; };
-  const todayRows = () => { const m = folder(FOLD.today); return m ? [...m.querySelectorAll("[data-tlinks]")].filter(b => b.matches(".chc")) : []; };
-  let ws = null;
+  const todayRows = () => { const m = folder(FOLD.today); return m ? [...m.querySelectorAll("[data-tlinks]")].filter(b => b.matches(".chc") && !b.closest(".tdetail")) : []; };
+  const openN = name => tasks.filter(t => !t.done && !t.removed && t.project === name).length, pOpen = () => projects.filter(p => p.status !== "done");
+  const plural = (n, w) => n ? n + " " + w + (n === 1 ? "" : "s") : "";
+  function cardSub(k){ if (FOLD[k] && !PTAB[k]) return countOf(FOLD[k]); if (k === "projects"){ const n = pOpen().filter(p => !["Worship Piano Lab", "Personal", "Shorts", "YouTube"].includes(p.name)).length; return plural(n, "project"); }
+    const n = openN(PTAB[k]); return k === "lab" ? [lcToCheck() ? lcToCheck() + " to check" : "", plural(n, "to-do")].filter(Boolean).join(" · ") : plural(n, "to-do"); }
+  const cardShows = k => !PTAB[k] ? !FOLD[k] || !!folder(FOLD[k]) : pOpen().some(p => p.name === PTAB[k]);
+  /* the Songs tile says the same number as Today's Songs to check row and opens that row; only without the row it counts the Songs folder */
+  function songsTile(){ const c = countOf(FOLD.songs), later = +(/(\d+) later/.exec(c) || [0, 0])[1], lv = (/\d+ live/.exec(c) || [""])[0], row = todayRows().some(b => b.dataset.tlinks === "t-wait-songs"), w = row && waitLive({wait: "songs"});
+    return {n: w ? w.n : later, sub: ["to check", lv].filter(Boolean).join(" · "), row: !!w}; }
+  let ws = null, homeTop = 0;
+  if (tab !== "today"){ tab = "today"; proj = null; }   /* a reload always lands on the dashboard, even if the saved place was the Projects tab */
   function draw(){ if (ws || tab !== "today") return;
     const rows = todayRows(), ver = document.querySelector("h1 .deskver"), L = dash.querySelector(".vl"), keep = L ? L.scrollTop : 0, C = dash.querySelector(".vc"), keepC = C ? C.scrollLeft : 0;
-    const T = TILES.map(([k, l], i) => { const c0 = k === "today" ? String(rows.length) : countOf(FOLD[k]), mm = /^(\d+)\s*(.*)$/.exec(c0), n = mm ? mm[1] : c0, s = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]][i];
-      return `<button type="button" class="vt" style="--vc:${s[0]};--vt:${s[1]}" data-v16ws="${k}"><span>${l}</span><strong>${esc2(n === "" ? "–" : n)}</strong><small>${esc2(k === "today" ? "" : mm ? mm[2] : "")}</small></button>`; }).join("");
+    const sg = songsTile();
+    const T = TILES.map(([k, l], i) => { const c0 = k === "today" ? String(rows.length) : k === "songs" ? sg.n + " " + sg.sub : countOf(FOLD[k]), mm = /^(\d+)\s*(.*)$/.exec(c0), n = mm ? mm[1] : c0, s = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]][i];
+      return `<button type="button" class="vt" style="--vc:${s[0]};--vt:${s[1]}" ${k === "songs" && sg.row ? 'data-v16row="t-wait-songs"' : `data-v16ws="${k}"`}><span>${l}</span><strong>${esc2(n === "" ? "–" : n)}</strong><small>${esc2(k === "today" ? "" : mm ? mm[2] : "")}</small></button>`; }).join("");
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
       return `<div class="vr" role="button" tabindex="0" data-v16row="${esc2(id)}"><div class="vi"><b>${esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(sub)}</small></div><button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button></div>`; }).join("");
-    const P = CARDS.map(([k, l]) => { const n = FOLD[k] ? countOf(FOLD[k]) : ""; if (FOLD[k] && !folder(FOLD[k])) return ""; return `<button type="button" class="vp" data-v16ws="${k}"><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
+    const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
     dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><a class="vold" href="app.html">Old desk</a></div><div class="vm">${T}</div>
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
-  function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed"); } }
-  function openWs(k, title){ if (!ws) try { history.pushState({fd: 1, v16: 1}, ""); } catch {} ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.getElementById("v16title").textContent = title;
-    if (tab !== (FOLD[k] ? "today" : "projects")) setTab(FOLD[k] ? "today" : "projects"); keepFolder(); const L = $("list"); if (L) L.scrollTop = 0; }
-  function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); }
-  const TITLES = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects"};
+  function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed");
+      m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ws === "personal") m.querySelectorAll('[data-fold="p:Personal"]').forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
+  /* one frozen stack: folder title or open row on top, the board's column header right under it */
+  function headH(){ const o = [...document.querySelectorAll("#list .rowon, #list .subon, #list .v16keep>h4")].filter(x => x.getClientRects().length).pop(); if (o) document.body.style.setProperty("--fd-head-h", o.offsetHeight + "px"); }
+  function openWs(k, title){ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", k === "personal"); document.getElementById("v16title").textContent = title;
+    if (k === "personal") foldSet("p:Personal", 1); const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; }
+  function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
+  const TITLES = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
+  window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
-    const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ b.click(); setTimeout(() => { const d = document.querySelector(`#list .tdetail[data-tdof="${CSS.escape(id)}"]`); if (d) d.scrollIntoView({block: "nearest"}); }, 50); } }
+    const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
   document.addEventListener("click", e => { const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home]"); if (!x) return; e.preventDefault(); e.stopPropagation();
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
-  let tm = 0; new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(() => { keepFolder(); draw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
+  let tm = 0; new MutationObserver(() => { keepFolder();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
   /* phone or browser Back from a workspace returns to the dashboard; a check or pop-up open inside it closes first, by the old code */
   window.V16POP = () => { if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
+  $("list").addEventListener("scroll", headH, {passive: true}); document.addEventListener("click", () => setTimeout(headH, 0));
   dash.addEventListener("wheel", e => { const c = e.target.closest && e.target.closest(".vc"); if (c && Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); c.scrollLeft += e.deltaY; } }, {passive: false});
   draw();
 })();
