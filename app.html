@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v376</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v377</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3279,7 +3279,8 @@ function morningScreen(seg){
   const wkEnd0 = (() => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); })();
   const wk = tasks.filter(t => t !== flagged0 && inToday(t)).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
   const dn = wk.filter(t => t.done).length, left = minsOf(wk.filter(t => !t.done));
-  const chc = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${esc(t.short || t.title)}${labTag(t)}</b><span>${t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
+  const chc0 = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${V16 && !t.done && !t.wait ? v16Title(t, esc(t.short || t.title)) : esc(t.short || t.title)}${labTag(t)}</b><span>${V16 && t.note ? esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0]) : t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
+  const chc = t => V16 && !t.done && !t.wait ? `<div class="trow vstrip">${chc0(t)}${rowBtns(t, "strip")}</div>` : chc0(t);
   const fp = focusProj(), ft = tasks.filter(t => !t.done && t.project === fp).sort((a, b) => String(a.date || "9").localeCompare(String(b.date || "9")) || byOrder(a, b));
   const flagged = tasks.find(t => t.one && !t.done && !t.chore);
   // (Oct 7) Chris: ONE thing per day, only the flagged one due today. Done or moved = gone; nothing refills it.
@@ -6364,6 +6365,7 @@ function rowB(){ document.querySelectorAll("#list .chc[data-tlinks], #list .pc3t
   if (b.dataset.ideaopen){ const i = ideas.find(x => x.id === b.dataset.ideaopen); if (i && sp) sp.textContent = ["idea", fmtMins(i.mins)].filter(Boolean).join(" · "); return; }
   const t = allTasks.find(x => x.id === b.dataset.tlinks); if (!t) return; const k = lvOf(t), c = LVL[k] || LVL.cant;
   b.classList.add("ledge"); b.style.setProperty("--lc", c);
+  if (V16 && t.note && b.parentElement && b.parentElement.classList.contains("vstrip")) return;   /* Layout B: the short note stays under the title */
   const [dn, all] = checkCount(t), nk = /^lab-ch\d+$/.test(t.wait || "") ? 0 : allTasks.filter(x => x.parent === t.id && !x.done && !x.removed).length;
   if (b.dataset.cad){ const [w, sc] = cadStatus(t); b.style.setProperty("--lc", sc);
     if (sp) sp.innerHTML = `<b class="cadst"><i style="background:${sc}"></i>${esc(w)}</b> · ` + (t.chore ? '<b class="chw">chore</b> · ' : "") + esc([fmtMins(t.cmins), t.due ? "due " + dayLabel(t.due).replace(/^[A-Z][a-z]{2}, /, "") : ""].filter(Boolean).join(" · ")); return; }
@@ -6444,16 +6446,22 @@ function noteP(t){ if (V16) return `<p class="v16note">${esc(String(t.note)).rep
 const okAsk = t => V16 && !t.kind && !t.wait && !t.done && !t.review && (t.handoff === "review" || (!t.handoff && (/\bapprove\b/i.test(t.title || "") || /\b(Approve|Looks good) or Fix\b/i.test(t.note || ""))));
 /* (Nov 1, Chris: "not every button belongs on every task") V16 ROW BUTTONS: only what this row needs. Plain = Done; link = Go, Done; approval = Approve, Fix; yes/no = Yes, No (an approval or question with a link keeps Go: it is how he sees the thing).
    Move, Edit, To Cadence, Remove sit under one quiet More that opens in place. Nothing greyed: what does not apply is not there. Same actions as before. pop = inside the pop-up (Move by data-move, no Edit: both only work in an open row). */
-function rowBtns(t, pop){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
-  const B = (c, l, a) => `<button type="button" class="kb ${c}" ${a}>${l}</button>`, go = c => u ? `<a class="kb ${c}" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : "";
+function rowBtns(t, mode){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "", pop = mode === true, strip = mode === "strip";   /* (Nov 1, Chris picked Layout B) one thin line: small buttons, quiet dots. strip = on a closed row: Move and Edit first open the row (data-stripact) */
+  const B = (c, l, a) => `<button type="button" class="kb ${c}" ${a}>${l}</button>`;
   const ask = k === "review" || (k && k !== "go" && k !== "ab" && k !== "yesno") || okAsk(t), done = `data-task="${id}" data-done="0"`;
-  const main = t.done || k === "ab" ? ""   /* an A/B row has its own Use winner + Send note */
-    : k === "yesno" ? go("ko") + B("kp", "Yes", `data-kans="yes|${id}"`) + B("ko", "No", `data-kans="no|${id}"`)
-    : ask ? go("ko") + B("kp", "Approve", `data-kans="good|${id}"`) + B("kg", "Fix", `data-kans="fix|${id}"`)
-    : u ? go("kp") + B("ko", "Done", done) : B("kp", "Done", done);
+  /* (Nov 1, Chris's final design) [second or empty][main][dots]: two fixed columns that line up down the page. No Go button: on a strip the title opens the link (v16Title); where the title is not ours (open row in a project list, pop-up) the link sits under the dots. */
+  const pair = t.done || k === "ab" ? null : k === "yesno" ? [B("kn", "No", `data-kans="no|${id}"`), B("kp", "Yes", `data-kans="yes|${id}"`)] : ask ? [B("kg", "Fix", `data-kans="fix|${id}"`), B("kp", "Approve", `data-kans="good|${id}"`)] : ["", B("kp", "Done", done)];
+  const main = pair ? (pair[0] || `<span class="kb0"></span>`) + pair[1] : "";
   const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
-  const more = [pop ? B("", "Move", `data-move="${id}"`) : B("", "Move", `data-tdcal="${id}"`), pop ? "" : B("", "Edit", `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
-  return `${main ? `<div class="kbtns kmain">${main}</div>` : ""}${t.done ? "" : `<details class="kmore"><summary>More</summary><div class="kmorein">${more}</div></details>`}`; }
+  const more = [u && !strip ? `<a class="kb" href="${esc(u)}" target="_blank" rel="noopener">Open link</a>` : "", B("", "Move", pop ? `data-move="${id}"` : strip ? `data-stripact="tdcal|${id}"` : `data-tdcal="${id}"`), pop ? "" : B("", "Edit", strip ? `data-stripact="edopen|${id}"` : `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
+  return `<div class="kline">${main}${t.done ? "" : `<details class="kmore"><summary aria-label="More">\u22EF</summary><div class="kmorein">${more}</div></details>`}</div>`; }
+/* a row with a link: the title opens it, underlined in the accent colour */
+function v16Title(t, html){ const u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : ""; return u ? `<span class="vlink" role="link" tabindex="0" data-v16link="${esc(u)}">${html}</span>` : html; }
+window.addEventListener("click", e => { const v = V16 && e.target.closest && e.target.closest("[data-v16link]"); if (!v) return; e.preventDefault(); e.stopPropagation(); window.open(v.dataset.v16link, "_blank", "noopener"); }, true);
+window.addEventListener("keydown", e => { if (e.key !== "Enter" || !V16) return; const v = e.target.closest && e.target.closest("[data-v16link]"); if (!v) return; e.preventDefault(); e.stopPropagation(); window.open(v.dataset.v16link, "_blank", "noopener"); }, true);
+/* V16: the Fix box stays hidden until Fix is tapped; a closed row opens first. The one style rule survives redraws. */
+function v16Fix(id){ let st = document.getElementById("v16fixon"); if (!st){ st = document.createElement("style"); st.id = "v16fixon"; document.head.appendChild(st); } st.textContent = `body.v16 .kfix[data-kfix="${CSS.escape(id)}"]{display:block}`;
+  const foc = () => { const ta = document.querySelector(`[data-kfix="${CSS.escape(id)}"]`); if (ta) ta.focus(); return !!ta; }; if (!foc() && window.V16ROW){ V16ROW(id); setTimeout(foc, 120); } }
 function eightBtns(t, pop){ if (V16) return rowBtns(t, pop); const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
   const B = (c, l, a) => a ? `<button type="button" class="kb ${c}" ${a}>${l}</button>` : `<span class="kb ${c} off">${l}</span>`;
   const ask = k === "review" || k === "yesno" || (k && k !== "go" && k !== "ab") || okAsk(t);
@@ -6476,7 +6484,7 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
   if (b.dataset.asknext){ const a = askList()[0]; if (a){ const i = askSkip.indexOf(a.id); if (i >= 0) askSkip.splice(i, 1); askSkip.push(a.id); } render(); return; }
   if (b.dataset.kbig){ const o = document.createElement("div"); o.className = "kbig"; o.innerHTML = `<img src="${esc(b.dataset.kbig)}" alt="">`; o.addEventListener("click", () => o.remove()); document.body.appendChild(o); return; }
   const [ans, id] = b.dataset.kans.split("|"), t = allTasks.find(x => x.id === id); if (!t || !db) return; let note = "";
-  if (ans === "fix"){ const ta = document.querySelector(`[data-kfix="${CSS.escape(id)}"]`); note = ta ? ta.value.trim() : ""; if (!note){ if (ta) ta.focus(); return; } }
+  if (ans === "fix"){ const ta = document.querySelector(`[data-kfix="${CSS.escape(id)}"]`); note = ta ? ta.value.trim() : ""; if (!note){ if (V16) return v16Fix(id); if (ta) ta.focus(); return; } }
   b.disabled = true; const now = new Date().toISOString(), upd = {answer: ans, answeredAt: now, done: true, doneAt: now, heard: false}; if (note) upd.fixNote = note;
   try { await db.collection("tasks").doc(id).update(upd); Object.assign(t, upd);
     if (ans === "fix" && t.heldOffToday){ const qi = "q-" + Math.random().toString(36).slice(2, 12); db.collection("queue").doc(qi).set({kind: "ask", ref: "ask/" + qi, key: now, title: ("Fix: " + (t.short || t.title)).slice(0, 70), job: "desk", lane: "desk", status: "queued", order: 0, addedAt: now, tries: 0, model: "sonnet", limit: 45, extra: {detail: "Chris asked for a fix on '" + (t.short || t.title) + "' (task " + id + "): " + note + " When fixed, set that task done:false, clear answer + fixNote, heard:true so it comes back in Questions for you."}}).catch(() => {}); }
@@ -7077,7 +7085,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   :root[data-theme="dark"] body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00}
   #v16{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;gap:8px;overflow:hidden;box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) 24px max(9px,env(safe-area-inset-bottom));background:var(--v-bg);color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
   body.v16work #v16{display:none}
-  #v16 *{box-sizing:border-box} #v16 button,#v16bar button{font:inherit;color:inherit;cursor:pointer}
+  #v16 *{box-sizing:border-box} #v16 button:not(.kb),#v16bar button{font:inherit;color:inherit;cursor:pointer}
   #v16 .vh{flex:none;display:flex;align-items:center;justify-content:space-between;min-height:36px;gap:10px}
   #v16 .vb{font:700 26px/1.1 Fraunces,Georgia,serif;letter-spacing:-.025em} #v16 .vv{margin-left:8px;padding:3px 8px;border-radius:99px;background:var(--v-b);color:var(--v-mute);font-size:12px;font-weight:700}
   #v16 .vold{color:var(--v-mute);font-size:13px;font-weight:600}
@@ -7096,8 +7104,15 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16 .vp{flex:1 0 150px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:8px 12px;border:1px solid var(--v-line);border-top:3px solid var(--v-teal);border-radius:13px;background:var(--v-a);text-align:left} #v16 .vp:nth-child(even){background:var(--v-b)}
   #v16 .vp b{font-size:14px;white-space:nowrap} #v16 .vp small{font-size:11px;color:var(--v-mute);white-space:nowrap}
   #v16 .vn{padding:18px 4px;color:var(--v-mute);font-size:14px}
-  @media (hover:hover) and (pointer:fine){#v16 .vr:hover,#v16 .vp:hover{background:var(--v-hover)} #v16 .vt:hover,#v16 .vo:hover,#v16bar button:hover{border-color:var(--v-teal);box-shadow:0 5px 16px #00000014}}
-  #v16 button:focus-visible,#v16bar button:focus-visible{outline:3px solid var(--v-teal);outline-offset:2px}
+  /* (Nov 1, Chris) THE ONE V16 HOVER RULE, mouse and trackpad only: rows wash, cards and quiet buttons get the teal edge, row buttons go one shade darker */
+  @media (hover:hover) and (pointer:fine){
+    #v16 .vr:hover,#v16 .vp:hover,body.v16 .kmorein .kb:hover,body.v16 .kmore>summary:hover,body.v16work #list .chc:hover,body.v16work #list .pc3t:hover,body.v16work #list .msec>h4:hover,body.v16work #list .sublist>.chc:hover,body.v16 #pop .chc:hover{background:var(--v-hover)!important}
+    #v16 .vt:hover,#v16 .vo:hover,#v16bar button:hover,body.v16 #list .tb:not(:disabled):hover,body.v16 #pop .tb:not(:disabled):hover,body.v16 #list .btn:not(:disabled):hover,body.v16 #pop .btn:not(:disabled):hover,body.v16 #list .sortbtn:hover{border-color:var(--v-teal)!important;box-shadow:0 5px 16px #00000014!important}
+    body.v16 .kline .kp:hover{background:#5DCAA5} body.v16 .kline .kg:hover{background:#EF9F27} body.v16 .kline .kn:hover{background:#B4B2A9}
+    body.v16 .kmore>summary:hover,#v16 .vold:hover,body.v16 .vlink:hover{color:var(--v-teal)}
+    body.v16 #list .sblk[role=button]:hover,body.v16 #list a.sblk:hover{box-shadow:0 0 0 2px var(--v-teal)!important}
+  }
+  body.v16 :is(button,a,summary,[role=button],[role=link],[tabindex]):focus-visible{outline:3px solid var(--v-teal)!important;outline-offset:2px}
   #v16bar{display:none}
   body.v16work #v16bar{flex:none;display:flex;align-items:center;gap:10px;min-height:44px;margin-bottom:8px;color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
   #v16bar button{padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16bar b{font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -7106,16 +7121,28 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16sub #list .v16keep .chgrid>.pc3:not(.v16one),body.v16sub #list .v16keep .chgrid>.sublist:not(.v16one){display:none!important}
   body.v16work #list .v16hd{position:sticky;top:var(--fd-head-h,50px);z-index:2;background:var(--card)} body.v16work #list .qhead{top:var(--fd-head-h,50px)!important} body.v16work #list.fdlock .v16hd{top:0}
   body.v16ws #list .v16keep>h4{pointer-events:none} body.v16ws #list .v16keep>h4 .hr>*{pointer-events:auto}
-  body.v16work #list .chc:hover{background:var(--v-hover)} body.v16work #list .chgrid>.chc:nth-of-type(even){background:var(--v-b)} body.v16work #list .chc.rowon{background:var(--v-sel)}
+  body.v16work #list .chgrid>.chc:nth-of-type(even){background:var(--v-b)} body.v16work #list .chc.rowon{background:var(--v-sel)}
   .v16note{margin:4px 0 8px;line-height:1.4}
   body.v16 button.armed{background:var(--v-gold)!important;border-color:var(--v-gold)!important;color:var(--v-ongold)!important}
-  body.v16 .kmain{margin-top:10px} body.v16 .kmain .kb{flex:1 1 0;max-width:240px;height:44px;box-sizing:border-box;padding:0 6px;border:1.5px solid transparent;border-radius:10px;font-size:15px;font-weight:700}
-  body.v16 .kmain .kp{background:var(--v-teal);border-color:var(--v-teal);color:var(--v-onteal)} body.v16 .kmain .kg{background:var(--v-gold);border-color:var(--v-gold);color:var(--v-ongold)} body.v16 .kmain .ko{background:var(--v-card);border-color:var(--v-teal);color:var(--v-teal)}
-  body.v16 .kmore{margin-top:6px} body.v16 .kmore>summary{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 4px;color:var(--v-mute);font-size:14px;font-weight:600;cursor:pointer;list-style:none} body.v16 .kmore>summary::-webkit-details-marker{display:none} body.v16 .kmore>summary::after{content:"\\25BE";font-size:12px} body.v16 .kmore[open]>summary::after{content:"\\25B4"}
-  body.v16 .kmorein{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px} body.v16 .kmorein .kb{flex:none;min-height:38px;padding:0 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);color:var(--v-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
-  @media (hover:hover) and (pointer:fine){body.v16 .kmorein .kb:hover,body.v16 .kmain .ko:hover{background:var(--v-hover)} body.v16 .kmore>summary:hover{color:var(--v-ink)}}
+  body.v16 .kfix[data-kfix]{display:none}
+  body.v16 .kline{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:0}
+  .tdetail>.kline,#pop .kline{margin-top:6px}
+  body.v16 .kline .kb{position:relative;flex:none;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;width:66px;padding:3px 0;border:0;border-radius:6px;font-family:inherit;font-size:12px;font-weight:700;line-height:1.25;white-space:nowrap;text-decoration:none;cursor:pointer}
+  body.v16 .kline>.kb::after{content:"";position:absolute;inset:-9px -2px}
+  body.v16 .kb0{flex:none;width:66px}
+  body.v16 .kline .kp{background:#9FE1CB;color:#04342C} body.v16 .kline .kg{background:#FAC775;color:#412402} body.v16 .kline .kn{background:#D3D1C7;color:#2C2C2A}
+  body.v16 .vlink{text-decoration:underline;text-decoration-color:var(--v-teal);text-decoration-thickness:1.5px;text-underline-offset:2px;cursor:pointer}
+  body.v16 .kmore{position:relative;flex:none} body.v16 .kmore>summary{display:flex;align-items:center;justify-content:center;width:26px;height:36px;color:var(--v-mute);font-size:16px;font-weight:700;line-height:1;cursor:pointer;list-style:none;user-select:none} body.v16 .kmore>summary::-webkit-details-marker{display:none}
+  body.v16 .kmorein{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;min-width:120px;padding:4px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-card);box-shadow:0 4px 14px #0000002e}
+  body.v16 .kmorein .kb{display:block;box-sizing:border-box;width:100%;line-height:36px;text-decoration:none;min-height:36px;padding:0 10px;background:transparent;border:0;color:var(--v-ink);font-size:13px;font-weight:600;text-align:left}
+  #v16 .vr{height:40px;margin:0;padding:3px 6px 3px 10px;border-width:0 0 1px;border-radius:0} #v16 .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
+  #list .msec .chgrid>.trow.vstrip{display:flex;align-items:center;gap:6px;min-height:40px;padding-right:6px}
+  #list .msec .chgrid>.trow.vstrip>.chc{flex:1 1 0;width:auto;min-width:0;min-height:0!important;padding:3px 0 3px 18px!important}
+  #list .msec .chgrid>.trow.vstrip>.chc b{display:block;font-size:13px;line-height:1.2;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
+  #list .msec .chgrid>.trow.vstrip>.chc span{display:block;font-size:11px!important;line-height:1.2;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis} #list .trow.vstrip>.chc .tmr{display:none}
+  .trow.vstrip+.tdetail>.kline{display:none}
   @media (max-width:800px){#v16{padding-left:12px;padding-right:12px;gap:7px} #v16 .vm{gap:6px} #v16 .vt{padding:6px 8px} #v16 .vt span{font-size:12px} #v16 .vs{padding:8px 10px} #v16 .vs.p{flex-basis:118px;min-height:104px}}
-  @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px} #v16 .vr{height:40px;margin-bottom:3px}}`;
+  @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px}}`;
   document.head.appendChild(css);
   document.body.classList.add("v16");
   const dash = document.createElement("div"); dash.id = "v16"; document.body.appendChild(dash);
@@ -7155,7 +7182,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const T = tops.map((o, i) => `<button type="button" class="vt" style="--vc:${COL[i][0]};--vt:${COL[i][1]}" data-v16tile="${o.x.k}"><span>${o.x.l}</span><strong>${o.n}</strong><small>${o.x.s}</small></button>`).join("");
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
-      return `<div class="vr" role="button" tabindex="0" data-v16row="${esc2(id)}"><div class="vi"><b>${esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(sub)}</small></div><button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button></div>`; }).join("");
+      return `<div class="vr" role="button" tabindex="0" data-v16row="${esc2(id)}"><div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
     dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><a class="vold" href="app.html">Old desk</a></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
@@ -7172,10 +7199,14 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
     const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
-  document.addEventListener("click", e => { const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+  window.V16ROW = openRow;
+  document.addEventListener("click", e => { const inM = e.target.closest && e.target.closest(".kmore"); document.querySelectorAll("details.kmore[open]").forEach(m => { if (m !== inM) m.open = false; });
+    const sa = e.target.closest && e.target.closest("[data-stripact]"); if (sa){ e.preventDefault(); e.stopPropagation(); const [ac, id] = sa.dataset.stripact.split("|"); openRow(id); setTimeout(() => { const b = document.querySelector(`.tdetail[data-tdof="${CSS.escape(id)}"] [data-${ac}="${CSS.escape(id)}"]`); if (b) b.click(); }, 120); return; }
+    if (e.target.closest && e.target.closest(".kline")) return;
+    const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return; e.preventDefault(); e.stopPropagation();
     if (x.dataset.v16tile){ const K = KINDS.find(o => o.k === x.dataset.v16tile); if (K) K.go(); return; }
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
-  document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
+  document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
   let tm = 0; new MutationObserver(() => { keepFolder();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
   /* phone or browser Back from a workspace returns to the dashboard; a check or pop-up open inside it closes first, by the old code */
   window.V16POP = () => { if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
