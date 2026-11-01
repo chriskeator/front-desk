@@ -2573,7 +2573,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk TEST <span class="deskver">v371</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk TEST <span class="deskver">v372</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6259,13 +6259,15 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
    Today row 'Songs to check' (waitLive + goBtn) and the Songs folder (homeSongs): a song is going out now when it has a gold Check box and
    ships within 7 days (a release date, the Nov 1 Christmas list) or is already live. Going out now = Today only; every other song = the Songs folder. */
 /* (Oct 30, Chris: "sort my 32 songs to check into two separate folders ... Christmas pushed to next week") ship list = today's Songs to check; every other song with a gold box coming up = the Next week folder. Change the list once per ship. */
-const SGSHIP = new Set(["silentnight", "awayinamanger"]);   /* (Oct 31, Chris) Nov 8 Final checks, in Today */
 /* (Oct 30, Chris: Level 2 is months away, "when the final check is okay, I want them removed from the list") a gold Level 2 / Level 3 box does not count as to check. Back on with the slash chords chapter: empty this set. */
 const SGLVWAIT = new Set([5, 6]), sgChk = x => x.cells.filter((q, i) => q.c === "chk" && !SGLVWAIT.has(i));
-function sgSoon(x){ if (!x || !x.cells || !sgChk(x).length) return false; if (SGLIVE.includes(x.k) || SGSHIP.has(x.k)) return true;
+function sgSoon(x){ if (!x || !x.cells || !sgChk(x).length) return false; if (SGLIVE.includes(x.k)) return true;
   const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
-function sgNow(x){ return SGSHIP.has(x.k) && !(x.sc && x.sc.finalOK && x.sc.finalOK.L1); }   /* (Oct 31, Chris: "i like to see it there until it's finished") a ship song stays while it rebuilds (Making), and leaves only on its Final Approve */
-function sgNext(x){ return sgSoon(x) && !SGSHIP.has(x.k); }
+function sgIsLive(x){ const SL = stats.find(q => q.id === "songlive") || {}; return (SL.ids || []).includes(x.sc && x.sc.labId) || (SL.titles || []).map(sgKey).includes(x.k); }   /* (Oct 31, Chris: a song moves to Live when it's live, never in 2 folders) db stats/songlive, read from Live's own files by song-live-list.py */
+/* (Nov 1, Chris: "christmas song list needs to be put in my today folder") Today's Songs to check = every Christmas song (x.xm, the board's one Christmas test) not yet on Live with a gold box waiting. No typed list. (Oct 31, Chris: "i like to see it there until it's finished") one he already started stays while it rebuilds (Fixing, or Making on Level 1, Intro or Final), and leaves on its Final Approve. A song with nothing built to check stays in the Christmas folder. */
+function sgNow(x){ if (!x || !x.xm || !x.cells || sgIsLive(x)) return false; const C = x.cells; if (x.sc && x.sc.finalOK && x.sc.finalOK.L1 && C[7].c !== "chk") return false;
+  return sgChk(x).length > 0 || C.some(q => q.c === "fx") || [3, 4, 7].some(i => C[i].c === "mk"); }
+function sgNext(x){ return sgSoon(x) && !sgNow(x); }
 function homeSongs(only){
   const RS = SGRS;
   const head = sgHead(SGCOLS, SGAB);
@@ -6277,7 +6279,7 @@ function homeSongs(only){
   /* inside a song-check task: the same template, only its songs */
   if (only){ const W = only === "now" ? U.filter(sgNow).sort(ord) : only.map(([id, nm2]) => byK.get(sgKey(nm2)) || U.find(x => x.sc && x.sc.id === id)).filter((x, j, A) => x && A.indexOf(x) === j);
     return W.length ? `<div class="chgrid songtaskgrid songgrid">${head}${W.map(x => sgRow(x)).join("")}</div>` : `<p class="note">These songs are not on the song list yet.</p>`; }
-  const SL = (stats.find(x => x.id === "songlive") || {}), slI = new Set(SL.ids || []), slK = new Set((SL.titles || []).map(sgKey)), isLive = x => slI.has(x.sc && x.sc.labId) || slK.has(x.k);   /* (Oct 31, Chris: a song moves to Live when it's live, never in 2 folders) db stats/songlive, read from Live's own files by song-live-list.py */
+  const isLive = sgIsLive;
   const live = U.filter(isLive);
   /* (Oct 21, Chris) SONGS BOARD = 5 FOLDERS: Christmas (Nov 1 list), Church songs, Kids, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
   const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "joyfuljoyful", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
