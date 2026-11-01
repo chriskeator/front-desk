@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v375</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v376</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2827,6 +2827,7 @@ function taskPop(t){
   else if (moving === t.id && moveCalOn) acts = moveCal(t);
   else if (moving === t.id) return popTop("Move to") + `<p class="tn">${esc(t.short || t.title)}</p>` + moveList(t);
   else if (pickingProj === t.id) return popTop(t.project ? "Move to which project?" : "Put in which project?") + `<p class="tn">${esc(t.short || t.title)}${t.project ? " · now in " + esc(t.project) : ""}</p>` + projList(t);   // (Oct 7) Chris didn't understand "Project"
+  else if (V16) acts = (okAsk(t) ? `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea>` : "") + eightBtns(t, true);
   else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(V16 ? fdLink(t.url) : t.url)}" target="_blank" rel="noopener">${V16 ? "Go" : "Open link"}</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}${t.done ? "" : `<button type="button" class="tb" data-delyes="${esc(t.id)}">Remove</button>`}${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
   let list = "";
   if (t.review){ const items = revItems(t); list = `<p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>` + popPaged(revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`))); }
@@ -2837,7 +2838,7 @@ function taskPop(t){
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
   if (t.wait === "asks") return popTop(esc(t.title)) + asksHTML() + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
   if (t.kind === "ab") return popTop(esc(t.title)) + kindHTML(t) + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
-  if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t) + (V16 ? `<div class="row" style="flex-wrap:wrap">${safeUrl(t.url) && t.url !== FDURL ? `<a class="tb" href="${esc(fdLink(t.url))}" target="_blank" rel="noopener">Go</a>` : ""}${t.done ? "" : `<button type="button" class="tb go" data-task="${esc(t.id)}" data-done="0">Done</button><button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}</div>` : "");
+  if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t) + (V16 ? eightBtns(t, true) : "");
   if (!isDesktop() && list && list.trim()) return popTop(esc(t.title)) + list + `<details class="whyd"><summary>What it's for</summary><div class="why">${whyIn}</div></details>` + acts;
   return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + acts + list;
 }
@@ -6441,7 +6442,19 @@ function noteP(t){ if (V16) return `<p class="v16note">${esc(String(t.note)).rep
   return `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>`; }
 /* (Nov 1, V16 step 2) a plain row that says it needs his approval: handed back for review, 'approve' in the title, or its note says tap Approve or Fix. Uses the existing answer action (data-kans). */
 const okAsk = t => V16 && !t.kind && !t.wait && !t.done && !t.review && (t.handoff === "review" || (!t.handoff && (/\bapprove\b/i.test(t.title || "") || /\b(Approve|Looks good) or Fix\b/i.test(t.note || ""))));
-function eightBtns(t){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
+/* (Nov 1, Chris: "not every button belongs on every task") V16 ROW BUTTONS: only what this row needs. Plain = Done; link = Go, Done; approval = Approve, Fix; yes/no = Yes, No (an approval or question with a link keeps Go: it is how he sees the thing).
+   Move, Edit, To Cadence, Remove sit under one quiet More that opens in place. Nothing greyed: what does not apply is not there. Same actions as before. pop = inside the pop-up (Move by data-move, no Edit: both only work in an open row). */
+function rowBtns(t, pop){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
+  const B = (c, l, a) => `<button type="button" class="kb ${c}" ${a}>${l}</button>`, go = c => u ? `<a class="kb ${c}" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : "";
+  const ask = k === "review" || (k && k !== "go" && k !== "ab" && k !== "yesno") || okAsk(t), done = `data-task="${id}" data-done="0"`;
+  const main = t.done || k === "ab" ? ""   /* an A/B row has its own Use winner + Send note */
+    : k === "yesno" ? go("ko") + B("kp", "Yes", `data-kans="yes|${id}"`) + B("ko", "No", `data-kans="no|${id}"`)
+    : ask ? go("ko") + B("kp", "Approve", `data-kans="good|${id}"`) + B("kg", "Fix", `data-kans="fix|${id}"`)
+    : u ? go("kp") + B("ko", "Done", done) : B("kp", "Done", done);
+  const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
+  const more = [pop ? B("", "Move", `data-move="${id}"`) : B("", "Move", `data-tdcal="${id}"`), pop ? "" : B("", "Edit", `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
+  return `${main ? `<div class="kbtns kmain">${main}</div>` : ""}${t.done ? "" : `<details class="kmore"><summary>More</summary><div class="kmorein">${more}</div></details>`}`; }
+function eightBtns(t, pop){ if (V16) return rowBtns(t, pop); const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
   const B = (c, l, a) => a ? `<button type="button" class="kb ${c}" ${a}>${l}</button>` : `<span class="kb ${c} off">${l}</span>`;
   const ask = k === "review" || k === "yesno" || (k && k !== "go" && k !== "ab") || okAsk(t);
   const done = t.done || k === "ab" ? "" : k && !V16 ? `data-kans="done|${id}"` : `data-task="${id}" data-done="0"`;   /* V16: one Done, one tap, on every row */
@@ -7054,15 +7067,14 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* (Nov 1, Chris go) V16 STEP 1 SHELL, only with ?v16=1. Look = newest draft (Design scans/front-desk-design-newest.html, V16.5). No second system:
    rows and counts are READ from the real folders in #list, a workspace IS the real folder, every button in it is the existing one. Colours are tokens below. */
 (function(){ if (!/[?&]v16=1/.test(location.search)) return;
-  const FOLD = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", lab: "Worship Piano Lab", personal: "Family and Money"};
+  const FOLD = {today: "Today", replies: "Replies", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", lab: "Worship Piano Lab", personal: "Family and Money"};
   const PTAB = {lab: "Worship Piano Lab", personal: "Personal"};   /* cards that are real db projects: they open in the Projects tab; Personal = one entry, its category folder shows only it */
   const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["lab", "Worship Piano Lab"], ["queue", "Queue"], ["personal", "Personal"], ["projects", "Other projects"]];
-  const TILES = [["today", "Needs attention"], ["songs", "Songs"], ["shorts", "Shorts"], ["queue", "Queue"]];
   const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
   const css = document.createElement("style"); css.textContent = `
-  body.v16{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#6B7280;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8}
-  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154}}
-  :root[data-theme="dark"] body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154}
+  body.v16{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#6B7280;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8;--v-onteal:#FFFFFF;--v-ongold:#241A00}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00}}
+  :root[data-theme="dark"] body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00}
   #v16{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;gap:8px;overflow:hidden;box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) 24px max(9px,env(safe-area-inset-bottom));background:var(--v-bg);color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
   body.v16work #v16{display:none}
   #v16 *{box-sizing:border-box} #v16 button,#v16bar button{font:inherit;color:inherit;cursor:pointer}
@@ -7096,6 +7108,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16ws #list .v16keep>h4{pointer-events:none} body.v16ws #list .v16keep>h4 .hr>*{pointer-events:auto}
   body.v16work #list .chc:hover{background:var(--v-hover)} body.v16work #list .chgrid>.chc:nth-of-type(even){background:var(--v-b)} body.v16work #list .chc.rowon{background:var(--v-sel)}
   .v16note{margin:4px 0 8px;line-height:1.4}
+  body.v16 button.armed{background:var(--v-gold)!important;border-color:var(--v-gold)!important;color:var(--v-ongold)!important}
+  body.v16 .kmain{margin-top:10px} body.v16 .kmain .kb{flex:1 1 0;max-width:240px;height:44px;box-sizing:border-box;padding:0 6px;border:1.5px solid transparent;border-radius:10px;font-size:15px;font-weight:700}
+  body.v16 .kmain .kp{background:var(--v-teal);border-color:var(--v-teal);color:var(--v-onteal)} body.v16 .kmain .kg{background:var(--v-gold);border-color:var(--v-gold);color:var(--v-ongold)} body.v16 .kmain .ko{background:var(--v-card);border-color:var(--v-teal);color:var(--v-teal)}
+  body.v16 .kmore{margin-top:6px} body.v16 .kmore>summary{display:inline-flex;align-items:center;gap:5px;min-height:36px;padding:0 4px;color:var(--v-mute);font-size:14px;font-weight:600;cursor:pointer;list-style:none} body.v16 .kmore>summary::-webkit-details-marker{display:none} body.v16 .kmore>summary::after{content:"\\25BE";font-size:12px} body.v16 .kmore[open]>summary::after{content:"\\25B4"}
+  body.v16 .kmorein{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px} body.v16 .kmorein .kb{flex:none;min-height:38px;padding:0 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);color:var(--v-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  @media (hover:hover) and (pointer:fine){body.v16 .kmorein .kb:hover,body.v16 .kmain .ko:hover{background:var(--v-hover)} body.v16 .kmore>summary:hover{color:var(--v-ink)}}
   @media (max-width:800px){#v16{padding-left:12px;padding-right:12px;gap:7px} #v16 .vm{gap:6px} #v16 .vt{padding:6px 8px} #v16 .vt span{font-size:12px} #v16 .vs{padding:8px 10px} #v16 .vs.p{flex-basis:118px;min-height:104px}}
   @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px} #v16 .vr{height:40px;margin-bottom:3px}}`;
   document.head.appendChild(css);
@@ -7112,21 +7130,34 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function cardSub(k){ if (FOLD[k] && !PTAB[k]) return countOf(FOLD[k]); if (k === "projects"){ const n = pOpen().filter(p => !["Worship Piano Lab", "Personal", "Shorts", "YouTube"].includes(p.name)).length; return plural(n, "project"); }
     const n = openN(PTAB[k]); return k === "lab" ? [lcToCheck() ? lcToCheck() + " to check" : "", plural(n, "to-do")].filter(Boolean).join(" · ") : plural(n, "to-do"); }
   const cardShows = k => !PTAB[k] ? !FOLD[k] || !!folder(FOLD[k]) : pOpen().some(p => p.name === PTAB[k]);
-  /* the Songs tile says the same number as Today's Songs to check row and opens that row; only without the row it counts the Songs folder */
-  function songsTile(){ const c = countOf(FOLD.songs), later = +(/(\d+) later/.exec(c) || [0, 0])[1], lv = (/\d+ live/.exec(c) || [""])[0], row = todayRows().some(b => b.dataset.tlinks === "t-wait-songs"), w = row && waitLive({wait: "songs"});
-    return {n: w ? w.n : later, sub: ["to check", lv].filter(Boolean).join(" · "), row: !!w}; }
+  /* (Nov 1, Chris yes) TOP 4 TILES: the 4 kinds of work with the most waiting on him, counted live from the real boards (work off Today counts too). A tile opens the NEXT item itself, by that board's own opener.
+     Being fixed or being made = not waiting on him. 0 = no tile. A board reloading keeps its last number. No timer: the list redraw recounts them. */
+  const lastN = {}, today = () => plus(0);
+  const lcNext = () => { const out = []; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk") out.push([L.id, k]); } return out; };
+  const ytNext = () => (ytRows || []).filter(r => (r.steps || {}).posted !== "ok").sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))).map(r => [r.id, YTPOP.find(k => (r.steps || {})[k] === "chk")]).filter(x => x[1]);
+  const shNext = () => shBoard === null ? (fdShLoad(), null) : shBoard.filter(shReady).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const qNext = () => tasks.filter(t => !t.done && !t.removed && !t.wait && !withCad(t) && !(t.date && t.date > today()) && (t.kind || t.handoff === "review" || okAsk(t))).sort(byOrder);
+  const sgNext2 = () => { const w = waitLive({wait: "songs"}); return w ? (w.first ? w : {n: 0}) : null; };
+  const KINDS = [
+    {k: "songs", l: "Songs", s: "to check", n: () => { const w = sgNext2(); return w && w.n; }, go: () => { const w = sgNext2(); if (w && w.first){ const h = document.createElement("div"); h.hidden = true; h.innerHTML = sgRow({title: "", cells: [w.first]}, ["x"]); document.body.appendChild(h); const c = h.querySelector("[role=button]"); if (c) c.click(); setTimeout(() => h.remove(), 0); } }},
+    {k: "shorts", l: "Shorts", s: "to check", n: () => { const L = shNext(); return L && L.length; }, go: () => { const r = (shNext() || [])[0]; if (r) shOpen(null, r.id, shStep(r) ? undefined : "final"); }},
+    {k: "youtube", l: "YouTube", s: "to check", n: () => ytNext().length, go: () => { const x = ytNext()[0]; if (x){ ytOpen = {id: x[0], k: x[1]}; ytDraw(); } }},
+    {k: "lessons", l: "Lessons", s: "to check", n: () => lcNext().length, go: () => { const x = lcNext()[0]; if (x) lcOpen(x[0], x[1]); }},
+    {k: "drafts", l: "Drafts", s: "to check", n: () => reviews.filter(r => r.status === "unchecked").length, go: () => { const r = reviews.find(r => r.status === "unchecked"); if (r){ openRev = r.id; revFix = false; render(); } }},
+    {k: "replies", l: "Replies", s: "to send", n: () => pendingReplies().length, go: () => openWs("replies", "Replies")},
+    {k: "questions", l: "Questions", s: "to answer", n: () => qNext().length, go: () => { const t = qNext()[0]; if (t){ openLinks = t.id; render(); } }}];
+  const topKinds = () => KINDS.map((x, i) => { const v = x.n(); if (v != null) lastN[x.k] = v; return {x, i, n: lastN[x.k] || 0}; }).filter(o => o.n > 0).sort((a, b) => b.n - a.n || a.i - b.i).slice(0, 4);
   let ws = null, homeTop = 0;
   if (tab !== "today"){ tab = "today"; proj = null; }   /* a reload always lands on the dashboard, even if the saved place was the Projects tab */
   function draw(){ if (ws || tab !== "today") return;
     const rows = todayRows(), ver = document.querySelector("h1 .deskver"), L = dash.querySelector(".vl"), keep = L ? L.scrollTop : 0, C = dash.querySelector(".vc"), keepC = C ? C.scrollLeft : 0;
-    const sg = songsTile();
-    const T = TILES.map(([k, l], i) => { const c0 = k === "today" ? String(rows.length) : k === "songs" ? sg.n + " " + sg.sub : countOf(FOLD[k]), mm = /^(\d+)\s*(.*)$/.exec(c0), n = mm ? mm[1] : c0, s = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]][i];
-      return `<button type="button" class="vt" style="--vc:${s[0]};--vt:${s[1]}" ${k === "songs" && sg.row ? 'data-v16row="t-wait-songs"' : `data-v16ws="${k}"`}><span>${l}</span><strong>${esc2(n === "" ? "–" : n)}</strong><small>${esc2(k === "today" ? "" : mm ? mm[2] : "")}</small></button>`; }).join("");
+    const tops = topKinds(), COL = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]];
+    const T = tops.map((o, i) => `<button type="button" class="vt" style="--vc:${COL[i][0]};--vt:${COL[i][1]}" data-v16tile="${o.x.k}"><span>${o.x.l}</span><strong>${o.n}</strong><small>${o.x.s}</small></button>`).join("");
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
       return `<div class="vr" role="button" tabindex="0" data-v16row="${esc2(id)}"><div class="vi"><b>${esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(sub)}</small></div><button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button></div>`; }).join("");
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><a class="vold" href="app.html">Old desk</a></div><div class="vm">${T}</div>
+    dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><a class="vold" href="app.html">Old desk</a></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
@@ -7137,11 +7168,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function openWs(k, title){ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", k === "personal"); document.getElementById("v16title").textContent = title;
     if (k === "personal") foldSet("p:Personal", 1); const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; }
   function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
-  const TITLES = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
+  const TITLES = {today: "Today", replies: "Replies", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
     const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
-  document.addEventListener("click", e => { const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+  document.addEventListener("click", e => { const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+    if (x.dataset.v16tile){ const K = KINDS.find(o => o.k === x.dataset.v16tile); if (K) K.go(); return; }
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
   let tm = 0; new MutationObserver(() => { keepFolder();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
