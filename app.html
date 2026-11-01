@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v372</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v373</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5094,7 +5094,7 @@ document.addEventListener("click", e => {
 // step changes every song to "of 5". Sort: Almost done (most steps first) / Release date / A to Z. Tap a song = what's needed to move on.
 const SSTEPS = () => songSteps.length ? songSteps.map(x => x.name) : ["Lyrics", "Melody", "Chords", "Band"];
 let songSort = (() => { try { return localStorage.getItem("fd-songsort") || "almost"; } catch { return "almost"; } })(), songOpen = null;
-const songsLive = () => songs.filter(x => !x.released && !x.removed);
+const songsLive = () => { const K = new Set(sgUniverse().map(u => u.k)); return songs.filter(x => !x.released && !x.removed && K.has(sgKey(x.title))); };   /* (Nov 1, Chris) the same songs as the board (sgKeep) */
 function songsLine(){ const L = songsLive(), n = SSTEPS().length, near = L.filter(x => (x.step || 0) >= n - 1).length; return L.length + (L.length === 1 ? " song" : " songs") + (near ? " · " + near + " almost done" : ""); }
 function songsHTML(){ const ST = SSTEPS(), n = ST.length;
   const L = songsLive().slice().sort(songSort === "az" ? (a, b) => a.title.localeCompare(b.title) : songSort === "rel" ? (a, b) => String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title)
@@ -5649,7 +5649,10 @@ function sgUniverse(){ if (scBoard === null) fdScLoad();
   (songs || []).filter(x => !x.removed).forEach(x => add(x.title, {sg: x, title: x.title}));
   (scBoard || []).forEach(r => add(r.name, {sc: r}));
   const gone = new Set((songs || []).filter(x => x.removed).map(x => sgKey(x.title))); gone.forEach(k => { const u = U.get(k); if (u && !u.sg) U.delete(k); });   /* (Oct 22, Chris: Ode to Joy came back) a song he removed stays off the board, whatever old list or row still names it */
-  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas */
+  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})).filter(sgKeep); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas */
+/* (Nov 1, Chris: "remove all songs from my desk that aren't these 21 and the christmas list") ONE filter, read from data, hides only (no row changes): db stats/nextsongs cats (his picks), Christmas, Live (stats/songlive), or a release date on its db songs row. Chapters 7-13 use only these. Undo without a push: stats/nextsongs boardAll:true shows every song; no nextsongs doc = every song too. */
+function sgKeep(x){ const N = stats.find(q => q.id === "nextsongs"); if (!N || !N.cats || N.boardAll) return true;
+  return Object.values(N.cats).flat().some(t => sgKey(t) === x.k) || !!x.xm || sgIsLive(x) || !!(x.sg && x.sg.release); }
 const SGRS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
 /* the checklist header row (column names; phone = the whole word at 45 degrees): Songs board and Lessons board */
 const sgHead = (cols, ab) => `<div class="tn" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
