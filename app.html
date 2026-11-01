@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v373</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v374</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2832,7 +2832,7 @@ function taskPop(t){
   else if (tLinks(t).length) list = popPaged(tLinks(t).map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labRef(l.url, l.label || "Link"), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }));
   // (Oct 7) Chris: Open shows what the to-do is FOR (why, project, when it was added), so he remembers what we talked about
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", fmtMins(t.mins)].filter(Boolean).join(" · ");
-  const whyIn = `${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
+  const whyIn = `${t.night ? nightHTML(t) : ""}${t.note && !t.night ? noteP(t) : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
   if (t.wait === "asks") return popTop(esc(t.title)) + asksHTML() + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
   if (t.kind === "ab") return popTop(esc(t.title)) + kindHTML(t) + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
@@ -4348,6 +4348,7 @@ try { const r = JSON.parse(localStorage.getItem("fd-where") || "null"); if (r &&
 const navKey = () => [tab, sub, psub, msub, proj || "", $("pop") && $("pop").innerHTML ? 1 : 0, socDrill ? socDrill.length : 0].join("|");
 addEventListener("popstate", () => {
   if (sgNavSkip){ sgNavSkip = false; return; }   /* (Oct 24, Chris) a song check closed by its own button: its Back step is gone, nothing else moves */
+  if (window.V16POP && V16POP()) return;   /* only exists with ?v16=1 */
   if (document.getElementById("lyrchk")){ if (chS && chS.dirty.size && !chS.arm){ chS.arm = true; chDraw(); try { history.pushState({fd: 1, sgov: 1}, ""); } catch {} return; } chS = null; lyrClose(); return; }   /* phone Back = close only the open song check */
   { const k = document.getElementById("songchk"); if (k && k.innerHTML){ scClose(); render(); return; } }
   navBusy = true;
@@ -6434,6 +6435,9 @@ function lvBar(t){ if (t.project === "Worship Piano Lab") return "";   /* (Oct 2
 /* (Oct 27, Chris picked A: 'the same template for every possible scenario so I don't have to keep changing it') EVERY to-do, approval, question and
    chapter lesson row = these TWO lines, always all 8 buttons; one that does not apply to this item is greyed out (no link = grey Go).
    Line 1 Go | Done | Move | Remove | Edit, line 2 Approve | Fix | To Cadence. Buttons keep the actions they already had. */
+/* (Nov 1, V16 step 1) the note in an open row. Behind ?v16=1 every line shows (What it is / Why it matters / What you do); without the switch the old one short line. */
+function noteP(t){ if (/[?&]v16=1/.test(location.search)) return `<p class="v16note">${esc(String(t.note)).replace(/\n/g, "<br>")}</p>`;
+  return `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>`; }
 function eightBtns(t){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "";
   const B = (c, l, a) => a ? `<button type="button" class="kb ${c}" ${a}>${l}</button>` : `<span class="kb ${c} off">${l}</span>`;
   const ask = k === "review" || k === "yesno" || (k && k !== "go" && k !== "ab");
@@ -6570,7 +6574,7 @@ function taskDetail(t){
   /* (Oct 27, Chris: 'every item on my to-do list needs Go, Done, Move, Remove, Edit like the chapters') EVERY plain to-do = the chapter row's ONE colour-coded
      line: Go | Done | Move | Remove | Edit. No link = Go greyed out, so a to-do with nowhere to go shows at once. */
   const plain = !t.wait, five = plain ? eightBtns(t) : "";
-  return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
+  return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? noteP(t) : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
     ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) : goBtn(plain ? {...t, url: ""} : t)}${kidsHTML(t)}${t.wait ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${plain ? five : t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${!plain && cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : t.handoff === "cadence" || t.handoff === "teach" ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind || plain ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
@@ -7040,6 +7044,90 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("sort", ["added","asc"], v => sorts = v.sort((a,b)=>Math.abs(+b.total||0)-Math.abs(+a.total||0)));
   /* (Oct 18, desk-film.py) the Shorts + Songs boards are part of the FIRST draw (they used to arrive after it: header counts flipped "3 scheduled" -> "6 to check") */
   deskWait.add("shboard"); fdShLoad().finally(() => first("shboard")); deskWait.add("scboard"); fdScLoad().finally(() => first("scboard"));
+})();
+</script>
+<script>
+/* (Nov 1, Chris go) V16 STEP 1 SHELL, only with ?v16=1. Look = newest draft (Design scans/front-desk-design-newest.html, V16.5). No second system:
+   rows and counts are READ from the real folders in #list, a workspace IS the real folder, every button in it is the existing one. Colours are tokens below. */
+(function(){ if (!/[?&]v16=1/.test(location.search)) return;
+  const FOLD = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue"};
+  const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["queue", "Queue"], ["projects", "Other projects"]];
+  const TILES = [["today", "Needs attention"], ["songs", "Songs"], ["shorts", "Shorts"], ["queue", "Queue"]];
+  const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
+  const css = document.createElement("style"); css.textContent = `
+  body.v16{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#6B7280;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154}}
+  :root[data-theme="dark"] body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154}
+  #v16{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;gap:8px;overflow:hidden;box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) 24px max(9px,env(safe-area-inset-bottom));background:var(--v-bg);color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
+  body.v16work #v16{display:none}
+  #v16 *{box-sizing:border-box} #v16 button,#v16bar button{font:inherit;color:inherit;cursor:pointer}
+  #v16 .vh{flex:none;display:flex;align-items:center;justify-content:space-between;min-height:36px;gap:10px}
+  #v16 .vb{font:700 26px/1.1 Fraunces,Georgia,serif;letter-spacing:-.025em} #v16 .vv{margin-left:8px;padding:3px 8px;border-radius:99px;background:var(--v-b);color:var(--v-mute);font-size:12px;font-weight:700}
+  #v16 .vold{color:var(--v-mute);font-size:13px;font-weight:600}
+  #v16 .vm{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  #v16 .vt{display:flex;flex-direction:column;align-items:flex-start;padding:8px 12px;border:1px solid var(--v-line);border-top:3px solid var(--vc);border-radius:13px;background:linear-gradient(180deg,var(--vt),var(--v-card) 65%);text-align:left;min-width:0}
+  #v16 .vt span{font-size:13px;color:var(--v-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%} #v16 .vt strong{font-size:20px;font-weight:750;letter-spacing:-.035em;line-height:1.15} #v16 .vt small{font-size:11px;color:var(--v-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;min-height:13px}
+  #v16 .vs{min-height:0;display:flex;flex-direction:column;gap:5px;padding:10px 15px;border:1px solid var(--v-line);border-top:3px solid var(--vc);border-radius:16px;background:var(--v-card);box-shadow:0 2px 12px #4c40300a}
+  #v16 .vs.t{flex:1 1 350px;--vc:var(--v-gold)} #v16 .vs.p{flex:0 1 136px;min-height:112px;--vc:var(--v-teal)}
+  #v16 h2{margin:0;font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;flex:none}
+  #v16 .vsh{flex:none;display:flex;align-items:center;justify-content:space-between;min-height:30px} #v16 .vl{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+  #v16 .vr{display:flex;align-items:center;gap:9px;width:100%;height:43px;margin:0 0 4px;padding:4px 10px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-a);text-align:left}
+  #v16 .vr:nth-child(even){background:var(--v-b)}
+  #v16 .vi{flex:1;min-width:0;line-height:1.14} #v16 .vi b,#v16 .vi small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16 .vi b{font-size:13px} #v16 .vi small{font-size:11px;color:var(--v-mute)}
+  #v16 .vo{flex:none;padding:5px 9px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:12px;font-weight:600;white-space:nowrap}
+  #v16 .vc{flex:1;min-height:0;display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;padding-bottom:4px;scrollbar-width:thin}
+  #v16 .vp{flex:1 0 150px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:8px 12px;border:1px solid var(--v-line);border-top:3px solid var(--v-teal);border-radius:13px;background:var(--v-a);text-align:left} #v16 .vp:nth-child(even){background:var(--v-b)}
+  #v16 .vp b{font-size:14px;white-space:nowrap} #v16 .vp small{font-size:11px;color:var(--v-mute);white-space:nowrap}
+  #v16 .vn{padding:18px 4px;color:var(--v-mute);font-size:14px}
+  @media (hover:hover) and (pointer:fine){#v16 .vr:hover,#v16 .vp:hover{background:var(--v-hover)} #v16 .vt:hover,#v16 .vo:hover,#v16bar button:hover{border-color:var(--v-teal);box-shadow:0 5px 16px #00000014}}
+  #v16 button:focus-visible,#v16bar button:focus-visible{outline:3px solid var(--v-teal);outline-offset:2px}
+  #v16bar{display:none}
+  body.v16work #v16bar{flex:none;display:flex;align-items:center;gap:10px;min-height:44px;margin-bottom:8px;color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
+  #v16bar button{padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16bar b{font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body.v16work .wrap>header,body.v16work .wrap>.tabs,body.v16work #list .hello{display:none!important}
+  body.v16ws #list .msec:not(.v16keep),body.v16ws #list .mgrid>:not(.mleft):not(.v16keep):not(:has(.v16keep)),body.v16ws #list .mleft>:not(.v16keep):not(:has(.v16keep)){display:none!important}
+  body.v16ws #list .v16keep>h4{pointer-events:none} body.v16ws #list .v16keep>h4 .hr>*{pointer-events:auto}
+  body.v16work #list .chc:hover{background:var(--v-hover)} body.v16work #list .chgrid>.chc:nth-of-type(even){background:var(--v-b)} body.v16work #list .chc.rowon{background:var(--v-sel)}
+  .v16note{margin:4px 0 8px;line-height:1.4}
+  @media (max-width:800px){#v16{padding-left:12px;padding-right:12px;gap:7px} #v16 .vm{gap:6px} #v16 .vt{padding:6px 8px} #v16 .vt span{font-size:12px} #v16 .vs{padding:8px 10px} #v16 .vs.p{flex-basis:118px;min-height:104px}}
+  @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px} #v16 .vr{height:40px;margin-bottom:3px}}`;
+  document.head.appendChild(css);
+  document.body.classList.add("v16");
+  const dash = document.createElement("div"); dash.id = "v16"; document.body.appendChild(dash);
+  const bar = document.createElement("div"); bar.id = "v16bar"; bar.innerHTML = `<button type="button" data-v16home="1">\u2190 Back</button><b id="v16title"></b><button type="button" data-v16home="1" style="margin-left:auto">\u2715 Close</button>`;
+  const wrap = document.querySelector(".wrap"); wrap.insertBefore(bar, wrap.firstChild);
+  const esc2 = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
+  const folder = name => [...document.querySelectorAll("#list .msec")].find(m => { const h = m.querySelector(":scope > h4"); return h && h.firstChild && h.firstChild.textContent.trim() === name; });
+  const countOf = name => { const m = folder(name), i = m && m.querySelector(":scope > h4 .hr i"); return i ? i.textContent.trim() : ""; };
+  const todayRows = () => { const m = folder(FOLD.today); return m ? [...m.querySelectorAll("[data-tlinks]")].filter(b => b.matches(".chc")) : []; };
+  let ws = null;
+  function draw(){ if (ws || tab !== "today") return;
+    const rows = todayRows(), ver = document.querySelector("h1 .deskver"), L = dash.querySelector(".vl"), keep = L ? L.scrollTop : 0, C = dash.querySelector(".vc"), keepC = C ? C.scrollLeft : 0;
+    const T = TILES.map(([k, l], i) => { const c0 = k === "today" ? String(rows.length) : countOf(FOLD[k]), mm = /^(\d+)\s*(.*)$/.exec(c0), n = mm ? mm[1] : c0, s = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]][i];
+      return `<button type="button" class="vt" style="--vc:${s[0]};--vt:${s[1]}" data-v16ws="${k}"><span>${l}</span><strong>${esc2(n === "" ? "–" : n)}</strong><small>${esc2(k === "today" ? "" : mm ? mm[2] : "")}</small></button>`; }).join("");
+    const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
+      const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
+      return `<div class="vr" role="button" tabindex="0" data-v16row="${esc2(id)}"><div class="vi"><b>${esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(sub)}</small></div><button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button></div>`; }).join("");
+    const P = CARDS.map(([k, l]) => { const n = FOLD[k] ? countOf(FOLD[k]) : ""; if (FOLD[k] && !folder(FOLD[k])) return ""; return `<button type="button" class="vp" data-v16ws="${k}"><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
+    dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><a class="vold" href="app.html">Old desk</a></div><div class="vm">${T}</div>
+      <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
+      <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
+    const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
+  function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed"); } }
+  function openWs(k, title){ if (!ws) try { history.pushState({fd: 1, v16: 1}, ""); } catch {} ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.getElementById("v16title").textContent = title;
+    if (tab !== (FOLD[k] ? "today" : "projects")) setTab(FOLD[k] ? "today" : "projects"); keepFolder(); const L = $("list"); if (L) L.scrollTop = 0; }
+  function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); }
+  const TITLES = {today: "Today", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects"};
+  function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
+    const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ b.click(); setTimeout(() => { const d = document.querySelector(`#list .tdetail[data-tdof="${CSS.escape(id)}"]`); if (d) d.scrollIntoView({block: "nearest"}); }, 50); } }
+  document.addEventListener("click", e => { const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home]"); if (!x) return; e.preventDefault(); e.stopPropagation();
+    if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
+  document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
+  let tm = 0; new MutationObserver(() => { clearTimeout(tm); tm = setTimeout(() => { keepFolder(); draw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
+  /* phone or browser Back from a workspace returns to the dashboard; a check or pop-up open inside it closes first, by the old code */
+  window.V16POP = () => { if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
+  dash.addEventListener("wheel", e => { const c = e.target.closest && e.target.closest(".vc"); if (c && Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); c.scrollLeft += e.deltaY; } }, {passive: false});
+  draw();
 })();
 </script>
 
