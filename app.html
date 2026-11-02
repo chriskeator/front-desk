@@ -2705,7 +2705,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v402</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v403</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4506,7 +4506,8 @@ const navKey = () => [tab, sub, psub, msub, proj || "", $("pop") && $("pop").inn
 addEventListener("popstate", () => {
   if (sgNavSkip){ sgNavSkip = false; return; }   /* (Oct 24, Chris) a song check closed by its own button: its Back step is gone, nothing else moves */
   if (window.V16POP && V16POP()) return;   /* only exists with ?v16=1 */
-  if (document.getElementById("lyrchk")){ if (chS && chS.dirty.size && !chS.arm){ chS.arm = true; chDraw(); try { history.pushState({fd: 1, sgov: 1}, ""); } catch {} return; } chS = null; lyrClose(); return; }   /* phone Back = close only the open song check */
+  if (document.getElementById("lyrchk")){ if (chS){ const S = chS; chFlush(S).then(() => { if (S.err){ if (chS === S) chDraw(); return; } if (chS === S){ chS = null; lyrClose(); } }); return; }
+    if (ntS){ const S = ntS; ntFlush(S).then(() => { if (S.err){ if (ntS === S) ntDraw(); return; } ntStop(); if (ntS === S){ ntS = null; lyrClose(); } }); return; } lyrClose(); return; }   /* phone Back = close only the open song check */
   { const k = document.getElementById("songchk"); if (k && k.innerHTML){ scClose(); render(); return; } }
   navBusy = true;
   if (socDrill && socDrill.length > 1 && $("pop") && $("pop").innerHTML){ socDrill.pop(); render(); }   /* (Oct 21) Social pop-up: phone back = up one level */
@@ -6064,19 +6065,43 @@ function chSheetHTML(){ const r = chS.r, M = r.meter || 4, vs = btVerses(r).filt
     out.push(`<div class="chv"><h3>${vs.length > 1 ? "Verse " + v : "Song"}${mine ? ` <em class="chown">own chords</em>` : ""}${mine && own ? ` <button type="button" class="tb chdrop" data-chdrop="${v}">Use all-verse chords</button>` : ""}</h3>` + words(W, "V", v) + `</div>`); });
   const TW = chVerseWords(r, "T"); if (r.tag && TW.length) out.push(`<div class="chv"><h3>Tag</h3>` + words(TW, "T", "", r.tag.meter || M) + `</div>`);
   return out.join(""); }
-function chDraw(){ const o = document.getElementById("lyrchk"); if (!o || !chS) return; const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = chSheetHTML(); n.scrollTop = y;
+function chDraw(){ const o = document.getElementById("lyrchk"); if (!o || !chS) return; if (chS.dirty.size) chAutoKick(chS); const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = chSheetHTML(); n.scrollTop = y;
   const L = chS.lv, ed = chEditable(L), nm = CHLV[L][2]; o.dataset.chlock = ed ? "0" : "1";
   /* (Oct 23, Chris) the level row never changes size: fixed-width buttons, the tick's space always kept, a reminder line under each level, and the Change switch always holds its own spot (hidden on Level 1 / locked) */
   const lb = o.querySelector(".chlvb"), sc = L !== "L1" && ed, lh = `<span></span><span class="chlvs">` + CHL.map(k => `<button type="button" class="tb" data-chlvx="${k}" aria-pressed="${k === L}"><span class="chlvn"><i style="visibility:${chOk(k) ? "visible" : "hidden"}">&#10003;</i> ${CHLV[k][2]}</span><small>${CHLVD[k]}</small></button>`).join("") + `</span>`
     + `<span class="chsc" style="visibility:${sc ? "visible" : "hidden"}">Change:<button type="button" class="tb" data-chsc="all" aria-pressed="${chS.scope !== "verse"}"${sc ? "" : " tabindex=\"-1\""}>All verses</button><button type="button" class="tb" data-chsc="verse" aria-pressed="${chS.scope === "verse"}"${sc ? "" : " tabindex=\"-1\""}>This verse</button></span>`;
   if (lb.innerHTML !== lh) lb.innerHTML = lh;
   const act = ed ? `<button type="button" class="tb go" data-chx="ok">Approve ${nm}</button>` : chPrevOk(L) ? `<button type="button" class="tb" data-chx="edit">Edit (locked)</button>` : `<button type="button" class="tb" disabled>Approve ${CHLV[CHL[CHL.indexOf(L) - 1]][2]} first</button>`;
-  const sv = ed ? `<button type="button" class="tb" data-chx="save"${chS.dirty.has(L) ? "" : " disabled"}>${chS.saved === L && !chS.dirty.has(L) ? "Saved" : "Save"}</button>` : "";   /* (Oct 23, Chris) save half-done chords without approving */
-  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">${chS.arm ? "Close without saving" : "Back"}</button>` + sv + act;
+  const sv = ed ? `<button type="button" class="tb svst" disabled>${sheetSaveTxt(chS, chS.dirty.size)}</button>` : "";   /* (Oct 23, Chris) save half-done chords without approving */
+  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">Back</button>` + sv + act;
   if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ed ? "1fr 1fr 1fr" : "1fr 1fr"; }   /* never swap the buttons under a tap (a blur re-draw would eat the Approve click) */
 function chLoad(r, L, prev){ const f = CHLV[L][0], V = r[f + "V"] && typeof r[f + "V"] === "object" ? r[f + "V"] : {}, S = chFlat(r[f]), T = chFlat(r.tag && r.tag[f]);
   if (prev && !chOk(L) && L !== "L1") return chCloneSet(prev);   /* not yet approved: shows a copy of the level before (Chris: start from scratch) */
   return {S: S.length || !prev ? S : chClone(prev.S), V: L === "L1" ? {} : Object.fromEntries(Object.entries(V).map(([v, rows]) => [v, chFlat(rows)]).filter(([, A]) => A.length)), T: T.length || !prev ? T : chClone(prev.T)}; }
+/* (Nov 2, Chris: "make it autosave after every edit, like google sheets does") AUTOSAVE: every change on the chord and notes sheets saves itself
+   0.6s later (the same write the old Save button made: chart or notes only, never an approval). The old Save spot shows Saving... / All changes saved.
+   Back (and phone Back) waits for the save, then closes. A failed save retries every 5s and the sheet never closes on its own. */
+const sheetSaveTxt = (S, dirty) => S.err ? "Not saved yet, retrying" : S.busy || dirty ? "Saving..." : "All changes saved";
+function sheetSaveShow(S, dirty){ const b = document.querySelector("#lyrchk .lyrbt .svst"); if (b) b.textContent = sheetSaveTxt(S, dirty); }   /* only the label: a redraw would pull him out of the box he is typing in */
+function chAutoKick(S){ clearTimeout(S.autoT); S.autoT = setTimeout(() => chAutoRun(S), S.err ? 5000 : 600); }
+async function chSaveLv(S, lv){ const r = S.r, now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, X = S.charts[lv], f = CHLV[lv][0];
+  const up = {updated: now, [f + "Edited"]: now, [f]: chRows(X.S, M, r.intro)};
+  if (lv !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)]));
+  if (r.tag){ const tag = JSON.parse(JSON.stringify(r.tag)); tag[f] = chRows(X.T, TM, false); up.tag = tag; }
+  if (!(await scSave(r.id, up))) return false; Object.assign(r, up); scLocal(r.id, up); return true; }
+async function chAutoRun(S){ clearTimeout(S.autoT); S.autoT = null; if (S.busy){ S.again = true; return; }
+  const lvs = [...S.dirty]; if (!lvs.length) return; S.busy = true; sheetSaveShow(S, 1); const snap = JSON.stringify(lvs.map(L => S.charts[L])); let ok = true;
+  for (const L of lvs) if (!(await chSaveLv(S, L))){ ok = false; break; }
+  S.busy = false; S.err = !ok; if (ok && JSON.stringify(lvs.map(L => S.charts[L])) === snap) lvs.forEach(L => S.dirty.delete(L));
+  S.again = false; if (S.dirty.size) chAutoKick(S); if (chS === S) sheetSaveShow(S, S.dirty.size); }
+async function chFlush(S){ if (!S) return; clearTimeout(S.autoT); S.autoT = null; for (let n = 0; S.busy && n < 150; n++) await new Promise(f => setTimeout(f, 100)); if (S.dirty.size) await chAutoRun(S); }
+function ntAutoKick(S){ clearTimeout(S.autoT); S.autoT = setTimeout(() => ntAutoRun(S), S.err ? 5000 : 600); }
+async function ntAutoRun(S){ clearTimeout(S.autoT); S.autoT = null; if (!S.dirty || S.bad.size) return; if (S.busy){ S.again = true; return; }
+  S.busy = true; const snap = JSON.stringify(S.lines), now = new Date().toISOString(), up = {updated: now, lines: JSON.parse(snap), melodyEditedAt: now};
+  const ok = await scSave(S.r.id, up); S.busy = false; S.err = !ok; if (ok){ Object.assign(S.r, up); scLocal(S.r.id, up); if (JSON.stringify(S.lines) === snap) S.dirty = false; }
+  S.again = false; if (S.dirty && !S.bad.size) ntAutoKick(S); if (ntS === S) sheetSaveShow(S, S.dirty); }
+async function ntFlush(S){ if (!S) return; clearTimeout(S.autoT); S.autoT = null; for (let n = 0; S.busy && n < 150; n++) await new Promise(f => setTimeout(f, 100)); if (S.dirty && !S.bad.size) await ntAutoRun(S); }
+window.addEventListener("beforeunload", e => { const S = chS || ntS; if (S && (S.busy || (S === chS ? S.dirty.size : S.dirty))){ e.preventDefault(); e.returnValue = ""; } });
 function chOpen(id, lv){ const r = (scBoard || []).find(x => x.id === id); if (!r || !CHLV[lv]) return; lyrClose();
   chS = {id, lv, r, charts: {}, unl: new Set(), dirty: new Set(), arm: false, scope: "all", secs: chSecs(r), cpSel: {}, cpNote: {}};
   const L1 = chLoad(r, "L1"); chS.charts.L1 = L1; chS.charts.L2 = r.chordsOK ? chLoad(r, "L2", L1) : chCloneSet(L1); chS.charts.L3 = r.mediumOK ? chLoad(r, "L3", chS.charts.L2) : chCloneSet(chS.charts.L2);
@@ -6152,15 +6177,12 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (lvx || sc || dr){ e.preventDefault(); e.stopPropagation(); const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
     if (lvx){ chS.lv = lvx.dataset.chlvx; chS.cpNote = {}; } if (sc) chS.scope = sc.dataset.chsc; if (dr){ delete chS.charts[chS.lv].V[dr.dataset.chdrop]; chS.dirty.add(chS.lv); } chS.arm = false; chDraw(); return; }
   const x = e.target.closest("[data-chx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
-  const act = x.dataset.chx; if (act === "back"){ if (chS.dirty.size && !chS.arm){ chS.arm = true; chDraw(); return; } chS = null; return lyrClose(); }
+  const act = x.dataset.chx; if (act === "back"){ const S = chS; await chFlush(S); if (S.err){ if (chS === S) chDraw(); return; } if (chS === S){ chS = null; lyrClose(); } return; }
   if (act === "edit"){ scUnlock(chS.id, [CHLV[chS.lv][1]]); chS.unl.add(chS.lv); chS.arm = false; chDraw(); return; }
   const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
   const r = chS.r, lv = chS.lv, j = CHL.indexOf(lv), now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, tag = r.tag ? JSON.parse(JSON.stringify(r.tag)) : null;
   const put = (L, X) => { const f = CHLV[L][0]; up[f] = chRows(X.S, M, r.intro); if (L !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)])); if (tag) tag[f] = chRows(X.T, TM, false); };
-  if (act === "save"){ const X = chS.charts[lv], f = CHLV[lv][0], up = {updated: now, [f + "Edited"]: now, [f]: chRows(X.S, M, r.intro)};
-    if (lv !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)])); if (tag){ tag[f] = chRows(X.T, TM, false); up.tag = tag; }   /* chart only: no approval stamp, no copy into other levels, window stays open */
-    if (!(await scSave(r.id, up))) return;
-    Object.assign(r, up); scLocal(r.id, up); if (chS){ chS.dirty.delete(lv); chS.saved = lv; chS.arm = false; } render(); if (chS) chDraw(); return; }
+  clearTimeout(chS.autoT); chS.autoT = null;   /* Approve writes this level itself */
   const up = {[CHLV[lv][1]]: now, updated: now}; put(lv, chS.charts[lv]);
   const chJ = L => { const v = r[CHLV[L][0] + "V"]; return JSON.stringify([r[CHLV[L][0]] || null, v && Object.keys(v).length ? v : null]); }, chHas = L => { const c = r[CHLV[L][0]]; return Array.isArray(c) ? c.some(x => x && (Array.isArray(x) ? x.length : true)) : !!c; };
   const chMine = L => { const i = CHL.indexOf(L); return chHas(L) && i > 0 && chJ(L) !== chJ(CHL[i - 1]); };   /* (Oct 26, Chris: never change a chord he placed) a later level that differs from its parent level = his own chords */
@@ -6209,10 +6231,10 @@ function ntSheetHTML(){ const r = ntS.r, L = ntS.lines, ed = !ntS.lock, S = chSe
     const k = S ? chSecOf(S, G.find(gp => gp.w) ? G.find(gp => gp.w).g : G[0].g) : -1; if (k !== sec){ flush(); sec = k; }
     blk.push(`<div class="chl">${G.map(box).join("")}</div>`); });
   flush(); return out.join(""); }
-function ntDraw(){ const o = document.getElementById("lyrchk"); if (!o || !ntS) return; const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = ntSheetHTML(); n.scrollTop = y;
+function ntDraw(){ const o = document.getElementById("lyrchk"); if (!o || !ntS) return; if (ntS.dirty && !ntS.bad.size) ntAutoKick(ntS); const n = o.querySelector(".chsh"), y = n.scrollTop; n.innerHTML = ntSheetHTML(); n.scrollTop = y;
   o.dataset.chlock = ntS.lock ? "1" : "0";
   const bt = o.querySelector(".lyrbt"), act = ntS.lock ? `<button type="button" class="tb" data-ntx="edit">Edit (locked)</button>` : `<button type="button" class="tb go" data-ntx="ok"${ntS.bad.size ? " disabled" : ""}>Approve</button>`;
-  const bh = `<button type="button" class="tb" data-ntx="back">${ntS.arm ? "Close without saving" : "Back"}</button><button type="button" class="tb" data-ntx="play">${ntP ? "&#9632; Stop" : "&#9654; Play"}</button>` + (ntS.lock ? "" : `<button type="button" class="tb" data-ntx="save"${ntS.dirty && !ntS.bad.size ? "" : " disabled"}>${ntS.saved && !ntS.dirty ? "Saved" : "Save"}</button>`) + act;
+  const bh = `<button type="button" class="tb" data-ntx="back">Back</button><button type="button" class="tb" data-ntx="play">${ntP ? "&#9632; Stop" : "&#9654; Play"}</button>` + (ntS.lock ? "" : `<button type="button" class="tb svst" disabled>${ntS.bad.size ? "Fix the red note to save" : sheetSaveTxt(ntS, ntS.dirty)}</button>`) + act;
   if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ntS.lock ? "1fr 1fr 1fr" : "1fr 1fr 1fr 1fr"; if (ntP && ntP.key){ const e = o.querySelector(`.ntz[data-ntk="${ntP.key}"]`); if (e) e.classList.add("ntplay"); } }
 /* (Oct 28, Chris: "a play button ... that would highlight the notes as it's going through") PLAY on the Notes sheet: the sheet's own (unsaved) notes on the
    song board's piano (scPLoad / scPiano, one sound everywhere), at the song's bpm; the box being played lights gold and scrolls into view. Stop / Back / closing stops it. */
@@ -6249,14 +6271,13 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   const foc = document.querySelector("#lyrchk .ntz:focus"); if (foc) ntSet(foc);
   const act = x.dataset.ntx, r = ntS.r, now = new Date().toISOString();
   if (act === "play"){ if (ntP) ntStop(); else ntPlay(); return; }
-  if (act === "back"){ if (ntS.dirty && !ntS.arm){ ntS.arm = true; ntDraw(); return; } ntStop(); ntS = null; return lyrClose(); }
+  if (act === "back"){ const S = ntS; await ntFlush(S); if (S.err && ntS === S){ ntDraw(); return; } ntStop(); if (ntS === S){ ntS = null; lyrClose(); } return; }
   if (act === "edit"){ scUnlock(r.id, ["melodyOK"]); ntS.lock = false; ntDraw(); return; }
   if (ntS.bad.size) return;
-  const up = {updated: now}; if (ntS.dirty){ up.lines = ntS.lines; up.melodyEditedAt = now; }
+  clearTimeout(ntS.autoT); ntS.autoT = null; const up = {updated: now}; if (ntS.dirty){ up.lines = ntS.lines; up.melodyEditedAt = now; }
   if (act === "ok"){ up.notesOK = now; up.unlock = {melodyOK: null}; } else if (!ntS.dirty) return;
   if (!(await scSave(r.id, up))) return;
   Object.assign(r, up); scLocal(r.id, up); render();
-  if (act === "save"){ ntS.lines = JSON.parse(JSON.stringify(r.lines)); ntS.dirty = false; ntS.saved = true; ntDraw(); return; }
   sgCelebrate(r.id, 1); ntS = null; lyrClose(); }, true);
 function lyrClose(){ if (typeof ntStop === "function") ntStop(); const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); scVisitEnd("lyr", o.dataset.id, null, !!o.dataset.f); } }   /* (Oct 29) closing without Approve relocks what this check unlocked; Intro/Player pop-up: carried to the next check */
 /* (Oct 24, Chris) SONG CHECK RETURN: every Approve closes the check at once, back on the SAME song at the SAME spot (the box sits where it was on screen,
@@ -7191,6 +7212,7 @@ setTimeout(deskGo, 5000);
 /* (Oct 15) Chris: the host caches the page ~10 min, so a refresh can show an old version. On open (and when he comes back to the tab)
    ask for the newest copy; if its v number is higher, load it. Never while a song check is open. */
 function deskVerCheck(){ const cur = +((document.querySelector("header .deskver") || {}).textContent || "").replace(/\D/g, "") || 0; if (!cur || scId) return;
+  if (document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || (window.SE && SE.on) || (window.CT && CT.on)) return;   /* (Nov 2, Chris lost his O Holy Night chords) never with a song sheet open */
   const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
     if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (window.V2 ? "&v2=1" : V16 ? "" : "&v16=0") + location.hash); }).catch(() => {}); }
