@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v393</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v394</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7170,6 +7170,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16 .kmorein{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;min-width:120px;padding:4px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-card);box-shadow:0 4px 14px #0000002e}
   body.v16 .kmorein .kb{display:block;box-sizing:border-box;width:100%;line-height:36px;text-decoration:none;min-height:36px;padding:0 10px;background:transparent;border:0;color:var(--v-ink);font-size:13px;font-weight:600;text-align:left}
   #v16 .vr{height:44px;margin:0 0 4px;padding:4px 6px 4px 12px} #v16 .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
+  body.v16 #pop .popcard:has(details.kmore[open]){overflow:visible}   /* (Nov 2, Chris: the dots in a pop-up did not open) the card clipped its own menu: an open menu may run past its edge */
   /* (Nov 1, Chris: closer to GPT's V16.6) centred page; Today holds 7 rows whatever the count and scrolls inside; project cards carry an icon and their own colour */
   #v16{justify-content:center;padding-left:max(24px,calc((100vw - 1252px)/2));padding-right:max(24px,calc((100vw - 1252px)/2))}
   #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}
@@ -7321,7 +7322,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const B = el.querySelector(".vfb"), top = B ? B.scrollTop : 0, a = document.activeElement, was = a && a.dataset && a.dataset.kfix, vals = {}; el.querySelectorAll("[data-kfix]").forEach(x => { vals[x.dataset.kfix] = x.value; });
     el.innerHTML = fmHtml(); el.querySelectorAll("[data-kfix]").forEach(x => { if (vals[x.dataset.kfix]) x.value = vals[x.dataset.kfix]; if (was === x.dataset.kfix) x.focus(); }); const B2 = el.querySelector(".vfb"); if (B2) B2.scrollTop = top; fmTime(); }
   function fmShow(v){ if (v === "session") fmPickSet(false); if (v && !FM.view){ try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } FM.view = v; fmDraw(true); if (!v && !ws) draw(); }
-  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span>Pick<span class="vlong"> items</span> ${FM.pick ? "on" : "off"}</span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Pick items to add more." : "Turn on Pick items to choose.";
+  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span>${FM.pick ? "Remove items" : "Add items"}</span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Pick items to add more." : "Turn on Pick items to choose.";
     if (FM.active) return `<b>Focus Session</b>${cnt}<span class="vfh">${FM.pick ? hint : "In progress."}</span>${sw}<button type="button" class="vfs" data-fm="resume"><span class="vlong">Back to </span>session →</button>`;
     return `<b>Focus Session</b>${cnt}<span class="vfh">${hint}</span>${sw}<button type="button" data-fm="review"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
   const fmBarDraw = () => { const f = dash.querySelector(".vf"); if (f) f.innerHTML = fmBar(); const c = document.getElementById("v16barc"); if (c) c.textContent = FM.pick ? "Pick on \u00b7 " + FM.sel.size + " selected" : FM.sel.size ? FM.sel.size + " selected" : ""; };
