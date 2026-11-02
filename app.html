@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v398</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v399</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7152,7 +7152,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16work .wrap{max-width:1284px!important;padding-bottom:76px!important}
   body.v16fm #v16fm{padding-bottom:76px}
   @media (min-width:801px) and (min-height:741px){#v16{gap:22px}}
-  body.v16board #list .fdim,body.v16board #list .fdim *{filter:none!important;opacity:1!important;-webkit-filter:none!important;pointer-events:auto}
+  body.v16 #list .fdim,body.v16 #list .fdim *{filter:none!important;opacity:1!important;-webkit-filter:none!important;pointer-events:auto}   /* (Nov 2, Chris: "it just goes blurry for no reason") the new desk never blurs or dims a list */
   body.v16work #list .msec{background:var(--v-card);border-radius:16px;box-shadow:0 2px 12px #4c40300a}
   body.v16work #list .msec>h4{font:700 19px/1.2 Fraunces,Georgia,serif;letter-spacing:-.02em;background:var(--v-card)}
   body.v16work #list .msec>h4 .hr,body.v16work #list .msec>h4 i{font:600 12px/1.2 Figtree,system-ui,sans-serif;letter-spacing:0;color:var(--v-mute)}
