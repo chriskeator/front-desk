@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v379</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v380</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7135,7 +7135,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16work #list .msec{background:var(--v-card);border-radius:16px;box-shadow:0 2px 12px #4c40300a}
   body.v16work #list .msec>h4{font:700 19px/1.2 Fraunces,Georgia,serif;letter-spacing:-.02em;background:var(--v-card)}
   body.v16work #list .msec>h4 .hr,body.v16work #list .msec>h4 i{font:600 12px/1.2 Figtree,system-ui,sans-serif;letter-spacing:0;color:var(--v-mute)}
-  body.v16work #list .srow{background:var(--v-card)} body.v16work #list .srow:nth-of-type(even){background:var(--v-b)}
+  body.v16work #list .srow{background:var(--v-card)} body.v16work #list .srow:nth-of-type(even){background:var(--v-b)} body.v16work #list .srow .sgc[data-sgst="none"]{background:var(--v-card)!important}
   body.v16work #list .pc3t{background:var(--v-a)} body.v16work #list .subon>.pc3t{background:var(--v-sel)}
   body.v16work #list .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important}
   body.v16work #list .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important}
