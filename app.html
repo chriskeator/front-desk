@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v378</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v379</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7029,7 +7029,7 @@ setTimeout(deskGo, 5000);
 function deskVerCheck(){ const cur = +((document.querySelector("header .deskver") || {}).textContent || "").replace(/\D/g, "") || 0; if (!cur || scId) return;
   const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
-    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + location.hash); }).catch(() => {}); }
+    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (V16 ? "&v16=1" : "") + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
 setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); }, 120000);   /* (Oct 28, Chris saw v337 after v339 went live: the window never left the screen) also every 2 min while open */
 /* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
