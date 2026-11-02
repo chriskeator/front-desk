@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v395</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v396</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7370,7 +7370,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   try { const o = JSON.parse(localStorage.getItem(FMK) || "null"); if (o) fmIn(o); if (localStorage.getItem("fd-focus-pick")) FM.pick = true; } catch {} document.body.classList.toggle("v16pick", FM.pick);
   let ws = null, homeTop = 0;
   if (tab !== "today"){ tab = "today"; proj = null; }   /* a reload always lands on the dashboard, even if the saved place was the Projects tab */
-  function draw(){ if (ws || tab !== "today") return; fmSync();
+  function draw(){ if (ws || tab !== "today" || !deskReady) return; fmSync();   /* (Nov 2, Chris: "the desk isn't loading at the same time") never draw from the cached page: one full draw once every list has arrived */
     if (!FM.active){ let cut = false; for (const id of [...FM.sel.keys()]){ const t = allTasks.find(x => x.id === id); if (t && (t.done || t.removed)){ FM.sel.delete(id); FM.fin.delete(id); cut = true; } } if (cut) fmSave(); }
     const rows = todayRows(), ver = document.querySelector("h1 .deskver"), L = dash.querySelector(".vl"), keep = L ? L.scrollTop : 0, C = dash.querySelector(".vc"), keepC = C ? C.scrollLeft : 0;
     const tops = topKinds(), COL = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]];
@@ -7403,7 +7403,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     if (fmClick(e)) return;
     if (e.target.closest && e.target.closest(".kline")) return;
     const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return; e.preventDefault(); e.stopPropagation();
-    if (x.dataset.v16tile && FM.pick){ const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); } if (x.dataset.v16tile){ const K = KINDS.find(o => o.k === x.dataset.v16tile); if (K) K.go(); return; }
+    if (x.dataset.v16tile){ const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); }   /* (Nov 2, Chris) a tile opens its whole list, never one item at a time */
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
   /* the open dots menu stays open through a redraw, and opens upward when it would run off the bottom */
