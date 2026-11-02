@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v387</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v388</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2611,7 +2611,7 @@ fetch("budget.html").then(r => r.text()).then(t => { const m = t.match(/<script 
 let db = null, projects = [], jobs = [], items = [], replies = [], tasks = [], allTasks = [], goals = [], summaries = [], ideas = [], questions = [], sorts = [], sorting = null, sortPage = 0, openTx = null;
 let psub = "projects", icat = "All", msub = "biz", openCat = null;
 let sub = "todo", confirmDel = null, drag = null;
-const V16 = /[?&]v16=1/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch; off = today's desk exactly */
+const V16 = !/[?&]v16=0/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch. (Nov 2, Chris yes) the new desk is the default; ?v16=0 = the old desk exactly */
 /* (Nov 1, Chris) V16 pick mode goes before every other click handler (the 2-tap Approve included), so a picked row can never approve, open or write. Off without ?v16=1. */
 if (V16) ["click", "dblclick", "auxclick", "pointerdown", "mousedown", "touchstart", "dragstart", "keydown"].forEach(ty => window.addEventListener(ty, e => { if (window.V16PICK) window.V16PICK(e); }, {capture: true, passive: false}));
 let tab = "today", proj = null, showDone = false, page = 0, editing = null;
@@ -7040,7 +7040,7 @@ setTimeout(deskGo, 5000);
 function deskVerCheck(){ const cur = +((document.querySelector("header .deskver") || {}).textContent || "").replace(/\D/g, "") || 0; if (!cur || scId) return;
   const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
-    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (V16 ? "&v16=1" : "") + location.hash); }).catch(() => {}); }
+    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (V16 ? "" : "&v16=0") + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
 setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); }, 120000);   /* (Oct 28, Chris saw v337 after v339 went live: the window never left the screen) also every 2 min while open */
 /* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
@@ -7088,7 +7088,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 <script>
 /* (Nov 1, Chris go) V16 STEP 1 SHELL, only with ?v16=1. Look = newest draft (Design scans/front-desk-design-newest.html, V16.5). No second system:
    rows and counts are READ from the real folders in #list, a workspace IS the real folder, every button in it is the existing one. Colours are tokens below. */
-(function(){ if (!/[?&]v16=1/.test(location.search)) return;
+(function(){ if (!V16) return;
   /* (Nov 1, Chris) one tap light/dark, remembered; the desk's own data-theme colours everything, pop-ups and boards included */
   const RT = document.documentElement; try { const t = localStorage.getItem("fdTheme"); if (t) RT.dataset.theme = t; } catch {}
   document.addEventListener("click", e => { if (!(e.target.closest && e.target.closest(".vtheme"))) return; const dark = RT.dataset.theme === "dark" || (RT.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches), t = dark ? "light" : "dark"; RT.dataset.theme = t; try { localStorage.setItem("fdTheme", t); } catch {} });
@@ -7376,7 +7376,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
       return `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" data-v16row="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    const H16 = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
+    const H16 = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>
       <div class="vf">${fmBar()}</div>`;
