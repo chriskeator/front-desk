@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v382</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v383</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7086,6 +7086,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* (Nov 1, Chris go) V16 STEP 1 SHELL, only with ?v16=1. Look = newest draft (Design scans/front-desk-design-newest.html, V16.5). No second system:
    rows and counts are READ from the real folders in #list, a workspace IS the real folder, every button in it is the existing one. Colours are tokens below. */
 (function(){ if (!/[?&]v16=1/.test(location.search)) return;
+  /* (Nov 1, Chris) one tap light/dark, remembered; the desk's own data-theme colours everything, pop-ups and boards included */
+  const RT = document.documentElement; try { const t = localStorage.getItem("fdTheme"); if (t) RT.dataset.theme = t; } catch {}
+  document.addEventListener("click", e => { if (!(e.target.closest && e.target.closest(".vtheme"))) return; const dark = RT.dataset.theme === "dark" || (RT.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches), t = dark ? "light" : "dark"; RT.dataset.theme = t; try { localStorage.setItem("fdTheme", t); } catch {} });
   const FOLD = {today: "Today", replies: "Replies", lessons: "Worship Piano Lab", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", lab: "Worship Piano Lab", personal: "Family and Money"};
   const PTAB = {lab: "Worship Piano Lab", personal: "Personal", lessons: "Worship Piano Lab"};   /* cards that are real db projects: they open in the Projects tab; Personal = one entry, its category folder shows only it */
   const ONEF = {personal: "p:Personal", lessons: "p:@@lab"};   /* a card that shows one sub-folder of its category */
@@ -7161,7 +7164,16 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16 .kmore{position:relative;flex:none} body.v16 .kmore>summary{display:flex;align-items:center;justify-content:center;width:26px;height:36px;color:var(--v-mute);font-size:16px;font-weight:700;line-height:1;cursor:pointer;list-style:none;user-select:none} body.v16 .kmore>summary::-webkit-details-marker{display:none}
   body.v16 .kmorein{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;min-width:120px;padding:4px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-card);box-shadow:0 4px 14px #0000002e}
   body.v16 .kmorein .kb{display:block;box-sizing:border-box;width:100%;line-height:36px;text-decoration:none;min-height:36px;padding:0 10px;background:transparent;border:0;color:var(--v-ink);font-size:13px;font-weight:600;text-align:left}
-  #v16 .vr{height:40px;margin:0;padding:3px 6px 3px 10px;border-width:0 0 1px;border-radius:0} #v16 .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
+  #v16 .vr{height:44px;margin:0 0 4px;padding:4px 6px 4px 12px} #v16 .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
+  /* (Nov 1, Chris: closer to GPT's V16.6) centred page; Today holds 7 rows whatever the count and scrolls inside; project cards carry an icon and their own colour */
+  #v16{justify-content:center;padding-left:max(24px,calc((100vw - 1252px)/2));padding-right:max(24px,calc((100vw - 1252px)/2))}
+  #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}
+  #v16 .vht{display:flex;align-items:center;gap:12px}
+  #v16{padding-bottom:70px} #v16 .vf{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16 .vf b{font-size:14px;white-space:nowrap} #v16 .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16 .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16 .vf button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16 .vf .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16 .vf button:disabled{opacity:.5;cursor:default}
+  #v16 .vi b{font-size:14px} #v16 .vi small{font-size:12px}
+  #v16 .vp{--pc:var(--v-teal);--pt:var(--v-tteal);border-top-color:var(--pc);box-shadow:0 2px 10px #4c403009} #v16 .vp:nth-child(4n+2){--pc:var(--v-coral);--pt:var(--v-tcoral)} #v16 .vp:nth-child(4n+3){--pc:var(--v-blue);--pt:var(--v-tblue)} #v16 .vp:nth-child(4n){--pc:var(--v-gold);--pt:var(--v-tgold)}
+  #v16 .vsy{display:grid;place-items:center;width:29px;height:29px;margin-bottom:3px;border-radius:9px;background:var(--pt);color:var(--pc);font-size:16px;line-height:1}
+  @media (hover:hover) and (pointer:fine){#v16 .vp:hover{background:var(--pt)!important}}
   #list .msec .chgrid>.trow.vstrip{display:flex;align-items:center;gap:6px;min-height:40px;padding-right:6px}
   #list .msec .chgrid>.trow.vstrip>.chc{flex:1 1 0;width:auto;min-width:0;min-height:0!important;padding:3px 0 3px 18px!important}
   #list .msec .chgrid>.trow.vstrip>.chc b{display:block;font-size:13px;line-height:1.2;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
@@ -7209,10 +7221,11 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
       return `<div class="vr" role="button" tabindex="0" data-v16row="${esc2(id)}"><div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
-    const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><a class="vold" href="app.html">Old desk</a></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
+    const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
+    dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
-      <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
+      <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>
+      <div class="vf"><b>Focus Session</b><span class="vfc">0 selected</span><span class="vfh">Choose rows across any projects.</span><button type="button" disabled>Review</button><button type="button" class="vfs" disabled>Start session →</button></div>`;
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
   function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed");
       m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ONEF[ws]) m.querySelectorAll(`[data-fold="${ONEF[ws]}"]`).forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
