@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v397</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v398</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6414,7 +6414,7 @@ function addTodayBtns(){ addWaitMove(); addLvChips(); if (phone()) return;
 // (Oct 7) Chris: on the phone a to-do opens IN PLACE (no pop-up): what it's for + its buttons; tap the to-do again to close
 // (Oct 9) Chris: clicking any empty space outside the open folder closes it (no need to go back to its header)
 document.addEventListener("click", e => {
-  if (V16 && e.target.closest && e.target.closest("#v16, #v16fm, #v16bar")) return;   /* the V16 pages sit over the old list: a tap on them must not close a hidden folder */
+  if (V16 && e.target.closest && e.target.closest("#v16, #v16fm, #v16bar, #v16fb")) return;   /* the V16 pages sit over the old list: a tap on them must not close a hidden folder */
   if (!phone() || !e.target.isConnected || e.target.closest("#list .msec, button, a, input, textarea, select, label, #pop, #bar, .tabs, [data-tab], .sortmenu")) return;
   const open = document.querySelector("#list .msec:not(.collapsed):not(.pfold) > h4");
   if (open) open.click(); });
@@ -7146,6 +7146,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* (Nov 1, step 3) the real boards in the V16 look: old tokens point at V16 ones inside a workspace; no board code changes */
   body.v16work #list{--card:var(--v-card);--line:var(--v-line);--ink:var(--v-ink);--muted:var(--v-mute);--soft:var(--v-b);--hov:var(--v-hover);font-family:Figtree,system-ui,-apple-system,sans-serif;color:var(--v-ink)}
   body.v16work #bar{display:none!important} html:has(body.v16work),body.v16work,body.v16work .wrap,body.v16work #list{background:var(--v-bg)!important}
+  /* (Nov 2, Chris) one Focus bar on every page, lined up with the desk; the switch keeps one width; every board is the desk's width; more air between the desk's 3 sections */
+  body.v16 #v16fb{z-index:45;padding-left:max(18px,calc((100vw - 1252px)/2));padding-right:max(18px,calc((100vw - 1252px)/2))}
+  body.v16 #v16fb .vsw{min-width:152px;justify-content:flex-start}
+  body.v16work .wrap{max-width:1284px!important;padding-bottom:76px!important}
+  body.v16fm #v16fm{padding-bottom:76px}
+  @media (min-width:801px) and (min-height:741px){#v16{gap:22px}}
   body.v16board #list .fdim,body.v16board #list .fdim *{filter:none!important;opacity:1!important;-webkit-filter:none!important;pointer-events:auto}
   body.v16work #list .msec{background:var(--v-card);border-radius:16px;box-shadow:0 2px 12px #4c40300a}
   body.v16work #list .msec>h4{font:700 19px/1.2 Fraunces,Georgia,serif;letter-spacing:-.02em;background:var(--v-card)}
@@ -7175,7 +7181,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16{justify-content:center;padding-left:max(24px,calc((100vw - 1252px)/2));padding-right:max(24px,calc((100vw - 1252px)/2))}
   #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}
   #v16 .vht{display:flex;align-items:center;gap:12px}
-  #v16{padding-bottom:70px} #v16 .vf{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16 .vf b{font-size:14px;white-space:nowrap} #v16 .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16 .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16 .vf button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16 .vf .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16 .vf button:disabled{opacity:.5;cursor:default}
+  #v16{padding-bottom:70px} #v16fb{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16fb b{font-size:14px;white-space:nowrap} #v16fb .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16fb button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16fb .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16fb button:disabled{opacity:.5;cursor:default}
   #v16 .vi b{font-size:14px} #v16 .vi small{font-size:12px}
   #v16 .vp{--pc:var(--v-teal);--pt:var(--v-tteal);border-top-color:var(--pc);box-shadow:0 2px 10px #4c403009} #v16 .vp:nth-child(4n+2){--pc:var(--v-coral);--pt:var(--v-tcoral)} #v16 .vp:nth-child(4n+3){--pc:var(--v-blue);--pt:var(--v-tblue)} #v16 .vp:nth-child(4n){--pc:var(--v-gold);--pt:var(--v-tgold)}
   #v16 .vsy{display:grid;place-items:center;width:29px;height:29px;margin-bottom:3px;border-radius:9px;background:var(--pt);color:var(--pc);font-size:16px;line-height:1}
@@ -7215,7 +7221,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16toast{position:fixed;left:50%;bottom:76px;z-index:60;max-width:90vw;padding:10px 16px;border-radius:10px;background:var(--v-ink);color:var(--v-bg);font:600 14px Figtree,system-ui,sans-serif;transform:translateX(-50%)}
   @media (hover:hover) and (pointer:fine){#v16fm .vb1:not(:disabled):hover,#v16fm .timer-option:hover{border-color:var(--v-teal);box-shadow:0 5px 16px #00000014} #v16fm .vb1.vp1:not(:disabled):hover{filter:brightness(1.08)}}
   @media (max-width:700px){#v16fm{padding:0} #v16fm .vfw{width:100%;height:100dvh;border:0;border-radius:0} #v16fm .vfb{padding:14px 12px} #v16fm .vfh1{padding:calc(9px + env(safe-area-inset-top)) 12px 9px;grid-template-columns:84px 1fr 84px} #v16fm .vfh1 h2{font-size:16px} #v16fm .vff{padding-bottom:calc(10px + env(safe-area-inset-bottom))} #v16fm .timer-readout{font-size:36px} #v16fm .focus-timer{padding:14px} #v16fm .vfia{flex:1 1 100%} #v16fm .vfx{display:none}}
-  @media (max-width:560px){#v16 .vf{gap:7px;padding:0 10px} #v16 .vf>b,#v16 .vf .vfh{display:none} #v16 .vf .vfc{margin-right:auto} #v16 .vr .kb0{display:none}}
+  @media (max-width:560px){#v16fb{gap:7px;padding:0 10px} #v16fb>b,#v16fb .vfh{display:none} #v16fb .vfc{margin-right:auto} #v16 .vr .kb0{display:none}}
   /* (Nov 1, Chris) one tick box on every task row and board row. Laid over the row so no board or list layout code changes. */
   .vpick{text-decoration:none} .vpick::before{content:"";display:block;box-sizing:border-box;width:18px;height:18px;border:1.5px solid var(--v-mute);border-radius:4px;background:var(--v-card)} .vpick[aria-checked="true"]::before{content:"✓";border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal);font:800 13px/15px Figtree,system-ui,sans-serif;text-align:center}
   body.v16:not(.v16pick) .vpick{display:none!important}
@@ -7239,12 +7245,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16pick #list .vhas.vsel,body.v16pick #pop .vhas.vsel{background:var(--v-sel)!important;box-shadow:inset 3px 0 var(--v-teal)}
   body.v16pick #v16 .vr{cursor:pointer} body.v16pick .vhas *,body.v16pick .trow .kline,body.v16pick #v16 .vr *{pointer-events:none} body.v16pick .vpick{pointer-events:auto!important}
   body.v16pick :is(#v16 .vr,#list .trow) .kline,body.v16pick #v16 .vr .vo,body.v16pick .vhas .sbar{opacity:.45;filter:saturate(.5)}
-  body.v16pick #v16 .vs.t,body.v16pick #v16 .vf,body.v16pick #v16bar{outline:2px solid var(--v-teal);outline-offset:-2px} body.v16pick #v16 .vf{background:var(--v-sel)} body.v16pick #v16 .vf .vfh{color:var(--v-ink)}
-  #v16 .vf .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v16 .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v16 .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v16 .vsw[aria-checked="true"] i{background:var(--v-teal)} #v16 .vsw[aria-checked="true"] i::after{left:15px} #v16 .vf .vsw[aria-checked="true"]{border-color:var(--v-teal)}
+  body.v16pick #v16 .vs.t,body.v16pick #v16fb,body.v16pick #v16bar{outline:2px solid var(--v-teal);outline-offset:-2px} body.v16pick #v16fb{background:var(--v-sel)} body.v16pick #v16fb .vfh{color:var(--v-ink)}
+  #v16fb .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v16fb .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v16fb .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v16fb .vsw[aria-checked="true"] i{background:var(--v-teal)} #v16fb .vsw[aria-checked="true"] i::after{left:15px} #v16fb .vsw[aria-checked="true"]{border-color:var(--v-teal)}
   #v16bar .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16bar .vfc:empty{display:none}
   #v16fm .sbar{flex-wrap:wrap;justify-content:flex-end;height:auto} #v16fm .sblk{display:inline-flex!important;align-items:center;width:auto!important;height:auto!important;flex:none!important;padding:4px 8px;border:1px solid var(--v-line);border-radius:6px;font:700 12px/1.2 Figtree,system-ui,sans-serif;font-style:normal;white-space:nowrap;color:var(--v-ink)} #v16fm .sblk[role=button]{cursor:pointer} #v16fm .sblk::before{content:attr(title) " · "} #v16fm .sblk .sab,#v16fm .sblk .sdtp{display:none} #v16fm .sblk .sfw{display:inline!important;color:inherit!important;font-size:12px!important} #v16fm .sblk:is([data-sgst="none"],[data-sgst=""]){display:none!important}
   #v16fm .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important} #v16fm .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important} #v16fm .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
-  @media (max-width:560px){#v16 .vf .vfs .vlong,#v16 .vsw .vlong{display:none} #v16 .vf{gap:5px;padding:0 6px} #v16 .vf button{padding:8px 9px!important}}`;
+  @media (max-width:560px){#v16fb .vfs .vlong,#v16fb .vsw .vlong{display:none} #v16fb{gap:5px;padding:0 6px} #v16fb button{padding:8px 9px!important}}`;
   document.head.appendChild(css);
   document.body.classList.add("v16");
   const dash = document.createElement("div"); dash.id = "v16"; document.body.appendChild(dash);
@@ -7322,10 +7328,10 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const B = el.querySelector(".vfb"), top = B ? B.scrollTop : 0, a = document.activeElement, was = a && a.dataset && a.dataset.kfix, vals = {}; el.querySelectorAll("[data-kfix]").forEach(x => { vals[x.dataset.kfix] = x.value; });
     el.innerHTML = fmHtml(); el.querySelectorAll("[data-kfix]").forEach(x => { if (vals[x.dataset.kfix]) x.value = vals[x.dataset.kfix]; if (was === x.dataset.kfix) x.focus(); }); const B2 = el.querySelector(".vfb"); if (B2) B2.scrollTop = top; fmTime(); }
   function fmShow(v){ if (v === "session") fmPickSet(false); if (v && !FM.view){ try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } FM.view = v; fmDraw(true); if (!v && !ws) draw(); }
-  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span>${FM.pick ? "Remove items" : "Add items"}</span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Pick items to add more." : "Turn on Pick items to choose.";
+  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span>${FM.pick ? "Remove items" : "Add items"}</span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Add items to add more." : "Turn on Add items to choose.";
     if (FM.active) return `<b>Focus Session</b>${cnt}<span class="vfh">${FM.pick ? hint : "In progress."}</span>${sw}<button type="button" class="vfs" data-fm="resume"><span class="vlong">Back to </span>session →</button>`;
     return `<b>Focus Session</b>${cnt}<span class="vfh">${hint}</span>${sw}<button type="button" data-fm="review"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
-  const fmBarDraw = () => { const f = dash.querySelector(".vf"); if (f) f.innerHTML = fmBar(); const c = document.getElementById("v16barc"); if (c) c.textContent = FM.pick ? "Pick on \u00b7 " + FM.sel.size + " selected" : FM.sel.size ? FM.sel.size + " selected" : ""; };
+  const fmBarDraw = () => { const f = document.getElementById("v16fb"), h = fmBar(); if (f && f._h !== h){ f.innerHTML = h; f._h = h; } const c = document.getElementById("v16barc"); if (c) c.textContent = FM.pick ? "Pick on \u00b7 " + FM.sel.size + " selected" : FM.sel.size ? FM.sel.size + " selected" : ""; };
   /* pick mode is this device's own switch, saved with the page; never clears the selection */
   function fmPickSet(on){ FM.pick = !!on; document.body.classList.toggle("v16pick", FM.pick); try { localStorage.setItem("fd-focus-pick", FM.pick ? "1" : ""); } catch {} fmBarDraw(); }
   const FMITEM = "[data-tlinks]:is(.chc,.pc3t,.tpill,.onebig),[data-qrow],[data-ideaopen],.msec .srow.vhas,#v16 div.vr[data-v16row]";
@@ -7366,7 +7372,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     else if (a === "bopen"){ const x = FM.sel.get(v); if (x && x.ws){ openWs(x.ws, TITLES[x.ws]); setTimeout(() => { const r = document.querySelector(`#list .srow[data-fmk="${CSS.escape(v)}"]`); if (r) r.scrollIntoView({block: "center"}); }, 150); } }
     else if (a === "fin"){ if (FM.fin.has(v)) FM.fin.delete(v); else FM.fin.add(v); fmSave(); fmDraw(); }
     return true; }
-  const fmEl = document.createElement("div"); fmEl.id = "v16fm"; document.body.prepend(fmEl);   /* first in the page: Fix reads the first note box for that row */
+  const fmEl = document.createElement("div"); fmEl.id = "v16fm"; document.body.prepend(fmEl);
+  const fbEl = document.createElement("div"); fbEl.id = "v16fb"; document.body.appendChild(fbEl);   /* (Nov 2, Chris: "this focus session needs to be here everywhere, all the time") one bar for the desk and every board */   /* first in the page: Fix reads the first note box for that row */
   try { const o = JSON.parse(localStorage.getItem(FMK) || "null"); if (o) fmIn(o); if (localStorage.getItem("fd-focus-pick")) FM.pick = true; } catch {} document.body.classList.toggle("v16pick", FM.pick);
   let ws = null, homeTop = 0;
   if (tab !== "today"){ tab = "today"; proj = null; }   /* a reload always lands on the dashboard, even if the saved place was the Projects tab */
@@ -7381,10 +7388,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
     const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
-      <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>
-      <div class="vf">${fmBar()}</div>`;
+      <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
     if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
-    dash.innerHTML = H16; kmBack();
+    dash.innerHTML = H16; fmBarDraw(); kmBack();
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
   function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed");
       m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ONEF[ws]) m.querySelectorAll(`[data-fold="${ONEF[ws]}"]`).forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
@@ -7415,7 +7421,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   document.addEventListener("focusin", e => { fixFocus = e.target.dataset && e.target.dataset.kfix ? e.target.dataset.kfix : null; }, true);
   function fixBack(){ document.querySelectorAll("#list [data-kfix]").forEach(t => { const k = t.dataset.kfix; if (fixDraft[k] && !t.value){ t.value = fixDraft[k]; if (fixFocus === k && document.activeElement !== t && document.activeElement === document.body){ t.focus(); t.setSelectionRange(t.value.length, t.value.length); } } }); }
   let lastH16 = "", kmKey = ""; function kmOf(m){ const r = m.closest(".vr,.trow,.vfi,.tdetail"); if (!r) return ""; return r.dataset.v16row || r.dataset.tdof || (r.querySelector("[data-tlinks]") || {dataset: {}}).dataset.tlinks || (r.querySelector("[data-stripact],[data-delyes]") || {dataset: {}}).dataset.delyes || ""; }
-  function kmFit(m){ const p = m.querySelector(".kmorein"), su = m.querySelector("summary"); if (!p || !su) return; p.style.transform = ""; p.style.top = ""; const fx = getComputedStyle(p).position === "fixed", q = su.getBoundingClientRect(), h = p.offsetHeight, f = dash.querySelector(".vf"), lim = innerHeight - (f && f.getClientRects().length ? f.offsetHeight : 0) - 4;
+  function kmFit(m){ const p = m.querySelector(".kmorein"), su = m.querySelector("summary"); if (!p || !su) return; p.style.transform = ""; p.style.top = ""; const fx = getComputedStyle(p).position === "fixed", q = su.getBoundingClientRect(), h = p.offsetHeight, f = document.getElementById("v16fb"), lim = innerHeight - (f && f.getClientRects().length ? f.offsetHeight : 0) - 4;
     if (fx){ p.style.top = Math.max(4, q.bottom + h > lim ? q.top - h - 2 : q.bottom) + "px"; return; } const r = p.getBoundingClientRect(); if (r.bottom > lim) p.style.transform = `translateY(${Math.max(lim - r.bottom, 4 - r.top)}px)`; }
   function kmBack(){ if (!kmKey) return; for (const m of document.querySelectorAll("details.kmore")){ if (m.getClientRects().length && kmOf(m) === kmKey){ m.open = true; kmFit(m); return; } } }
   dash.addEventListener("scroll", () => { kmKey = ""; dash.querySelectorAll("details.kmore[open]").forEach(m => { m.open = false; }); }, {capture: true, passive: true});
