@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v399</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v400</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6454,7 +6454,8 @@ function lvBar(t){ if (V16 || t.project === "Worship Piano Lab") return "";   /*
    chapter lesson row = these TWO lines, always all 8 buttons; one that does not apply to this item is greyed out (no link = grey Go).
    Line 1 Go | Done | Move | Remove | Edit, line 2 Approve | Fix | To Cadence. Buttons keep the actions they already had. */
 /* (Nov 1, V16 step 1) the note in an open row. Behind ?v16=1 every line shows (What it is / Why it matters / What you do); without the switch the old one short line. */
-function noteP(t){ if (V16) return `<p class="v16note">${esc(String(t.note)).replace(/\n/g, "<br>")}</p>`;
+function noteP(t){ if (V16){ const u = safeUrl(t.url) && t.url !== FDURL && !v16Self(t.url) ? fdLink(t.url) : "";   /* (Nov 2, Chris: "What am I supposed to do with this?") an open row shows its link as a real button, never only behind the title or the dots */
+    return `<p class="v16note">${esc(String(t.note)).replace(/\n/g, "<br>")}</p>` + (u ? `<a class="v16open" href="${esc(u)}" target="_blank" rel="noopener">Open ↗</a>` : ""); }
   return `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>`; }
 /* (Nov 1, V16 step 2) a plain row that says it needs his approval: handed back for review, 'approve' in the title, or its note says tap Approve or Fix. Uses the existing answer action (data-kans). */
 const okAsk = t => V16 && !t.kind && !t.wait && !t.done && !t.review && (t.handoff === "review" || (!t.handoff && (/\bapprove\b/i.test(t.title || "") || /\b(Approve|Looks good) or Fix\b/i.test(t.note || ""))));
@@ -7149,6 +7150,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* (Nov 2, Chris) one Focus bar on every page, lined up with the desk; the switch keeps one width; every board is the desk's width; more air between the desk's 3 sections */
   body.v16 #v16fb{z-index:45;padding-left:max(18px,calc((100vw - 1252px)/2));padding-right:max(18px,calc((100vw - 1252px)/2))}
   body.v16 #v16fb .vsw{min-width:152px;justify-content:flex-start}
+  body.v16 a.v16open{display:inline-block;align-self:flex-start;width:auto;max-width:max-content;margin:2px 0 6px;padding:7px 14px;border-radius:9px;background:var(--v-teal);color:var(--v-onteal,#fff);font-weight:700;font-size:14px;text-decoration:none}
   body.v16work .wrap{max-width:1284px!important;padding-bottom:76px!important}
   body.v16fm #v16fm{padding-bottom:76px}
   @media (min-width:801px) and (min-height:741px){#v16{gap:22px}}
