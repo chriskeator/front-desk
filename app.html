@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">V1</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v391</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7376,7 +7376,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
       return `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" data-v16row="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    const H16 = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
+    const H16 = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>
       <div class="vf">${fmBar()}</div>`;
