@@ -2553,8 +2553,159 @@ document.addEventListener("click", e => {
   else if (a === "fix") shAnswer("fix");
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
+<script>
+/* (Nov 2, Chris yes) DESK V2 REBUILD, Phase 1 (one workspace frame, Focus bar, light + dark) + Phase 2 (one navigation stack), ONLY with ?v2=1.
+   Built from scratch: none of the old list, pop-up, #list, applyCollapse or fdim code. SAMPLE DATA ONLY: in v2 the db is never opened (Phase 3 connects it).
+   Look = the approved new desk (V16 tokens, folder rows, Focus bar). Check: ~/Library/Scripts/claude-tasks/desk-v2-check.py */
+window.V2 = /[?&]v2=1(&|$)/.test(location.search);
+(function(){ if (!V2) return;
+  window.claude = {use: async () => null};   /* no db reads or writes in v2 (rule 44); the old desk under it stays empty */
+  const RT = document.documentElement; RT.classList.add("v2"); try { const t = localStorage.getItem("fdTheme"); if (t) RT.dataset.theme = t; } catch {}
+  try { history.scrollRestoration = "manual"; } catch {}
+  const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
+  const css = document.createElement("style"); css.textContent = `
+  html.v2{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#626977;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8;--v-onteal:#FFFFFF;--v-ongold:#241A00;--v-okbg:#9FE1CB;--v-okink:#04342C;--v-chkbg:#FAC775;--v-chkink:#412402;--v-nobg:#D3D1C7;--v-noink:#2C2C2A;--v-shadow:#4c40300a}
+  @media (prefers-color-scheme:dark){html.v2:not([data-theme="light"]){--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00;--v-shadow:#0000002e;color-scheme:dark}}
+  html.v2[data-theme="dark"]{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00;--v-shadow:#0000002e;color-scheme:dark}
+  html.v2,html.v2 body{margin:0;background:var(--v-bg)!important}
+  html.v2 body>:not(#v2):not(#v2fb):not(#v2toast):not(script):not(style):not(link){display:none!important}
+  #v2,#v2fb,#v2toast{font-family:Figtree,system-ui,-apple-system,sans-serif;color:var(--v-ink);-webkit-text-size-adjust:100%}
+  #v2 *,#v2fb *{box-sizing:border-box} #v2 button,#v2fb button{font:inherit;color:inherit;cursor:pointer}
+  /* ONE workspace frame: the page is the only scroll; same width as the new desk; room at the bottom for the Focus bar */
+  #v2{display:flex;flex-direction:column;gap:14px;min-height:100dvh;box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) max(24px,calc((100vw - 1252px)/2)) calc(61px + 18px + env(safe-area-inset-bottom))}
+  #v2 .vh{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
+  #v2 .vb{font:700 26px/1.1 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap} #v2 .vv{margin-left:8px;padding:3px 8px;border-radius:99px;background:var(--v-b);color:var(--v-mute);font-size:12px;font-weight:700;white-space:nowrap;vertical-align:4px}
+  #v2 .vht{display:flex;align-items:center;gap:12px} #v2 .vold{color:var(--v-mute);font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
+  #v2 .vo{flex:none;padding:7px 11px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:13px;font-weight:600;white-space:nowrap}
+  /* the nav bar of every view: Back left, the view's name, Close right */
+  #v2 .vnav{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;min-height:56px;margin:calc(-1 * max(9px,env(safe-area-inset-top))) 0 0;padding:max(9px,env(safe-area-inset-top)) 0 6px;background:var(--v-bg)}
+  #v2 .vnav button{flex:none;padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap}
+  #v2 .vnav b{flex:0 1 auto;min-width:0;font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #v2 .vnav .vclose{margin-left:auto}
+  #v2 .vfc,#v2fb .vfc{flex:none;padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap}
+  #v2 .vs{display:flex;flex-direction:column;gap:5px;padding:10px 15px 12px;border:1px solid var(--v-line);border-top:3px solid var(--vc,var(--v-gold));border-radius:16px;background:var(--v-card);box-shadow:0 2px 12px var(--v-shadow)}
+  #v2 .vs.p{--vc:var(--v-teal)}
+  #v2 h2{margin:0;font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em} #v2 .vsh{display:flex;align-items:center;justify-content:space-between;min-height:34px}
+  /* the ONE folder row template: folders, sub-folders, tasks, songs */
+  #v2 .vr{display:flex;align-items:center;gap:10px;width:100%;min-height:48px;margin:0 0 4px;padding:6px 10px 6px 8px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-a);text-align:left}
+  #v2 .vr:nth-child(even){background:var(--v-b)} #v2 .vr.vsel,#v2 .vr.vsel:nth-child(even){background:var(--v-sel);box-shadow:inset 3px 0 var(--v-teal)}
+  #v2 .vsy{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--pt,var(--v-tgold));color:var(--pc,var(--v-gold));font-size:16px;line-height:1}
+  #v2 .vi{flex:1;min-width:0;line-height:1.2} #v2 .vi b,#v2 .vi small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v2 .vi b{font-size:14px} #v2 .vi small{font-size:12px;color:var(--v-mute)}
+  #v2 .vgo{flex:none;color:var(--v-mute);font-size:20px;line-height:1;padding:0 4px}
+  #v2 .vr[data-k^="f"] .vsy{--pc:var(--v-gold);--pt:var(--v-tgold)} #v2 .vr[data-kind="task"] .vsy{--pc:var(--v-teal);--pt:var(--v-tteal)} #v2 .vr[data-kind="song"] .vsy{--pc:var(--v-coral);--pt:var(--v-tcoral)}
+  #v2 .vpc{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+  #v2 .vp{--pc:var(--v-teal);--pt:var(--v-tteal);display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-height:96px;padding:10px 12px;border:1px solid var(--v-line);border-top:3px solid var(--pc);border-radius:13px;background:var(--v-a);text-align:left}
+  #v2 .vp:nth-child(4n+2){--pc:var(--v-coral);--pt:var(--v-tcoral)} #v2 .vp:nth-child(4n+3){--pc:var(--v-blue);--pt:var(--v-tblue)} #v2 .vp:nth-child(4n){--pc:var(--v-gold);--pt:var(--v-tgold)}
+  #v2 .vp b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%} #v2 .vp small{font-size:12px;color:var(--v-mute);white-space:nowrap} #v2 .vp .vsy{margin-bottom:4px}
+  /* a task or song = its OWN full-size workspace: nothing else from the list above or below it */
+  #v2 .vw{flex:1;min-height:calc(100dvh - 56px - 61px - 40px - env(safe-area-inset-top) - env(safe-area-inset-bottom));gap:12px;padding:16px 18px 18px}
+  #v2 .vk{font-size:13px;color:var(--v-mute);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #v2 .vw h2{font-size:24px} #v2 .vnote{margin:0;font-size:15px;line-height:1.45;max-width:62ch}
+  #v2 .vsteps{margin:0;padding-left:20px;font-size:14px;line-height:1.6}
+  #v2 .vact{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:auto;padding-top:8px}
+  #v2 .vact .vbtn{flex:none;min-width:84px;padding:9px 14px;border:0;border-radius:9px;font-size:14px;font-weight:700;white-space:nowrap}
+  #v2 .vdone{background:var(--v-okbg);color:var(--v-okink)} #v2 .vmove{background:var(--v-chkbg);color:var(--v-chkink)} #v2 .vrem{background:var(--v-nobg);color:var(--v-noink)}
+  #v2 .vact .vadd{margin-left:auto;border:1px solid var(--v-line);background:var(--v-card);color:var(--v-ink)} #v2 .vact .vadd[aria-pressed="true"]{border-color:var(--v-teal);background:var(--v-sel)}
+  #v2 .vcells{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+  #v2 .vcell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;padding:6px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:12px;font-weight:700;text-align:center}
+  #v2 .vcell small{font-size:11px;font-weight:600;color:var(--v-mute)} #v2 .vcell.v2ok{background:var(--v-okbg);border-color:var(--v-okbg);color:var(--v-okink)} #v2 .vcell.v2chk{background:var(--v-chkbg);border-color:var(--v-chkbg);color:var(--v-chkink)} #v2 .vcell.v2mk{background:var(--v-tgold);border-color:var(--v-gold)}
+  #v2 .vcell.v2ok small,#v2 .vcell.v2chk small{color:inherit}
+  /* the Focus Session bar: always at the bottom, every view */
+  #v2fb{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;box-sizing:border-box;height:calc(61px + env(safe-area-inset-bottom));padding:0 max(18px,calc((100vw - 1252px)/2)) env(safe-area-inset-bottom);border-top:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b}
+  #v2fb b{font-size:14px;white-space:nowrap} #v2fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #v2fb button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v2fb button:disabled{opacity:.5;cursor:default}
+  #v2fb .vfs{background:var(--v-teal);border-color:var(--v-teal);color:var(--v-onteal)}
+  #v2fb .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v2fb .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v2fb .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v2fb .vsw[aria-checked="true"] i{background:var(--v-teal)} #v2fb .vsw[aria-checked="true"] i::after{left:15px} #v2fb .vsw[aria-checked="true"]{border-color:var(--v-teal)}
+  #v2toast{position:fixed;left:50%;bottom:calc(72px + env(safe-area-inset-bottom));z-index:21;transform:translateX(-50%);max-width:calc(100vw - 32px);padding:9px 14px;border-radius:10px;background:var(--v-ink);color:var(--v-bg);font-size:14px;font-weight:600;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none} #v2toast.on{opacity:1}
+  /* hover = colour only (DESIGN_RULES 8); keyboard focus keeps a ring */
+  @media (hover:hover) and (pointer:fine){#v2 .vr:hover,#v2 .vp:hover{background:var(--v-hover)} #v2 .vo:hover,#v2 .vnav button:hover,#v2fb button:not(:disabled):not(.vfs):hover,#v2 .vadd:hover{border-color:var(--v-teal)} #v2 .vold:hover{color:var(--v-teal)}}
+  #v2 :is(button,a):focus-visible,#v2fb button:focus-visible{outline:3px solid var(--v-teal);outline-offset:2px}
+  @media (max-width:800px){#v2{gap:10px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))} #v2 .vs{padding:8px 10px 10px} #v2 .vw{padding:14px 12px 14px} #v2 .vpc{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+  @media (max-width:560px){#v2fb{gap:5px;padding-left:8px;padding-right:8px} #v2fb>b,#v2fb .vfh,#v2fb .vlong{display:none} #v2fb .vfc{margin-right:auto;padding:3px 7px} #v2fb button{padding:8px} #v2fb .vsw{padding:7px 8px;gap:6px} #v2 .vnav button{padding:7px 10px} #v2 .vw h2{font-size:21px} #v2 .vact .vbtn{min-width:0;flex:1 1 0;padding:9px 6px} #v2 .vact .vadd{flex:1 1 100%;margin-left:0}}`;
+  document.head.appendChild(css);
+
+  /* SAMPLE DATA (Phase 3 swaps this for the real db rows; nothing here is saved anywhere) */
+  const N = {}, add = (id, o) => (N[id] = Object.assign({id}, o), id);
+  const T = (id, t, proj, mins, note, steps) => add(id, {kind: "task", t, proj, mins, note, steps: steps || []});
+  const SONGS = ["Amazing Grace", "Hark the Herald", "Joyful, Joyful", "Go Tell It", "The First Noel", "It Came Upon", "God Rest Ye", "We Three Kings", "O Christmas Tree", "O Come O Come Emmanuel", "Up on the Housetop", "Silent Night", "Joy to the World", "O Holy Night", "Away in a Manger", "How Great Thou Art", "Be Thou My Vision"];
+  const COLS = ["Lyrics", "Melody", "Player", "Level 1", "Intro", "Level 2", "Level 3", "Final check"];
+  add("f-today", {kind: "folder", t: "Today", ic: "☀", kids: [
+    T("t1", "Check Chapter 7 fixes", "Worship Piano Lab", 20, "See the three fixed cards play right on your phone.", ["Open Lab Test on your phone", "Play cards 4, 7 and 9", "Tap Looks good or Fix"]),
+    T("t2", "Approve Time Signatures cut", "YouTube", 15, "Watch the cut and say if it is ready for Saturday.", ["Watch the cut", "Tap Approve or Fix"]),
+    T("t3", "Record Joyful, Joyful intro", "Worship Piano Lab", 30, "Play the 4-bar intro once for the lesson."),
+    T("t4", "Pick the song for Riffs video 3", "Riffs course", 5, "Choose which song the next Riffs video uses."),
+    T("t5", "Look at homepage A/B result", "Website", 10, "See which homepage sold more and pick one.")]});
+  add("f-songs", {kind: "folder", t: "Songs to check", ic: "♫", kids: SONGS.map((s, i) => add("s" + (i + 1), {kind: "song", t: s, proj: "Songs", cells: COLS.map((c, j) => [c, j < (i % 5) + 1 ? "ok" : j === (i % 5) + 1 ? "chk" : j === (i % 5) + 2 && i % 3 === 0 ? "mk" : ""])}))});
+  add("f-lab", {kind: "folder", t: "Worship Piano Lab", ic: "♬", kids: [
+    add("f-ch7", {kind: "folder", t: "Chapter 7 checks", ic: "♪", kids: [
+      T("t6", "Ch7 lesson 1 on phone", "Worship Piano Lab", 10, "Play lesson 1 on your phone and check every card."),
+      T("t7", "Ch7 lesson 2 on computer", "Worship Piano Lab", 10, "Play lesson 2 on the computer and check every card."),
+      T("t8", "Ch7 quiz answers", "Worship Piano Lab", 5, "Check the quiz marks the right answers.")]}),
+    T("t9", "Christmas songs order", "Worship Piano Lab", 10, "Put the Christmas songs in teaching order."),
+    T("t10", "Number System outline", "Worship Piano Lab", 20, "Look over the chapter list for the Number System.")]});
+  add("f-shorts", {kind: "folder", t: "Shorts", ic: "▣", kids: [
+    T("t11", "Pentatonic Fingering words", "Shorts", 5, "Check the on-screen words match what you play."),
+    T("t12", "Walking Bass thumbnail", "Shorts", 5, "Pick the thumbnail for the Walking Bass Short."),
+    T("t13", "Final check: 2-5-1 Short", "Shorts", 5, "Watch the finished Short before it posts.")]});
+  add("f-cad", {kind: "folder", t: "Cadence tasks", ic: "≡", kids: [
+    T("t14", "Card size picture", "Front Desk", 0, "Cadence makes a picture of the new card size."),
+    T("t15", "Band timing test song", "Worship Piano Lab", 0, "Cadence sets up one song to test band timing.")]});
+  add("f-usage", {kind: "folder", t: "Usage", ic: "◔", kids: [T("t16", "Claude use", "Front Desk", 0, "This week's Claude use, per project.")]});
+  add("p-riffs", {kind: "project", t: "Riffs course", ic: "▶", kids: [
+    T("t17", "Cut Riffs video 3", "Riffs course", 30, "Cadence cuts the raw video; you check the cut."),
+    T("t18", "Riffs video 3 title", "Riffs course", 5, "Pick one of three titles.")]});
+  add("p-xmas", {kind: "project", t: "Christmas songs", ic: "❄", kids: [
+    T("t19", "Christmas chapter cards", "Christmas songs", 20, "Check the new chapter cards in the Lab."),
+    T("t20", "Bells sound check", "Christmas songs", 5, "Listen to the bells on two songs.")]});
+  const HOME = {folders: ["f-today", "f-songs", "f-lab", "f-shorts", "f-cad", "f-usage"], projects: ["p-riffs", "p-xmas"]};
+  const leaves = id => { const n = N[id]; return n.kids ? n.kids.reduce((a, k) => a + leaves(k), 0) : 1; };
+  const parentOf = {}; Object.values(N).forEach(n => (n.kids || []).forEach(k => parentOf[k] = n.id));
+  const path = id => { const out = []; for (let p = parentOf[id]; p; p = parentOf[p]) out.unshift(N[p].t); return out.join(" · "); };
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
+
+  /* THE ONE NAVIGATION STACK: every folder, sub-folder, task, song and project is a view. Each entry keeps its own scroll. */
+  const S = [{k: "home", y: 0}], FOC = {pick: false, sel: new Set()};
+  const cur = () => S[S.length - 1];
+  const target = k => { const n = N[k]; return n && n.kids && n.kids.length === 1 ? target(n.kids[0]) : k; };   /* rules file rule 4: a folder with ONE item opens that item */
+  function open(k){ k = target(k); if (!N[k]) return; cur().y = scrollY; S.push({k, y: 0}); try { history.pushState({v2d: S.length - 1}, ""); } catch {} draw(); scrollTo(0, 0); }
+  function back(){ if (S.length > 1) history.back(); }
+  function home(){ if (S.length > 1) history.go(-(S.length - 1)); }
+  addEventListener("popstate", e => { e.stopImmediatePropagation(); const d = Math.max(0, Math.min(S.length - 1, (e.state && e.state.v2d) || 0)); S.length = d + 1; draw(); scrollTo(0, cur().y); });   /* phone Back = the Back button; the old desk never sees it */
+
+  const row = k => { const n = N[k], f = !!n.kids, one = f && n.kids.length === 1, sub = f ? (one ? N[n.kids[0]].t : leaves(k) + (leaves(k) === 1 ? " item" : " items")) : n.kind === "song" ? (n.cells.find(c => c[1] === "chk") || ["All approved"])[0] + (n.cells.some(c => c[1] === "chk") ? ": check" : "") : [n.proj, n.mins ? n.mins + " min" : ""].filter(Boolean).join(" · ");
+    return `<button type="button" class="vr${FOC.sel.has(k) ? " vsel" : ""}" data-k="${esc(k)}" data-kind="${f ? "folder" : n.kind}"><span class="vsy" aria-hidden="true">${f ? n.ic : n.kind === "song" ? "♫" : "○"}</span><span class="vi"><b>${esc(n.t)}</b><small>${esc(sub)}</small></span>${f && !one ? `<span class="vfc">${leaves(k)}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; };
+  const nav = (title, n) => `<div class="vnav"><button type="button" data-v2="back">← Back</button><b>${esc(title)}</b>${n != null ? `<span class="vfc">${n}</span>` : ""}<button type="button" class="vclose" data-v2="close">✕ Close</button></div>`;
+  function view(k){
+    if (k === "home") return `<div class="vh"><div><span class="vb">Desk</span><span class="vv">V2 preview</span></div><div class="vht"><a class="vold" href="app.html">Current desk</a><button type="button" class="vo" data-v2="theme" aria-label="Switch light and dark">☾ / ☀</button></div></div>
+      <section class="vs"><div class="vsh"><h2>Front Desk</h2></div>${HOME.folders.map(row).join("")}</section>
+      <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vpc">${HOME.projects.map(p => `<button type="button" class="vp" data-k="${p}" data-kind="project"><span class="vsy" aria-hidden="true">${N[p].ic}</span><b>${esc(N[p].t)}</b><small>${leaves(p)} tasks</small></button>`).join("")}</div></section>`;
+    const n = N[k];
+    if (n.kids) return nav(n.t, leaves(k)) + `<section class="vs${n.kind === "project" ? " p" : ""}" data-view="list">${n.kids.map(row).join("")}</section>`;
+    const on = FOC.sel.has(k), top = `<div class="vk">${esc(path(k) || n.proj)}${n.mins ? " · " + n.mins + " min" : ""}</div><h2>${esc(n.t)}</h2>`;
+    if (n.kind === "song") return nav(n.t) + `<section class="vs vw" data-view="item" data-item="${esc(k)}">${top}<p class="vnote">Song checklist. Gold = yours to check, teal = approved.</p><div class="vcells">${n.cells.map(([c, s]) => `<button type="button" class="vcell ${s && "v2" + s}" data-v2="sample">${esc(c)}<small>${{ok: "OK", chk: "Check", mk: "Making"}[s] || "Not yet"}</small></button>`).join("")}</div><div class="vact"><button type="button" class="vbtn vadd" data-v2="focus" aria-pressed="${on}">${on ? "In Focus Session" : "Add to Focus Session"}</button></div></section>`;
+    return nav(n.t) + `<section class="vs vw" data-view="item" data-item="${esc(k)}">${top}<p class="vnote">${esc(n.note)}</p>${n.steps.length ? `<ol class="vsteps">${n.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}<div class="vact"><button type="button" class="vbtn vdone" data-v2="sample">Done</button><button type="button" class="vbtn vmove" data-v2="sample">Move</button><button type="button" class="vbtn vrem" data-v2="sample">Remove</button><button type="button" class="vbtn vadd" data-v2="focus" aria-pressed="${on}">${on ? "In Focus Session" : "Add to Focus Session"}</button></div></section>`; }
+  function bar(){ const n = FOC.sel.size, hint = FOC.pick ? "Tap any task to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen." : "Turn on Add items to choose.";
+    return `<b>Focus Session</b><span class="vfc">${n} selected</span><span class="vfh">${hint}</span><button type="button" class="vsw" role="switch" aria-checked="${FOC.pick}" data-v2="pick"><i></i><span>${FOC.pick ? "Done adding" : "Add items"}</span></button><button type="button" data-v2="sample"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-v2="sample"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
+  let root, fb, toastEl;
+  function draw(){ const k = cur().k; root.dataset.view = k; root.innerHTML = view(k); fb.innerHTML = bar(); }
+  function toast(m){ toastEl.textContent = m; toastEl.className = "on"; clearTimeout(toastEl._h); toastEl._h = setTimeout(() => toastEl.className = "", 1800); }
+  function start(){ root = document.createElement("main"); root.id = "v2"; fb = document.createElement("div"); fb.id = "v2fb"; fb.setAttribute("role", "region"); fb.setAttribute("aria-label", "Focus Session"); toastEl = document.createElement("div"); toastEl.id = "v2toast"; toastEl.setAttribute("role", "status");
+    document.body.append(root, fb, toastEl); try { history.replaceState({v2d: 0}, ""); } catch {} draw();
+    document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("#v2 [data-k], #v2 [data-v2], #v2fb [data-v2]"); if (!b) return; e.preventDefault(); e.stopPropagation();
+      const a = b.dataset.v2;
+      if (a === "back") return back(); if (a === "close") return home();
+      if (a === "theme"){ const dark = RT.dataset.theme === "dark" || (RT.dataset.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches), t = dark ? "light" : "dark"; RT.dataset.theme = t; try { localStorage.setItem("fdTheme", t); } catch {} return; }
+      if (a === "pick"){ FOC.pick = !FOC.pick; fb.innerHTML = bar(); return; }
+      if (a === "focus"){ const k = cur().k; FOC.sel.has(k) ? FOC.sel.delete(k) : FOC.sel.add(k); const y = scrollY; draw(); scrollTo(0, y); return; }
+      if (a === "sample") return toast("Sample data: nothing is saved yet");
+      const k = b.dataset.k; if (FOC.pick && N[k] && !N[k].kids){ FOC.sel.has(k) ? FOC.sel.delete(k) : FOC.sel.add(k); b.classList.toggle("vsel", FOC.sel.has(k)); fb.innerHTML = bar(); return; }
+      open(k); }, true);
+    window.V2NAV = {S, open, back, home, target};   /* read by desk-v2-check.py only */ }
+  document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", start) : start();
+})();
+</script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v401</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v402</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2611,7 +2762,7 @@ fetch("budget.html").then(r => r.text()).then(t => { const m = t.match(/<script 
 let db = null, projects = [], jobs = [], items = [], replies = [], tasks = [], allTasks = [], goals = [], summaries = [], ideas = [], questions = [], sorts = [], sorting = null, sortPage = 0, openTx = null;
 let psub = "projects", icat = "All", msub = "biz", openCat = null;
 let sub = "todo", confirmDel = null, drag = null;
-const V16 = !/[?&]v16=0/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch. (Nov 2, Chris yes) the new desk is the default; ?v16=0 = the old desk exactly */
+const V16 = !window.V2 && !/[?&]v16=0/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch. (Nov 2, Chris yes) the new desk is the default; ?v16=0 = the old desk exactly */
 /* (Nov 1, Chris) V16 pick mode goes before every other click handler (the 2-tap Approve included), so a picked row can never approve, open or write. Off without ?v16=1. */
 if (V16) ["click", "dblclick", "auxclick", "pointerdown", "mousedown", "touchstart", "dragstart", "keydown"].forEach(ty => window.addEventListener(ty, e => { if (window.V16PICK) window.V16PICK(e); }, {capture: true, passive: false}));
 let tab = "today", proj = null, showDone = false, page = 0, editing = null;
@@ -7042,7 +7193,7 @@ setTimeout(deskGo, 5000);
 function deskVerCheck(){ const cur = +((document.querySelector("header .deskver") || {}).textContent || "").replace(/\D/g, "") || 0; if (!cur || scId) return;
   const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
-    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (V16 ? "" : "&v16=0") + location.hash); }).catch(() => {}); }
+    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (window.V2 ? "&v2=1" : V16 ? "" : "&v16=0") + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
 setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); }, 120000);   /* (Oct 28, Chris saw v337 after v339 went live: the window never left the screen) also every 2 min while open */
 /* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
