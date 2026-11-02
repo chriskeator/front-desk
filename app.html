@@ -2116,7 +2116,7 @@ function tagSave(){if(!TAGM)return;if(!bars.length){DOC.tag=null;return}const P=
 function tagOut(){if(!TAGM)return;tagSave();const t=TSTASH;bars=t.bars;leadA=t.leadA;zeroId=t.zeroId;zeroIdx=t.zeroIdx;id=Math.max(id,t.id);TAGM=false;TSTASH=null}
 function flush(){clearTimeout(saveT);saveT=null;if(!DID||!DOC)return;if(!TAGM&&!bars.length){if(H){H.textContent='Not saved: a song needs its melody. To remove a verse, use Delete verse.';H.style.color='var(--ktB3261E)'}return}   /* (Oct 21, Chris: deleting verse 2 bars wiped verse 1) never save an empty melody */
 let P=toDoc();if(TAGM){tagSave();P={tag:DOC.tag}}else Object.assign(DOC,P);if(DOC.tagOk)P.tagOk=DOC.tagOk;SE.saves++;const id=DID,seen=seSeen,now=new Date().toISOString();if(EDN){P.melodyEditedAt=now;DOC.melodyEditedAt=now;EDN=false}   /* (Oct 22, Chris) an edit to an approved melody sends the Player check back to gold */
-seFP=db.collection('songcheck').doc(id).get().then(x=>{const u=x.exists?(x.data().updated||null):null;
+const pre=seOpenLocks(id);seFP=Promise.resolve(pre).then(()=>db.collection('songcheck').doc(id).get()).then(x=>{const u=x.exists?(x.data().updated||null):null;if(pre&&u)seMine.add(u);
  const ap={};['versesOk','tagOk'].forEach(f=>{if(P[f]!=null)ap[f]=P[f]});
  if(u!==seen&&!seMine.has(u)){SE.stale=(SE.stale||0)+1;if(Object.keys(ap).length){seSeen=now;seMine.add(now);scSave(id,Object.assign(ap,{updated:now})).then(ok=>{if(ok)scLocal(id,ap)})}   /* (Oct 21) a helper changed the song while it was open: his approvals still save (they only add ticks) */if(H){H.textContent='This song was changed somewhere else while it was open. Your last change was NOT saved. Close it and open it again.';H.style.color='var(--ktB3261E)'}return}   /* never alert(): it freezes the page */
  seSeen=now;seMine.add(now);const PU=Object.assign({},P,{updated:now});return scSave(id,PU).then(ok=>{if(ok)scLocal(id,PU)})}).catch(()=>{})}
@@ -2175,7 +2175,14 @@ function vOk(){if(TAGM){tagSave();if(!DOC.tag){tagOut();const l=vLeft();if(!l.le
 /* (Oct 22, Chris: "apply that lock feature to everything") APPROVED MELODY = LOCKED: an approved verse (or the tag, or a one-verse song's melody) opens
    read-only; 'Edit' unlocks it for this visit, 'Approve again' saves + locks it. Nothing else (no other column, script or helper) changes it (desk_db.py guard). */
 let UNL=new Set(),EDN=false,seFP=null;   /* seFP = the last flush on its way: a close relocks only after it lands */
-const seLkKeys=k=>k==='tag'?['tagOk']:k===1?['melodyOK','lyricsOK']:['versesOk'];
+/* (Nov 2, Chris: "I need to unlock the level 1 chords so that I can change the melody intro ... so that it's not a constant problem on every song")
+   EDIT ON THE MELODY UNLOCKS EVERYTHING ITS NOTES CARRY: the chords, Intro and Level 1-3 sit on the melody's beats, so moving bars moves them too.
+   Their locks open with the Melody's; the database (song-changed.sql) then turns each changed column gold with its spots marked, and closing relocks as before. */
+const SE_DOWN=['chordsOK','mediumOK','hardOK','introOK'];
+const seLkKeys=k=>k==='tag'?['tagOk']:k===1?['melodyOK','lyricsOK'].concat(SE_DOWN):['versesOk'].concat(SE_DOWN);
+/* a melody the desk shows open (a row left to tick) can still be approved in the database: the first save opens those locks itself */
+function seOpenLocks(id){const k=seLkKey();if(TAGM||UNL.has(k)||!DOC||!['melodyOK','versesOk'].concat(SE_DOWN).some(f=>scTruthy(DOC[f])))return null;UNL.add(k);return scUnlock(id,seLkKeys(k),'se')}
+const scTruthy=v=>Array.isArray(v)?v.length>0:!!v;
 function seLkKey(){return TAGM?'tag':VER}
 function seLocked(){if(!ON||CS||!DOC)return false;const ok=TAGM?!!DOC.tagOk:(VS.length>1?(DOC.versesOk||[]).includes(VER):!!DOC.melodyOK&&!scRowsLeft(DOC));return ok&&!UNL.has(seLkKey())}
 /* (Nov 2, Chris: "i need a way to change this in the melody column") TEMPO BOX in the melody header: type the BPM, it saves with the melody
@@ -2183,7 +2190,7 @@ function seLocked(){if(!ON||CS||!DOC)return false;const ok=TAGM?!!DOC.tagOk:(VS.
 let bpmT=null;['input','change'].forEach(ev=>document.addEventListener(ev,e=>{const bp=e.target;if(!bp||bp.id!=='se-bpm'||!ON||!DOC)return;if(seLocked()){bp.value=DOC.bpm||100;hint('Locked: tap Edit to change it.');return}
  const v=Math.round(+bp.value);if(!(v>=30&&v<=240)){if(ev==='change'){bp.value=DOC.bpm||100;hint('Tempo: a number from 30 to 240.')}return}if(v===DOC.bpm)return;
  DOC.bpm=v;if(PL){stopPlay();startPlay()}clearTimeout(bpmT);bpmT=setTimeout(()=>{const id=DID,now=new Date().toISOString(),up={bpm:DOC.bpm,melodyEditedAt:now,updated:now};if(!id)return;
- seSeen=now;seMine.add(now);DOC.melodyEditedAt=now;scSave(id,up).then(ok=>{if(ok){scLocal(id,up);hint('Tempo saved: '+up.bpm+' BPM.')}})},600)},true));   /* heard at once: Play restarts at the new tempo; 0.6s later ONLY the tempo saves (Chris Nov 2: the whole-melody save also re-sent the locked Level 1 chords and was refused) */
+ seSeen=now;seMine.add(now);DOC.melodyEditedAt=now;Promise.resolve(seOpenLocks(id)).then(()=>scSave(id,up)).then(ok=>{if(ok){scLocal(id,up);hint('Tempo saved: '+up.bpm+' BPM.')}})},600)},true));   /* heard at once: Play restarts at the new tempo; 0.6s later ONLY the tempo saves (Chris Nov 2: the whole-melody save also re-sent the locked Level 1 chords and was refused) */
 function seLockSync(){const c=document.querySelector('#songchk .secard');if(!c||!ON)return;const L=seLocked(),un=!CS&&UNL.has(seLkKey());c.classList.toggle('selock',L);{const bp=document.getElementById('se-bpm');if(bp)bp.disabled=L}let b=document.getElementById('se-unl');
  if(!b){const m=document.getElementById('se-okm');if(!m)return;b=document.createElement('button');b.type='button';b.className='tb';b.id='se-unl';m.parentNode.insertBefore(b,m)}
  b.hidden=!(L||un);b.textContent=L?'Edit (locked)':'Approve again';b.classList.toggle('go',!L);if(L)hint('Approved and locked. Tap Edit to change it.')}
@@ -2711,7 +2718,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v405</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v406</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
