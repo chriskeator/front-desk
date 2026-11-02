@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v391</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v392</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5695,7 +5695,8 @@ let labLiveN = (() => { try { return +localStorage.getItem("fd-lablive") || 0; }
 function labLiveFetch(){ if (Date.now() - labLiveAt < 600000) return; labLiveAt = Date.now();
   fetch("https://lab.worshippianoacademy.com/path.js", {headers: {Range: "bytes=0-120000"}}).then(r => r.ok ? r.text() : "").then(t => { const m = /const PP_BUILT = (\d+)/.exec(t);
     if (m && +m[1] !== labLiveN){ labLiveN = +m[1]; try { localStorage.setItem("fd-lablive", String(labLiveN)); } catch {} lcMemo.clear(); tasks = topTasks(allTasks); if (!editing && !sorting && !answering && !revFix && !bulkPick) render(); } }).catch(() => {}); }
-const lcChs = () => { const lab = stats.find(x => x.id === "lab"); return ((lab && lab.chapters) || []).map((c, i) => ({c, i, live: i < labLiveN})); };
+/* (Nov 2, Chris: "Only out 1 chapter at a time") the board holds the live chapters + ONLY the next one; later Test chapters wait until it is live */
+const lcChs = () => { const lab = stats.find(x => x.id === "lab"); return ((lab && lab.chapters) || []).map((c, i) => ({c, i, live: i < labLiveN})).filter(x => x.i <= labLiveN); };
 function lcLesson(id){ for (const x of lcChs()) for (const L of x.c.lessons || []) if (L.id === id) return L; return null; }
 function lcWho(n){ const fp = String(n.fp || ""), m = /\|chk-(computer|dev|phone)-v\d+$/.exec(fp); if (m) return m[1];
   const t = Date.parse(n.created_at || ""), go = "go=" + String(n.lesson || fp.split("|")[0]).replace(/#/g, "%23"); let best = "";
