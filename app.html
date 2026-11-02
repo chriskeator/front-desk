@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v386</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v387</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3539,7 +3539,7 @@ const thumbImg = r => { const src = thumbSrc(r); if (!src && !r.thumbKey) return
 document.addEventListener("load", e => { const im = e.target; if (im && im.matches && im.matches("img.rthumb")) im.classList.toggle("tall", im.naturalHeight > im.naturalWidth); }, true);
 function replyCard(r){
   const head = `<div class="top"><span class="who"><b>${esc(r.who||"Someone")}</b> ${pIcon(r.platform)}${r.kind==="message"?" (message)":""}${r.posted?` · ${posted(r.posted)}`:""}</span>
-    <span class="pill${r.status==="flagged"||r.status==="failed"?" bad":r.status==="sent"?" fin":r.status==="denied"?" fin":""}">${esc(r.status==="draft"?"to approve":r.byHand&&r.status==="sent"?"copied":r.status)}</span></div>`;
+    <span class="pill${r.status==="flagged"||r.status==="failed"?" bad":r.status==="sent"?" fin":r.status==="denied"?" fin":""}">${esc(r.status==="draft"?"to approve":r.status)}</span></div>`;
   // (Oct 8) Chris: comments not in English show the English right under them (filled in when the reply is drafted)
   // (Oct 9) Chris: a private message can only be answered within 24 h of when it was sent: show the time left
   const left = msgLeft(r), clock = left == null ? "" : left <= 0 ? `<p class="note" style="color:var(--red);font-weight:700">Too late to reply from here: answer in the Meta Business Suite app</p>` : `<p class="note" style="font-weight:700;color:${left < 4 ? "var(--red)" : "var(--ka97710F)"}">Answer by ${new Date(repEnd(r)).toLocaleString("en-US", {timeZone: "America/Phoenix", weekday: "short", hour: "numeric", minute: "2-digit"})} (${left < 1 ? "under an hour" : Math.floor(left) + "h"} left)</p>`;
@@ -3558,7 +3558,7 @@ function replyCard(r){
   const reply = r.final ?? r.draft;
   const hasRep = r.hasReplies ? `<p class="note">Already has a reply in TikTok. Look before you answer.</p>` : "";
   const actions = (r.status === "draft" || r.status === "failed")
-    ? `<div class="row"><button class="btn go" type="button" data-approve="${esc(r.id)}">${r.platform === "TikTok" ? "Copy + open" : "Approve"}</button><button class="btn" type="button" data-edit="${esc(r.id)}">Edit</button><button class="btn no" type="button" data-deny="${esc(r.id)}">Deny</button></div>`
+    ? `<div class="row"><button class="btn go" type="button" data-approve="${esc(r.id)}">Approve</button><button class="btn" type="button" data-edit="${esc(r.id)}">Edit</button><button class="btn no" type="button" data-deny="${esc(r.id)}">Deny</button></div>`
     : (r.status === "approved" ? `<p class="note">${r.kind === "email" ? "Approved. It goes out as a reply in Gmail within the hour." : "Approved. Comment Helper posts it on its next run."}</p>` : "");
   return `<div class="item${r.status==="draft"?" wait":""}">${head}${said}${reply?`<p class="draft clamp">${esc(reply)}</p>`:""}${reply && r.draftEn ? `<p class="tn"><b>Your reply in English:</b> ${esc(r.draftEn)}</p>` : ""}
     ${r.status==="failed"&&r.error?`<p class="note" style="color:var(--red)">${esc(r.error)}</p>`:""}${hasRep}${actions}</div>`;
@@ -5752,7 +5752,7 @@ function lcSend(row){ try { return fetch(LABSB, {method: "POST", headers: {apike
 function lcOpen(id, k){ const L = lcLesson(id); if (!L) return; lyrClose(); const s = lcState(L), q = k ? s[k] : null, kl = k ? LCK.find(x => x[0] === k)[1] : "";
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.lc = id; o.dataset.lck = k || "";
   const btn = (a, l, go) => `<button type="button" class="tb${go ? " go" : ""}" data-lcx="${a}">${l}</button>`;
-  const B = !k ? [btn("open", "Open"), btn("close", "Close")] : q.c === "ok" ? [btn("open", "Open"), btn("fix", "Fix")] : [btn("open", "Open"), btn("ok", "Approve", 1), btn("fix", "Fix")];
+  const B = (!k ? [btn("open", "Open"), btn("close", "Close")] : q.c === "ok" ? [btn("open", "Open"), btn("fix", "Fix")] : [btn("open", "Open"), btn("ok", "Approve", 1), btn("fix", "Fix")]).concat(V16 && k ? [btn("close", "Close")] : []);
   o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc("L" + L.n + (k ? " · " + kl : ""))}</b><span>${esc(L.t)}</span>${q ? `<span>${esc(q.t)}</span>` : ""}</div><textarea class="lyrnote lcnote" rows="3" placeholder="What should change? Type or tap the keyboard mic" style="display:none"></textarea><div class="lyrbt" style="grid-template-columns:repeat(${B.length},1fr)">${B.join("")}</div></div>`;
   document.body.appendChild(o); }
 document.addEventListener("click", async e => { const c = e.target.closest("[data-lcchk],[data-lcname]"); if (c){ e.preventDefault(); e.stopPropagation(); lcOpen(c.dataset.lcchk || c.dataset.lcname, c.dataset.lck || ""); return; }
@@ -6413,6 +6413,7 @@ function addTodayBtns(){ addWaitMove(); addLvChips(); if (phone()) return;
 // (Oct 7) Chris: on the phone a to-do opens IN PLACE (no pop-up): what it's for + its buttons; tap the to-do again to close
 // (Oct 9) Chris: clicking any empty space outside the open folder closes it (no need to go back to its header)
 document.addEventListener("click", e => {
+  if (V16 && e.target.closest && e.target.closest("#v16, #v16fm, #v16bar")) return;   /* the V16 pages sit over the old list: a tap on them must not close a hidden folder */
   if (!phone() || !e.target.isConnected || e.target.closest("#list .msec, button, a, input, textarea, select, label, #pop, #bar, .tabs, [data-tab], .sortmenu")) return;
   const open = document.querySelector("#list .msec:not(.collapsed):not(.pfold) > h4");
   if (open) open.click(); });
@@ -7097,7 +7098,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["lessons", "Lessons"], ["lab", "Worship Piano Lab"], ["queue", "Queue"], ["personal", "Personal"], ["projects", "Other projects"]];
   const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
   const css = document.createElement("style"); css.textContent = `
-  body.v16{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#6B7280;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8;--v-onteal:#FFFFFF;--v-ongold:#241A00}
+  body.v16{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#626977;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8;--v-onteal:#FFFFFF;--v-ongold:#241A00}
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00}}
   :root[data-theme="dark"] body.v16{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00}
   #v16{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;gap:8px;overflow:hidden;box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) 24px max(9px,env(safe-area-inset-bottom));background:var(--v-bg);color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
@@ -7215,6 +7216,21 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* (Nov 1, Chris) one tick box on every task row and board row. Laid over the row so no board or list layout code changes. */
   .vpick{text-decoration:none} .vpick::before{content:"";display:block;box-sizing:border-box;width:18px;height:18px;border:1.5px solid var(--v-mute);border-radius:4px;background:var(--v-card)} .vpick[aria-checked="true"]::before{content:"✓";border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal);font:800 13px/15px Figtree,system-ui,sans-serif;text-align:center}
   body.v16:not(.v16pick) .vpick{display:none!important}
+  @media (max-width:800px){#v16 .vs.p{flex-basis:146px;min-height:146px} #v16 .vp{padding:6px 10px} #v16 .vsy{width:24px;height:24px;font-size:14px;margin-bottom:1px;flex:none}}
+  @media (max-height:740px){#v16 .vsy{width:22px;height:22px;font-size:13px;margin-bottom:1px} #v16 .vp{padding:5px 10px} #v16 .vs.p{min-height:112px}}
+  @media (max-width:700px){#songchk .v16scx{left:auto;right:6px;bottom:auto;top:calc(3px + env(safe-area-inset-top));padding:3px 9px;font-size:12px}}
+  #songchk .v16scx{position:fixed;left:max(12px,calc(50vw - 490px));bottom:max(26px,calc(50dvh - 362px));z-index:100000;padding:8px 13px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);color:var(--v-ink);font:600 14px Figtree,system-ui,sans-serif;cursor:pointer}
+  body.v16 .mcd.cur b,body.v16 .mcd.cur i{color:var(--v-onteal)!important}
+  @media (max-width:560px){#v16fm .vlong{display:none} #v16fm .kline .kb{width:56px} #v16fm .vfi{padding:11px 10px} #v16fm .vfia{gap:4px}}
+  body.v16work #list .msec>h4 .hr i{position:static!important;transform:none!important;left:auto!important;margin:0} body.v16work #list .msec>h4{gap:10px} body.v16work #list .msec>h4 .hr{flex:none}
+  /* (Nov 1 sweep) one row look in every list: same height, one line + ellipsis, a linked title is the same size as a plain one, an open row is one colour, a closed row goes back to normal */
+  body.v16 #list .chc b .vlink{display:inline!important;font:inherit!important;color:inherit!important;white-space:inherit!important;overflow:visible!important}
+  body.v16work #list .chc:not(.onebig)>b,body.v16work #list .pc3t>b,body.v16work #list .chc:not(.onebig)>span:not(.vpick),body.v16work #list .pc3t>span{display:block;width:100%;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  body.v16work #list .msec .chgrid>.trow.vstrip{box-sizing:border-box;height:54px;min-height:54px} body.v16work #list .msec .chgrid>.trow.vstrip>.chc{height:100%;min-height:0!important;padding-top:0!important;padding-bottom:0!important;border:0!important;background:transparent!important}
+  body.v16work #list .trow.vstrip.rowon{background:var(--v-sel)}
+  body.v16work #list .justclosed,body.v16work #list .justclosed>.chc,body.v16work #list .justclosed>.pc3t,body.v16work #list .msec .chgrid>.chc.justclosed,body.v16work #list .msec>h4.justclosed{background:var(--v-card)!important}
+  @media (hover:hover) and (pointer:fine){body.v16work #list .trow.vstrip:hover{background:var(--v-hover)}}
+  @media (max-width:560px){body.v16 .kline .kb0{display:none}}
   body.v16pick .vhas>.vpick{position:absolute;left:0;top:0;bottom:0;z-index:1;display:flex;align-items:center;justify-content:center;width:36px;cursor:pointer}
   body.v16pick :is(#list,#pop) .vhas,body.v16pick #list .msec .chgrid>.trow.vstrip>.chc.vhas,body.v16pick #list .msec .chgrid>.chc.vhas{position:relative;padding-left:38px!important;cursor:pointer}
   body.v16pick #list .vhas.vsel,body.v16pick #pop .vhas.vsel{background:var(--v-sel)!important;box-shadow:inset 3px 0 var(--v-teal)}
@@ -7265,7 +7281,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   try { fmDev = localStorage.getItem("fd-focus-dev") || ""; if (!fmDev){ fmDev = Math.random().toString(36).slice(2, 10); localStorage.setItem("fd-focus-dev", fmDev); } } catch {}
   const fmOut = () => ({sel: [...FM.sel].map(([id, x]) => ({id, ...x})), fin: [...FM.fin], active: FM.active, mode: FM.mode, elapsed: FM.elapsed, start: FM.start, paused: FM.paused, told: FM.told, at: FM.at, dev: fmDev});
   function fmIn(o){ FM.sel = new Map((o.sel || []).map(({id, ...x}) => [id, x])); FM.fin = new Set(o.fin || []); FM.active = !!o.active; FM.mode = FMLBL[o.mode] ? o.mode : "30"; FM.elapsed = +o.elapsed || 0; FM.start = +o.start || 0; FM.paused = !!o.paused; FM.told = !!o.told; FM.at = o.at || ""; }
-  const fmDb = () => { if (db) db.collection("stats").doc(FMID).set({...fmOut(), updated: FM.at}).catch(() => {}); };
+  const fmDb = () => { if (db){ const o = fmOut(); o.sel = o.sel.map(x => x.bar != null ? {...x, bar: ""} : x); db.collection("stats").doc(FMID).set({...o, updated: FM.at}).catch(() => {}); } };   /* board stage boxes stay on this device (they are read fresh from the board): one save is small */
   function fmSave(){ FM.at = new Date().toISOString(); try { localStorage.setItem(FMK, JSON.stringify(fmOut())); } catch {} clearTimeout(fmSaveT); fmSaveT = setTimeout(fmDb, 600); }
   /* the saved copy and this page: the newer one wins; at a fresh load a running session opens straight to Focus */
   function fmSync(){ if (typeof stats === "undefined" || !stats.length) return; const r = stats.find(x => x.id === FMID), rAt = r && r.at || "", first = !fmSeen; fmSeen = true;
@@ -7283,11 +7299,11 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const real = !t ? (allTasks.length ? "Not on the desk" : "") : t.removed ? "Removed" : t.done ? (t.wait ? "All clear" : {good: "Approved", fix: "Fix sent", yes: "Answered yes", no: "Answered no"}[t.answer] || "To-do done") : "";
     const fin = FM.fin.has(id); return {id, t, title, project, real, fin, finished: !!real || fin}; }
   const fmItems = () => [...FM.sel].map(([id, x]) => fmItem(id, x));
-  function fmRow(o, sess){ if (o.x){ const k = esc2(o.id); return `<div class="vfi${sess && o.finished ? " vdone" : ""}"><div class="vfit"><b>${esc2(o.title)}</b><small>${esc2(o.project)}</small></div><div class="vfia">${sess && o.fin ? `<span class="vst">Finished for this session</span>` : ""}<button type="button" class="vb1" data-fm="bopen|${k}">Open \u2192</button>${sess ? `<button type="button" class="vb1" data-fm="fin|${k}">${o.fin ? "Undo finished" : "Finished for this session"}</button>${o.x.bar}` : `<button type="button" class="vb1" data-fm="rem|${k}">Remove</button>`}</div></div>`; }
+  function fmRow(o, sess){ if (o.x){ const k = esc2(o.id); return `<div class="vfi${sess && o.finished ? " vdone" : ""}"><div class="vfit"><b>${esc2(o.title)}</b><small>${esc2(o.project)}</small></div><div class="vfia">${sess && o.fin ? `<span class="vst">Finished for this session</span>` : ""}<button type="button" class="vb1" data-fm="bopen|${k}">Open \u2192</button>${sess ? `<button type="button" class="vb1" data-fm="fin|${k}">${o.fin ? "Undo finished" : `Finished<span class="vlong"> for this session</span>`}</button>${o.x.bar}` : `<button type="button" class="vb1" data-fm="rem|${k}">Remove</button>`}</div></div>`; }
     const t = o.t, id = esc2(o.id), live = t && !t.wait && !t.done && !t.removed, sub = [o.project, t && t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : ""].filter(Boolean).join(" · ");
     const open = t && !t.done && !t.removed ? `<button type="button" class="vb1" data-v16row="${id}">Open →</button>` : "";
     const btns = sess && live ? rowBtns(t, "strip") : "", undo = sess && t && t.done && !t.removed && !t.wait && (!t.answer || t.answer === "done") ? `<button type="button" class="vb1" data-task="${id}" data-done="1">Undo</button>` : "";
-    const fin = sess && !o.real ? `<button type="button" class="vb1" data-fm="fin|${id}">${o.fin ? "Undo finished" : "Finished for this session"}</button>` : "";
+    const fin = sess && !o.real ? `<button type="button" class="vb1" data-fm="fin|${id}">${o.fin ? "Undo finished" : `Finished<span class="vlong"> for this session</span>`}</button>` : "";
     const st = sess && (o.real || o.fin) ? `<span class="vst">${esc2(o.real || "Finished for this session")}</span>` : "";
     return `<div class="vfi${sess && o.finished ? " vdone" : ""}"><div class="vfit"><b>${live ? v16Title(t, esc2(o.title)) : esc2(o.title)}</b><small>${esc2(sub)}</small></div><div class="vfia">${st}${undo}${open}${sess ? fin : `<button type="button" class="vb1" data-fm="rem|${id}">Remove</button>`}${btns}</div>${/data-kans="fix\|/.test(btns) ? `<textarea class="kfix" data-kfix="${id}" placeholder="What should change?"></textarea>` : ""}</div>`; }
   function fmHtml(){ const sess = FM.view === "session", L = fmItems(), done = L.filter(o => o.finished).length, nP = new Set(L.map(o => o.project)).size;
@@ -7327,7 +7343,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     document.querySelectorAll("#list [data-tlinks]:is(.chc,.pc3t,.tpill,.onebig):not(.vhas),#pop [data-tlinks]:is(.chc,.pc3t,.tpill):not(.vhas),#list [data-qrow]:not(.vhas),#list [data-ideaopen]:not(.vhas)").forEach(b => { const t = b.dataset.tlinks && allTasks.find(x => x.id === b.dataset.tlinks); if (t && t.done) return; const k = fmKey(b); b.classList.add("vhas"); b.dataset.fmk = k; b.insertAdjacentHTML("afterbegin", fmBox(k, t ? t.short || t.title : b.textContent.trim().slice(0, 60))); b.classList.toggle("vsel", FM.sel.has(k)); });
     L.querySelectorAll(".msec .srow").forEach(r => { if (!r.querySelector(":scope > .sbar") || !r.querySelector(":scope > .sname")) return; const o = fmBoard(r); if (!o.title) return; if (!r.classList.contains("vhas")){ r.classList.add("vhas"); r.insertAdjacentHTML("afterbegin", fmBox(o.key, o.title)); r.dataset.fmk = o.key; r.classList.toggle("vsel", FM.sel.has(o.key)); }
       const x = FM.sel.get(o.key); if (x && x.bar !== o.bar){ x.bar = o.bar; ch = true; } });
-    if (ch){ fmSave(); fmDraw(); } }
+    if (ch) fmDraw(); }
   function fmPick(id, on){ if (on){ const t = allTasks.find(x => x.id === id), r = document.querySelector(`#list [data-fmk="${CSS.escape(id)}"]`), v = dash.querySelector(`.vr[data-v16row="${CSS.escape(id)}"] .vi b`);
       if (t || v || !r) FM.sel.set(id, {title: (t && (t.short || t.title)) || (v && v.textContent) || id, project: (t && t.project) || ""});
       else if (r.matches(".srow")){ const {key, ...o} = fmBoard(r); FM.sel.set(id, o); }
@@ -7337,6 +7353,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* End never touches a task. Finished rows leave the selection; unfinished ones stay ticked. */
   function fmEnd(){ const L = fmItems(), secs = fmSecs(), n = L.filter(o => o.finished).length; L.forEach(o => { if (o.finished) FM.sel.delete(o.id); }); FM.fin.clear(); FM.active = false; FM.elapsed = 0; FM.paused = false; fmSave(); fmShow(null); fmToast(`Session finished: ${n} of ${L.length} tasks · ${Math.floor(secs / 60)} min`); }
   function fmClick(e){ if (!e.target.closest) return false;
+    if (e.target.closest(".v16scx")){ e.preventDefault(); e.stopPropagation(); scClose(); return true; }
     if (e.target.id === "v16fm" && FM.view === "review"){ fmShow(null); return true; }
     const b = e.target.closest && e.target.closest("[data-fm]"); if (!b) return false; e.preventDefault(); e.stopPropagation(); const [a, v] = b.dataset.fm.split(/\|(.*)/s);
     if (a === "pick") fmPickSet(!FM.pick); else if (a === "add"){ fmPickSet(true); fmShow(null); } else if (a === "review") fmShow("review"); else if (a === "resume") fmShow("session"); else if (a === "close") fmShow(null); else if (a === "start") fmStart(); else if (a === "end") fmEnd();
@@ -7359,10 +7376,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
       return `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" data-v16row="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
+    const H16 = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>
       <div class="vf">${fmBar()}</div>`;
+    if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
+    dash.innerHTML = H16; kmBack();
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
   function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed");
       m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ONEF[ws]) m.querySelectorAll(`[data-fold="${ONEF[ws]}"]`).forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
@@ -7376,7 +7395,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
     const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
   window.V16ROW = openRow;
-  document.addEventListener("click", e => { const inM = e.target.closest && e.target.closest(".kmore"); document.querySelectorAll("details.kmore[open]").forEach(m => { if (m !== inM) m.open = false; });
+  document.addEventListener("click", e => { const inM = e.target.closest && e.target.closest(".kmore"); document.querySelectorAll("details.kmore[open]").forEach(m => { if (m !== inM) m.open = false; }); if (!inM) kmKey = ""; else if (e.target.closest("summary")){ kmKey = inM.open ? "" : kmOf(inM); setTimeout(() => kmFit(inM), 0); } else kmKey = "";
     const sa = e.target.closest && e.target.closest("[data-stripact]"); if (sa){ e.preventDefault(); e.stopPropagation(); const [ac, id] = sa.dataset.stripact.split("|"); openRow(id); setTimeout(() => { const b = document.querySelector(`.tdetail[data-tdof="${CSS.escape(id)}"] [data-${ac}="${CSS.escape(id)}"]`); if (b) b.click(); }, 120); return; }
     if (fmClick(e)) return;
     if (e.target.closest && e.target.closest(".kline")) return;
@@ -7384,9 +7403,21 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     if (x.dataset.v16tile && FM.pick){ const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); } if (x.dataset.v16tile){ const K = KINDS.find(o => o.k === x.dataset.v16tile); if (K) K.go(); return; }
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
-  let tm = 0; new MutationObserver(() => { keepFolder(); fmDeco();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); fmDraw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
+  /* the open dots menu stays open through a redraw, and opens upward when it would run off the bottom */
+  /* a half-typed Fix note in a list survives every redraw, focus and cursor included */
+  const fixDraft = {}; let fixFocus = null; document.addEventListener("input", e => { const k = e.target.dataset && e.target.dataset.kfix; if (k) fixDraft[k] = e.target.value; }, true);
+  document.addEventListener("focusin", e => { fixFocus = e.target.dataset && e.target.dataset.kfix ? e.target.dataset.kfix : null; }, true);
+  function fixBack(){ document.querySelectorAll("#list [data-kfix]").forEach(t => { const k = t.dataset.kfix; if (fixDraft[k] && !t.value){ t.value = fixDraft[k]; if (fixFocus === k && document.activeElement !== t && document.activeElement === document.body){ t.focus(); t.setSelectionRange(t.value.length, t.value.length); } } }); }
+  let lastH16 = "", kmKey = ""; function kmOf(m){ const r = m.closest(".vr,.trow,.vfi,.tdetail"); if (!r) return ""; return r.dataset.v16row || r.dataset.tdof || (r.querySelector("[data-tlinks]") || {dataset: {}}).dataset.tlinks || (r.querySelector("[data-stripact],[data-delyes]") || {dataset: {}}).dataset.delyes || ""; }
+  function kmFit(m){ const p = m.querySelector(".kmorein"), su = m.querySelector("summary"); if (!p || !su) return; p.style.transform = ""; p.style.top = ""; const fx = getComputedStyle(p).position === "fixed", q = su.getBoundingClientRect(), h = p.offsetHeight, f = dash.querySelector(".vf"), lim = innerHeight - (f && f.getClientRects().length ? f.offsetHeight : 0) - 4;
+    if (fx){ p.style.top = Math.max(4, q.bottom + h > lim ? q.top - h - 2 : q.bottom) + "px"; return; } const r = p.getBoundingClientRect(); if (r.bottom > lim) p.style.transform = `translateY(${Math.max(lim - r.bottom, 4 - r.top)}px)`; }
+  function kmBack(){ if (!kmKey) return; for (const m of document.querySelectorAll("details.kmore")){ if (m.getClientRects().length && kmOf(m) === kmKey){ m.open = true; kmFit(m); return; } } }
+  dash.addEventListener("scroll", () => { kmKey = ""; dash.querySelectorAll("details.kmore[open]").forEach(m => { m.open = false; }); }, {capture: true, passive: true});
+  /* the song check closes only by a tap outside it: V16 gives it a real Close, same action */
+  if ($("songchk")) new MutationObserver(() => { const c = $("songchk"); if (c.firstChild && !c.querySelector(":scope > .v16scx")) c.insertAdjacentHTML("beforeend", `<button type="button" class="v16scx" data-scx="close">\u2715 Close</button>`); }).observe($("songchk"), {childList: true});
+  let tm = 0; new MutationObserver(() => { keepFolder(); fmDeco(); kmBack(); fixBack();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); fmDraw(); kmBack(); }, 120); }).observe($("list"), {childList: true, subtree: true});
   /* phone or browser Back from a workspace returns to the dashboard; a check or pop-up open inside it closes first, by the old code */
-  window.V16POP = () => { if (!ws && FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj){ fmShow(null); return true; } if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
+  window.V16POP = () => { const shO = $("shortchk") && $("shortchk").innerHTML; if (document.getElementById("mcpop") || shO || (typeof ytOpen !== "undefined" && ytOpen)){ if (document.getElementById("mcpop")) mcClose(); else if (shO) shClose(); else ytClose(); try { history.pushState({fd: 1, v16: 1}, ""); } catch {} return true; } if (!ws && FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj){ fmShow(null); return true; } if (!ws && !FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj) return true;   /* an old Back step on the dashboard: nothing to close, stay */ if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
   $("list").addEventListener("scroll", headH, {passive: true}); document.addEventListener("click", () => setTimeout(headH, 0));
   dash.addEventListener("wheel", e => { const c = e.target.closest && e.target.closest(".vc"); if (c && Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); c.scrollLeft += e.deltaY; } }, {passive: false});
   if ($("pop")) new MutationObserver(fmDeco).observe($("pop"), {childList: true, subtree: true}); draw(); fmDeco(); fmDraw(true);
