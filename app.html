@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v384</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v385</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2612,6 +2612,8 @@ let db = null, projects = [], jobs = [], items = [], replies = [], tasks = [], a
 let psub = "projects", icat = "All", msub = "biz", openCat = null;
 let sub = "todo", confirmDel = null, drag = null;
 const V16 = /[?&]v16=1/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch; off = today's desk exactly */
+/* (Nov 1, Chris) V16 pick mode goes before every other click handler (the 2-tap Approve included), so a picked row can never approve, open or write. Off without ?v16=1. */
+if (V16) ["click", "dblclick", "auxclick", "pointerdown", "mousedown", "touchstart", "dragstart", "keydown"].forEach(ty => window.addEventListener(ty, e => { if (window.V16PICK) window.V16PICK(e); }, {capture: true, passive: false}));
 let tab = "today", proj = null, showDone = false, page = 0, editing = null;
 function esc(s){return String(s ?? "").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function safeUrl(u){return /^https:\/\//.test(u||"") ? u : ""}
@@ -7183,7 +7185,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px}}
   /* (Nov 1, V16 step 4) Focus Session: checkbox, bar, Review workspace, full-page session. V16.6 look, V16 colour tokens only. */
   #v16 .vpick{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:42px;margin:0 -5px 0 -8px;cursor:pointer} #v16 .vpick input,#v16fm .vpick input{width:18px;height:18px;margin:0;accent-color:var(--v-teal);cursor:pointer}
-  #v16 .vr.vsel,#v16 .vr.vsel:nth-child(even){background:var(--v-sel);box-shadow:inset 3px 0 var(--v-teal)}
+  body.v16pick #v16 .vr.vsel,body.v16pick #v16 .vr.vsel:nth-child(even){background:var(--v-sel);box-shadow:inset 3px 0 var(--v-teal)}
   #v16fm{display:none;position:fixed;inset:0;z-index:31;align-items:center;justify-content:center;padding:18px;background:#0006;color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif;font-size:14px}
   body.v16fm #v16fm{display:flex} body.v16work #v16fm{display:none!important} body.v16sess #v16{display:none}
   #v16fm *{box-sizing:border-box} #v16fm button:not(.kb){font:inherit;color:inherit;cursor:pointer}
@@ -7212,14 +7214,18 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   @media (max-width:560px){#v16 .vf{gap:7px;padding:0 10px} #v16 .vf>b,#v16 .vf .vfh{display:none} #v16 .vf .vfc{margin-right:auto} #v16 .vr .kb0{display:none}}
   /* (Nov 1, Chris) one tick box on every task row and board row. Laid over the row so no board or list layout code changes. */
   .vpick{text-decoration:none} .vpick::before{content:"";display:block;box-sizing:border-box;width:18px;height:18px;border:1.5px solid var(--v-mute);border-radius:4px;background:var(--v-card)} .vpick[aria-checked="true"]::before{content:"✓";border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal);font:800 13px/15px Figtree,system-ui,sans-serif;text-align:center}
-  #list .vpick{position:absolute;left:0;top:0;bottom:0;z-index:1;display:flex;align-items:center;justify-content:center;width:36px;cursor:pointer}
-  #list .chc.vhas,#list .pc3t.vhas,#list .tpill.vhas,#list .srow.vhas{position:relative;padding-left:38px!important} #list .msec .chgrid>.trow.vstrip>.chc.vhas,#list .msec .chgrid>.chc.vhas{padding-left:38px!important} #list .srow.vsel,#list .chc.vsel,#list .pc3t.vsel{background:var(--v-sel)!important;box-shadow:inset 3px 0 var(--v-teal)}
-  #list .srow.vhas{cursor:pointer} #list .srow.vhas .sbar{cursor:default}
+  body.v16:not(.v16pick) .vpick{display:none!important}
+  body.v16pick .vhas>.vpick{position:absolute;left:0;top:0;bottom:0;z-index:1;display:flex;align-items:center;justify-content:center;width:36px;cursor:pointer}
+  body.v16pick :is(#list,#pop) .vhas,body.v16pick #list .msec .chgrid>.trow.vstrip>.chc.vhas,body.v16pick #list .msec .chgrid>.chc.vhas{position:relative;padding-left:38px!important;cursor:pointer}
+  body.v16pick #list .vhas.vsel,body.v16pick #pop .vhas.vsel{background:var(--v-sel)!important;box-shadow:inset 3px 0 var(--v-teal)}
+  body.v16pick #v16 .vr{cursor:pointer} body.v16pick .vhas *,body.v16pick .trow .kline,body.v16pick #v16 .vr *{pointer-events:none} body.v16pick .vpick{pointer-events:auto!important}
+  body.v16pick :is(#v16 .vr,#list .trow) .kline,body.v16pick #v16 .vr .vo,body.v16pick .vhas .sbar{opacity:.45;filter:saturate(.5)}
+  body.v16pick #v16 .vs.t,body.v16pick #v16 .vf,body.v16pick #v16bar{outline:2px solid var(--v-teal);outline-offset:-2px} body.v16pick #v16 .vf{background:var(--v-sel)} body.v16pick #v16 .vf .vfh{color:var(--v-ink)}
+  #v16 .vf .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v16 .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v16 .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v16 .vsw[aria-checked="true"] i{background:var(--v-teal)} #v16 .vsw[aria-checked="true"] i::after{left:15px} #v16 .vf .vsw[aria-checked="true"]{border-color:var(--v-teal)}
   #v16bar .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16bar .vfc:empty{display:none}
-  #v16 .vr{cursor:pointer} #v16 .vr .vopen{margin-right:2px} #v16 .kmorein .vopenm{display:none}
   #v16fm .sbar{flex-wrap:wrap;justify-content:flex-end;height:auto} #v16fm .sblk{display:inline-flex!important;align-items:center;width:auto!important;height:auto!important;flex:none!important;padding:4px 8px;border:1px solid var(--v-line);border-radius:6px;font:700 12px/1.2 Figtree,system-ui,sans-serif;font-style:normal;white-space:nowrap;color:var(--v-ink)} #v16fm .sblk[role=button]{cursor:pointer} #v16fm .sblk::before{content:attr(title) " · "} #v16fm .sblk .sab,#v16fm .sblk .sdtp{display:none} #v16fm .sblk .sfw{display:inline!important;color:inherit!important;font-size:12px!important} #v16fm .sblk:is([data-sgst="none"],[data-sgst=""]){display:none!important}
   #v16fm .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important} #v16fm .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important} #v16fm .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
-  @media (max-width:560px){#v16 .vr .vopen{display:none} #v16 .kmorein .vopenm{display:block}}`;
+  @media (max-width:560px){#v16 .vf .vfs .vlong,#v16 .vsw .vlong{display:none} #v16 .vf{gap:5px;padding:0 6px} #v16 .vf button{padding:8px 9px!important}}`;
   document.head.appendChild(css);
   document.body.classList.add("v16");
   const dash = document.createElement("div"); dash.id = "v16"; document.body.appendChild(dash);
@@ -7254,7 +7260,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* (Nov 1, V16 step 4) FOCUS SESSION. Picking a row never writes a task. Three separate things: Done = the real to-do action, Approve/Fix/Yes/No = the real answer action (both by the existing buttons from rowBtns), Finished for this session = only here.
      Saved in the existing db collection stats (doc focus-session) with a copy on this device; no schema change. Newest save wins between devices. The countdown never ends a session or touches a task. */
   const FMK = "fd-focus", FMID = "focus-session", FMLBL = {"30": "30 minute countdown", "60": "60 minute countdown", stopwatch: "Stopwatch · counting up"};
-  const FM = {sel: new Map(), fin: new Set(), active: false, mode: "30", elapsed: 0, start: 0, paused: false, told: false, at: "", view: null};
+  const FM = {pick: false, sel: new Map(), fin: new Set(), active: false, mode: "30", elapsed: 0, start: 0, paused: false, told: false, at: "", view: null};
   let fmDev = "", fmSeen = false, fmSaveT = 0, fmSig = "", fmTick = 0;
   try { fmDev = localStorage.getItem("fd-focus-dev") || ""; if (!fmDev){ fmDev = Math.random().toString(36).slice(2, 10); localStorage.setItem("fd-focus-dev", fmDev); } } catch {}
   const fmOut = () => ({sel: [...FM.sel].map(([id, x]) => ({id, ...x})), fin: [...FM.fin], active: FM.active, mode: FM.mode, elapsed: FM.elapsed, start: FM.start, paused: FM.paused, told: FM.told, at: FM.at, dev: fmDev});
@@ -7285,8 +7291,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const st = sess && (o.real || o.fin) ? `<span class="vst">${esc2(o.real || "Finished for this session")}</span>` : "";
     return `<div class="vfi${sess && o.finished ? " vdone" : ""}"><div class="vfit"><b>${live ? v16Title(t, esc2(o.title)) : esc2(o.title)}</b><small>${esc2(sub)}</small></div><div class="vfia">${st}${undo}${open}${sess ? fin : `<button type="button" class="vb1" data-fm="rem|${id}">Remove</button>`}${btns}</div>${/data-kans="fix\|/.test(btns) ? `<textarea class="kfix" data-kfix="${id}" placeholder="What should change?"></textarea>` : ""}</div>`; }
   function fmHtml(){ const sess = FM.view === "session", L = fmItems(), done = L.filter(o => o.finished).length, nP = new Set(L.map(o => o.project)).size;
-    const list = `<div class="vbarh"><div><b>${sess ? "Your selected tasks" : "Build your Focus Session"}</b><small>${L.length} ${L.length === 1 ? "task" : "tasks"} · ${nP} ${nP === 1 ? "project" : "projects"}${sess ? " · " + done + " finished" : ""}</small></div>${sess ? "" : `<button type="button" class="vb1" data-fm="close">Add more tasks</button>`}</div>${sess ? `<div class="vprog"><div style="width:${L.length ? Math.round(done / L.length * 100) : 0}%"></div></div>` : `<div style="height:14px"></div>`}` + L.map(o => fmRow(o, sess)).join("");
-    const live = `<div class="vtop"><h3>Your focus, nothing else</h3><small>Your other projects are hidden, not deleted. You can open each task normally.</small></div><div class="focus-timer"><div><small id="fmstatus">${esc2(fmStatus())}</small><div id="fmclock" class="timer-readout${fmUp() ? " expired" : ""}">${fmClock()}</div></div><div class="vacts"><button type="button" class="vb1" data-fm="pause">${FM.paused ? "▶ Resume" : "Ⅱ Pause"}</button><button type="button" class="vb1" data-fm="close">Add tasks</button><button type="button" class="vb1 vp1" data-fm="end">End session</button></div></div>`;
+    const list = `<div class="vbarh"><div><b>${sess ? "Your selected tasks" : "Build your Focus Session"}</b><small>${L.length} ${L.length === 1 ? "task" : "tasks"} · ${nP} ${nP === 1 ? "project" : "projects"}${sess ? " · " + done + " finished" : ""}</small></div>${sess ? "" : `<button type="button" class="vb1" data-fm="add">Add more tasks</button>`}</div>${sess ? `<div class="vprog"><div style="width:${L.length ? Math.round(done / L.length * 100) : 0}%"></div></div>` : `<div style="height:14px"></div>`}` + L.map(o => fmRow(o, sess)).join("");
+    const live = `<div class="vtop"><h3>Your focus, nothing else</h3><small>Your other projects are hidden, not deleted. You can open each task normally.</small></div><div class="focus-timer"><div><small id="fmstatus">${esc2(fmStatus())}</small><div id="fmclock" class="timer-readout${fmUp() ? " expired" : ""}">${fmClock()}</div></div><div class="vacts"><button type="button" class="vb1" data-fm="pause">${FM.paused ? "▶ Resume" : "Ⅱ Pause"}</button><button type="button" class="vb1" data-fm="add">Add tasks</button><button type="button" class="vb1 vp1" data-fm="end">End session</button></div></div>`;
     const setup = `<div class="vpanel"><b>Choose your timer</b><br><small>You can pause anytime. Finishing early is fine.</small><div class="timer-options">${[["30", "30 minutes", "Quick focus"], ["60", "60 minutes", "Longer session"], ["stopwatch", "Stopwatch", "Count up, no limit"]].map(([k, a, b]) => `<button type="button" class="timer-option${FM.mode === k ? " chosen" : ""}" data-fm="mode|${k}" aria-pressed="${FM.mode === k}"><b>${a}</b><small>${b}</small></button>`).join("")}</div><button type="button" class="vb1 vp1" data-fm="start"${L.length ? "" : " disabled"}>Start Focus Session →</button></div>`;
     const none = `<div class="vn">No tasks selected yet. Tick any task or board row to build your session.</div>`;
     return `<div class="vfw"><div class="vfh1"><button type="button" class="vb1" data-fm="close">← Back</button><h2>${sess ? `Focus Session<span class="vfx"> · In progress</span>` : "Build your Focus Session"}</h2><button type="button" class="vb1" data-fm="close">✕ ${sess ? "Exit" : "Close"}</button></div><div class="vfb"><div>${sess ? live + (L.length ? list : none) : L.length ? list + setup : none}</div></div>${sess ? `<div class="vff">Your chosen work, without the rest of the dashboard.</div>` : ""}</div>`; }
@@ -7296,42 +7302,52 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const sig = JSON.stringify([FM.view, FM.mode, FM.paused, FM.active, fmItems().map(o => [o.id, o.title, o.project, o.real, o.fin, o.t && o.t.note, o.t && o.t.url, o.t && o.t.kind, o.t && o.t.answer, o.x && o.x.bar])]); if (!force && sig === fmSig) return; fmSig = sig;
     const B = el.querySelector(".vfb"), top = B ? B.scrollTop : 0, a = document.activeElement, was = a && a.dataset && a.dataset.kfix, vals = {}; el.querySelectorAll("[data-kfix]").forEach(x => { vals[x.dataset.kfix] = x.value; });
     el.innerHTML = fmHtml(); el.querySelectorAll("[data-kfix]").forEach(x => { if (vals[x.dataset.kfix]) x.value = vals[x.dataset.kfix]; if (was === x.dataset.kfix) x.focus(); }); const B2 = el.querySelector(".vfb"); if (B2) B2.scrollTop = top; fmTime(); }
-  function fmShow(v){ if (v && !FM.view){ try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } FM.view = v; fmDraw(true); if (!v && !ws) draw(); }
-  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`;
-    if (FM.active) return `<b>Focus Session</b>${cnt}<span class="vfh">In progress. Tick any task or board row to add it.</span><button type="button" class="vfs" data-fm="resume">Back to session →</button>`;
-    return `<b>Focus Session</b>${cnt}<span class="vfh">${n ? n + (n === 1 ? " item" : " items") + " chosen." : "Tick any task or board row."}</span><button type="button" data-fm="review"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start session →</button>`; }
-  const fmBarDraw = () => { const f = dash.querySelector(".vf"); if (f) f.innerHTML = fmBar(); const c = document.getElementById("v16barc"); if (c) c.textContent = FM.sel.size ? FM.sel.size + " selected" : ""; };
+  function fmShow(v){ if (v === "session") fmPickSet(false); if (v && !FM.view){ try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } FM.view = v; fmDraw(true); if (!v && !ws) draw(); }
+  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span>Pick<span class="vlong"> items</span> ${FM.pick ? "on" : "off"}</span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Pick items to add more." : "Turn on Pick items to choose.";
+    if (FM.active) return `<b>Focus Session</b>${cnt}<span class="vfh">${FM.pick ? hint : "In progress."}</span>${sw}<button type="button" class="vfs" data-fm="resume"><span class="vlong">Back to </span>session →</button>`;
+    return `<b>Focus Session</b>${cnt}<span class="vfh">${hint}</span>${sw}<button type="button" data-fm="review"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
+  const fmBarDraw = () => { const f = dash.querySelector(".vf"); if (f) f.innerHTML = fmBar(); const c = document.getElementById("v16barc"); if (c) c.textContent = FM.pick ? "Pick on \u00b7 " + FM.sel.size + " selected" : FM.sel.size ? FM.sel.size + " selected" : ""; };
+  /* pick mode is this device's own switch, saved with the page; never clears the selection */
+  function fmPickSet(on){ FM.pick = !!on; document.body.classList.toggle("v16pick", FM.pick); try { localStorage.setItem("fd-focus-pick", FM.pick ? "1" : ""); } catch {} fmBarDraw(); }
+  const FMITEM = "[data-tlinks]:is(.chc,.pc3t,.tpill,.onebig),[data-qrow],[data-ideaopen],.msec .srow.vhas,#v16 div.vr[data-v16row]";
+  const FMNAV = "[data-fold],[data-repopen],[data-popproj],[data-popgoal],[data-popbg],.popx,[data-popclose],.seg button,[data-sub],[data-psub]";
+  const fmKey = el => el.dataset.fmk || el.dataset.v16row || el.dataset.tlinks || (el.dataset.qrow && "i:q:" + el.dataset.qrow) || (el.dataset.ideaopen && "i:i:" + el.dataset.ideaopen) || "";
+  function fmOwner(tg){ const it = tg.closest(FMITEM); if (it) return fmKey(it); const tr = tg.closest(".trow"); if (tr){ const c = tr.querySelector("[data-tlinks]"); if (c) return c.dataset.tlinks; } const td = tg.closest(".tdetail[data-tdof]"); return td ? td.dataset.tdof : ""; }
+  window.V16PICK = e => { if (!FM.pick) return; const tg = e.target && e.target.closest ? e.target : null; if (!tg) return; const ty = e.type;
+    if (FM.view){ if (ty === "click" && tg.closest("#v16fm [data-v16row],#v16fm [data-fm^=bopen]")) fmPickSet(false); return; }
+    if (!tg.closest("#v16 .vr,#list,#pop")) return; const press = ty === "keydown"; if (press && e.key !== "Enter" && e.key !== " ") return;
+    const k = fmOwner(tg), nav = !k && (tg.closest(FMNAV) || (tg.closest("#list h4") && !tg.closest("#list h4 :is(button,a,input,select)"))); if (nav) return;
+    e.stopImmediatePropagation(); if (!["pointerdown", "mousedown", "touchstart"].includes(ty)) e.preventDefault();
+    if (k && (ty === "click" || press)) fmPick(k, !FM.sel.has(k)); };
   const fmBox = (key, label) => `<u class="vpick" role="checkbox" tabindex="0" data-v16pick="${esc2(key)}" aria-label="Select ${esc2(label)}" aria-checked="${FM.sel.has(key)}"></u>`;
   /* a board row: its key and name come from the page, its stage boxes are the board's own (copied whole, so a tap in Focus runs the board's real check) */
-  const FMWS = {Songs: "songs", Shorts: "shorts", YouTube: "youtube", "Worship Piano Lab": "lessons"};
+  const FMWS = {Songs: "songs", Shorts: "shorts", YouTube: "youtube", "Worship Piano Lab": "lessons", Queue: "queue", Replies: "replies"};
   function fmBoard(r){ const n = r.querySelector(".sname"), m = r.closest(".msec"), h = m && m.querySelector(":scope > h4"), proj = h && h.firstChild ? h.firstChild.textContent.trim() : "", name = n && n.firstChild ? n.firstChild.textContent.trim() : ""; return {key: "b:" + proj + ":" + name, title: name, project: proj, ws: FMWS[proj] || "", bar: r.querySelector(".sbar").outerHTML}; }
   function fmDeco(){ const L = $("list"); if (!L) return; let ch = false;
-    L.querySelectorAll("[data-tlinks]:is(.chc,.pc3t,.tpill):not(.vhas)").forEach(b => { const t = allTasks.find(x => x.id === b.dataset.tlinks); if (t && t.done) return; b.classList.add("vhas"); b.insertAdjacentHTML("afterbegin", fmBox(b.dataset.tlinks, t ? t.short || t.title : b.textContent)); b.classList.toggle("vsel", FM.sel.has(b.dataset.tlinks)); });
+    document.querySelectorAll("#list [data-tlinks]:is(.chc,.pc3t,.tpill,.onebig):not(.vhas),#pop [data-tlinks]:is(.chc,.pc3t,.tpill):not(.vhas),#list [data-qrow]:not(.vhas),#list [data-ideaopen]:not(.vhas)").forEach(b => { const t = b.dataset.tlinks && allTasks.find(x => x.id === b.dataset.tlinks); if (t && t.done) return; const k = fmKey(b); b.classList.add("vhas"); b.dataset.fmk = k; b.insertAdjacentHTML("afterbegin", fmBox(k, t ? t.short || t.title : b.textContent.trim().slice(0, 60))); b.classList.toggle("vsel", FM.sel.has(k)); });
     L.querySelectorAll(".msec .srow").forEach(r => { if (!r.querySelector(":scope > .sbar") || !r.querySelector(":scope > .sname")) return; const o = fmBoard(r); if (!o.title) return; if (!r.classList.contains("vhas")){ r.classList.add("vhas"); r.insertAdjacentHTML("afterbegin", fmBox(o.key, o.title)); r.dataset.fmk = o.key; r.classList.toggle("vsel", FM.sel.has(o.key)); }
       const x = FM.sel.get(o.key); if (x && x.bar !== o.bar){ x.bar = o.bar; ch = true; } });
     if (ch){ fmSave(); fmDraw(); } }
-  function fmPick(id, on){ if (on){ const r = document.querySelector(`#list .srow[data-fmk="${CSS.escape(id)}"]`); if (r){ const {key, ...o} = fmBoard(r); FM.sel.set(id, o); } else { const t = allTasks.find(x => x.id === id) || {}, b = dash.querySelector(`.vr[data-v16row="${CSS.escape(id)}"] .vi b`); FM.sel.set(id, {title: t.short || t.title || (b && b.textContent) || id, project: t.project || ""}); } } else { FM.sel.delete(id); FM.fin.delete(id); }
-    document.querySelectorAll(`[data-v16pick="${CSS.escape(id)}"]`).forEach(u => { u.setAttribute("aria-checked", String(on)); const row = u.closest(".vr,.srow,.chc,.pc3t"); if (row) row.classList.toggle("vsel", on); }); fmBarDraw(); fmSave(); fmDraw(); }
+  function fmPick(id, on){ if (on){ const t = allTasks.find(x => x.id === id), r = document.querySelector(`#list [data-fmk="${CSS.escape(id)}"]`), v = dash.querySelector(`.vr[data-v16row="${CSS.escape(id)}"] .vi b`);
+      if (t || v || !r) FM.sel.set(id, {title: (t && (t.short || t.title)) || (v && v.textContent) || id, project: (t && t.project) || ""});
+      else if (r.matches(".srow")){ const {key, ...o} = fmBoard(r); FM.sel.set(id, o); }
+      else { const m = r.closest(".msec"), h = m && m.querySelector(":scope > h4"), proj = h && h.firstChild ? h.firstChild.textContent.trim() : "", n = r.querySelector("b"); FM.sel.set(id, {title: ((n || r).textContent || id).trim().slice(0, 80), project: proj, ws: FMWS[proj] || "projects", bar: ""}); } } else { FM.sel.delete(id); FM.fin.delete(id); }
+    document.querySelectorAll(`[data-v16pick="${CSS.escape(id)}"]`).forEach(u => { u.setAttribute("aria-checked", String(on)); const row = u.closest(".vr,.vhas"); if (row) row.classList.toggle("vsel", on); }); fmBarDraw(); fmSave(); fmDraw(); }
   function fmStart(){ if (!FM.sel.size) return; FM.active = true; FM.start = Date.now(); FM.elapsed = 0; FM.paused = false; FM.told = false; FM.fin.clear(); fmSave(); fmShow("session"); }
   /* End never touches a task. Finished rows leave the selection; unfinished ones stay ticked. */
   function fmEnd(){ const L = fmItems(), secs = fmSecs(), n = L.filter(o => o.finished).length; L.forEach(o => { if (o.finished) FM.sel.delete(o.id); }); FM.fin.clear(); FM.active = false; FM.elapsed = 0; FM.paused = false; fmSave(); fmShow(null); fmToast(`Session finished: ${n} of ${L.length} tasks · ${Math.floor(secs / 60)} min`); }
-  function fmClick(e){ const tg = e.target.closest ? e.target : null; if (!tg) return false;
-    const op = tg.closest("[data-v16open]"); if (op){ e.preventDefault(); e.stopPropagation(); openRow(op.dataset.v16open); return true; }
-    const OWN = "a,button,summary,textarea,input,[role=button],[role=link],[data-v16ws],[data-v16link],.kline,.sbar";
-    const own = tg.closest(OWN); if (!own || own.matches("#v16 div.vr")){ const v = tg.closest("#v16 div.vr[data-v16row]"), sr = !v && tg.closest("#list .srow.vhas"), k = v ? v.dataset.v16row : sr ? sr.dataset.fmk : ""; if (k){ e.preventDefault(); e.stopPropagation(); fmPick(k, !FM.sel.has(k)); return true; } }
+  function fmClick(e){ if (!e.target.closest) return false;
     if (e.target.id === "v16fm" && FM.view === "review"){ fmShow(null); return true; }
     const b = e.target.closest && e.target.closest("[data-fm]"); if (!b) return false; e.preventDefault(); e.stopPropagation(); const [a, v] = b.dataset.fm.split(/\|(.*)/s);
-    if (a === "review") fmShow("review"); else if (a === "resume") fmShow("session"); else if (a === "close") fmShow(null); else if (a === "start") fmStart(); else if (a === "end") fmEnd();
+    if (a === "pick") fmPickSet(!FM.pick); else if (a === "add"){ fmPickSet(true); fmShow(null); } else if (a === "review") fmShow("review"); else if (a === "resume") fmShow("session"); else if (a === "close") fmShow(null); else if (a === "start") fmStart(); else if (a === "end") fmEnd();
     else if (a === "pause"){ if (FM.paused){ FM.start = Date.now(); FM.paused = false; } else { FM.elapsed = fmSecs(); FM.paused = true; } fmSave(); fmDraw(); }
     else if (a === "mode"){ FM.mode = v; fmSave(); fmDraw(); }
     else if (a === "rem"){ FM.sel.delete(v); FM.fin.delete(v); fmSave(); fmDraw(); }
     else if (a === "bopen"){ const x = FM.sel.get(v); if (x && x.ws){ openWs(x.ws, TITLES[x.ws]); setTimeout(() => { const r = document.querySelector(`#list .srow[data-fmk="${CSS.escape(v)}"]`); if (r) r.scrollIntoView({block: "center"}); }, 150); } }
     else if (a === "fin"){ if (FM.fin.has(v)) FM.fin.delete(v); else FM.fin.add(v); fmSave(); fmDraw(); }
     return true; }
-  /* the tick box goes first of all (window, capture): the task lists have their own early click handlers that would open the row */
-  window.addEventListener("click", e => { const c = e.target.closest && e.target.closest(".vpick"); if (!c) return; e.preventDefault(); e.stopPropagation(); fmPick(c.dataset.v16pick, c.getAttribute("aria-checked") !== "true"); }, true);
   const fmEl = document.createElement("div"); fmEl.id = "v16fm"; document.body.prepend(fmEl);   /* first in the page: Fix reads the first note box for that row */
-  try { const o = JSON.parse(localStorage.getItem(FMK) || "null"); if (o) fmIn(o); } catch {}
+  try { const o = JSON.parse(localStorage.getItem(FMK) || "null"); if (o) fmIn(o); if (localStorage.getItem("fd-focus-pick")) FM.pick = true; } catch {} document.body.classList.toggle("v16pick", FM.pick);
   let ws = null, homeTop = 0;
   if (tab !== "today"){ tab = "today"; proj = null; }   /* a reload always lands on the dashboard, even if the saved place was the Projects tab */
   function draw(){ if (ws || tab !== "today") return; fmSync();
@@ -7341,7 +7357,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const T = tops.map((o, i) => `<button type="button" class="vt" style="--vc:${COL[i][0]};--vt:${COL[i][1]}" data-v16tile="${o.x.k}"><span>${o.x.l}</span><strong>${o.n}</strong><small>${o.x.s}</small></button>`).join("");
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
-      return `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" data-v16row="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? `<button type="button" class="vo vopen" data-v16row="${esc2(id)}">Open \u2192</button>` + rowBtns(t, "strip").replace('<div class="kmorein">', `<div class="kmorein"><button type="button" class="kb vopenm" data-v16open="${esc2(id)}">Open</button>`) : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
+      return `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" data-v16row="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : `<button type="button" class="vo" data-v16row="${esc2(id)}">Open →</button>`}</div>`; }).join("");
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
     dash.innerHTML = `<div class="vh"><div><span class="vb">Front Desk</span><span class="vv">${esc2(ver ? ver.textContent : "")}</span></div><div class="vht"><a class="vold" href="app.html">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
@@ -7365,15 +7381,15 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     if (fmClick(e)) return;
     if (e.target.closest && e.target.closest(".kline")) return;
     const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return; e.preventDefault(); e.stopPropagation();
-    if (x.dataset.v16tile){ const K = KINDS.find(o => o.k === x.dataset.v16tile); if (K) K.go(); return; }
+    if (x.dataset.v16tile && FM.pick){ const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); } if (x.dataset.v16tile){ const K = KINDS.find(o => o.k === x.dataset.v16tile); if (K) K.go(); return; }
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
-  document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const pk = e.target.closest && e.target.closest(".vpick"); if (pk){ e.preventDefault(); e.stopPropagation(); fmPick(pk.dataset.v16pick, pk.getAttribute("aria-checked") !== "true"); return; } const x = e.target.closest && !e.target.closest(".kline,a,button,[role=link]") && e.target.closest("div[data-v16row]"); if (x && x === e.target){ e.preventDefault(); fmPick(x.dataset.v16row, !FM.sel.has(x.dataset.v16row)); } });
+  document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
   let tm = 0; new MutationObserver(() => { keepFolder(); fmDeco();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); fmDraw(); }, 120); }).observe($("list"), {childList: true, subtree: true});
   /* phone or browser Back from a workspace returns to the dashboard; a check or pop-up open inside it closes first, by the old code */
   window.V16POP = () => { if (!ws && FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj){ fmShow(null); return true; } if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
   $("list").addEventListener("scroll", headH, {passive: true}); document.addEventListener("click", () => setTimeout(headH, 0));
   dash.addEventListener("wheel", e => { const c = e.target.closest && e.target.closest(".vc"); if (c && Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); c.scrollLeft += e.deltaY; } }, {passive: false});
-  draw(); fmDeco(); fmDraw(true);
+  if ($("pop")) new MutationObserver(fmDeco).observe($("pop"), {childList: true, subtree: true}); draw(); fmDeco(); fmDraw(true);
 })();
 </script>
 
