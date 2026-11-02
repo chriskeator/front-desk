@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v380</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v381</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7180,7 +7180,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const lastN = {}, today = () => plus(0);
   const lcNext = () => { const out = []; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk") out.push([L.id, k]); } return out; };
   const ytNext = () => (ytRows || []).filter(r => (r.steps || {}).posted !== "ok").sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))).map(r => [r.id, YTPOP.find(k => (r.steps || {})[k] === "chk")]).filter(x => x[1]);
-  const shNext = () => shBoard === null ? (fdShLoad(), null) : shBoard.filter(shReady).sort((a, b) => (a.order || 0) - (b.order || 0));
+  const shNext = () => shBoard === null ? (db && fdShLoad(), null) : shBoard.filter(shReady).sort((a, b) => (a.order || 0) - (b.order || 0));
   const qNext = () => tasks.filter(t => !t.done && !t.removed && !t.wait && !withCad(t) && !(t.date && t.date > today()) && (t.kind || t.handoff === "review" || okAsk(t))).sort(byOrder);
   const sgNext2 = () => { const w = waitLive({wait: "songs"}); return w ? (w.first ? w : {n: 0}) : null; };
   const KINDS = [
