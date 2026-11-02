@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v377</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v378</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6280,7 +6280,9 @@ function homeSongs(only){
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
     return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
-  const secN = fold("next", "Next week", "after this ship", fNext) + fold("xmas", "Christmas", "Nov 8 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO) + fold("live", "Live", "students have these", live.slice().sort((a, b) => a.title.localeCompare(b.title)));
+  const nx = L => V16 ? L.filter(x => !x.xm) : L, fXv = V16 ? U.filter(x => x.xm).sort(ord) : [], fNow = V16 ? nx(U.filter(x => sgNow(x) && !isLive(x)).sort(ord)) : [];   /* (Nov 1, Chris: "test Christmas songs on my new desk") V16: every Christmas song in one open folder, live or not, and the songs going out now; same boxes, same check flows, one folder per song */
+  const v16open = (key, t, L) => L.length ? deskFold(key, `${t} (${L.length})`, L.reduce((n, x) => n + sgChk(x).length, 0) + " to check", head + L.map(x => sgRow(x)).join(""), {def: 1}) : "";
+  const secN = v16open("sg:v16xmas", "Christmas", fXv) + v16open("sg:now", "Going out now", fNow) + fold("next", "Next week", "after this ship", nx(fNext)) + (V16 ? "" : fold("xmas", "Christmas", "Nov 8 release", fX)) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO) + fold("live", "Live", "students have these", nx(live.slice()).sort((a, b) => a.title.localeCompare(b.title)));
   const mine = UF.reduce((t, x) => t + sgChk(x).length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
@@ -6453,10 +6455,11 @@ function rowBtns(t, mode){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) 
   const pair = t.done || k === "ab" ? null : k === "yesno" ? [B("kn", "No", `data-kans="no|${id}"`), B("kp", "Yes", `data-kans="yes|${id}"`)] : ask ? [B("kg", "Fix", `data-kans="fix|${id}"`), B("kp", "Approve", `data-kans="good|${id}"`)] : ["", B("kp", "Done", done)];
   const main = pair ? (pair[0] || `<span class="kb0"></span>`) + pair[1] : "";
   const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
-  const more = [u && !strip ? `<a class="kb" href="${esc(u)}" target="_blank" rel="noopener">Open link</a>` : "", B("", "Move", pop ? `data-move="${id}"` : strip ? `data-stripact="tdcal|${id}"` : `data-tdcal="${id}"`), pop ? "" : B("", "Edit", strip ? `data-stripact="edopen|${id}"` : `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
+  const more = [u && !strip && !v16Self(t.url) ? `<a class="kb" href="${esc(u)}" target="_blank" rel="noopener">Open link</a>` : "", B("", "Move", pop ? `data-move="${id}"` : strip ? `data-stripact="tdcal|${id}"` : `data-tdcal="${id}"`), pop ? "" : B("", "Edit", strip ? `data-stripact="edopen|${id}"` : `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
   return `<div class="kline">${main}${t.done ? "" : `<details class="kmore"><summary aria-label="More">\u22EF</summary><div class="kmorein">${more}</div></details>`}</div>`; }
 /* a row with a link: the title opens it, underlined in the accent colour */
-function v16Title(t, html){ const u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : ""; return u ? `<span class="vlink" role="link" tabindex="0" data-v16link="${esc(u)}">${html}</span>` : html; }
+const v16Self = u => /\/\/desk\.worshippianoacademy\.com\/app\.html([?#]|$)/.test(String(u || ""));   /* a row that links to the desk itself: stay in V16, on the Songs board */
+function v16Title(t, html){ const u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : ""; if (v16Self(t.url)) return `<span class="vlink" role="link" tabindex="0" data-v16ws="songs">${html}</span>`; return u ? `<span class="vlink" role="link" tabindex="0" data-v16link="${esc(u)}">${html}</span>` : html; }
 window.addEventListener("click", e => { const v = V16 && e.target.closest && e.target.closest("[data-v16link]"); if (!v) return; e.preventDefault(); e.stopPropagation(); window.open(v.dataset.v16link, "_blank", "noopener"); }, true);
 window.addEventListener("keydown", e => { if (e.key !== "Enter" || !V16) return; const v = e.target.closest && e.target.closest("[data-v16link]"); if (!v) return; e.preventDefault(); e.stopPropagation(); window.open(v.dataset.v16link, "_blank", "noopener"); }, true);
 /* V16: the Fix box stays hidden until Fix is tapped; a closed row opens first. The one style rule survives redraws. */
@@ -7075,9 +7078,10 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
 /* (Nov 1, Chris go) V16 STEP 1 SHELL, only with ?v16=1. Look = newest draft (Design scans/front-desk-design-newest.html, V16.5). No second system:
    rows and counts are READ from the real folders in #list, a workspace IS the real folder, every button in it is the existing one. Colours are tokens below. */
 (function(){ if (!/[?&]v16=1/.test(location.search)) return;
-  const FOLD = {today: "Today", replies: "Replies", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", lab: "Worship Piano Lab", personal: "Family and Money"};
-  const PTAB = {lab: "Worship Piano Lab", personal: "Personal"};   /* cards that are real db projects: they open in the Projects tab; Personal = one entry, its category folder shows only it */
-  const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["lab", "Worship Piano Lab"], ["queue", "Queue"], ["personal", "Personal"], ["projects", "Other projects"]];
+  const FOLD = {today: "Today", replies: "Replies", lessons: "Worship Piano Lab", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", lab: "Worship Piano Lab", personal: "Family and Money"};
+  const PTAB = {lab: "Worship Piano Lab", personal: "Personal", lessons: "Worship Piano Lab"};   /* cards that are real db projects: they open in the Projects tab; Personal = one entry, its category folder shows only it */
+  const ONEF = {personal: "p:Personal", lessons: "p:@@lab"};   /* a card that shows one sub-folder of its category */
+  const CARDS = [["songs", "Songs"], ["youtube", "YouTube"], ["shorts", "Shorts"], ["lessons", "Lessons"], ["lab", "Worship Piano Lab"], ["queue", "Queue"], ["personal", "Personal"], ["projects", "Other projects"]];
   const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
   const css = document.createElement("style"); css.textContent = `
   body.v16{--v-bg:#FFFDF8;--v-card:#FFFFFF;--v-ink:#2A2F34;--v-mute:#6B7280;--v-line:#E8E2D4;--v-teal:#0F766E;--v-gold:#D19A12;--v-coral:#B76E59;--v-blue:#6E7F9B;--v-a:#FDFBF8;--v-b:#F7F3EC;--v-hover:#F0EADF;--v-sel:#E8F4F1;--v-tgold:#FCF4DF;--v-tcoral:#FAEEE8;--v-tteal:#E8F4F0;--v-tblue:#EDF2F8;--v-onteal:#FFFFFF;--v-ongold:#241A00}
@@ -7111,6 +7115,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     body.v16 .kline .kp:hover{background:#5DCAA5} body.v16 .kline .kg:hover{background:#EF9F27} body.v16 .kline .kn:hover{background:#B4B2A9}
     body.v16 .kmore>summary:hover,#v16 .vold:hover,body.v16 .vlink:hover{color:var(--v-teal)}
     body.v16 #list .sblk[role=button]:hover,body.v16 #list a.sblk:hover{box-shadow:0 0 0 2px var(--v-teal)!important}
+    body.v16work #list .sblk[role=button][style*="background:var(--ka1FA598)"]:hover{background:#5DCAA5!important} body.v16work #list .sblk[role=button][style*="background:var(--kaE8B53A)"]:hover{background:#EF9F27!important}
   }
   body.v16 :is(button,a,summary,[role=button],[role=link],[tabindex]):focus-visible{outline:3px solid var(--v-teal)!important;outline-offset:2px}
   #v16bar{display:none}
@@ -7118,11 +7123,24 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16bar button{padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16bar b{font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   body.v16work .wrap>header,body.v16work .wrap>.tabs,body.v16work #list .hello{display:none!important}
   body.v16ws #list .msec:not(.v16keep),body.v16ws #list .mgrid>:not(.mleft):not(.v16keep):not(:has(.v16keep)),body.v16ws #list .mleft>:not(.v16keep):not(:has(.v16keep)){display:none!important}
-  body.v16sub #list .v16keep .chgrid>.pc3:not(.v16one),body.v16sub #list .v16keep .chgrid>.sublist:not(.v16one){display:none!important}
+  body.v16sub #list .v16keep>.chgrid>.pc3:not(.v16one),body.v16sub #list .v16keep>.chgrid>.sublist:not(.v16one),body.v16sub #list .v16keep>h4{display:none!important}
   body.v16work #list .v16hd{position:sticky;top:var(--fd-head-h,50px);z-index:2;background:var(--card)} body.v16work #list .qhead{top:var(--fd-head-h,50px)!important} body.v16work #list.fdlock .v16hd{top:0}
   body.v16ws #list .v16keep>h4{pointer-events:none} body.v16ws #list .v16keep>h4 .hr>*{pointer-events:auto}
   body.v16work #list .chgrid>.chc:nth-of-type(even){background:var(--v-b)} body.v16work #list .chc.rowon{background:var(--v-sel)}
   .v16note{margin:4px 0 8px;line-height:1.4}
+  /* (Nov 1, step 3) the real boards in the V16 look: old tokens point at V16 ones inside a workspace; no board code changes */
+  body.v16work #list{--card:var(--v-card);--line:var(--v-line);--ink:var(--v-ink);--muted:var(--v-mute);--soft:var(--v-b);--hov:var(--v-hover);font-family:Figtree,system-ui,-apple-system,sans-serif;color:var(--v-ink)}
+  body.v16work #bar{display:none!important} html:has(body.v16work),body.v16work,body.v16work .wrap,body.v16work #list{background:var(--v-bg)!important}
+  body.v16board #list .fdim,body.v16board #list .fdim *{filter:none!important;opacity:1!important;-webkit-filter:none!important;pointer-events:auto}
+  body.v16work #list .msec{background:var(--v-card);border-radius:16px;box-shadow:0 2px 12px #4c40300a}
+  body.v16work #list .msec>h4{font:700 19px/1.2 Fraunces,Georgia,serif;letter-spacing:-.02em;background:var(--v-card)}
+  body.v16work #list .msec>h4 .hr,body.v16work #list .msec>h4 i{font:600 12px/1.2 Figtree,system-ui,sans-serif;letter-spacing:0;color:var(--v-mute)}
+  body.v16work #list .srow{background:var(--v-card)} body.v16work #list .srow:nth-of-type(even){background:var(--v-b)}
+  body.v16work #list .pc3t{background:var(--v-a)} body.v16work #list .subon>.pc3t{background:var(--v-sel)}
+  body.v16work #list .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important}
+  body.v16work #list .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important}
+  body.v16work #list .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
+  body.v16work #list .sblk:is([style*="background:var(--ka1FA598)"],[style*="background:var(--kaE8B53A)"],[style*="background:var(--kaFBEFD0)"]) span{color:inherit!important}
   body.v16 button.armed{background:var(--v-gold)!important;border-color:var(--v-gold)!important;color:var(--v-ongold)!important}
   body.v16 .kfix[data-kfix]{display:none}
   body.v16 .kline{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:0}
@@ -7154,7 +7172,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const todayRows = () => { const m = folder(FOLD.today); return m ? [...m.querySelectorAll("[data-tlinks]")].filter(b => b.matches(".chc") && !b.closest(".tdetail")) : []; };
   const openN = name => tasks.filter(t => !t.done && !t.removed && t.project === name).length, pOpen = () => projects.filter(p => p.status !== "done");
   const plural = (n, w) => n ? n + " " + w + (n === 1 ? "" : "s") : "";
-  function cardSub(k){ if (FOLD[k] && !PTAB[k]) return countOf(FOLD[k]); if (k === "projects"){ const n = pOpen().filter(p => !["Worship Piano Lab", "Personal", "Shorts", "YouTube"].includes(p.name)).length; return plural(n, "project"); }
+  function cardSub(k){ if (k === "lessons") return lcToCheck() + " to check"; if (FOLD[k] && !PTAB[k]) return countOf(FOLD[k]); if (k === "projects"){ const n = pOpen().filter(p => !["Worship Piano Lab", "Personal", "Shorts", "YouTube"].includes(p.name)).length; return plural(n, "project"); }
     const n = openN(PTAB[k]); return k === "lab" ? [lcToCheck() ? lcToCheck() + " to check" : "", plural(n, "to-do")].filter(Boolean).join(" · ") : plural(n, "to-do"); }
   const cardShows = k => !PTAB[k] ? !FOLD[k] || !!folder(FOLD[k]) : pOpen().some(p => p.name === PTAB[k]);
   /* (Nov 1, Chris yes) TOP 4 TILES: the 4 kinds of work with the most waiting on him, counted live from the real boards (work off Today counts too). A tile opens the NEXT item itself, by that board's own opener.
@@ -7189,13 +7207,13 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
   function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed");
-      m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ws === "personal") m.querySelectorAll('[data-fold="p:Personal"]').forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
+      m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ONEF[ws]) m.querySelectorAll(`[data-fold="${ONEF[ws]}"]`).forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
   /* one frozen stack: folder title or open row on top, the board's column header right under it */
   function headH(){ const o = [...document.querySelectorAll("#list .rowon, #list .subon, #list .v16keep>h4")].filter(x => x.getClientRects().length).pop(); if (o) document.body.style.setProperty("--fd-head-h", o.offsetHeight + "px"); }
-  function openWs(k, title){ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", k === "personal"); document.getElementById("v16title").textContent = title;
-    if (k === "personal") foldSet("p:Personal", 1); const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; }
-  function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
-  const TITLES = {today: "Today", replies: "Replies", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
+  function openWs(k, title){ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", !!ONEF[k]); document.body.classList.toggle("v16board", ["songs", "shorts", "youtube", "lessons"].includes(k)); document.getElementById("v16title").textContent = title;
+    if (ONEF[k]) foldSet(ONEF[k], 1); if (k === "shorts") foldSet("sg:shworks", 1); if (k === "lessons"){ foldSet("lc:test", 1); const x = lcChs().find(c => !c.live); if (x) foldSet("lc:ch" + (x.i + 1), 1); } const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects" || k === "shorts") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; }
+  function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub", "v16board"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
+  const TITLES = {today: "Today", replies: "Replies", lessons: "Lessons", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
     const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
