@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v396</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v397</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4660,7 +4660,7 @@ function applyCollapse(){
     const box = h.parentElement, key = (h.childNodes[0] && h.childNodes[0].textContent || h.textContent).trim().slice(0, 40);
     h.dataset.ck = key; h.style.cursor = "pointer"; h.setAttribute("role", "button");
     if (!h.querySelector("i") && !h.querySelector(".ccount")){ const n = [...box.children].filter(c => c !== h && !c.classList.contains("tn")).reduce((a, c) => a + (c.classList.contains("chgrid") || c.classList.contains("pills") ? c.children.length : 1), 0); h.insertAdjacentHTML("beforeend", ` <i class="ccount">${n}</i>`); }
-    box.classList.toggle("collapsed", !foldOn(topKey(key), box.closest("#list") && box.classList.contains("msec") ? tab === "today" && key === "Today" : true));
+    box.classList.toggle("collapsed", !box.classList.contains("v16keep") && !foldOn(topKey(key), box.closest("#list") && box.classList.contains("msec") ? tab === "today" && key === "Today" : true));   /* (Nov 2) the board open on the new desk never folds shut */
   });
   document.querySelectorAll(".msec > h4[data-fold]").forEach(h => { h.setAttribute("role", "button"); h.parentElement.classList.toggle("collapsed", !foldOn(h.dataset.fold, h.dataset.fdef === "1")); });
   oneItemOpen();
@@ -7398,12 +7398,15 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
     const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
   window.V16ROW = openRow;
+  /* (Nov 2, Chris: "my songs folder ... just collapses and I have no way of clicking on it") an open board's own header never folds it shut; buttons in it still work */
+  document.addEventListener("click", e => { const h = e.target.closest && e.target.closest("#list .v16keep>h4"); if (!h || !document.body.classList.contains("v16ws") || e.target.closest("button,select,a,input,label,[data-sort]")) return; e.preventDefault(); e.stopImmediatePropagation(); const m = h.parentElement; if (m.classList.contains("collapsed")) m.classList.remove("collapsed"); }, true);
   document.addEventListener("click", e => { const inM = e.target.closest && e.target.closest(".kmore"); document.querySelectorAll("details.kmore[open]").forEach(m => { if (m !== inM) m.open = false; }); if (!inM) kmKey = ""; else if (e.target.closest("summary")){ kmKey = inM.open ? "" : kmOf(inM); setTimeout(() => kmFit(inM), 0); } else kmKey = "";
     const sa = e.target.closest && e.target.closest("[data-stripact]"); if (sa){ e.preventDefault(); e.stopPropagation(); const [ac, id] = sa.dataset.stripact.split("|"); openRow(id); setTimeout(() => { const b = document.querySelector(`.tdetail[data-tdof="${CSS.escape(id)}"] [data-${ac}="${CSS.escape(id)}"]`); if (b) b.click(); }, 120); return; }
     if (fmClick(e)) return;
     if (e.target.closest && e.target.closest(".kline")) return;
     const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return; e.preventDefault(); e.stopPropagation();
-    if (x.dataset.v16tile){ const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); }   /* (Nov 2, Chris) a tile opens its whole list, never one item at a time */
+    if (x.dataset.v16tile){ const wt = (allTasks || []).find(t => t.wait === x.dataset.v16tile && !t.done && !t.removed); if (wt) return openRow(wt.id);   /* (Nov 2, Chris) Songs 17 = the list of those 17 songs (its Today row), not the whole board */
+      const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); }   /* (Nov 2, Chris) a tile opens its whole list, never one item at a time */
     if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
   /* the open dots menu stays open through a redraw, and opens upward when it would run off the bottom */
