@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v392</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v393</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7164,7 +7164,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16 .kline>.kb::after{content:"";position:absolute;inset:-9px -2px}
   body.v16 .kb0{flex:none;width:66px}
   body.v16 .kline .kp{background:#9FE1CB;color:#04342C} body.v16 .kline .kg{background:#FAC775;color:#412402} body.v16 .kline .kn{background:#D3D1C7;color:#2C2C2A}
-  body.v16 .vlink{text-decoration:underline;text-decoration-color:var(--v-teal);text-decoration-thickness:1.5px;text-underline-offset:2px;cursor:pointer}
+  body.v16 .vlink{text-decoration:none;cursor:pointer}   /* (Nov 2, Chris) no green underline */
+  #v16 .vi small{display:none!important}   /* (Nov 2, Chris) Today rows: title only, no sub line */
   body.v16 .kmore{position:relative;flex:none} body.v16 .kmore>summary{display:flex;align-items:center;justify-content:center;width:26px;height:36px;color:var(--v-mute);font-size:16px;font-weight:700;line-height:1;cursor:pointer;list-style:none;user-select:none} body.v16 .kmore>summary::-webkit-details-marker{display:none}
   body.v16 .kmorein{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;min-width:120px;padding:4px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-card);box-shadow:0 4px 14px #0000002e}
   body.v16 .kmorein .kb{display:block;box-sizing:border-box;width:100%;line-height:36px;text-decoration:none;min-height:36px;padding:0 10px;background:transparent;border:0;color:var(--v-ink);font-size:13px;font-weight:600;text-align:left}
