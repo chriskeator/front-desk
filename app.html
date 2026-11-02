@@ -2554,7 +2554,7 @@ document.addEventListener("click", e => {
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v385</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v386</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7176,10 +7176,10 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16 .vp{--pc:var(--v-teal);--pt:var(--v-tteal);border-top-color:var(--pc);box-shadow:0 2px 10px #4c403009} #v16 .vp:nth-child(4n+2){--pc:var(--v-coral);--pt:var(--v-tcoral)} #v16 .vp:nth-child(4n+3){--pc:var(--v-blue);--pt:var(--v-tblue)} #v16 .vp:nth-child(4n){--pc:var(--v-gold);--pt:var(--v-tgold)}
   #v16 .vsy{display:grid;place-items:center;width:29px;height:29px;margin-bottom:3px;border-radius:9px;background:var(--pt);color:var(--pc);font-size:16px;line-height:1}
   @media (hover:hover) and (pointer:fine){#v16 .vp:hover{background:var(--pt)!important}}
-  #list .msec .chgrid>.trow.vstrip{display:flex;align-items:center;gap:6px;min-height:40px;padding-right:6px}
-  #list .msec .chgrid>.trow.vstrip>.chc{flex:1 1 0;width:auto;min-width:0;min-height:0!important;padding:3px 0 3px 18px!important}
-  #list .msec .chgrid>.trow.vstrip>.chc b{display:block;font-size:13px;line-height:1.2;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
-  #list .msec .chgrid>.trow.vstrip>.chc span{display:block;font-size:11px!important;line-height:1.2;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis} #list .trow.vstrip>.chc .tmr{display:none}
+  #list .msec .chgrid>.trow.vstrip{display:flex;align-items:center;gap:6px;min-height:54px;padding-right:6px}
+  #list .msec .chgrid>.trow.vstrip>.chc{flex:1 1 0;width:auto;min-width:0;min-height:54px!important;padding:9px 12px 9px 34px!important}   /* (Nov 1, Chris) same size as every other row in the list */
+  #list .msec .chgrid>.trow.vstrip>.chc b{display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
+  #list .msec .chgrid>.trow.vstrip>.chc span{display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis} #list .trow.vstrip>.chc .tmr{display:none}
   .trow.vstrip+.tdetail>.kline{display:none}
   @media (max-width:800px){#v16{padding-left:12px;padding-right:12px;gap:7px} #v16 .vm{gap:6px} #v16 .vt{padding:6px 8px} #v16 .vt span{font-size:12px} #v16 .vs{padding:8px 10px} #v16 .vs.p{flex-basis:118px;min-height:104px}}
   @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px}}
