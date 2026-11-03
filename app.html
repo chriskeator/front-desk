@@ -226,6 +226,8 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 /* (Oct 22, Chris) CHORD SHEET (Levels 1-3): chords above the words, every verse on one page; tap a chord to change it */
 #lyrchk .chsh{flex:1;min-height:0;overflow:auto;padding:2px 2px 8px}#lyrchk .chv{margin:0 0 16px}#lyrchk .chv h3{font-size:var(--fs-small);font-weight:700;color:var(--muted);margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
 #lyrchk .chl{display:flex;flex-wrap:wrap;align-items:flex-end;gap:0 9px;margin:0 0 8px}#lyrchk .chw{display:inline-flex;flex-direction:column;min-width:18px}#lyrchk .chw b{font-weight:500;font-size:var(--fs-ui);white-space:nowrap}
+#lyrchk .chi .chone{font-style:normal;font-size:var(--fs-small);color:var(--muted);margin-left:8px;align-self:center}
+#lyrchk .chw .chmel{font-style:normal;font-size:var(--fs-small);color:var(--muted);white-space:nowrap;margin-top:1px;letter-spacing:.02em}   /* (Nov 3) the melody numbers under each word */
 #lyrchk .chm{margin-left:-6px}#lyrchk .chm .chz{border-color:var(--line)}#lyrchk .chi{flex-wrap:wrap}   /* (Oct 29) a box for a chord that starts between words */
 #lyrchk .chlvb{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center}#lyrchk .chlvs{display:flex;gap:8px}#lyrchk .chsc{display:inline-flex;gap:6px;align-items:center;justify-self:start;margin-left:6px;font-size:var(--fs-small);font-weight:700;color:var(--muted)}#lyrchk .chlvs .tb{width:220px;display:flex;flex-direction:column;align-items:center;gap:1px;line-height:1.2}#lyrchk .chlvs .tb small{font-size:var(--fs-small);font-weight:600;color:var(--muted);white-space:nowrap}#lyrchk .chlvs .tb[aria-pressed="true"] small{color:rgba(255,255,255,.85)}#lyrchk .chlvn i{font-style:normal}@media (max-width:699px){#lyrchk .chlvb{grid-template-columns:1fr}#lyrchk .chlvb>span:first-child{display:none}#lyrchk .chlvs{justify-content:center}#lyrchk .chlvs .tb{width:auto;flex:1 1 0;min-width:0;padding:4px 6px}#lyrchk .chlvs .tb small{white-space:normal;font-size:var(--fs-micro)}#lyrchk .chsc{justify-self:center;margin-left:0}}#lyrchk .chsc .tb[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}#lyrchk .chz sup{font-size:75%;vertical-align:super;line-height:0}#lyrchk .chv h3 .chown{font-style:normal;color:var(--gold,#D19A12);text-transform:none;margin-left:6px}#lyrchk .chv h3 .chdrop{min-height:26px;padding:2px 10px;font-size:var(--fs-small);margin-left:8px;text-transform:none;letter-spacing:0}#lyrchk .chlvb .tb{min-height:38px;padding:4px 16px}#lyrchk .chlvb .tb[aria-pressed="true"]{background:var(--teal,#0F766E);color:var(--ktFFF);border-color:var(--teal,#0F766E)}#lyrchk .lyrbt .tb[disabled]{opacity:.55}
 #lyrchk .chz{display:block;height:24px;line-height:24px;min-height:24px;min-width:18px;border:1px solid transparent;font-weight:700;font-variant-numeric:tabular-nums;box-sizing:border-box;font-size:var(--fs-ui);color:var(--teal,#0F766E);white-space:nowrap;outline:none;border-radius:5px;padding:0 2px}#lyrchk .chi{display:flex;align-items:flex-end;gap:8px;margin:0 0 12px}#lyrchk .chi>span:first-child{font-size:var(--fs-small);color:var(--muted);font-weight:700}
@@ -2759,7 +2761,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v428</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v429</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6116,7 +6118,11 @@ const chTxt = (A, a, b) => chRuns(chInA(A, a, b)).map(x => x.k).join(" ");
 function chParts(k){ const m = /^([b#♭♯]?[1-7])(m(?!aj))?(.*?)(\/[b#♭♯]?[1-7])?$/.exec(String(k)); if (!m) return [String(k), "", ""]; const x = (m[3] || "").replace(/^sus/, ""); return [m[1] + (m[2] || ""), x || (m[3] ? "4" : ""), m[4] || ""]; }
 const chFmt = t => t.split(" ").filter(Boolean).map(k => { const [a, x, s] = chParts(k); return esc(a) + (x ? `<sup>${esc(x)}</sup>` : "") + esc(s); }).join(" ");
 const chW = t => t.split(" ").filter(Boolean).reduce((n, k, i) => { const [a, x, s] = chParts(k); return n + (i ? 1 : 0) + a.length + s.length + Math.ceil(x.length * .75); }, 0);
-const chBoxes = (P, cwf, slotf, word) => P.map(([pa, pb], j) => `<span class="chw${j ? " chm" : ""}${cwf(pa, pb)}">${slotf(pa, pb, j)}<b>${j ? "&nbsp;" : esc(word)}</b></span>`).join("");
+/* (Nov 3, Chris: "the melody line needs to be with the intro chords ... with all the level one, level two, and level three chords") under every word
+   its melody notes as numbers (the Notes check's ntTxt, from the approved melody), so each chord shows the note it sits on */
+const chMel = (r, src, a, b) => { const N = (src === "T" ? (r.tag && r.tag.lines || []) : (r.lines || [])).flat().filter(n => n && typeof n.m === "number" && n.m > 0 && n.g >= a - 1e-6 && n.g < b - 1e-6).sort((p, q) => p.g - q.g);
+  return N.map(n => ntTxt(n.m)).join(" "); };
+const chBoxes = (P, cwf, slotf, word, melf) => P.map(([pa, pb], j) => `<span class="chw${j ? " chm" : ""}${cwf(pa, pb)}">${slotf(pa, pb, j)}<b>${j ? "&nbsp;" : esc(word)}</b>${melf ? `<i class="chmel">${esc(melf(pa, pb)) || "&nbsp;"}</i>` : ""}</span>`).join("");
 function chSheetHTML(){ const r = chS.r, M = r.meter || 4, vs = btVerses(r).filter(v => v === 1 || chVerseWords(r, v).length), out = [], L = chS.lv, ed = chEditable(L), own = L !== "L1" && ed && chS.scope === "verse";
   const W1 = chVerseWords(r, 1), f1 = W1.length ? W1[0].g : 0, a0 = Math.min(f1 - 4 * M, ...CHL.flatMap(k => chInA(chArr(k, "S"), -1e9, f1).map(c => c.g)));
   const slot = (a, b, src, v, key) => { const t = chTxt(chArr(L, src, v), a, b), n = Math.max(1, ...CHL.map(k => chW(chTxt(chArr(k, src, v), a, b))));
@@ -6126,11 +6132,16 @@ function chSheetHTML(){ const r = chS.r, M = r.meter || 4, vs = btVerses(r).filt
   const CG = scChg(r, CHLV[L][1]), cw = (src, v, a, b) => CG.length && scChgIn(CG, src === "T" ? "T" : v || 1, a, b) ? " chgd" : "";   /* (Oct 29) changed spots */
   if (CG.length) out.push(scChgNote(CG));
   const words = (W, src, v, Mx) => chLines(r, W, Mx).map(l => `<div class="chl">` + l.map(i => { const [a, b] = chSpan(W, i), lo = src === "T" || v === 1 ? a : Math.max(a, 0), hi = src === "T" || v === 1 ? b : Math.max(b, 0);
-    return chBoxes(pieces(lo, hi, src, v), (pa, pb) => cw(src, v, pa, pb), (pa, pb, j) => slot(pa, pb, src, v, (src === "T" ? "t" : "v" + v) + "w" + i + (j ? "m" + j : "")), W[i].w); }).join("") + `</div>`).join("");
-  if (CHL.some(k => chInA(chArr(k, "S"), a0, f1).length) || ed) out.push(`<div class="chi${cw("V", 1, -1e9, f1)}"><span>Intro</span>${pieces(a0, f1, "S", "").map(([pa, pb], j) => slot(pa, pb, "S", "", j ? "intro" + j : "intro")).join("")}</div>`);
+    return chBoxes(pieces(lo, hi, src, v), (pa, pb) => cw(src, v, pa, pb), (pa, pb, j) => slot(pa, pb, src, v, (src === "T" ? "t" : "v" + v) + "w" + i + (j ? "m" + j : "")), W[i].w, (pa, pb) => chMel(r, src, pa, pb)); }).join("") + `</div>`).join("");
+  /* (Nov 3, Chris: "The intros need to be the same on all three levels") ONE INTRO: the player only ever plays Level 1's intro, so every level's sheet
+     shows Level 1's intro chords; only the Level 1 sheet can change them. Default = the last 2 bars of the song's last line (song-intro-check.py). */
+  const islot = (a, b, key) => { const t = chTxt(chArr("L1", "S"), a, b), n = Math.max(1, chW(t)), e = ed && L === "L1" && b > a;
+    return `<span class="chz" style="min-width:calc(${n}ch + 6px)" data-chk="${key}" data-src="S" data-v="" data-a="${a}" data-b="${b === Infinity ? "inf" : b}" data-raw="${esc(t)}"${e ? ` contenteditable="true" spellcheck="false" inputmode="text"` : ""}>${chFmt(t)}</span>`; };
+  const ipieces = (a, b) => { const m = [...new Set(chInA(chArr("L1", "S"), a, b).filter(c => c.g > a + 1e-4).map(c => chR6(c.g)))].sort((p, q) => p - q); return [a, ...m].map((x, i) => [x, i < m.length ? m[i] : b]); };
+  if (chInA(chArr("L1", "S"), a0, f1).length || (ed && L === "L1")) out.push(`<div class="chi${cw("V", 1, -1e9, f1)}"><span>Intro</span>${ipieces(a0, f1).map(([pa, pb], j) => `<span class="chw">${islot(pa, pb, j ? "intro" + j : "intro")}<i class="chmel">${esc(chMel(r, "S", pa, pb)) || "&nbsp;"}</i></span>`).join("")}${L !== "L1" ? `<em class="chone">Same on every level: change it on Level 1</em>` : ""}</div>`);
   const secs = vs.length === 1 ? chS.secs : null;   /* (Oct 23) sections split the one long verse into labelled blocks */
   const bwords = (W, ids, an) => chLines(r, ids.map(i => ({g: W[i].g - an, w: W[i].w})), M).map(l => `<div class="chl">` + l.map(x => { const i = ids[x], [a, b] = chSpan(W, i);
-    return chBoxes(pieces(a, b, "V", 1), (pa, pb) => cw("V", 1, pa, pb), (pa, pb, j) => slot(pa, pb, "V", 1, "v1w" + i + (j ? "m" + j : "")), W[i].w); }).join("") + `</div>`).join("");
+    return chBoxes(pieces(a, b, "V", 1), (pa, pb) => cw("V", 1, pa, pb), (pa, pb, j) => slot(pa, pb, "V", 1, "v1w" + i + (j ? "m" + j : "")), W[i].w, (pa, pb) => chMel(r, "V", pa, pb)); }).join("") + `</div>`).join("");
   vs.forEach(v => { const W = chVerseWords(r, v); if (!W.length) return; const mine = L !== "L1" && !!chView(L).V[v];
     if (secs && v === 1){ const by = secs.map(() => []); W.forEach((w, i) => by[chSecOf(secs, w.g)].push(i));
       secs.forEach((x, k) => { const ot = secs.map((q, j) => j).filter(j => j !== k && secs[j].t === x.t).slice(0, CHCP_N), sel = chS.cpSel[k] || new Set();
@@ -6162,8 +6173,8 @@ const sheetSaveTxt = (S, dirty) => S.err ? "Not saved yet, retrying" : S.busy ||
 function sheetSaveShow(S, dirty){ const b = document.querySelector("#lyrchk .lyrbt .svst"); if (b) b.textContent = sheetSaveTxt(S, dirty); }   /* only the label: a redraw would pull him out of the box he is typing in */
 function chAutoKick(S){ clearTimeout(S.autoT); S.autoT = setTimeout(() => chAutoRun(S), S.err ? 5000 : 600); }
 async function chSaveLv(S, lv){ const r = S.r, now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, X = S.charts[lv], f = CHLV[lv][0];
-  const up = {updated: now, [f + "Edited"]: now, [f]: chRows(X.S, M, r.intro)};
-  if (lv !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)]));
+  const up = {updated: now, [f + "Edited"]: now, [f]: chRows(chOneIntro(r, lv, X.S), M, r.intro)};
+  if (lv !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(chOneIntro(r, lv, A), M, r.intro)]));
   if (r.tag){ const tag = JSON.parse(JSON.stringify(r.tag)); tag[f] = chRows(X.T, TM, false); up.tag = tag; }
   if (!(await scSave(r.id, up))) return false; Object.assign(r, up); scLocal(r.id, up); return true; }
 async function chAutoRun(S){ clearTimeout(S.autoT); S.autoT = null; if (S.busy){ S.again = true; return; }
@@ -6237,6 +6248,8 @@ function chSetSlot(el){ if (!chS || !chEditable(chS.lv)) return true; const L = 
   else if (L === "L1" || chS.scope !== "verse" || /^intro/.test(el.dataset.chk)){ X.S = chEdit(X.S, a, b, T, M); if (!/^intro/.test(el.dataset.chk)) Object.keys(X.V).forEach(k => { X.V[k] = chEdit(X.V[k], a, b, T, M); }); }   /* All verses = every verse, own charts too */
   else X.V[v] = chEdit(X.V[v] || X.S, a, b, T, M);   /* This verse: the verse gets its own chart */
   chS.dirty.add(L); chS.arm = false; chDraw(); return true; }
+/* (Nov 3, Chris) ONE INTRO: Level 2 and 3 never store intro chords (before the first word); the intro lives only on Level 1 */
+function chOneIntro(r, L, A){ if (L === "L1") return A; const W = chVerseWords(r, 1), fw = W.length ? W[0].g : 0; return (A || []).filter(c => c.g >= fw - 1e-6); }
 function chRows(L, M, intro){ const B = 4 * M, off = (intro || L.some(c => c.g < 0)) ? 1 : 0, rows = [];
   L.forEach(c => { const k = c.g < 0 ? 0 : Math.floor(c.g / B + 1e-9) + off; while (rows.length <= k) rows.push([]); rows[k].push(Object.assign({}, c)); }); return rows; }
 document.addEventListener("keydown", e => { const el = e.target.closest && e.target.closest("#lyrchk .chz[contenteditable]"); if (!el) return; if (e.key === "Enter"){ e.preventDefault(); el.blur(); } }, true);
@@ -6258,7 +6271,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (act === "edit"){ scUnlock(chS.id, [CHLV[chS.lv][1]]); chS.unl.add(chS.lv); chS.arm = false; chDraw(); return; }
   const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
   const r = chS.r, lv = chS.lv, j = CHL.indexOf(lv), now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, tag = r.tag ? JSON.parse(JSON.stringify(r.tag)) : null;
-  const put = (L, X) => { const f = CHLV[L][0]; up[f] = chRows(X.S, M, r.intro); if (L !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(A, M, r.intro)])); if (tag) tag[f] = chRows(X.T, TM, false); };
+  const put = (L, X) => { const f = CHLV[L][0]; up[f] = chRows(chOneIntro(r, L, X.S), M, r.intro); if (L !== "L1") up[f + "V"] = Object.fromEntries(Object.entries(X.V).map(([v, A]) => [v, chRows(chOneIntro(r, L, A), M, r.intro)])); if (tag) tag[f] = chRows(X.T, TM, false); };
   clearTimeout(chS.autoT); chS.autoT = null;   /* Approve writes this level itself */
   const up = {[CHLV[lv][1]]: now, updated: now}; put(lv, chS.charts[lv]);
   const chJ = L => { const v = r[CHLV[L][0] + "V"]; return JSON.stringify([r[CHLV[L][0]] || null, v && Object.keys(v).length ? v : null]); }, chHas = L => { const c = r[CHLV[L][0]]; return Array.isArray(c) ? c.some(x => x && (Array.isArray(x) ? x.length : true)) : !!c; };
