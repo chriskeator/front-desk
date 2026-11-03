@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v419</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v420</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7706,7 +7706,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox){position:fixed!important;left:var(--pf-l)!important;top:var(--pf-t)!important;width:var(--pf-w)!important;height:var(--pf-h)!important;max-width:none!important;max-height:none!important;margin:0!important;transform:none!important;box-sizing:border-box;box-shadow:0 0 0 1px var(--v-line);overflow:auto!important}
   body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox)>:not(.shbody){flex-shrink:0}   /* words and buttons are never squeezed; the clip takes the room left */
   body.v16pop #shortchk .shcard>.shbody{flex:1 1 0;min-height:160px} body.v16pop #shortchk .shcard>.shbody :is(iframe,video,img){height:100%;max-height:100%;width:100%;object-fit:contain}
-  body.v16pop.pfdeep #list .pfon>h4{display:none!important} body.v16pop.pfdeep #list .sublist.pfon{display:block!important}`;
+  body.v16pop.pfdeep #list .pfon>h4{display:none!important}
+  body.v16pop.pfdeep #list{box-sizing:border-box;border:2px solid var(--v-gold);border-radius:16px;background:var(--v-card)!important} body.v16pop.pfdeep #list :is(.pfon,.pfpath,.rowon){box-shadow:none!important}   /* (Nov 2, Chris: the cut-off border looks bad) a pop-up = one complete gold frame that never scrolls */
+  body.v16pop.v16work #list .v16hd{background:var(--v-b)!important;color:var(--v-ink)!important;box-shadow:0 1px 0 var(--v-line),0 8px 12px -8px #0004}   /* (Nov 2, Chris) the frozen header stands out while rows scroll under it */ body.v16pop.pfdeep #list .sublist.pfon{display:block!important}`;
     document.head.appendChild(pc); }
   const TITLES = {today: "Today", replies: "Replies", lessons: "Lessons", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
