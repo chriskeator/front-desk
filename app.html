@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v424</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v425</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7428,6 +7428,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* (Nov 1, Chris: closer to GPT's V16.6) centred page; Today holds 7 rows whatever the count and scrolls inside; project cards carry an icon and their own colour */
   #v16{justify-content:center;padding-left:max(24px,calc((100vw - 1252px)/2));padding-right:max(24px,calc((100vw - 1252px)/2))}
   #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}   /* (Nov 2, Chris: "DON'T EVER CHANGE THE MAIN TEMPLATE SIZE AGAIN") the home template: Today 395, Projects 168, centred; desk-ui-guard.py stops any push that changes it */
+  @media (min-width:801px) and (min-height:741px){#v16 .vs.p{flex-basis:calc(168px + var(--pbx,0px));padding-bottom:calc(10px + var(--pbx,0px));margin-bottom:calc(-1 * var(--pbx,0px))}}   /* (Nov 2, Chris) only the BOTTOM edge of Projects comes down until the gap to Focus = the 22px gap above it (pbx, measured); nothing moves, the cards keep their size */
   #v16 .vht{display:flex;align-items:center;gap:12px}
   #v16{padding-bottom:70px} #v16fb{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16fb b{font-size:14px;white-space:nowrap} #v16fb .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16fb button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16fb .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16fb button:disabled{opacity:.5;cursor:default}
   :is(#v16,.pflist) .vi b{font-size:14px} :is(#v16,.pflist) .vi small{font-size:12px}
@@ -7645,7 +7646,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       <section class="vs t"><div class="vsh"><h2>Today</h2></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vc">${P}</div></section>`;
     if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
-    dash.innerHTML = H16; fmBarDraw(); kmBack();
+    dash.innerHTML = H16; fmBarDraw(); kmBack(); pbx();
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
   function keepFolder(){ if (!ws || !FOLD[ws]) return; document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); const m = folder(FOLD[ws]); if (m){ m.classList.add("v16keep"); m.classList.remove("collapsed");
       m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ONEF[ws]) m.querySelectorAll(`[data-fold="${ONEF[ws]}"]`).forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
@@ -7659,8 +7660,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
      as a pop-up level: only its contents, nothing behind; a folder inside replaces it; Back = up one level (scroll kept); Close = home; phone Back = Back.
      The real folders stay where render() draws them (every handler keeps working): PF only marks the open level (.pfon) and its path (.pfpath). */
   const POPM = /[?&]pop=1/.test(location.search); if (POPM) document.body.classList.add("v16pop");
+  function pbx(){ const B = document.body, p = dash.querySelector(".vs.p"), f = document.getElementById("v16fb"); if (!p || !f || !p.getClientRects().length) return;
+    const cur = parseFloat(B.style.getPropertyValue("--pbx")) || 0, x = matchMedia("(min-width:801px) and (min-height:741px)").matches ? Math.max(0, Math.round(f.getBoundingClientRect().top - p.getBoundingClientRect().bottom + cur - 22)) : 0;
+    if (x !== cur) B.style.setProperty("--pbx", x + "px"); }
+  addEventListener("resize", () => pbx());
   function pfFrame(){ if (!POPM) return; const a = dash.querySelector(".vm"), b = dash.querySelector(".vs.p"); if (!a || !b || !a.getClientRects().length) return; const A = a.getBoundingClientRect(), B = b.getBoundingClientRect(), S = document.body.style;
-    S.setProperty("--pf-l", A.left + "px"); S.setProperty("--pf-t", A.top + "px"); S.setProperty("--pf-w", A.width + "px"); S.setProperty("--pf-h", (B.bottom - A.top) + "px"); }
+    S.setProperty("--pf-l", A.left + "px"); S.setProperty("--pf-t", A.top + "px"); S.setProperty("--pf-w", A.width + "px"); S.setProperty("--pf-h", (B.bottom - (parseFloat(document.body.style.getPropertyValue("--pbx")) || 0) - A.top) + "px"); }   /* the pop-up frame keeps its size */
   const PF = {st: [], root: null,
     on: h => POPM && document.body.classList.contains("v16work") && !h.closest(".v16keep>h4"),
     LISTS: {questions: {t: () => "Questions (" + qNext().filter(t => !onToday.has(t.id)).length + ")", html: () => qNext().filter(t => !onToday.has(t.id)).map(t => vRow(t, t.id, "", t.project || "", "data-pfrow")).join("") || '<div class="vn">Nothing to answer.</div>'},
