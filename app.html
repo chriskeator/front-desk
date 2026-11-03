@@ -2576,6 +2576,9 @@ document.addEventListener("click", e => {
    the old page-wide darken-overlay on anything clickable is off on the desk (it only covered the clicked element's own box and darkened the colour hover);
    a lesson row opens from anywhere on it and tints WHOLE, like every row; a box only shows its own colour a shade darker, never a ring */
 body.v16 :is([role=button],[data-shortrow],[data-songchk]):hover{box-shadow:none!important}
+/* a task row = an outer row with its clickable title inside: only the WHOLE row tints (the title never paints its own text-high strip) */
+body.v16 :is(#list,#pop) .trow>.chc:hover,body.v16 :is(#list,#pop) .trow>.chc:focus{background:transparent!important}
+body.v16 :is(#list,#pop) .trow:has(>.chc):hover{background:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card))!important}
 body.v16 :is(#list,.v2board) .srow:has(.sname[data-lcname]){cursor:pointer}
 body.v16 :is(#list,.v2board) .srow:has(.sname[data-lcname]):hover{background:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card))!important}
 /* (Nov 2, Chris: "get rid of all the subtext on tasks ... Just put the title and how many items are in it") no grey line under a task or folder
@@ -2748,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v414</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v415</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5946,8 +5949,8 @@ function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) retur
   const rows = x => (x.c.lessons || []).map(L => { const s = lcState(L); lcCel(L, s); return sgRow({title: "L" + L.n + " " + L.t, full: L.id, cells: LCK.map(([k]) => s[k]).concat([{c: s.all ? "ok" : "", t: "Approved"}])}, LCCOLS); }).join("");
   const live = X.filter(x => x.live), test = X.filter(x => !x.live), nT = test.reduce((a, x) => a + (x.c.lessons || []).length, 0);
   const tBody = test.length === 1 ? head + rows(test[0]) : test.map(x => deskFold("lc:ch" + (x.i + 1), esc(nm(x)) + ` (${(x.c.lessons || []).length})`, esc(lcCount(x.c)), head + rows(x))).join("");
-  return (live.length ? deskFold("lc:live", `Live (${live.length})`, "shipped chapters", head + live.map(x => sgRow({title: nm(x), cells: [blank, blank, blank, {c: "ok", t: "Live"}]}, LCCOLS)).join("")) : "")
-    + (test.length ? deskFold("lc:test", `Testing (${test.length === 1 ? nT : test.length})`, esc(test.length === 1 ? "Ch" + (test[0].i + 1) + " · " + lcCount(test[0].c) : test.map(x => "Ch" + (x.i + 1)).join(", ")), tBody, {def: 1}) : ""); }
+  /* (Nov 2, Chris: "remove the live folder from my lessons to check. I'll never need to check live lessons") only the chapters on Test show */
+  return (test.length ? deskFold("lc:test", `Testing (${test.length === 1 ? nT : test.length})`, esc(test.length === 1 ? "Ch" + (test[0].i + 1) + " · " + lcCount(test[0].c) : test.map(x => "Ch" + (x.i + 1)).join(", ")), tBody, {def: 1}) : ""); }
 /* a gold box = small pop-up (the song-check pop-up): Open | Approve | Fix. Open: Computer = the lesson on Test in a new tab, Dev mode = the same in a
    phone-size window (no developer tools needed), Phone = the lesson link (tap it on the phone). Fix = his note (type or the keyboard mic) as a Lab Fix note. */
 function lcGo(L, k){ const u = safeUrl(L.u); if (!u) return; const v = u + (u.includes("?") ? "&" : "?") + "from=fd-" + (k === "dev" ? "dev" : k === "phone" ? "phone" : "pc");
