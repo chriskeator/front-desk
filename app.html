@@ -701,7 +701,7 @@ a.tb.rs-fixed{flex-direction:column}
  .msec > h4{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
  .msec.fdrag{box-shadow:0 8px 24px rgba(0,0,0,.35);outline:2px solid var(--cc);opacity:.95}
  .msec .chgrid{gap:0!important}
- .msec .chgrid > .pc3,.msec .chgrid > .chc{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;min-height:50px}
+ .msec .chgrid > .pc3,.msec .chgrid > .chc{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important}
  .msec .chgrid > .chc{padding:9px 12px 9px 34px!important}
  .msec .chgrid > .pc3 .pc3t{padding:9px 10px 9px 34px!important}
  .msec .chgrid > .tn,.msec .chgrid > b,.msec .chgrid > .day{display:block;border-top:1px solid var(--line);padding:9px 12px 9px 34px}
@@ -763,7 +763,7 @@ a.tb.rs-fixed{flex-direction:column}
 /* (Oct 7) project to-dos open in place under the project row */
 @media all{
  .sublist{display:flex;flex-direction:column;background:var(--card)}
- .sublist .chc{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;min-height:46px;padding:8px 12px 8px 50px!important;height:auto}
+ .sublist .chc{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;padding:8px 12px 8px 50px!important}
  .sublist .chc:has(.tmr){padding-right:78px!important}
  .sublist > .tn{display:block;border-top:1px solid var(--line);padding:9px 12px 9px 50px}
  .sublist + .rowmenu,.sublist .rowmenu{margin-left:50px}
@@ -884,8 +884,7 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  #list{scrollbar-width:none}
  /* (Oct 8) Chris: every row inside every folder (Home, Projects, Money Map) is the SAME size: 14px bold title, 13px grey line, same padding and height */
  #list .msec .chgrid > .chc,#list .msec .chgrid > .trow > .chc,#list .msec .chgrid > .pc3 > .pc3t,#list .sublist > .chc,#list .sublist > .trow > .chc{padding-top:9px!important;padding-bottom:9px!important;padding-right:14px!important;min-height:54px!important;box-sizing:border-box}
- #list .msec .chgrid > .pc3,#list .msec .chgrid > .chc,#list .msec .chgrid > .trow{min-height:54px}
- #list .msec .chc > b,#list .msec .pc3t > b{font-size:var(--fs-body);font-weight:700!important;line-height:1.25!important}
+  #list .msec .chc > b,#list .msec .pc3t > b{font-size:var(--fs-body);font-weight:700!important;line-height:1.25!important}
  #list .msec .chc > span,#list .msec .pc3t > span{line-height:1.3!important}
  /* (Oct 8) Chris: the SAME 10px gap between folders on every tab, so the 4th folder ends at the same spot everywhere */
  #list .msec{margin-top:0!important;margin-bottom:0!important}
@@ -2761,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v429</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v430</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2818,7 +2817,7 @@ fetch("budget.html").then(r => r.text()).then(t => { const m = t.match(/<script 
 let db = null, projects = [], jobs = [], items = [], replies = [], tasks = [], allTasks = [], goals = [], summaries = [], ideas = [], questions = [], sorts = [], sorting = null, sortPage = 0, openTx = null;
 let psub = "projects", icat = "All", msub = "biz", openCat = null;
 let sub = "todo", confirmDel = null, drag = null;
-const V16 = !window.V2 && !/[?&]v16=0/.test(location.search);   /* (Nov 1) the one Front Desk V16 switch. (Nov 2, Chris yes) the new desk is the default; ?v16=0 = the old desk exactly */
+const V16 = !window.V2;   /* (Nov 1) the one Front Desk V16 switch. (Nov 3, Chris: "Yes, remove it") the old desk (?v16=0) is gone */
 /* (Nov 1, Chris) V16 pick mode goes before every other click handler (the 2-tap Approve included), so a picked row can never approve, open or write. Off without ?v16=1. */
 if (V16) ["click", "dblclick", "auxclick", "pointerdown", "mousedown", "touchstart", "dragstart", "keydown"].forEach(ty => window.addEventListener(ty, e => { if (window.V16PICK) window.V16PICK(e); }, {capture: true, passive: false}));
 let tab = "today", proj = null, showDone = false, page = 0, editing = null;
@@ -7329,7 +7328,7 @@ function deskVerCheck(){ const cur = +((document.querySelector("header .deskver"
   if (document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || (window.SE && SE.on) || (window.CT && CT.on)) return;   /* (Nov 2, Chris lost his O Holy Night chords) never with a song sheet open */
   const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
-    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (window.V2 ? "&v2=1" : V16 ? "" : "&v16=0") + (/[?&]pop=1/.test(location.search) ? "&pop=1" : "") + location.hash); }).catch(() => {}); }
+    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (window.V2 ? "&v2=1" : "")  + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
 setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); }, 120000);   /* (Oct 28, Chris saw v337 after v339 went live: the window never left the screen) also every 2 min while open */
 /* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
@@ -7404,7 +7403,6 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16 *{box-sizing:border-box} #v16 button:not(.kb),#v16bar button{font:inherit;color:inherit;cursor:pointer}
   #v16 .vh{flex:none;display:flex;align-items:center;justify-content:space-between;min-height:36px;gap:10px}
   #v16 .vb{font:700 26px/1.1 Fraunces,Georgia,serif;letter-spacing:-.025em} #v16 .vv{margin-left:8px;padding:3px 8px;border-radius:99px;background:var(--v-b);color:var(--v-mute);font-size:12px;font-weight:700}
-  #v16 .vold{color:var(--v-mute);font-size:13px;font-weight:600}
   #v16 .vm{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
   #v16 .vt{display:flex;flex-direction:column;align-items:flex-start;padding:8px 12px;border:1px solid var(--v-line);border-top:3px solid var(--vc);border-radius:13px;background:linear-gradient(180deg,var(--vt),var(--v-card) 65%);text-align:left;min-width:0}
   #v16 .vt span{font-size:13px;color:var(--v-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%} #v16 .vt strong{font-size:20px;font-weight:750;letter-spacing:-.035em;line-height:1.15} #v16 .vt small{font-size:11px;color:var(--v-mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;min-height:13px}
@@ -7430,7 +7428,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     #v16 .vp:hover{--hv:var(--pt)} #v16 .vt:hover{--hv:var(--vt)}   /* (Nov 2, Chris) a top tile hovers exactly like its project card */
     body.v16 *{--hov:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,transparent)} body.v16pop.v16work #list *{--hov:color-mix(in srgb,var(--wsc,var(--v-teal)) 16%,transparent)}   /* (Nov 2, Chris: "I don't want just dark colors") the old desk-wide hover overlay is a light wash of the item's colour, never a dark one */
     body.v16 .kline .kp:hover{background:#5DCAA5} body.v16 .kline .kg:hover{background:#EF9F27} body.v16 .kline .kn:hover{background:#B4B2A9}
-    body.v16 .kmore>summary:hover,#v16 .vold:hover,body.v16 .vlink:hover{color:var(--v-teal)}
+    body.v16 .kmore>summary:hover,body.v16 .vlink:hover{color:var(--v-teal)}
     body.v16work #list .sblk[role=button][style*="background:var(--ka1FA598)"]:hover{background:#5DCAA5!important} body.v16work #list .sblk[role=button][style*="background:var(--kaE8B53A)"]:hover{background:#EF9F27!important}
   }
   body.v16 :is(button,a,summary,[role=button],[role=link],[tabindex]):focus-visible{outline:3px solid var(--v-teal)!important;outline-offset:2px}
@@ -7476,7 +7474,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16 .kmore{position:relative;flex:none} body.v16 .kmore>summary{display:flex;align-items:center;justify-content:center;width:26px;height:36px;color:var(--v-mute);font-size:16px;font-weight:700;line-height:1;cursor:pointer;list-style:none;user-select:none} body.v16 .kmore>summary::-webkit-details-marker{display:none}
   body.v16 .kmorein{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;min-width:120px;padding:4px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-card);box-shadow:0 4px 14px #0000002e}
   body.v16 .kmorein .kb{display:block;box-sizing:border-box;width:100%;line-height:36px;text-decoration:none;min-height:36px;padding:0 10px;background:transparent;border:0;color:var(--v-ink);font-size:13px;font-weight:600;text-align:left}
-  :is(#v16,.pflist) .vr{height:44px;margin:0 0 4px;padding:4px 6px 4px 12px} :is(#v16,.pflist) .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
+  :is(#v16,.pflist) .vr{height:50px;margin:0 0 6px;padding:4px 6px 4px 12px}   /* (Nov 3, Chris piece 1) the one row size: 50px, 6px apart */ :is(#v16,.pflist) .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
   body.v16 #pop .popcard:has(details.kmore[open]){overflow:visible}   /* (Nov 2, Chris: the dots in a pop-up did not open) the card clipped its own menu: an open menu may run past its edge */
   /* (Nov 1, Chris: closer to GPT's V16.6) centred page; Today holds 7 rows whatever the count and scrolls inside; project cards carry an icon and their own colour */
   #v16{justify-content:center;padding-left:max(24px,calc((100vw - 1252px)/2));padding-right:max(24px,calc((100vw - 1252px)/2))}
@@ -7695,7 +7693,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       return vRow(t, id, tb && tb.textContent, [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · "), "data-v16row"); }).join("");   /* (Nov 2, Chris: "remove the open buttons ... when i can click the row to open it") the row itself opens */
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" style="--pc:var(--v-${CARDC[k] || "teal"});--pt:var(--v-t${CARDC[k] || "teal"})" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
+    const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vadd" data-addtask="1">+ Add task</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vc">${P}</div></section>`;
     if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
@@ -7712,7 +7710,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
      (top of the 4 tiles to the bottom of Projects); the desk title and the Focus bar never move. A workspace fills the frame; a folder in it opens
      as a pop-up level: only its contents, nothing behind; a folder inside replaces it; Back = up one level (scroll kept); Close = home; phone Back = Back.
      The real folders stay where render() draws them (every handler keeps working): PF only marks the open level (.pfon) and its path (.pfpath). */
-  const POPM = /[?&]pop=1/.test(location.search); if (POPM) document.body.classList.add("v16pop");
+  const POPM = true; document.body.classList.add("v16pop"); try { const u = new URL(location.href); ["v", "pop", "v16"].forEach(k => u.searchParams.delete(k)); if (u.href !== location.href) history.replaceState(history.state, "", (u.search ? "/app.html" + u.search : "/") + u.hash); } catch {}   /* (Nov 3, Chris: "change the url to just the short one") the address bar shows desk.worshippianoacademy.com/ (the update reload's ?v= is only for the cache) */   /* (Nov 3, Chris: "Yes, only pop-ups") the pop-up desk is the only desk; ?pop=1 no longer needed */
   function pbx(){ const B = document.body, p = dash.querySelector(".vs.p"), f = document.getElementById("v16fb"); if (!p || !f || !p.getClientRects().length) return;
     const cur = parseFloat(B.style.getPropertyValue("--pbx")) || 0, x = matchMedia("(min-width:801px) and (min-height:741px)").matches ? Math.max(0, Math.round(f.getBoundingClientRect().top - p.getBoundingClientRect().bottom + cur - 22)) : 0;
     if (x !== cur) B.style.setProperty("--pbx", x + "px"); }
@@ -7775,7 +7773,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const pc = document.createElement("style"); pc.textContent = `
   body.v16pop.v16work #v16{display:flex}
   body.v16pop.v16work{--hv:color-mix(in srgb,var(--wsc,var(--v-teal)) 16%,var(--v-card))} #v16fb{--hv:color-mix(in srgb,var(--v-teal) 16%,var(--v-card))}
-  @media (hover:hover) and (pointer:fine){body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.pflist>.vr,.pflist .revlist>:not(p)):not(.vsel):not(.rowon):hover{background:var(--hv)!important} body.v16pop #v16fb button:not(:disabled):not(.vfs):hover{background:var(--hv)!important}}   /* (Nov 2, Chris) every hover = a light wash of the open card's colour, never dark */
+  @media (hover:hover) and (pointer:fine){body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.sublist.pfon>.srow,.sublist.pfon>.chc,.pboard>.msec.collapsed,.pflist>.vr,.pflist .revlist>:not(p)):not(.vsel):not(.rowon):hover{background:var(--hv)!important} body.v16pop #v16fb button:not(:disabled):not(.vfs):hover{background:var(--hv)!important}}   /* (Nov 2, Chris) every hover = a light wash of the open card's colour, never dark */
   body.v16pop.v16work .wrap{position:fixed!important;left:var(--pf-l,30px);top:var(--pf-t,95px);width:var(--pf-w,calc(100vw - 60px));height:var(--pf-h,calc(100dvh - 190px));max-width:none!important;margin:0!important;padding:0!important;z-index:33;display:flex!important;flex-direction:column;overflow:hidden;background:var(--v-bg)!important}
   body.v16pop.v16work #v16bar{margin:0;padding:0 0 8px}
   body.v16pop.v16work #list{flex:1 1 0;min-height:0;height:auto!important;max-height:none!important;overflow:auto!important;margin:0!important}
@@ -7809,9 +7807,15 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16pop.v16work #list .v16keep{border:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important}   /* no box inside the frame */ body.v16pop.v16work #list .msec::after{display:none!important}   /* nor the old open-folder outline */ body.v16pop.pfdeep #list :is(.pfon,.pfpath,.rowon){box-shadow:none!important}   /* (Nov 2, Chris: the cut-off border looks bad) a pop-up = one complete gold frame that never scrolls */
   body.v16pop.v16work #list .v16hd>b.sname{font:700 18px/1.2 Fraunces,Georgia,serif;letter-spacing:-.02em;color:var(--v-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis} body.v16pop.v16work #list .v16hd{box-sizing:border-box;min-height:50px;padding-left:25px!important;padding-right:25px!important;margin:0!important;padding-top:0!important;padding-bottom:0!important;background:var(--v-b)!important;color:var(--v-ink)!important;box-shadow:0 1px 0 var(--v-line),0 8px 12px -8px #0004}
   body.v16pop.pfdeep #list .pfon{padding:0 0 4px!important;margin:0!important;border:0!important} body.v16pop.pfdeep #list .pfpath{padding-top:0!important;margin-top:0!important;border:0!important;border-radius:0!important;background:transparent!important} body.v16pop.v16work #list .v16hd{border-radius:14px 14px 0 0}   /* (Nov 2, Chris: not a square box) the header runs from gold edge to gold edge, its corners follow the frame */   /* (Nov 2, Chris: "it needs to not move at all") nothing above the header: it is frozen from the first pixel */
-  body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow){box-sizing:border-box;margin:6px 10px 0!important;border:1px solid var(--v-line)!important;border-radius:8px!important}
-  body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow):not(.vsel):not(.rowon){background:var(--v-a)!important} body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow):last-child{margin-bottom:10px!important}
-  body.v16pop.v16work #list .chgrid>.pc3>.pc3t{background:transparent!important;border:0!important}   /* (Nov 2, Chris: "everything needs to have a uniform look, matching the today rows") every list row = the home Today card: cream, thin line, rounded, 6px apart; the tan header sits above */   /* (Nov 2, Chris) the frozen header stands out while rows scroll under it */ body.v16pop.pfdeep #list .sublist.pfon{display:block!important}`;
+  body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.sublist.pfon>.srow,.sublist.pfon>.chc,.pboard>.msec.collapsed){box-sizing:border-box;margin:6px 10px 0!important;border:1px solid var(--v-line)!important;border-radius:8px!important}
+  body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.sublist.pfon>.srow,.sublist.pfon>.chc,.pboard>.msec.collapsed):not(.vsel):not(.rowon){background:var(--v-a)!important} body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.sublist.pfon>.srow,.sublist.pfon>.chc,.pboard>.msec.collapsed):last-child{margin-bottom:10px!important}
+  body.v16pop.v16work #list .chgrid>.pc3>.pc3t{background:transparent!important;border:0!important}
+  /* (Nov 3, Chris: "every row in every folder looks different ... I want everything to look exactly the same") PIECE 1: every list row = ONE size, the header's 50px.
+     The row list above is the one source; desk-uniform/run.py opens every folder and measures it. */
+  body.v16pop.v16work #list :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.sublist.pfon>.srow,.sublist.pfon>.chc,.pboard>.msec.collapsed){height:50px!important;min-height:0!important;max-height:50px!important;padding-top:0!important;padding-bottom:0!important;overflow:hidden;align-items:center}
+  body.v16pop.v16work #list .chgrid>.pc3>.pc3t{min-height:48px!important;height:48px;padding-top:0!important;padding-bottom:0!important;align-items:center!important}
+  body.v16pop.v16work #list .pboard>.msec.collapsed>*{min-height:0!important}
+  body.v16pop.v16work #list .sublist.pfon>.chc{width:calc(100% - 20px)!important;max-width:none!important}   /* rows are full width like every list (Ideas, Viewer requests) */   /* (Nov 2, Chris: "everything needs to have a uniform look, matching the today rows") every list row = the home Today card: cream, thin line, rounded, 6px apart; the tan header sits above */   /* (Nov 2, Chris) the frozen header stands out while rows scroll under it */ body.v16pop.pfdeep #list .sublist.pfon{display:block!important}`;
     document.head.appendChild(pc); }
   const TITLES = {today: "Today", replies: "Replies", lessons: "Lessons", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
