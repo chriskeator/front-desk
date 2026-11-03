@@ -2593,13 +2593,32 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   #v2,#v2fb,#v2toast{font-family:Figtree,system-ui,-apple-system,sans-serif;color:var(--v-ink);-webkit-text-size-adjust:100%}
   #v2 *,#v2fb *{box-sizing:border-box} #v2 button,#v2fb button{font:inherit;color:inherit;cursor:pointer}
   /* ONE workspace frame: the page is the only scroll; same width as the new desk; room at the bottom for the Focus bar */
-  #v2{display:flex;flex-direction:column;gap:14px;min-height:100dvh;box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) max(24px,calc((100vw - 1252px)/2)) calc(61px + 18px + env(safe-area-inset-bottom))}
+  /* (Nov 2, Chris + GPT: "Page fixed -> workspace fixed -> wrapper fixed -> content scrolls") FOUR LAYERS:
+     1 PAGE: never scrolls; the Desk title sits where it sits on the current desk (same padding, gap and centring as #v16);
+     2 FRAME (.vframe): the box the home's 4 tiles + Today + Projects fill (top of the tiles to the bottom of Projects); never moves or grows;
+     3 WRAPPER (.vwrap): what is open, with its Back / title / Close bar, fills the frame and never scrolls;
+     4 CONTENT (.vbody): the only thing that scrolls; a board keeps its column names pinned at the top of it. */
+  html.v2,html.v2 body{height:100%;overflow:hidden}
+  #v2{--vg:8px;--vx:24px;--vfh:calc(71px + 2 * var(--vg) + 395px + 168px);position:fixed;inset:0;display:flex;flex-direction:column;justify-content:center;gap:var(--vg);box-sizing:border-box;padding:max(9px,env(safe-area-inset-top)) var(--vx) calc(70px + env(safe-area-inset-bottom));overflow:hidden}
+  @media (min-width:801px) and (min-height:741px){#v2{--vg:22px;--vx:30px}}
+  @media (max-width:800px){#v2{--vg:7px;--vx:12px;--vfh:calc(66px + 2 * var(--vg) + 395px + 146px)}}
+  #v2>.vh{flex:none;height:36px!important;min-height:0!important}
+  #v2 .vframe{flex:0 1 var(--vfh);min-height:0;display:flex;flex-direction:column;gap:var(--vg)}
+  #v2 .vframe>.vs{min-height:0}
+  #v2 .vs.vwrap{flex:1;min-height:0;display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden}
+  #v2 .vwrap>.vnav{flex:none;padding:8px 12px;border-bottom:1px solid var(--v-line)}
+  #v2 .vbody{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain}
+  /* a check pop-up opened from a board = the next view IN THE SAME FRAME (GPT refinement): it covers exactly the frame, never the Desk title or the Focus bar */
+  html.v2 #lyrchk{top:var(--vft,0);left:var(--vfl,0);right:var(--vfr,0);bottom:var(--vfb,0);padding:0;background:transparent}
+  html.v2 #lyrchk .lyrbox{max-width:none;width:100%;height:100%!important;max-height:none!important;border:1px solid var(--v-line);border-radius:16px;box-shadow:0 2px 12px var(--v-shadow)}
+  html.v2 #songchk .scbg{background:transparent}
+  html.v2 #songchk .secard{top:var(--vft,12px);left:var(--vfl,10px);right:var(--vfr,10px);bottom:var(--vfb,12px);width:auto;max-height:none;transform:none;border-radius:16px}
   #v2 .vh{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:44px}
   #v2 .vb{font:700 26px/1.1 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap} #v2 .vv{margin-left:8px;padding:3px 8px;border-radius:99px;background:var(--v-b);color:var(--v-mute);font-size:12px;font-weight:700;white-space:nowrap;vertical-align:4px}
   #v2 .vht{display:flex;align-items:center;gap:12px} #v2 .vold{color:var(--v-mute);font-size:13px;font-weight:600;text-decoration:none;white-space:nowrap}
   #v2 .vo{flex:none;padding:7px 11px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:13px;font-weight:600;white-space:nowrap}
   /* the nav bar of every view: Back left, the view's name, Close right */
-  #v2 .vnav{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;min-height:56px;margin:calc(-1 * max(9px,env(safe-area-inset-top))) 0 0;padding:max(9px,env(safe-area-inset-top)) 0 6px;background:var(--v-bg)}
+  #v2 .vnav{z-index:3;display:flex;align-items:center;gap:10px;min-height:56px;background:var(--v-card)}
   #v2 .vnav button{flex:none;padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap}
   #v2 .vnav b{flex:0 1 auto;min-width:0;font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #v2 .vnav .vclose{margin-left:auto}
@@ -2632,10 +2651,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   #v2 .vcell small{font-size:11px;font-weight:600;color:var(--v-mute)} #v2 .vcell.v2ok{background:var(--v-okbg);border-color:var(--v-okbg);color:var(--v-okink)} #v2 .vcell.v2chk{background:var(--v-chkbg);border-color:var(--v-chkbg);color:var(--v-chkink)} #v2 .vcell.v2mk{background:var(--v-tgold);border-color:var(--v-gold)}
   #v2 .vcell.v2ok small,#v2 .vcell.v2chk small{color:inherit}
   /* a BOARD workspace (Songs ...): the page stays still; the board scrolls inside its own box, header row pinned */
-  html.v2.v2fix,html.v2.v2fix body{height:100%;overflow:hidden}
-  html.v2.v2fix #v2{height:100dvh;min-height:0}
-  #v2 .vwb{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
-  #v2 .v2board{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;border-radius:0 0 16px 16px}
+  #v2 .v2board{border-radius:0 0 16px 16px}
   #v2 .v2board>.chgrid>.tn:first-child{position:sticky;top:0;z-index:2;background:var(--v-card)}
   /* the Focus Session bar: always at the bottom, every view */
   #v2fb{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;box-sizing:border-box;height:calc(61px + env(safe-area-inset-bottom));padding:0 max(18px,calc((100vw - 1252px)/2)) env(safe-area-inset-bottom);border-top:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b}
@@ -2647,7 +2663,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   /* hover = colour only (DESIGN_RULES 8); keyboard focus keeps a ring */
   @media (hover:hover) and (pointer:fine){#v2 .vr:hover,#v2 .vp:hover{background:var(--v-hover)} #v2 .vo:hover,#v2 .vnav button:hover,#v2fb button:not(:disabled):not(.vfs):hover,#v2 .vadd:hover{border-color:var(--v-teal)} #v2 .vold:hover{color:var(--v-teal)}}
   #v2 :is(button,a):focus-visible,#v2fb button:focus-visible{outline:3px solid var(--v-teal);outline-offset:2px}
-  @media (max-width:800px){#v2{gap:10px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))} #v2 .vs{padding:8px 10px 10px} #v2 .vw{padding:14px 12px 14px} #v2 .vpc{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+  @media (max-width:800px){#v2 .vs{padding:8px 10px 10px} #v2 .vw{padding:14px 12px 14px} #v2 .vpc{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
   @media (max-width:560px){#v2fb{gap:5px;padding-left:8px;padding-right:8px} #v2fb>b,#v2fb .vfh,#v2fb .vlong{display:none} #v2fb .vfc{margin-right:auto;padding:3px 7px} #v2fb button{padding:8px} #v2fb .vsw{padding:7px 8px;gap:6px} #v2 .vnav button{padding:7px 10px} #v2 .vw h2{font-size:21px} #v2 .vact .vbtn{min-width:0;flex:1 1 0;padding:9px 6px} #v2 .vact .vadd{flex:1 1 100%;margin-left:0}}`;
   document.head.appendChild(css);
 
@@ -2665,13 +2681,15 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   const S = [{k: "home", y: 0}], FOC = {pick: false, sel: new Set()};
   const cur = () => S[S.length - 1];
   const target = k => { const n = N[k]; return n && n.kids && n.kids.length === 1 ? target(n.kids[0]) : k; };   /* rules file rule 4: a folder with ONE item opens that item */
-  function open(k){ k = target(k); if (!N[k]) return; cur().y = scrollY; S.push({k, y: 0}); try { history.pushState({v2d: S.length - 1}, ""); } catch {} draw(); scrollTo(0, 0); }
+  const body = () => root && root.querySelector(".vbody, .vframe>.vs");
+  const keepY = () => { const B = body(); cur().y = B ? B.scrollTop : 0; }, setY = y => { const B = body(); if (B) B.scrollTop = y; };
+  function open(k){ k = target(k); if (!N[k]) return; keepY(); S.push({k, y: 0}); try { history.pushState({v2d: S.length - 1}, ""); } catch {} draw(); setY(0); }
   function back(){ if (S.length > 1) history.back(); }
   function home(){ if (S.length > 1) history.go(-(S.length - 1)); }
   const popOpen = () => !!(document.getElementById("lyrchk") || document.getElementById("mcpop") || ["songchk", "shortchk", "pop"].some(i => { const e = document.getElementById(i); return e && e.innerHTML.trim(); }));
   addEventListener("popstate", e => { if (popOpen()) return;   /* the open check pop-up closes itself (the desk's own Back handling) */
     const d = Math.max(0, Math.min(S.length - 1, (e.state && e.state.v2d) || 0)); if (d === S.length - 1) return;   /* a pop-up's own Back step: nothing to move */
-    e.stopImmediatePropagation(); S.length = d + 1; draw(); scrollTo(0, cur().y); });   /* phone Back = the Back button; the old desk never sees it */
+    e.stopImmediatePropagation(); S.length = d + 1; draw(); setY(cur().y); });   /* phone Back = the Back button; the old desk never sees it */
 
   const row = k => { const n = N[k]; if (n.kind === "board"){ const c = n.n();
       return `<button type="button" class="vr" data-k="${esc(k)}" data-kind="folder"><span class="vsy" aria-hidden="true">${n.ic}</span><span class="vi"><b>${esc(n.t)}</b><small>${c == null ? "Loading..." : c + (c === 1 ? " song" : " songs")}</small></span>${c ? `<span class="vfc">${c}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; }
@@ -2679,11 +2697,9 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
     return `<button type="button" class="vr${FOC.sel.has(k) ? " vsel" : ""}" data-k="${esc(k)}" data-kind="${f ? "folder" : n.kind}"><span class="vsy" aria-hidden="true">${f ? n.ic : n.kind === "song" ? "♫" : "○"}</span><span class="vi"><b>${esc(n.t)}</b><small>${esc(sub)}</small></span>${f && !one ? `<span class="vfc">${leaves(k)}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; };
   const nav = (title, n) => `<div class="vnav"><button type="button" data-v2="back">← Back</button><b>${esc(title)}</b>${n != null ? `<span class="vfc">${n}</span>` : ""}<button type="button" class="vclose" data-v2="close">✕ Close</button></div>`;
   function view(k){
-    if (k === "home") return `<div class="vh"><div><span class="vb">Desk</span><span class="vv">V2 preview</span></div><div class="vht"><a class="vold" href="app.html">Current desk</a><button type="button" class="vo" data-v2="theme" aria-label="Switch light and dark">☾ / ☀</button></div></div>
-      <section class="vs"><div class="vsh"><h2>Front Desk</h2></div>${HOME.folders.map(row).join("")}</section>
-      <p class="vk" style="white-space:normal">More boards move into this shell one at a time, after you approve Songs.</p>`;
+    if (k === "home") return `<section class="vs"><div class="vsh"><h2>Front Desk</h2></div>${HOME.folders.map(row).join("")}<p class="vk" style="white-space:normal">More boards move into this shell one at a time, after you approve Songs.</p></section>`;
     const n = N[k];
-    if (n.kind === "board") return nav(n.t, n.n()) + `<section class="vs vwb" data-view="board"><div class="v2board" data-board="${esc(k)}">${n.html()}</div></section>`;
+    if (n.kind === "board") return `<section class="vs vwrap" data-view="board">${nav(n.t, n.n())}<div class="vbody v2board" data-board="${esc(k)}">${n.html()}</div></section>`;
     if (n.kids) return nav(n.t, leaves(k)) + `<section class="vs${n.kind === "project" ? " p" : ""}" data-view="list">${n.kids.map(row).join("")}</section>`;
     const on = FOC.sel.has(k), top = `<div class="vk">${esc(path(k) || n.proj)}${n.mins ? " · " + n.mins + " min" : ""}</div><h2>${esc(n.t)}</h2>`;
     if (n.kind === "song") return nav(n.t) + `<section class="vs vw" data-view="item" data-item="${esc(k)}">${top}<p class="vnote">Song checklist. Gold = yours to check, teal = approved.</p><div class="vcells">${n.cells.map(([c, s]) => `<button type="button" class="vcell ${s && "v2" + s}" data-v2="sample">${esc(c)}<small>${{ok: "OK", chk: "Check", mk: "Making"}[s] || "Not yet"}</small></button>`).join("")}</div><div class="vact"><button type="button" class="vbtn vadd" data-v2="focus" aria-pressed="${on}">${on ? "In Focus Session" : "Add to Focus Session"}</button></div></section>`;
@@ -2691,9 +2707,13 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   function bar(){ const n = FOC.sel.size, hint = FOC.pick ? "Tap any task to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen." : "Turn on Add items to choose.";
     return `<b>Focus Session</b><span class="vfc">${n} selected</span><span class="vfh">${hint}</span><button type="button" class="vsw" role="switch" aria-checked="${FOC.pick}" data-v2="pick"><i></i><span>${FOC.pick ? "Done adding" : "Add items"}</span></button><button type="button" data-v2="sample"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-v2="sample"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
   let root, fb, toastEl;
-  function draw(){ const k = cur().k; root.dataset.view = k; RT.classList.toggle("v2fix", !!(N[k] && N[k].kind === "board")); root.innerHTML = view(k); fb.innerHTML = bar(); }
+  const HEAD = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">V2 preview</span></div><div class="vht"><a class="vold" href="app.html">Current desk</a><button type="button" class="vo" data-v2="theme" aria-label="Switch light and dark">☾ / ☀</button></div></div>`;
+  function frameVars(){ const F = root && root.querySelector(".vframe"); if (!F) return; const r = F.getBoundingClientRect();   /* where the frame is: check pop-ups open exactly over it */
+    RT.style.setProperty("--vft", r.top + "px"); RT.style.setProperty("--vfl", r.left + "px"); RT.style.setProperty("--vfr", (innerWidth - r.right) + "px"); RT.style.setProperty("--vfb", (innerHeight - r.bottom) + "px"); }
+  addEventListener("resize", () => frameVars()); const FRO = window.ResizeObserver ? new ResizeObserver(() => frameVars()) : null;
+  function draw(){ const k = cur().k; root.dataset.view = k; root.innerHTML = HEAD + `<div class="vframe">${view(k)}</div>`; fb.innerHTML = bar(); frameVars(); if (FRO){ FRO.disconnect(); FRO.observe(root.querySelector(".vframe")); } }
   function refresh(){ const k = cur().k, n = N[k]; if (!root) return;   /* live data: the desk's own render ran; redraw the open board in place, its scroll kept */
-    if (!n){ const y = scrollY; root.innerHTML = view(k); scrollTo(0, y); return; }
+    if (!n){ const B = body(), y = B ? B.scrollTop : 0; draw(); setY(y); return; }
     if (n.kind !== "board") return; const B = root.querySelector(".v2board"), y = B ? B.scrollTop : 0, h = n.html();
     if (B && B.innerHTML !== h){ B.innerHTML = h; B.scrollTop = y; } const c = root.querySelector(".vnav .vfc"), m = n.n(); if (c && m != null) c.textContent = m; }
   function toast(m){ toastEl.textContent = m; toastEl.className = "on"; clearTimeout(toastEl._h); toastEl._h = setTimeout(() => toastEl.className = "", 1800); }
@@ -2714,7 +2734,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v407</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v408</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
