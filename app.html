@@ -1042,16 +1042,16 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
 @media (prefers-reduced-motion: reduce){.item.repout-r,.item.repout-l{animation:repFade .15s forwards}@keyframes repFade{to{opacity:0}}}
 /* (Oct 14) Songs checklist on a computer: wide blocks + full one-word labels (phone keeps 22 px + 3 letters) */
 .sfw{display:none}.sdtp{display:none}
-@media (max-width:999px){ #list .srow .sblk .sdtp{display:block;font-size:7.5px;font-weight:700;letter-spacing:-.2px;line-height:1} }
+@media (max-width:999px){ :is(#list,.v2board) .srow .sblk .sdtp{display:block;font-size:7.5px;font-weight:700;letter-spacing:-.2px;line-height:1} }
 /* (Oct 14, Chris) phone: the Songs column labels show the whole word at 45 degrees (computer keeps full words flat) */
-@media (max-width:999px){ #list .tn .sblk{height:46px!important;position:relative;overflow:visible}#list .tn .sblk .sab{display:none}#list .tn .sblk .sfw{display:block;position:absolute;left:5px;bottom:2px;transform-origin:0 100%;transform:rotate(-45deg);white-space:nowrap;font-size:11px;letter-spacing:0} }
-@media (min-width:1000px){ #list .songgrid .sname{flex:0 0 200px!important}#list .songgrid .srow .sblk .sfw{font-size:11.5px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#list .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}#list .sname{flex:0 0 300px!important}#list .sblk{width:auto!important;flex:1 1 0!important}#list .srow .sblk{height:30px!important;border-radius:7px!important;min-width:0!important;overflow:hidden}#list .srow .sbar{min-width:0}#list .sblk .sab{display:none}#list .sblk .sfw{display:inline;font-size:14px} }
+@media (max-width:999px){ :is(#list,.v2board) .tn .sblk{height:46px!important;position:relative;overflow:visible}:is(#list,.v2board) .tn .sblk .sab{display:none}:is(#list,.v2board) .tn .sblk .sfw{display:block;position:absolute;left:5px;bottom:2px;transform-origin:0 100%;transform:rotate(-45deg);white-space:nowrap;font-size:11px;letter-spacing:0} }
+@media (min-width:1000px){ :is(#list,.v2board) .songgrid .sname{flex:0 0 200px!important}:is(#list,.v2board) .songgrid .srow .sblk .sfw{font-size:11.5px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}:is(#list,.v2board) .sbar{flex:1 1 auto!important;gap:10px!important;margin-left:24px}:is(#list,.v2board) .sname{flex:0 0 300px!important}:is(#list,.v2board) .sblk{width:auto!important;flex:1 1 0!important}:is(#list,.v2board) .srow .sblk{height:30px!important;border-radius:7px!important;min-width:0!important;overflow:hidden}:is(#list,.v2board) .srow .sbar{min-width:0}:is(#list,.v2board) .sblk .sab{display:none}:is(#list,.v2board) .sblk .sfw{display:inline;font-size:14px} }
 /* (Oct 28) Lessons to check = the Songs board rows: on a computer its 4 boxes are exactly as wide as the song boxes, the lesson name takes the rest.
    A song row = name 200px + 9 boxes, 8 of them with a border B each side (the screen draws 1.5px as 1px on a 1x screen, 1.5px on a 2x screen):
    song box = (row - 232 - 80 - 16B) / 9 + 2B, so the 4-box bar = 4/9 row - (1312/9 - 38)px on 1x, 4/9 row - (1344/9 - 42)px on 2x.
    A folder title inside an open to-do keeps the folder look. */
-@media (min-width:1000px){ #list .lcgrid .sname{flex:1 1 auto!important;min-width:0}#list .lcgrid .sbar{flex:0 0 calc(400% / 9 - 970px / 9)!important} }
-@media (min-width:1000px) and (min-resolution:1.75dppx){ #list .lcgrid .sbar{flex:0 0 calc(400% / 9 - 966px / 9)!important} }
+@media (min-width:1000px){ :is(#list,.v2board) .lcgrid .sname{flex:1 1 auto!important;min-width:0}:is(#list,.v2board) .lcgrid .sbar{flex:0 0 calc(400% / 9 - 970px / 9)!important} }
+@media (min-width:1000px) and (min-resolution:1.75dppx){ :is(#list,.v2board) .lcgrid .sbar{flex:0 0 calc(400% / 9 - 966px / 9)!important} }
 #list .tdetail .pc3t > b{color:var(--ink)}
 .qrow .qd{display:none}
 .qhead{display:none}
@@ -2566,13 +2566,21 @@ document.addEventListener("click", e => {
   else if (a === "fix") shAnswer("fix");
   else if (a === "chk"){ const r = shRows[shI], i = +x.dataset.i; if (!r) return; shNoteSave(); const st0 = shShow(r), k = st0 === "hands" ? "handsFixes" : st0 === "words" ? "wordsFixes" : st0 === "thumb" ? "thumbFixes" : st0 === "final" ? "finalFixes" : "fixes", f = new Set(r[k] || []); f.has(i) ? f.delete(i) : f.add(i); r[k] = [...f].sort(); shDraw(); } }, true);
 </script>
+<style>/* (Nov 2) ONE board look for the current desk's workspace AND the v2 shell (moved here from the V16-only styles, not copied) */
+  :is(body.v16work #list,html.v2 .v2board) .srow{background:var(--v-card)} :is(body.v16work #list,html.v2 .v2board) .srow:nth-of-type(even){background:var(--v-b)} :is(body.v16work #list,html.v2 .v2board) .srow .sgc[data-sgst="none"]{background:var(--v-card)!important}
+  :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important}
+  :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important}
+  :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
+  :is(body.v16work #list,html.v2 .v2board) .sblk:is([style*="background:var(--ka1FA598)"],[style*="background:var(--kaE8B53A)"],[style*="background:var(--kaFBEFD0)"]) span{color:inherit!important}
+</style>
 <script>
 /* (Nov 2, Chris yes) DESK V2 REBUILD, Phase 1 (one workspace frame, Focus bar, light + dark) + Phase 2 (one navigation stack), ONLY with ?v2=1.
    Built from scratch: none of the old list, pop-up, #list, applyCollapse or fdim code. SAMPLE DATA ONLY: in v2 the db is never opened (Phase 3 connects it).
    Look = the approved new desk (V16 tokens, folder rows, Focus bar). Check: ~/Library/Scripts/claude-tasks/desk-v2-check.py */
 window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 (function(){ if (!V2) return;
-  window.claude = {use: async () => null};   /* no db reads or writes in v2 (rule 44); the old desk under it stays empty */
+  /* (Nov 2, Chris: "build a replacement UI shell around my existing working boards") v2 = a shell: the real db loads as on the desk; the old
+     list UI under it never shows. Boards are the desk's own functions (homeSongs ...), called unchanged. */
   const RT = document.documentElement; RT.classList.add("v2"); try { const t = localStorage.getItem("fdTheme"); if (t) RT.dataset.theme = t; } catch {}
   try { history.scrollRestoration = "manual"; } catch {}
   const fonts = document.createElement("link"); fonts.rel = "stylesheet"; fonts.href = "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"; document.head.appendChild(fonts);
@@ -2581,7 +2589,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   @media (prefers-color-scheme:dark){html.v2:not([data-theme="light"]){--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00;--v-shadow:#0000002e;color-scheme:dark}}
   html.v2[data-theme="dark"]{--v-bg:#1B1D1C;--v-card:#292D2B;--v-ink:#F5F5F1;--v-mute:#C0C6C2;--v-line:#4B5650;--v-teal:#48CBBB;--v-gold:#F5D77F;--v-coral:#F2AD98;--v-blue:#B4C9EC;--v-a:#303631;--v-b:#394039;--v-hover:#455148;--v-sel:#254A43;--v-tgold:#443B27;--v-tcoral:#48342E;--v-tteal:#26463F;--v-tblue:#304154;--v-onteal:#10231F;--v-ongold:#241A00;--v-shadow:#0000002e;color-scheme:dark}
   html.v2,html.v2 body{margin:0;background:var(--v-bg)!important}
-  html.v2 body>:not(#v2):not(#v2fb):not(#v2toast):not(script):not(style):not(link){display:none!important}
+  html.v2 body>:is(.wrap,#v16fm,#v16,#v16fb,#fdend,#fdsb,#fderr){display:none!important}
   #v2,#v2fb,#v2toast{font-family:Figtree,system-ui,-apple-system,sans-serif;color:var(--v-ink);-webkit-text-size-adjust:100%}
   #v2 *,#v2fb *{box-sizing:border-box} #v2 button,#v2fb button{font:inherit;color:inherit;cursor:pointer}
   /* ONE workspace frame: the page is the only scroll; same width as the new desk; room at the bottom for the Focus bar */
@@ -2623,6 +2631,12 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   #v2 .vcell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;padding:6px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:12px;font-weight:700;text-align:center}
   #v2 .vcell small{font-size:11px;font-weight:600;color:var(--v-mute)} #v2 .vcell.v2ok{background:var(--v-okbg);border-color:var(--v-okbg);color:var(--v-okink)} #v2 .vcell.v2chk{background:var(--v-chkbg);border-color:var(--v-chkbg);color:var(--v-chkink)} #v2 .vcell.v2mk{background:var(--v-tgold);border-color:var(--v-gold)}
   #v2 .vcell.v2ok small,#v2 .vcell.v2chk small{color:inherit}
+  /* a BOARD workspace (Songs ...): the page stays still; the board scrolls inside its own box, header row pinned */
+  html.v2.v2fix,html.v2.v2fix body{height:100%;overflow:hidden}
+  html.v2.v2fix #v2{height:100dvh;min-height:0}
+  #v2 .vwb{flex:1;min-height:0;display:flex;flex-direction:column;padding:0;overflow:hidden}
+  #v2 .v2board{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;border-radius:0 0 16px 16px}
+  #v2 .v2board>.chgrid>.tn:first-child{position:sticky;top:0;z-index:2;background:var(--v-card)}
   /* the Focus Session bar: always at the bottom, every view */
   #v2fb{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;box-sizing:border-box;height:calc(61px + env(safe-area-inset-bottom));padding:0 max(18px,calc((100vw - 1252px)/2)) env(safe-area-inset-bottom);border-top:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b}
   #v2fb b{font-size:14px;white-space:nowrap} #v2fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2637,43 +2651,14 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   @media (max-width:560px){#v2fb{gap:5px;padding-left:8px;padding-right:8px} #v2fb>b,#v2fb .vfh,#v2fb .vlong{display:none} #v2fb .vfc{margin-right:auto;padding:3px 7px} #v2fb button{padding:8px} #v2fb .vsw{padding:7px 8px;gap:6px} #v2 .vnav button{padding:7px 10px} #v2 .vw h2{font-size:21px} #v2 .vact .vbtn{min-width:0;flex:1 1 0;padding:9px 6px} #v2 .vact .vadd{flex:1 1 100%;margin-left:0}}`;
   document.head.appendChild(css);
 
-  /* SAMPLE DATA (Phase 3 swaps this for the real db rows; nothing here is saved anywhere) */
+  /* REAL BOARDS ONLY (no sample data). Each board = the desk's own render function, unchanged; the shell only frames it. */
   const N = {}, add = (id, o) => (N[id] = Object.assign({id}, o), id);
-  const T = (id, t, proj, mins, note, steps) => add(id, {kind: "task", t, proj, mins, note, steps: steps || []});
-  const SONGS = ["Amazing Grace", "Hark the Herald", "Joyful, Joyful", "Go Tell It", "The First Noel", "It Came Upon", "God Rest Ye", "We Three Kings", "O Christmas Tree", "O Come O Come Emmanuel", "Up on the Housetop", "Silent Night", "Joy to the World", "O Holy Night", "Away in a Manger", "How Great Thou Art", "Be Thou My Vision"];
-  const COLS = ["Lyrics", "Melody", "Player", "Level 1", "Intro", "Level 2", "Level 3", "Final check"];
-  add("f-today", {kind: "folder", t: "Today", ic: "☀", kids: [
-    T("t1", "Check Chapter 7 fixes", "Worship Piano Lab", 20, "See the three fixed cards play right on your phone.", ["Open Lab Test on your phone", "Play cards 4, 7 and 9", "Tap Looks good or Fix"]),
-    T("t2", "Approve Time Signatures cut", "YouTube", 15, "Watch the cut and say if it is ready for Saturday.", ["Watch the cut", "Tap Approve or Fix"]),
-    T("t3", "Record Joyful, Joyful intro", "Worship Piano Lab", 30, "Play the 4-bar intro once for the lesson."),
-    T("t4", "Pick the song for Riffs video 3", "Riffs course", 5, "Choose which song the next Riffs video uses."),
-    T("t5", "Look at homepage A/B result", "Website", 10, "See which homepage sold more and pick one.")]});
-  add("f-songs", {kind: "folder", t: "Songs to check", ic: "♫", kids: SONGS.map((s, i) => add("s" + (i + 1), {kind: "song", t: s, proj: "Songs", cells: COLS.map((c, j) => [c, j < (i % 5) + 1 ? "ok" : j === (i % 5) + 1 ? "chk" : j === (i % 5) + 2 && i % 3 === 0 ? "mk" : ""])}))});
-  add("f-lab", {kind: "folder", t: "Worship Piano Lab", ic: "♬", kids: [
-    add("f-ch7", {kind: "folder", t: "Chapter 7 checks", ic: "♪", kids: [
-      T("t6", "Ch7 lesson 1 on phone", "Worship Piano Lab", 10, "Play lesson 1 on your phone and check every card."),
-      T("t7", "Ch7 lesson 2 on computer", "Worship Piano Lab", 10, "Play lesson 2 on the computer and check every card."),
-      T("t8", "Ch7 quiz answers", "Worship Piano Lab", 5, "Check the quiz marks the right answers.")]}),
-    T("t9", "Christmas songs order", "Worship Piano Lab", 10, "Put the Christmas songs in teaching order."),
-    T("t10", "Number System outline", "Worship Piano Lab", 20, "Look over the chapter list for the Number System.")]});
-  add("f-shorts", {kind: "folder", t: "Shorts", ic: "▣", kids: [
-    T("t11", "Pentatonic Fingering words", "Shorts", 5, "Check the on-screen words match what you play."),
-    T("t12", "Walking Bass thumbnail", "Shorts", 5, "Pick the thumbnail for the Walking Bass Short."),
-    T("t13", "Final check: 2-5-1 Short", "Shorts", 5, "Watch the finished Short before it posts.")]});
-  add("f-cad", {kind: "folder", t: "Cadence tasks", ic: "≡", kids: [
-    T("t14", "Card size picture", "Front Desk", 0, "Cadence makes a picture of the new card size."),
-    T("t15", "Band timing test song", "Worship Piano Lab", 0, "Cadence sets up one song to test band timing.")]});
-  add("f-usage", {kind: "folder", t: "Usage", ic: "◔", kids: [T("t16", "Claude use", "Front Desk", 0, "This week's Claude use, per project.")]});
-  add("p-riffs", {kind: "project", t: "Riffs course", ic: "▶", kids: [
-    T("t17", "Cut Riffs video 3", "Riffs course", 30, "Cadence cuts the raw video; you check the cut."),
-    T("t18", "Riffs video 3 title", "Riffs course", 5, "Pick one of three titles.")]});
-  add("p-xmas", {kind: "project", t: "Christmas songs", ic: "❄", kids: [
-    T("t19", "Christmas chapter cards", "Christmas songs", 20, "Check the new chapter cards in the Lab."),
-    T("t20", "Bells sound check", "Christmas songs", 5, "Listen to the bells on two songs.")]});
-  const HOME = {folders: ["f-today", "f-songs", "f-lab", "f-shorts", "f-cad", "f-usage"], projects: ["p-riffs", "p-xmas"]};
+  add("b-songs", {kind: "board", t: "Songs to check", ic: "♫", html: () => { try { return homeSongs("now"); } catch { return '<p class="vk" style="padding:16px">Loading your songs...</p>'; } },
+    n: () => { try { return sgUniverse().filter(sgNow).length; } catch { return null; } }});
+  const HOME = {folders: ["b-songs"], projects: []};
   const leaves = id => { const n = N[id]; return n.kids ? n.kids.reduce((a, k) => a + leaves(k), 0) : 1; };
-  const parentOf = {}; Object.values(N).forEach(n => (n.kids || []).forEach(k => parentOf[k] = n.id));
-  const path = id => { const out = []; for (let p = parentOf[id]; p; p = parentOf[p]) out.unshift(N[p].t); return out.join(" · "); };
+  const parentOf = {};
+  const path = () => "";
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
 
   /* THE ONE NAVIGATION STACK: every folder, sub-folder, task, song and project is a view. Each entry keeps its own scroll. */
@@ -2683,16 +2668,22 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   function open(k){ k = target(k); if (!N[k]) return; cur().y = scrollY; S.push({k, y: 0}); try { history.pushState({v2d: S.length - 1}, ""); } catch {} draw(); scrollTo(0, 0); }
   function back(){ if (S.length > 1) history.back(); }
   function home(){ if (S.length > 1) history.go(-(S.length - 1)); }
-  addEventListener("popstate", e => { e.stopImmediatePropagation(); const d = Math.max(0, Math.min(S.length - 1, (e.state && e.state.v2d) || 0)); S.length = d + 1; draw(); scrollTo(0, cur().y); });   /* phone Back = the Back button; the old desk never sees it */
+  const popOpen = () => !!(document.getElementById("lyrchk") || document.getElementById("mcpop") || ["songchk", "shortchk", "pop"].some(i => { const e = document.getElementById(i); return e && e.innerHTML.trim(); }));
+  addEventListener("popstate", e => { if (popOpen()) return;   /* the open check pop-up closes itself (the desk's own Back handling) */
+    const d = Math.max(0, Math.min(S.length - 1, (e.state && e.state.v2d) || 0)); if (d === S.length - 1) return;   /* a pop-up's own Back step: nothing to move */
+    e.stopImmediatePropagation(); S.length = d + 1; draw(); scrollTo(0, cur().y); });   /* phone Back = the Back button; the old desk never sees it */
 
-  const row = k => { const n = N[k], f = !!n.kids, one = f && n.kids.length === 1, sub = f ? (one ? N[n.kids[0]].t : leaves(k) + (leaves(k) === 1 ? " item" : " items")) : n.kind === "song" ? (n.cells.find(c => c[1] === "chk") || ["All approved"])[0] + (n.cells.some(c => c[1] === "chk") ? ": check" : "") : [n.proj, n.mins ? n.mins + " min" : ""].filter(Boolean).join(" · ");
+  const row = k => { const n = N[k]; if (n.kind === "board"){ const c = n.n();
+      return `<button type="button" class="vr" data-k="${esc(k)}" data-kind="folder"><span class="vsy" aria-hidden="true">${n.ic}</span><span class="vi"><b>${esc(n.t)}</b><small>${c == null ? "Loading..." : c + (c === 1 ? " song" : " songs")}</small></span>${c ? `<span class="vfc">${c}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; }
+    const f = !!n.kids, one = f && n.kids.length === 1, sub = f ? (one ? N[n.kids[0]].t : leaves(k) + (leaves(k) === 1 ? " item" : " items")) : n.kind === "song" ? (n.cells.find(c => c[1] === "chk") || ["All approved"])[0] + (n.cells.some(c => c[1] === "chk") ? ": check" : "") : [n.proj, n.mins ? n.mins + " min" : ""].filter(Boolean).join(" · ");
     return `<button type="button" class="vr${FOC.sel.has(k) ? " vsel" : ""}" data-k="${esc(k)}" data-kind="${f ? "folder" : n.kind}"><span class="vsy" aria-hidden="true">${f ? n.ic : n.kind === "song" ? "♫" : "○"}</span><span class="vi"><b>${esc(n.t)}</b><small>${esc(sub)}</small></span>${f && !one ? `<span class="vfc">${leaves(k)}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; };
   const nav = (title, n) => `<div class="vnav"><button type="button" data-v2="back">← Back</button><b>${esc(title)}</b>${n != null ? `<span class="vfc">${n}</span>` : ""}<button type="button" class="vclose" data-v2="close">✕ Close</button></div>`;
   function view(k){
     if (k === "home") return `<div class="vh"><div><span class="vb">Desk</span><span class="vv">V2 preview</span></div><div class="vht"><a class="vold" href="app.html">Current desk</a><button type="button" class="vo" data-v2="theme" aria-label="Switch light and dark">☾ / ☀</button></div></div>
       <section class="vs"><div class="vsh"><h2>Front Desk</h2></div>${HOME.folders.map(row).join("")}</section>
-      <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vpc">${HOME.projects.map(p => `<button type="button" class="vp" data-k="${p}" data-kind="project"><span class="vsy" aria-hidden="true">${N[p].ic}</span><b>${esc(N[p].t)}</b><small>${leaves(p)} tasks</small></button>`).join("")}</div></section>`;
+      <p class="vk" style="white-space:normal">More boards move into this shell one at a time, after you approve Songs.</p>`;
     const n = N[k];
+    if (n.kind === "board") return nav(n.t, n.n()) + `<section class="vs vwb" data-view="board"><div class="v2board" data-board="${esc(k)}">${n.html()}</div></section>`;
     if (n.kids) return nav(n.t, leaves(k)) + `<section class="vs${n.kind === "project" ? " p" : ""}" data-view="list">${n.kids.map(row).join("")}</section>`;
     const on = FOC.sel.has(k), top = `<div class="vk">${esc(path(k) || n.proj)}${n.mins ? " · " + n.mins + " min" : ""}</div><h2>${esc(n.t)}</h2>`;
     if (n.kind === "song") return nav(n.t) + `<section class="vs vw" data-view="item" data-item="${esc(k)}">${top}<p class="vnote">Song checklist. Gold = yours to check, teal = approved.</p><div class="vcells">${n.cells.map(([c, s]) => `<button type="button" class="vcell ${s && "v2" + s}" data-v2="sample">${esc(c)}<small>${{ok: "OK", chk: "Check", mk: "Making"}[s] || "Not yet"}</small></button>`).join("")}</div><div class="vact"><button type="button" class="vbtn vadd" data-v2="focus" aria-pressed="${on}">${on ? "In Focus Session" : "Add to Focus Session"}</button></div></section>`;
@@ -2700,7 +2691,11 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
   function bar(){ const n = FOC.sel.size, hint = FOC.pick ? "Tap any task to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen." : "Turn on Add items to choose.";
     return `<b>Focus Session</b><span class="vfc">${n} selected</span><span class="vfh">${hint}</span><button type="button" class="vsw" role="switch" aria-checked="${FOC.pick}" data-v2="pick"><i></i><span>${FOC.pick ? "Done adding" : "Add items"}</span></button><button type="button" data-v2="sample"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-v2="sample"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
   let root, fb, toastEl;
-  function draw(){ const k = cur().k; root.dataset.view = k; root.innerHTML = view(k); fb.innerHTML = bar(); }
+  function draw(){ const k = cur().k; root.dataset.view = k; RT.classList.toggle("v2fix", !!(N[k] && N[k].kind === "board")); root.innerHTML = view(k); fb.innerHTML = bar(); }
+  function refresh(){ const k = cur().k, n = N[k]; if (!root) return;   /* live data: the desk's own render ran; redraw the open board in place, its scroll kept */
+    if (!n){ const y = scrollY; root.innerHTML = view(k); scrollTo(0, y); return; }
+    if (n.kind !== "board") return; const B = root.querySelector(".v2board"), y = B ? B.scrollTop : 0, h = n.html();
+    if (B && B.innerHTML !== h){ B.innerHTML = h; B.scrollTop = y; } const c = root.querySelector(".vnav .vfc"), m = n.n(); if (c && m != null) c.textContent = m; }
   function toast(m){ toastEl.textContent = m; toastEl.className = "on"; clearTimeout(toastEl._h); toastEl._h = setTimeout(() => toastEl.className = "", 1800); }
   function start(){ root = document.createElement("main"); root.id = "v2"; fb = document.createElement("div"); fb.id = "v2fb"; fb.setAttribute("role", "region"); fb.setAttribute("aria-label", "Focus Session"); toastEl = document.createElement("div"); toastEl.id = "v2toast"; toastEl.setAttribute("role", "status");
     document.body.append(root, fb, toastEl); try { history.replaceState({v2d: 0}, ""); } catch {} draw();
@@ -2713,12 +2708,13 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
       if (a === "sample") return toast("Sample data: nothing is saved yet");
       const k = b.dataset.k; if (FOC.pick && N[k] && !N[k].kids){ FOC.sel.has(k) ? FOC.sel.delete(k) : FOC.sel.add(k); b.classList.toggle("vsel", FOC.sel.has(k)); fb.innerHTML = bar(); return; }
       open(k); }, true);
-    window.V2NAV = {S, open, back, home, target};   /* read by desk-v2-check.py only */ }
+    window.V2NAV = {S, open, back, home, target};   /* read by desk-v2-check.py only */
+    if (typeof render === "function"){ const _r = render; render = function(){ const v = _r.apply(this, arguments); try { refresh(); } catch {} return v; }; } }
   document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", start) : start();
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v406</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v407</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7346,12 +7342,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16work #list .msec{background:var(--v-card);border-radius:16px;box-shadow:0 2px 12px #4c40300a}
   body.v16work #list .msec>h4{font:700 19px/1.2 Fraunces,Georgia,serif;letter-spacing:-.02em;background:var(--v-card)}
   body.v16work #list .msec>h4 .hr,body.v16work #list .msec>h4 i{font:600 12px/1.2 Figtree,system-ui,sans-serif;letter-spacing:0;color:var(--v-mute)}
-  body.v16work #list .srow{background:var(--v-card)} body.v16work #list .srow:nth-of-type(even){background:var(--v-b)} body.v16work #list .srow .sgc[data-sgst="none"]{background:var(--v-card)!important}
   body.v16work #list .pc3t{background:var(--v-a)} body.v16work #list .subon>.pc3t{background:var(--v-sel)}
-  body.v16work #list .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important}
-  body.v16work #list .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important}
-  body.v16work #list .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
-  body.v16work #list .sblk:is([style*="background:var(--ka1FA598)"],[style*="background:var(--kaE8B53A)"],[style*="background:var(--kaFBEFD0)"]) span{color:inherit!important}
   body.v16 button.armed{background:var(--v-gold)!important;border-color:var(--v-gold)!important;color:var(--v-ongold)!important}
   body.v16 .kfix[data-kfix]{display:none}
   body.v16 .kline{flex:none;display:flex;align-items:center;justify-content:flex-end;gap:4px;margin:0}
