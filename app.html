@@ -211,7 +211,8 @@ button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible,
 @media (hover:hover){ button:not(:disabled):hover, a.btn:hover{box-shadow:inset 0 0 0 999px var(--hov)} }
 #lyrchk{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:16px}
 #lyrchk .lyrbox{background:var(--card,#fff);color:var(--ink);border-radius:14px;width:100%;max-width:80vw;height:min(88vh,900px);display:flex;flex-direction:column;gap:10px;padding:14px;box-sizing:border-box}
-@media (max-width:999px){#lyrchk .lyrbox{max-width:100%}}
+@media (max-width:999px){#lyrchk .lyrbox{max-width:100%}
+ #lyrchk .lyrbox.plbox>iframe.plfr{flex:1 1 auto!important;height:auto!important;min-height:0;width:100%;border:0;border-radius:10px;background:var(--soft,#f4f1ea)}}
 .scnosave{background:var(--kbFDE8E4);color:var(--ktB3261E);border-radius:10px;padding:8px 12px;font-weight:600;font-size:var(--fs-body);overflow-wrap:anywhere}.scnosave.fl{position:fixed;left:12px;right:12px;bottom:16px;z-index:90;max-width:520px;margin:0 auto}
 #lyrchk .lyrhd{display:flex;flex-direction:column;gap:2px}#lyrchk .lyrhd b{font-size:var(--fs-lead)}#lyrchk .lyrhd span{font-size:var(--fs-small);color:var(--muted)}#lyrchk .lyrhd .lyrcp{color:var(--ink);font-weight:600}
 #lyrchk .lyrtx{flex:1;min-height:0;resize:none;font:15px/1.5 inherit;font-family:inherit;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg,#fff);color:var(--ink)}
@@ -2758,7 +2759,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v427</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v428</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5999,11 +6000,19 @@ function lyrOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r) 
     return P.length ? scChgNote(P, "line") + L.map(s => `<div class="chgl"><span class="chgd">${esc(ls[s[1]] || " ")}</span></div>`).join("") : ""; })(scChg(r, "lyricsOK"))}<textarea class="lyrtx" spellcheck="false">${esc(r.lyricsText || "")}</textarea><input class="lyrnote" placeholder="Note for Cadence (only for Send fixes)"><div class="lyrbt"><button type="button" class="tb" data-lyrx="back">Back</button><button type="button" class="tb" data-lyrx="unlock">Edit (locked)</button><button type="button" class="tb" data-lyrx="fix">Send fixes</button><button type="button" class="tb go" data-lyrx="ok">Approve</button></div></div>`;
   if (r.lyricsOK){ o.dataset.lock = "1"; o.querySelector(".lyrtx").readOnly = true; }   /* (Oct 22, Chris) approved lyrics are locked: Edit, then Approve again */
   document.body.appendChild(o); }
+/* (Nov 3, Chris) THE ONE PLAYER FRAME: every song check shows the Lab song player inside its own pop-up (SGPREVIEW deep link), under its buttons */
+function plFrame(o, go){ const b = o.querySelector(".lyrbox"); if (!b) return; b.style.height = ""; b.classList.add("plbox"); o.classList.add("plfull");
+  /* (Nov 3, Chris: "I want to see exactly what students see") the check covers the whole window so the player gets the student's 780px; one slim top line:
+     title left, Approve + the desk's own Close button on the right (Back = Close, same button as every desk pop-up) */
+  const bt = b.querySelector(".lyrbt"); if (bt){ bt.querySelectorAll("button").forEach(x => { x.classList.add("v16btn"); if (/^back$/.test(x.dataset.plx || x.dataset.fnx || "")){ x.textContent = "\u2715 Close"; bt.appendChild(x); } }); }
+  b.insertAdjacentHTML("beforeend", `<iframe class="plfr shbody" style="flex:1 1 auto;height:auto;min-height:0;width:100%;border:0;border-radius:10px" allow="autoplay; fullscreen" title="Song player"></iframe>`);
+  const fr = b.querySelector(".plfr"), u = SGPREVIEW + "?fit=1&go=" + encodeURIComponent(go);   /* fit=1: the Lab sizes its card to this frame (its embed switch, ui.js WPL_FIT) */
+  setTimeout(() => { if (fr.isConnected) fr.src = u; }, 250); }   /* the player loads once the pop-up has its full size (it lays itself out on load) */
 /* (Oct 21, Chris) FINAL CHECK: gold 'Check L#' opens the finished song on Test at that level; his Approve stores songcheck.finalOK[L#] (only a finalOK level may ship Live) */
 function fnOpen(id, lv){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.lv = lv;
-  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Final check: Open player, tap Level ${lv.slice(1)}, play it with the chords</span></div><div class="lyrbt"><button type="button" class="tb" data-fnx="back">Back</button><button type="button" class="tb" data-fnx="open">Open player</button><button type="button" class="tb go" data-fnx="ok">Approve ${lv}</button></div></div>`;
-  document.body.appendChild(o); }
+  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:min(80vw,520px)"><div class="lyrhd"><b>${esc(r.name)}</b><span>Final check: tap Level ${lv.slice(1)}, play it with the chords</span></div><div class="lyrbt"><button type="button" class="tb" data-fnx="back">Back</button><button type="button" class="tb go" data-fnx="ok">Approve ${lv}</button></div></div>`;
+  plFrame(o, "songs:song_" + (r.labId || id)); document.body.appendChild(o); }
 /* (Oct 25, Chris approved the picture) MELODY COMPARE: a hymnal rebuild draft (songcheck rebuildLines/Words/Chords) next to his
    current melody. Play each on the real piano, only the rows that differ are shown (differing notes gold), then Keep mine or
    Use hymnal draft. Nothing changes until he taps one (Lab rule: research never overwrites). */
@@ -6263,7 +6272,8 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
 /* (Oct 22, Chris) PLAYER CHECK: gold 'Check' in the Player column = hear the approved melody in the Lab song player (preview copy, never Test or Live); his Approve stores songcheck.playerOK (Level 1 opens once the player exists, Oct 24) */
 function plOpen(id, f){ const r = (scBoard || []).find(x => x.id === id); if (!r) return; lyrClose();   /* (Oct 27) f = "introOK": the same pop-up approves the Intro */
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.f = f || "playerOK";
-  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:520px"><div class="lyrhd"><b>${esc(r.name)}</b><span>Songs tab &gt; ${esc(r.name)} &gt; Play</span></div>${f === "introOK" ? scChgNote(scChg(r, "introOK"), "intro note").replace(" marked", " marked in the Melody check") : ""}<div class="lyrbt"><button type="button" class="tb" data-plx="back">Back</button><button type="button" class="tb" data-plx="open">Open player</button>${f === "introOK" ? `<button type="button" class="tb" data-plx="edit">Edit</button>` : ""}<button type="button" class="tb go" data-plx="ok">Approve</button></div></div>`;
+  o.innerHTML = `<div class="lyrbox" style="height:auto;max-width:520px"><div class="lyrhd"><b>${esc(r.name)}</b><span>Songs tab &gt; ${esc(r.name)} &gt; Play</span></div>${f === "introOK" ? scChgNote(scChg(r, "introOK"), "intro note").replace(" marked", " marked in the Melody check") : ""}<div class="lyrbt"><button type="button" class="tb" data-plx="back">Back</button>${f === "introOK" ? `<button type="button" class="tb" data-plx="edit">Edit</button>` : ""}<button type="button" class="tb go" data-plx="ok">Approve</button></div></div>`;
+  plFrame(o, "songs:song_" + (r.labId || id));   /* (Nov 3, Chris: "I would like everything to open inside the desk") the player sits right here, no second tab */
   if (f === "introOK" && r.introOK) o.dataset.lock = "1";   /* (Oct 29, Chris yes) an approved Intro is locked like the Lyrics: Edit, change it in the Melody or Level 1 check, then Approve here again */
   document.body.appendChild(o); }
 document.addEventListener("click", async e => { const b = e.target.closest("[data-plchk]"); if (b){ e.preventDefault(); e.stopPropagation(); plOpen(b.dataset.plchk, b.dataset.plf); return; }
@@ -7413,7 +7423,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16 :is(button,a,summary,[role=button],[role=link],[tabindex]):focus-visible{outline:3px solid var(--v-teal)!important;outline-offset:2px}
   #v16bar{display:none}
   body.v16work #v16bar{flex:none;display:flex;align-items:center;gap:10px;min-height:44px;margin-bottom:8px;color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif}
-  #v16bar button{padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16bar b{font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  :is(#v16bar button,button.v16btn){padding:7px 12px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap}   /* .v16btn = the same Close/Back button anywhere (Nov 3) */ #v16bar b{font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   body.v16work .wrap>header,body.v16work .wrap>.tabs,body.v16work #list .hello{display:none!important}
   body.v16ws #list .msec:not(.v16keep),body.v16ws #list .mgrid>:not(.mleft):not(.v16keep):not(:has(.v16keep)),body.v16ws #list .mleft>:not(.v16keep):not(:has(.v16keep)){display:none!important}
   body.v16sub #list .v16keep>.chgrid>.pc3:not(.v16one),body.v16sub #list .v16keep>.chgrid>.sublist:not(.v16one),body.v16sub #list .v16keep>h4{display:none!important}
@@ -7460,7 +7470,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}   /* (Nov 2, Chris: "DON'T EVER CHANGE THE MAIN TEMPLATE SIZE AGAIN") the home template: Today 395, Projects 168, centred; desk-ui-guard.py stops any push that changes it */
   @media (min-width:801px) and (min-height:741px){#v16 .vs.p{flex-basis:calc(168px + var(--pbx,0px));margin-bottom:calc(-1 * var(--pbx,0px))} #v16 .vs.p .vc{padding-bottom:var(--pbx,0px)}}   /* (Nov 2, Chris) only the BOTTOM edge of Projects comes down until the gap to Focus = the 22px gap above it (pbx, measured); nothing moves, the cards keep their size */
   #v16 .vht{display:flex;align-items:center;gap:12px}
-  #v16{padding-bottom:70px} #v16fb{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16fb b{font-size:14px;white-space:nowrap} #v16fb .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16fb button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16fb .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16fb button:disabled{opacity:.5;cursor:default}
+  #v16{padding-bottom:70px} #v16fb{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16fb b{font-size:14px;white-space:nowrap} #v16fb .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16fb button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16fb .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16fb button:disabled{opacity:.5;cursor:default}
   :is(#v16,.pflist) .vi b{font-size:14px} :is(#v16,.pflist) .vi small{font-size:12px}
   #v16 .vp{--pc:var(--v-teal);--pt:var(--v-tteal);border-top-color:var(--pc);box-shadow:0 2px 10px #4c403009} #v16 .vp:nth-child(4n+2){--pc:var(--v-coral);--pt:var(--v-tcoral)} #v16 .vp:nth-child(4n+3){--pc:var(--v-blue);--pt:var(--v-tblue)} #v16 .vp:nth-child(4n){--pc:var(--v-gold);--pt:var(--v-tgold)}
   #v16 .vsy{display:grid;place-items:center;width:29px;height:29px;margin-bottom:3px;border-radius:9px;background:var(--pt);color:var(--pc);font-size:16px;line-height:1}
@@ -7766,6 +7776,14 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16pop :is(#lyrchk,#shortchk .shbg,#mcpop){background:transparent!important;backdrop-filter:none!important}   /* check pop-ups: the same outer frame, their own inside layout, nothing dimmed */
   body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox){position:fixed!important;left:var(--pf-l)!important;top:var(--pf-t)!important;width:var(--pf-w)!important;height:var(--pf-h)!important;max-width:none!important;max-height:none!important;margin:0!important;transform:none!important;box-sizing:border-box;box-shadow:0 0 0 1px var(--v-line);overflow:auto!important}
   body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox)>:not(.shbody){flex-shrink:0}   /* words and buttons are never squeezed; the clip takes the room left */
+  /* (Nov 3, Chris) song checks: the player over the whole window at the student's size */
+  #lyrchk .lyrbox.plbox{max-width:none}
+  html body #lyrchk.plfull{inset:0!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:9000;background:var(--v-bg,var(--bg))}
+  html body #lyrchk.plfull .lyrbox{position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:8px 16px 0!important;gap:6px!important;background:var(--v-bg,var(--bg))!important}
+  html body #lyrchk.plfull .lyrbt{position:absolute;top:8px;right:16px;display:flex;gap:8px;width:auto}
+  html body #lyrchk.plfull .lyrbt button.v16btn{flex:none;width:auto;height:auto;min-height:0;padding:7px 12px!important}   /* the desk Close button exactly: 7px 12px */
+  html body #lyrchk.plfull .lyrbt button.v16btn.go{background:var(--v-teal,#0f766e);color:#fff;border-color:transparent}
+  html body #lyrchk.plfull .plfr{border-radius:0!important;background:transparent!important}
   body.v16pop #shortchk .shcard>.shbody{flex:1 1 0;min-height:160px} body.v16pop #shortchk .shcard>.shbody :is(iframe,video,img){height:100%;max-height:100%;width:100%;object-fit:contain}
   body.v16pop.pfdeep #list .pfon>h4{display:none!important}
   body.v16pop.v16work #list .pfhd{position:sticky;top:0;z-index:3;display:flex;align-items:center;padding:0 25px!important;border-radius:14px 14px 0 0} body.v16pop.v16work #list .pflist>.vr{margin:6px 10px 0}
