@@ -2583,7 +2583,7 @@ body.v16 :is(#list,.v2board) .srow:has(.sname[data-lcname]){cursor:pointer}
 body.v16 :is(#list,.v2board) .srow:has(.sname[data-lcname]):hover{background:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card))!important}
 /* (Nov 2, Chris: "get rid of all the subtext on tasks ... Just put the title and how many items are in it") no grey line under a task or folder
    title (no time guess, no due date, no note), no What it is / Why / What you do block and no "Project · added" line inside an open task */
-body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>span,body.v16 #v16 .vr .vi small,body.v16 :is(#list,#pop) .tdetail>.v16note,body.v16 :is(#list,#pop) .tdetail>p.tn{display:none!important}
+body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>span,body.v16 :is(#v16,.pflist) .vr .vi small,body.v16 :is(#list,#pop) .tdetail>.v16note,body.v16 :is(#list,#pop) .tdetail>p.tn{display:none!important}
   :is(body.v16work #list,html.v2 .v2board) .srow{background:var(--v-card)} :is(body.v16work #list,html.v2 .v2board) .srow:nth-of-type(even){background:var(--v-b)} :is(body.v16work #list,html.v2 .v2board) .srow .sgc[data-sgst="none"]{background:var(--v-card)!important}
   :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important}
   :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important}
@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v422</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v424</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2887,7 +2887,7 @@ function waitLive(t){
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length, x = reviews.filter(r => r.status === "fix").length; return {n: n + x, title: "Review board: " + (n ? n + " drafts" : "") + (n && x ? ", " : "") + (x ? x + " being fixed" : "")}; }
   /* (Oct 25, Chris: 'Chapter 7 is not in my Today folder') desk-wait-rows.py groups ready lessons into t-wait-lab-chN (wait 'lab-chN', lessons = its kids); count the open kids live */
   /* (Oct 28, Chris) the chapter row IS the Lessons to check board now: ONE row (the first chapter row; another chapter's row hides), count = gold boxes */
-  if (/^lab-ch\d+$/.test(t.wait) || t.wait === "lessons"){ const f = tasks.find(x => x.wait && (/^lab-ch\d+$/.test(x.wait) || x.wait === "lessons") && !x.done && !x.removed); return {n: f && f.id !== t.id ? 0 : lcToCheck(), title: "Lessons to check"}; }
+  if (/^lab-ch\d+$/.test(t.wait) || t.wait === "lessons"){ const f = tasks.find(x => x.wait && (/^lab-ch\d+$/.test(x.wait) || x.wait === "lessons") && !x.done && !x.removed); const n = f && f.id !== t.id ? 0 : lcToCheck(); return {n, title: "Lessons to check" + (n ? ": " + n : "")}; }   /* (Nov 2, Chris) every folder says how many are inside */
   if (t.wait === "lab"){ const n = (t.links || []).length; return {n, title: "Lab: " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
   return null; }
 /* (Oct 22, Chris) ZERO = HIDDEN EVERYWHERE: a wait row with nothing waiting is never shown in any list (Today, week, next, later) */
@@ -7359,9 +7359,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16 .vs.t{flex:1 1 350px;--vc:var(--v-gold)} #v16 .vs.p{flex:0 1 136px;min-height:112px;--vc:var(--v-teal)}
   #v16 h2{margin:0;font:700 20px/1.2 Fraunces,Georgia,serif;letter-spacing:-.025em;flex:none}
   #v16 .vsh{flex:none;display:flex;align-items:center;justify-content:space-between;min-height:30px} #v16 .vl{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
-  #v16 .vr{display:flex;align-items:center;gap:9px;width:100%;height:43px;margin:0 0 4px;padding:4px 10px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-a);text-align:left}
-  #v16 .vr:nth-child(even){background:var(--v-b)}
-  #v16 .vi{flex:1;min-width:0;line-height:1.14} #v16 .vi b,#v16 .vi small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16 .vi b{font-size:13px} #v16 .vi small{font-size:11px;color:var(--v-mute)}
+  :is(#v16,.pflist) .vr{display:flex;align-items:center;gap:9px;width:100%;height:43px;margin:0 0 4px;padding:4px 10px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-a);text-align:left}
+  :is(#v16,.pflist) .vr:nth-child(even){background:var(--v-b)}
+  :is(#v16,.pflist) .vi{flex:1;min-width:0;line-height:1.14} :is(#v16,.pflist) .vi b,:is(#v16,.pflist) .vi small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} :is(#v16,.pflist) .vi b{font-size:13px} :is(#v16,.pflist) .vi small{font-size:11px;color:var(--v-mute)}
   #v16 .vo{flex:none;padding:5px 9px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:12px;font-weight:600;white-space:nowrap}
   #v16 .vc{flex:1;min-height:0;display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;padding-bottom:4px;scrollbar-width:thin}
   #v16 .vp{flex:1 0 150px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;padding:8px 12px;border:1px solid var(--v-line);border-top:3px solid var(--v-teal);border-radius:13px;background:var(--v-a);text-align:left} #v16 .vp:nth-child(even){background:var(--v-b)}
@@ -7372,7 +7372,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     /* (Nov 2, Chris: "The hover feature needs to be the same on everything that's clickable ... the hover feature shows the color") ONE HOVER:
        anything clickable fills with a light tint of ITS colour (a tile its own, a project card its own); a plain tan row or a button takes the colour
        of the section it sits in (Today = gold, a folder = its colour). No green ring, no shadow, no darker tan. */
-    #v16 .vr:hover,#v16 .vp:hover,body.v16 .kmorein .kb:hover,body.v16 .kmore>summary:hover,body.v16work #list .chc:hover,body.v16work #list .pc3t:hover,body.v16work #list .msec>h4:hover,body.v16work #list .sublist>.chc:hover,body.v16 #pop .chc:hover,
+    :is(#v16,.pflist) .vr:hover,#v16 .vp:hover,body.v16 .kmorein .kb:hover,body.v16 .kmore>summary:hover,body.v16work #list .chc:hover,body.v16work #list .pc3t:hover,body.v16work #list .msec>h4:hover,body.v16work #list .sublist>.chc:hover,body.v16 #pop .chc:hover,
     #v16 .vt:hover,#v16 .vo:hover,#v16bar button:hover,body.v16 #list .tb:not(:disabled):hover,body.v16 #pop .tb:not(:disabled):hover,body.v16 #list .btn:not(:disabled):hover,body.v16 #pop .btn:not(:disabled):hover,body.v16 #list .sortbtn:hover,#v16fm .vfi[role=button]:hover{background:var(--hv,color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card)))!important;box-shadow:none!important}
     #v16 .vp:hover{--hv:var(--pt)} #v16 .vt:hover{--hv:var(--vt)}   /* (Nov 2, Chris) a top tile hovers exactly like its project card */
     body.v16 *{--hov:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,transparent)} body.v16pop.v16work #list *{--hov:color-mix(in srgb,var(--wsc,var(--v-teal)) 16%,transparent)}   /* (Nov 2, Chris: "I don't want just dark colors") the old desk-wide hover overlay is a light wash of the item's colour, never a dark one */
@@ -7419,18 +7419,18 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16 .kb0{flex:none;width:66px}
   body.v16 .kline .kp{background:#9FE1CB;color:#04342C} body.v16 .kline .kg{background:#FAC775;color:#412402} body.v16 .kline .kn{background:#D3D1C7;color:#2C2C2A}
   body.v16 .vlink{text-decoration:none;cursor:pointer}   /* (Nov 2, Chris) no green underline */
-  #v16 .vi small{display:none!important}   /* (Nov 2, Chris) Today rows: title only, no sub line */
+  :is(#v16,.pflist) .vi small{display:none!important}   /* (Nov 2, Chris) Today rows: title only, no sub line */
   body.v16 .kmore{position:relative;flex:none} body.v16 .kmore>summary{display:flex;align-items:center;justify-content:center;width:26px;height:36px;color:var(--v-mute);font-size:16px;font-weight:700;line-height:1;cursor:pointer;list-style:none;user-select:none} body.v16 .kmore>summary::-webkit-details-marker{display:none}
   body.v16 .kmorein{position:absolute;right:0;top:100%;z-index:6;display:flex;flex-direction:column;min-width:120px;padding:4px;border:1px solid var(--v-line);border-radius:8px;background:var(--v-card);box-shadow:0 4px 14px #0000002e}
   body.v16 .kmorein .kb{display:block;box-sizing:border-box;width:100%;line-height:36px;text-decoration:none;min-height:36px;padding:0 10px;background:transparent;border:0;color:var(--v-ink);font-size:13px;font-weight:600;text-align:left}
-  #v16 .vr{height:44px;margin:0 0 4px;padding:4px 6px 4px 12px} #v16 .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
+  :is(#v16,.pflist) .vr{height:44px;margin:0 0 4px;padding:4px 6px 4px 12px} :is(#v16,.pflist) .vr .kmorein{position:fixed;top:auto;right:12px;margin-top:0}
   body.v16 #pop .popcard:has(details.kmore[open]){overflow:visible}   /* (Nov 2, Chris: the dots in a pop-up did not open) the card clipped its own menu: an open menu may run past its edge */
   /* (Nov 1, Chris: closer to GPT's V16.6) centred page; Today holds 7 rows whatever the count and scrolls inside; project cards carry an icon and their own colour */
   #v16{justify-content:center;padding-left:max(24px,calc((100vw - 1252px)/2));padding-right:max(24px,calc((100vw - 1252px)/2))}
-  #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}   /* (Nov 2, Chris) Projects grows down to the Focus bar: the gap under it = the 22px gap above it (61px bar + 22); 10px between the cards and the scroll bar */
+  #v16 .vs.t{flex:0 1 395px} #v16 .vs.p{flex:0 1 168px}   /* (Nov 2, Chris: "DON'T EVER CHANGE THE MAIN TEMPLATE SIZE AGAIN") the home template: Today 395, Projects 168, centred; desk-ui-guard.py stops any push that changes it */
   #v16 .vht{display:flex;align-items:center;gap:12px}
   #v16{padding-bottom:70px} #v16fb{position:fixed;left:0;right:0;bottom:0;z-index:5;display:flex;align-items:center;gap:12px;height:61px;padding:0 18px;border:1px solid var(--v-line);border-left:4px solid var(--v-teal);background:var(--v-card);box-shadow:0 -4px 18px #0000000b} #v16fb b{font-size:14px;white-space:nowrap} #v16fb .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16fb .vfh{flex:1;min-width:0;color:var(--v-mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} #v16fb button{flex:none;padding:9px 14px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);font-size:14px;font-weight:600;white-space:nowrap} #v16fb .vfs{border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal)} #v16fb button:disabled{opacity:.5;cursor:default}
-  #v16 .vi b{font-size:14px} #v16 .vi small{font-size:12px}
+  :is(#v16,.pflist) .vi b{font-size:14px} :is(#v16,.pflist) .vi small{font-size:12px}
   #v16 .vp{--pc:var(--v-teal);--pt:var(--v-tteal);border-top-color:var(--pc);box-shadow:0 2px 10px #4c403009} #v16 .vp:nth-child(4n+2){--pc:var(--v-coral);--pt:var(--v-tcoral)} #v16 .vp:nth-child(4n+3){--pc:var(--v-blue);--pt:var(--v-tblue)} #v16 .vp:nth-child(4n){--pc:var(--v-gold);--pt:var(--v-tgold)}
   #v16 .vsy{display:grid;place-items:center;width:29px;height:29px;margin-bottom:3px;border-radius:9px;background:var(--pt);color:var(--pc);font-size:16px;line-height:1}
   @media (hover:hover) and (pointer:fine){#v16 .vp:hover{background:var(--pt)!important}}
@@ -7443,7 +7443,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px}}
   /* (Nov 1, V16 step 4) Focus Session: checkbox, bar, Review workspace, full-page session. V16.6 look, V16 colour tokens only. */
   #v16 .vpick{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:42px;margin:0 -5px 0 -8px;cursor:pointer} #v16 .vpick input,#v16fm .vpick input{width:18px;height:18px;margin:0;accent-color:var(--v-teal);cursor:pointer}
-  body.v16pick #v16 .vr.vsel,body.v16pick #v16 .vr.vsel:nth-child(even){background:var(--v-sel)}
+  body.v16pick :is(#v16,.pflist) .vr.vsel,body.v16pick :is(#v16,.pflist) .vr.vsel:nth-child(even){background:var(--v-sel)}
   #v16fm{display:none;position:fixed;inset:0;z-index:31;align-items:center;justify-content:center;padding:18px;background:#0006;color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif;font-size:14px}
   body.v16fm #v16fm{display:flex} body.v16work #v16fm{display:none!important} body.v16sess #v16{display:none}
   #v16fm *{box-sizing:border-box} #v16fm button:not(.kb){font:inherit;color:inherit;cursor:pointer}
@@ -7469,12 +7469,13 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16toast{position:fixed;left:50%;bottom:76px;z-index:60;max-width:90vw;padding:10px 16px;border-radius:10px;background:var(--v-ink);color:var(--v-bg);font:600 14px Figtree,system-ui,sans-serif;transform:translateX(-50%)}
   @media (hover:hover) and (pointer:fine){#v16fm .vb1:not(:disabled):hover,#v16fm .timer-option:hover{border-color:var(--v-teal);box-shadow:0 5px 16px #00000014} #v16fm .vb1.vp1:not(:disabled):hover{filter:brightness(1.08)}}
   @media (max-width:700px){#v16fm{padding:0} #v16fm .vfw{width:100%;height:100dvh;border:0;border-radius:0} #v16fm .vfb{padding:14px 12px} #v16fm .vfh1{padding:calc(9px + env(safe-area-inset-top)) 12px 9px;grid-template-columns:84px 1fr 84px} #v16fm .vfh1 h2{font-size:16px} #v16fm .vff{padding-bottom:calc(10px + env(safe-area-inset-bottom))} #v16fm .timer-readout{font-size:36px} #v16fm .focus-timer{padding:14px} #v16fm .vfia{flex:1 1 100%} #v16fm .vfx{display:none}}
-  @media (max-width:560px){#v16fb{gap:7px;padding:0 10px} #v16fb>b,#v16fb .vfh{display:none} #v16fb .vfc{margin-right:auto} #v16 .vr .kb0{display:none}}
+  @media (max-width:560px){#v16fb{gap:7px;padding:0 10px} #v16fb>b,#v16fb .vfh{display:none} #v16fb .vfc{margin-right:auto} :is(#v16,.pflist) .vr .kb0{display:none}}
   /* (Nov 1, Chris) one tick box on every task row and board row. Laid over the row so no board or list layout code changes. */
   .vpick{text-decoration:none} .vpick::before{content:"";display:block;box-sizing:border-box;width:18px;height:18px;border:1.5px solid var(--v-mute);border-radius:4px;background:var(--v-card)} .vpick[aria-checked="true"]::before{content:"✓";border-color:var(--v-teal);background:var(--v-teal);color:var(--v-onteal);font:800 13px/15px Figtree,system-ui,sans-serif;text-align:center}
   body.v16:not(.v16pick) .vpick{display:none!important}
   @media (max-width:800px){#v16 .vs.p{flex-basis:146px;min-height:146px} #v16 .vp{padding:6px 10px} #v16 .vsy{width:24px;height:24px;font-size:14px;margin-bottom:1px;flex:none}}
   @media (max-height:740px){#v16 .vsy{width:22px;height:22px;font-size:13px;margin-bottom:1px} #v16 .vp{padding:5px 10px} #v16 .vs.p{min-height:112px}}
+  @media (min-width:801px) and (min-height:741px){#v16 .vsy{width:34px;height:34px;border-radius:10px;font-size:19px;margin-bottom:8px} #v16 .vp b{font-size:15px;margin-bottom:2px}}   /* (Nov 2, Chris: space out the text inside each folder) bigger icon + more air between the lines; the card size never changes (template lock) */
   @media (max-width:700px){#songchk .v16scx{left:auto;right:6px;bottom:auto;top:calc(3px + env(safe-area-inset-top));padding:3px 9px;font-size:12px}}
   #songchk .v16scx{position:fixed;left:max(12px,calc(50vw - 490px));bottom:max(26px,calc(50dvh - 362px));z-index:100000;padding:8px 13px;border:1px solid var(--v-line);border-radius:9px;background:var(--v-card);color:var(--v-ink);font:600 14px Figtree,system-ui,sans-serif;cursor:pointer}
   body.v16 .mcd.cur b,body.v16 .mcd.cur i{color:var(--v-onteal)!important}
@@ -7491,8 +7492,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16pick .vhas>.vpick{position:absolute;left:0;top:0;bottom:0;z-index:1;display:flex;align-items:center;justify-content:center;width:36px;cursor:pointer}
   body.v16pick :is(#list,#pop) .vhas,body.v16pick #list .msec .chgrid>.trow.vstrip>.chc.vhas,body.v16pick #list .msec .chgrid>.chc.vhas{position:relative;padding-left:38px!important;cursor:pointer}
   body.v16pick #list .vhas.vsel,body.v16pick #pop .vhas.vsel{background:var(--v-sel)!important}
-  body.v16pick #v16 .vr{cursor:pointer} body.v16pick .vhas *,body.v16pick .trow .kline,body.v16pick #v16 .vr *{pointer-events:none} body.v16pick .vpick{pointer-events:auto!important}
-  body.v16pick :is(#v16 .vr,#list .trow) .kline,body.v16pick #v16 .vr .vo,body.v16pick .vhas .sbar{opacity:.45;filter:saturate(.5)}
+  body.v16pick :is(#v16,.pflist) .vr{cursor:pointer} body.v16pick .vhas *,body.v16pick .trow .kline,body.v16pick :is(#v16,.pflist) .vr *{pointer-events:none} body.v16pick .vpick{pointer-events:auto!important}
+  body.v16pick :is(:is(#v16,.pflist) .vr,#list .trow) .kline,body.v16pick :is(#v16,.pflist) .vr .vo,body.v16pick .vhas .sbar{opacity:.45;filter:saturate(.5)}
   /* (Nov 2, Chris: no green lines in pick mode) the Today / Focus bar / nav bar outlines are gone */ body.v16pick #v16fb{background:var(--v-sel)} body.v16pick #v16fb .vfh{color:var(--v-ink)}
   #v16fb .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v16fb .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v16fb .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v16fb .vsw[aria-checked="true"] i{background:var(--v-teal)} #v16fb .vsw[aria-checked="true"] i::after{left:15px} 
   #v16bar .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16bar .vfc:empty{display:none}
@@ -7529,8 +7530,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     {k: "lessons", l: "Lessons", s: "to check", n: () => lcNext().length, go: () => { const x = lcNext()[0]; if (x) lcOpen(x[0], x[1]); }},
     {k: "drafts", l: "Drafts", s: "to check", n: () => reviews.filter(r => r.status === "unchecked").length, go: () => { const r = reviews.find(r => r.status === "unchecked"); if (r){ openRev = r.id; revFix = false; render(); } }},
     {k: "replies", l: "Replies", s: "to send", n: () => pendingReplies().length, go: () => openWs("replies", "Replies")},
-    {k: "questions", l: "Questions", s: "to answer", n: () => qNext().length, go: () => { const t = qNext()[0]; if (t){ openLinks = t.id; render(); } }}];
-  const topKinds = () => KINDS.map((x, i) => { const v = x.n(); if (v != null) lastN[x.k] = v; return {x, i, n: lastN[x.k] || 0}; }).filter(o => o.n > 0).sort((a, b) => b.n - a.n || a.i - b.i).slice(0, 4);
+    {k: "questions", l: "Questions", s: "to answer", n: () => qNext().filter(t => !onToday.has(t.id)).length, go: () => { const t = qNext()[0]; if (t){ openLinks = t.id; render(); } }}];
+  /* (Nov 2, Chris: "these can never be what's already in my today screen") a tile = something that needs him and is NOT a Today row; it rotates by itself */
+  let onToday = new Set(); const kindOf = w => /^lab-ch\d+$|^lessons$/.test(w) ? "lessons" : w === "reviews" ? "drafts" : w;
+  const topKinds = () => { const rows = todayRows(); onToday = new Set(rows.map(b => b.dataset.tlinks)); const onK = new Set(rows.map(b => kindOf(((allTasks || []).find(t => t.id === b.dataset.tlinks) || {}).wait || "")).filter(Boolean));
+    return topKinds0().filter(o => !onK.has(o.x.k)).slice(0, 4); };
+  const topKinds0 = () => KINDS.map((x, i) => { const v = x.n(); if (v != null) lastN[x.k] = v; return {x, i, n: lastN[x.k] || 0}; }).filter(o => o.n > 0).sort((a, b) => b.n - a.n || a.i - b.i);
   /* (Nov 1, V16 step 4) FOCUS SESSION. Picking a row never writes a task. Three separate things: Done = the real to-do action, Approve/Fix/Yes/No = the real answer action (both by the existing buttons from rowBtns), Finished for this session = only here.
      Saved in the existing db collection stats (doc focus-session) with a copy on this device; no schema change. Newest save wins between devices. The countdown never ends a session or touches a task. */
   const FMK = "fd-focus", FMID = "focus-session", FMLBL = {"30": "30 minute countdown", "60": "60 minute countdown", stopwatch: "Stopwatch · counting up"};
@@ -7589,7 +7594,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function fmOwner(tg){ const it = tg.closest(FMITEM); if (it) return fmKey(it); const tr = tg.closest(".trow"); if (tr){ const c = tr.querySelector("[data-tlinks]"); if (c) return c.dataset.tlinks; } const td = tg.closest(".tdetail[data-tdof]"); return td ? td.dataset.tdof : ""; }
   window.V16PICK = e => { if (!FM.pick) return; const tg = e.target && e.target.closest ? e.target : null; if (!tg) return; const ty = e.type;
     if (FM.view){ if (ty === "click" && tg.closest("#v16fm [data-v16row],#v16fm [data-fm^=bopen]")) fmPickSet(false); return; }
-    if (!tg.closest("#v16 .vr,#list,#pop")) return; const press = ty === "keydown"; if (press && e.key !== "Enter" && e.key !== " ") return;
+    if (!tg.closest(":is(#v16,.pflist) .vr,#list,#pop")) return; const press = ty === "keydown"; if (press && e.key !== "Enter" && e.key !== " ") return;
     const k = fmOwner(tg), nav = !k && (tg.closest(FMNAV) || (tg.closest("#list h4") && !tg.closest("#list h4 :is(button,a,input,select)"))); if (nav) return;
     e.stopImmediatePropagation(); if (!["pointerdown", "mousedown", "touchstart"].includes(ty)) e.preventDefault();
     if (k && (ty === "click" || press)) fmPick(k, !FM.sel.has(k)); };
@@ -7625,6 +7630,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const fbEl = document.createElement("div"); fbEl.id = "v16fb"; document.body.appendChild(fbEl);   /* (Nov 2, Chris: "this focus session needs to be here everywhere, all the time") one bar for the desk and every board */   /* first in the page: Fix reads the first note box for that row */
   try { const o = JSON.parse(localStorage.getItem(FMK) || "null"); if (o) fmIn(o); if (localStorage.getItem("fd-focus-pick")) FM.pick = true; } catch {} document.body.classList.toggle("v16pick", FM.pick);
   let ws = null, homeTop = 0;
+  /* ONE Today row: the home Today list and the Questions pop-up draw it; a waiting row shows its live title with its count */
+  const vRow = (t, id, fbT, fbSub, attr) => `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" ${attr}="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2((t.wait && (waitLive(t) || {}).title) || t.short || t.title || fbT || "")}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : fbSub || "")}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : ""}</div>`;
   if (tab !== "today"){ tab = "today"; proj = null; }   /* a reload always lands on the dashboard, even if the saved place was the Projects tab */
   function draw(){ if (ws || tab !== "today" || !deskReady) return; fmSync();   /* (Nov 2, Chris: "the desk isn't loading at the same time") never draw from the cached page: one full draw once every list has arrived */
     if (!FM.active){ let cut = false; for (const id of [...FM.sel.keys()]){ const t = allTasks.find(x => x.id === id); if (t && (t.done || t.removed)){ FM.sel.delete(id); FM.fin.delete(id); cut = true; } } if (cut) fmSave(); }
@@ -7632,12 +7639,11 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const tops = topKinds(), COL = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]];
     const T = tops.map((o, i) => `<button type="button" class="vt" style="--vc:${CARDC[o.x.k] ? `var(--v-${CARDC[o.x.k]})` : COL[i][0]};--vt:${CARDC[o.x.k] ? `var(--v-t${CARDC[o.x.k]})` : COL[i][1]}" data-v16tile="${o.x.k}"><span>${o.x.l}</span><strong>${o.n}</strong><small>${o.x.s}</small></button>`).join("");
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
-      const sub = [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · ");
-      return `<div class="vr${FM.sel.has(id) ? " vsel" : ""}" role="button" tabindex="0" data-v16row="${esc2(id)}">${fmBox(id, t.short || t.title || id)}<div class="vi"><b>${t.id && !t.wait && !t.done ? v16Title(t, esc2(t.short || t.title)) : esc2(t.short || t.title || (tb && tb.textContent))}</b><small>${esc2(t.note ? String(t.note).split(/\n|(?<=[.!?])\s/)[0] : sub)}</small></div>${t.id && !t.wait && !t.done ? rowBtns(t, "strip") : ""}</div>`; }).join("");   /* (Nov 2, Chris: "remove the open buttons ... when i can click the row to open it") the row itself opens */
+      return vRow(t, id, tb && tb.textContent, [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · "), "data-v16row"); }).join("");   /* (Nov 2, Chris: "remove the open buttons ... when i can click the row to open it") the row itself opens */
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" style="--pc:var(--v-${CARDC[k] || "teal"});--pt:var(--v-t${CARDC[k] || "teal"})" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
     const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
-      <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vo" data-v16ws="today">View all</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
-      <section class="vs p"><div class="vsh"><h2>Projects</h2><button type="button" class="vo" data-v16ws="projects">View all</button></div><div class="vc">${P}</div></section>`;
+      <section class="vs t"><div class="vsh"><h2>Today</h2></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
+      <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vc">${P}</div></section>`;
     if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
     dash.innerHTML = H16; fmBarDraw(); kmBack();
     const L2 = dash.querySelector(".vl"), C2 = dash.querySelector(".vc"); if (L2) L2.scrollTop = keep; if (C2) C2.scrollLeft = keepC; }
@@ -7657,7 +7663,15 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     S.setProperty("--pf-l", A.left + "px"); S.setProperty("--pf-t", A.top + "px"); S.setProperty("--pf-w", A.width + "px"); S.setProperty("--pf-h", (B.bottom - A.top) + "px"); }
   const PF = {st: [], root: null,
     on: h => POPM && document.body.classList.contains("v16work") && !h.closest(".v16keep>h4"),
-    find(lv, par){ if (lv.row) return par.querySelector(`.tdetail[data-tdof="${CSS.escape(lv.row)}"]`); if (lv.top){ const h = [...par.querySelectorAll(".msec>h4")].find(x => lv.fold ? x.dataset.fold === lv.fold : x.dataset.ck === lv.ck); return h && h.parentElement; } return par.querySelector(`[data-foldbody="${CSS.escape(lv.k)}"]`); },
+    LISTS: {questions: {t: () => "Questions (" + qNext().filter(t => !onToday.has(t.id)).length + ")", html: () => qNext().filter(t => !onToday.has(t.id)).map(t => vRow(t, t.id, "", t.project || "", "data-pfrow")).join("") || '<div class="vn">Nothing to answer.</div>'},
+      drafts: {t: () => "Drafts (" + reviews.filter(r => r.status === "unchecked").length + ")", html: () => goBtn((allTasks || []).find(t => t.wait === "reviews" && !t.done && !t.removed) || {wait: "reviews"})}},
+    openList(k){ const L = $("list"); if (!PF.st.length) PF.root = [$("v16title").dataset.t || $("v16title").textContent, $("v16barc").textContent]; PF.st.push({list: k, t: PF.LISTS[k].t(), y: L.scrollTop, auto: PF.auto}); PF.auto = 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} PF.apply(); L.scrollTop = 0; },
+    head(L){ const T = $("v16title"), h0 = L.querySelector(":scope>.pfhd"), t = T.textContent || T.dataset.t;   /* (Nov 2, Chris: "every pop-up needs to have a header like this") no board header = the frame's own header with the title */
+      const own = [...L.querySelectorAll(".v16hd:not(.pfhd)>b.sname")].some(b => b.getClientRects().length && b.textContent.trim());
+      if (!document.body.classList.contains("v16work") || own || !t){ if (h0) h0.remove(); return; }
+      const h = h0 || L.insertBefore(Object.assign(document.createElement("div"), {className: "tn v16hd pfhd", innerHTML: '<b class="sname"></b>'}), L.firstChild); if (h.firstChild.textContent !== t) h.firstChild.textContent = t; T.dataset.t = t; T.textContent = ""; },
+    find(lv, par){ if (lv.list){ if (par !== $("list")) return null; let el = par.querySelector(`:scope>.pflist[data-k="${lv.list}"]`); if (!el){ el = document.createElement("div"); el.className = "pflist"; el.dataset.k = lv.list; el.innerHTML = `<div class="tn v16hd" style="${SGRS};border-top:0"><b class="sname"></b></div>` + PF.LISTS[lv.list].html(); par.appendChild(el); } lv.t = PF.LISTS[lv.list].t(); return el; }
+      if (lv.row) return par.querySelector(`.tdetail[data-tdof="${CSS.escape(lv.row)}"]`); if (lv.top){ const h = [...par.querySelectorAll(".msec>h4")].find(x => lv.fold ? x.dataset.fold === lv.fold : x.dataset.ck === lv.ck); return h && h.parentElement; } return par.querySelector(`[data-foldbody="${CSS.escape(lv.k)}"]`); },
     push(h, k, top){ const L = $("list"), t = top ? ((h.childNodes[0] && h.childNodes[0].textContent) || h.textContent).trim() : (h.querySelector("b") || h).textContent.trim();
       if (!PF.st.length) PF.root = [$("v16title").dataset.t || $("v16title").textContent, $("v16barc").textContent]; PF.st.push({k, top, fold: h.dataset.fold || "", ck: h.dataset.ck || "", t, y: L.scrollTop, auto: PF.auto}); PF.auto = 0;
       try { history.pushState({fd: 1, v16: 1}, ""); } catch {} PF.apply(); L.scrollTop = 0; PF.one(); },
@@ -7680,7 +7694,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
         if (rows.some((r, i) => i && r.previousElementSibling !== rows[i - 1])) continue;   /* rows not side by side: leave them */
         const pos = id => { const i = lv.ord[k].indexOf(id); return i < 0 ? 1e6 : i; }, want = rows.slice().sort((a, b) => pos(PF.rowKey(a)) - pos(PF.rowKey(b)));
         if (want.every((r, i) => r === rows[i])) continue; const before = rows[rows.length - 1].nextSibling; want.forEach(r => g.insertBefore(r, before)); } },
-    apply(){ if (!POPM) return; const L = $("list"); PF.rowSync(L); L.querySelectorAll(".pfon,.pfpath").forEach(x => x.classList.remove("pfon", "pfpath")); let par = L;
+    apply(){ if (!POPM) return; const L = $("list"); PF.rowSync(L); L.querySelectorAll(":scope>.pflist").forEach(e => { if (!PF.st.some(l => l.list === e.dataset.k)) e.remove(); });
+      L.querySelectorAll(".pc3t>b").forEach(b => { const sp = b.nextElementSibling, m = !/\(\d+\)\s*$/.test(b.textContent) && sp && /\d+/.exec(sp.textContent); if (m ? b.dataset.n !== m[0] : b.dataset.n){ if (m) b.dataset.n = m[0]; else delete b.dataset.n; } });   /* every folder row says how many are inside */ L.querySelectorAll(".pfon,.pfpath").forEach(x => x.classList.remove("pfon", "pfpath")); let par = L;
       for (let i = 0; i < PF.st.length; i++){ const el = PF.find(PF.st[i], par); if (!el){ PF.st.length = i; break; } par = el; }   /* a level that is gone (done, moved) = its parent shows */
       const on = PF.st.length > 0; document.body.classList.toggle("pfdeep", on);
       if (on){ par.classList.add("pfon"); for (let e = par.parentElement; e && e !== L; e = e.parentElement) e.classList.add("pfpath"); const lv = PF.st[PF.st.length - 1]; $("v16barc").textContent = ""; PF.hold(par, lv);
@@ -7689,7 +7704,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       { const lr = [...PF.st].reverse().find(l => l.row), c = lr ? (/songs/.test(lr.row) ? "songs" : /lab|lesson/.test(lr.row) ? "lessons" : ws) : ws; document.body.style.setProperty("--wsc", "var(--v-" + (CARDC[c] || "teal") + ")"); }   /* the hover colour of what is open */
       if (!on){ if (PF.root){ $("v16title").textContent = PF.root[0]; $("v16barc").textContent = PF.root[1]; PF.root = null; }
         const T = $("v16title"), hs = [...L.querySelectorAll(".v16hd>b.sname")].filter(b => b.getClientRects().length && b.offsetWidth >= 140);   /* a workspace that is one board: its title sits in that board's header too */
-        if (hs.length === 1 && document.body.classList.contains("v16work")){ const t = T.dataset.t || T.textContent; if (hs[0].textContent !== t) hs[0].textContent = t; T.dataset.t = t; T.textContent = ""; } else if (T.dataset.t){ T.textContent = T.dataset.t; delete T.dataset.t; } } } };
+        if (hs.length === 1 && document.body.classList.contains("v16work")){ const t = T.dataset.t || T.textContent; if (hs[0].textContent !== t) hs[0].textContent = t; T.dataset.t = t; T.textContent = ""; } else if (T.dataset.t){ T.textContent = T.dataset.t; delete T.dataset.t; } }
+      PF.head(L); } };
   window.PF = PF;
   if (POPM){ addEventListener("resize", pfFrame); new ResizeObserver(pfFrame).observe(dash);
     /* (Nov 2, Chris: "when I hit approve or back or close ... I go back to exactly where I was") ONE spot for every check pop-up: the list's place is
@@ -7711,12 +7727,14 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16pop.v16work #list .pc3.subon{box-shadow:none!important} body.v16pop.v16work #list .pc3.subon>.pc3t{background:var(--v-a)} body.v16pop.v16work #list .subon>.pc3t>b::after{content:none!important}   /* every folder row looks the same: there is no open-in-place state */ body.v16pop.v16work #list .pc3t>span{display:none!important}   /* (Nov 2, Chris: cut secondary labels) a folder row = its title only */
   body.v16pop.v16sub #list .v16keep .pc3.v16one{display:none!important} body.v16pop.v16sub #list .v16keep .sublist.v16one{display:block!important}   /* a card that is one folder shows its contents at once (never a 1-item folder) */
   body.v16pop.v16work #list .msec:not(.v16keep):not(.pfon):not(.pfpath):has(>h4[data-fold],>h4[data-ck])>:not(h4){display:none!important}
-  body.v16pop.pfdeep #list>:not(.pfpath):not(.pfon),body.v16pop.pfdeep #list .pfpath>:not(.pfpath):not(.pfon):not(.v16hd):not(.qhead){display:none!important}
+  body.v16pop.pfdeep #list>:not(.pfpath):not(.pfon):not(.pfhd),body.v16pop.pfdeep #list .pfpath>:not(.pfpath):not(.pfon):not(.v16hd):not(.qhead){display:none!important}
   body.v16pop :is(#lyrchk,#shortchk .shbg,#mcpop){background:transparent!important;backdrop-filter:none!important}   /* check pop-ups: the same outer frame, their own inside layout, nothing dimmed */
   body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox){position:fixed!important;left:var(--pf-l)!important;top:var(--pf-t)!important;width:var(--pf-w)!important;height:var(--pf-h)!important;max-width:none!important;max-height:none!important;margin:0!important;transform:none!important;box-sizing:border-box;box-shadow:0 0 0 1px var(--v-line);overflow:auto!important}
   body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox)>:not(.shbody){flex-shrink:0}   /* words and buttons are never squeezed; the clip takes the room left */
   body.v16pop #shortchk .shcard>.shbody{flex:1 1 0;min-height:160px} body.v16pop #shortchk .shcard>.shbody :is(iframe,video,img){height:100%;max-height:100%;width:100%;object-fit:contain}
   body.v16pop.pfdeep #list .pfon>h4{display:none!important}
+  body.v16pop.v16work #list .pfhd{position:sticky;top:0;z-index:3;display:flex;align-items:center;padding:0 25px!important;border-radius:14px 14px 0 0} body.v16pop.v16work #list .pflist>.vr{margin:6px 10px 0}
+  body.v16pop.v16work #list .pc3t>b[data-n]::after{content:" (" attr(data-n) ")"}
   body.v16pop.pfdeep #list .v16hd::after{content:"";position:absolute;left:0;right:0;top:100%;height:24px;pointer-events:none;background:linear-gradient(var(--v-card),transparent)}
   body.v16pop.pfdeep .wrap::after{content:"";position:absolute;left:2px;right:2px;bottom:2px;height:24px;pointer-events:none;border-radius:0 0 14px 14px;background:linear-gradient(transparent,var(--v-card))}   /* (Nov 2, Chris picked A) a soft fade where rows slide under the header and off the bottom */
   body.v16pop.pfdeep #list{box-sizing:border-box;border:2px solid var(--v-gold);border-radius:16px;background:var(--v-card)!important} body.v16pop.pfdeep #list :is(.pfon,.pfpath,.rowon){box-shadow:none!important}   /* (Nov 2, Chris: the cut-off border looks bad) a pop-up = one complete gold frame that never scrolls */
@@ -7741,7 +7759,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const x = e.target.closest && e.target.closest("[data-v16ws],[data-v16row],[data-v16home],[data-v16tile]"); if (!x) return;
     { const c = e.target.closest("button,a,input,textarea,select,label"); if (c && c !== x && x.contains(c)) return; }   /* a button inside an opening row keeps its own job */
     e.preventDefault(); e.stopPropagation();
-    if (x.dataset.v16tile){ const wt = (allTasks || []).find(t => t.wait === x.dataset.v16tile && !t.done && !t.removed); if (wt) return openRow(wt.id);   /* (Nov 2, Chris) Songs 17 = the list of those 17 songs (its Today row), not the whole board */
+    if (x.dataset.v16tile){ if (POPM && PF.LISTS[x.dataset.v16tile]){ openWs("today", "Today"); PF.auto = 1; return PF.openList(x.dataset.v16tile); } const wt = (allTasks || []).find(t => t.wait === x.dataset.v16tile && !t.done && !t.removed); if (wt) return openRow(wt.id);   /* (Nov 2, Chris) Songs 17 = the list of those 17 songs (its Today row), not the whole board */
       const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); }   /* (Nov 2, Chris) a tile opens its whole list, never one item at a time */
     if (x.dataset.v16home) return x.dataset.v16home === "back" && PF.back() || goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
