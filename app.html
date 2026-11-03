@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v416</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v417</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -4895,6 +4895,7 @@ document.addEventListener("click", function foldClick(e){ const h = e.target.clo
     if (top){ if (h.dataset.fold) box.classList.toggle("collapsed", !opening); else applyCollapse(); }
     else { box.classList.toggle("subon", opening); if (body){ if (opening && h.dataset.foldsrc){ body.innerHTML = foldSrc(h.dataset.foldsrc); addTodayBtns(); } body.style.display = opening ? "" : "none"; } }
     applyFocus(); };
+  if (inL && window.PF && PF.on(h)){ if (opening) go(); return PF.push(h, k, top); }   /* (Nov 2, ?pop=1) the folder opens as a pop-up in the frame */
   if (inL) return keepPos(top ? h : box, go, opening); go(); }, true);
 // (Oct 7) Chris: move any folder by pressing and holding its header, then dragging. Order is kept per screen on this device.
 const fKey = box => { const h = box.querySelector(":scope > h4"); return h ? ((h.childNodes[0] && h.childNodes[0].textContent) || h.textContent).trim().slice(0, 40) : ""; };
@@ -7274,7 +7275,7 @@ function deskVerCheck(){ const cur = +((document.querySelector("header .deskver"
   if (document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || (window.SE && SE.on) || (window.CT && CT.on)) return;   /* (Nov 2, Chris lost his O Holy Night chords) never with a song sheet open */
   const ae = document.activeElement; if (($("pop") && $("pop").innerHTML) || (ae && /INPUT|TEXTAREA|SELECT/.test(ae.tagName)) || (ae && ae.isContentEditable)) return;   /* never mid-typing or with a pop-up open */
   fetch(location.pathname + "?nc=" + Date.now(), {cache: "no-store"}).then(r => r.text()).then(t => { const m = /class="deskver">v(\d+)/.exec(t);
-    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (window.V2 ? "&v2=1" : V16 ? "" : "&v16=0") + location.hash); }).catch(() => {}); }
+    if (m && +m[1] > cur) location.replace(location.pathname + "?v=" + m[1] + (window.V2 ? "&v2=1" : V16 ? "" : "&v16=0") + (/[?&]pop=1/.test(location.search) ? "&pop=1" : "") + location.hash); }).catch(() => {}); }
 setTimeout(deskVerCheck, 1500);
 setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); }, 120000);   /* (Oct 28, Chris saw v337 after v339 went live: the window never left the screen) also every 2 min while open */
 /* (Oct 27, Chris: 'go button not live') a to-do's Go can open one song's melody check straight away: app.html#melcmp=<songcheck id> */
@@ -7497,7 +7498,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   document.head.appendChild(css);
   document.body.classList.add("v16");
   const dash = document.createElement("div"); dash.id = "v16"; document.body.appendChild(dash);
-  const bar = document.createElement("div"); bar.id = "v16bar"; bar.innerHTML = `<button type="button" data-v16home="1">\u2190 Back</button><b id="v16title"></b><span class="vfc" id="v16barc"></span><button type="button" data-v16home="1" style="margin-left:auto">\u2715 Close</button>`;
+  const bar = document.createElement("div"); bar.id = "v16bar"; bar.innerHTML = `<button type="button" data-v16home="back">\u2190 Back</button><b id="v16title"></b><span class="vfc" id="v16barc"></span><button type="button" data-v16home="1" style="margin-left:auto">\u2715 Close</button>`;
   const wrap = document.querySelector(".wrap"); wrap.insertBefore(bar, wrap.firstChild);
   const esc2 = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
   const folder = name => [...document.querySelectorAll("#list .msec")].find(m => { const h = m.querySelector(":scope > h4"); return h && h.firstChild && h.firstChild.textContent.trim() === name; });
@@ -7639,9 +7640,50 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       m.querySelectorAll(".v16one").forEach(x => x.classList.remove("v16one")); if (ONEF[ws]) m.querySelectorAll(`[data-fold="${ONEF[ws]}"]`).forEach(b => { const r = b.closest(".pc3"); if (r){ r.classList.add("v16one"); if (r.nextElementSibling) r.nextElementSibling.classList.add("v16one"); } }); } }
   /* one frozen stack: folder title or open row on top, the board's column header right under it */
   function headH(){ const o = [...document.querySelectorAll("#list .rowon, #list .subon, #list .v16keep>h4")].filter(x => x.getClientRects().length).pop(); if (o) document.body.style.setProperty("--fd-head-h", o.offsetHeight + "px"); }
-  function openWs(k, title){ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", !!ONEF[k]); document.body.classList.toggle("v16board", ["songs", "shorts", "youtube", "lessons"].includes(k)); document.getElementById("v16title").textContent = title;
-    if (ONEF[k]) foldSet(ONEF[k], 1); if (k === "shorts") foldSet("sg:shworks", 1); if (k === "lessons"){ foldSet("lc:test", 1); const x = lcChs().find(c => !c.live); if (x) foldSet("lc:ch" + (x.i + 1), 1); } const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects" || k === "shorts") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; }
-  function goHome(){ ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub", "v16board"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
+  function openWs(k, title){ PF.reset(); if (taskOpen){ taskOpen = null; saveTaskOpen(); }   /* (Nov 2) an open to-do left from before hid the next card's board (fdhide) */ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); pfFrame(); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", !!ONEF[k]); document.body.classList.toggle("v16board", ["songs", "shorts", "youtube", "lessons"].includes(k)); document.getElementById("v16title").textContent = title;
+    if (ONEF[k]) foldSet(ONEF[k], 1); if (k === "shorts") foldSet("sg:shworks", 1); if (k === "lessons"){ foldSet("lc:test", 1); const x = lcChs().find(c => !c.live); if (x) foldSet("lc:ch" + (x.i + 1), 1); } const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects" || k === "shorts") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; if (POPM) PF.one(); }
+  function goHome(){ PF.reset(); ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub", "v16board"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
+  /* (Nov 2, Chris + GPT approved; only with ?pop=1 until Chris says yes) FIXED FRAME + FOLDERS AS POP-UPS. The frame = the home's 3-section box
+     (top of the 4 tiles to the bottom of Projects); the desk title and the Focus bar never move. A workspace fills the frame; a folder in it opens
+     as a pop-up level: only its contents, nothing behind; a folder inside replaces it; Back = up one level (scroll kept); Close = home; phone Back = Back.
+     The real folders stay where render() draws them (every handler keeps working): PF only marks the open level (.pfon) and its path (.pfpath). */
+  const POPM = /[?&]pop=1/.test(location.search); if (POPM) document.body.classList.add("v16pop");
+  function pfFrame(){ if (!POPM) return; const a = dash.querySelector(".vm"), b = dash.querySelector(".vs.p"); if (!a || !b || !a.getClientRects().length) return; const A = a.getBoundingClientRect(), B = b.getBoundingClientRect(), S = document.body.style;
+    S.setProperty("--pf-l", A.left + "px"); S.setProperty("--pf-t", A.top + "px"); S.setProperty("--pf-w", A.width + "px"); S.setProperty("--pf-h", (B.bottom - A.top) + "px"); }
+  const PF = {st: [], root: null,
+    on: h => POPM && document.body.classList.contains("v16work") && !h.closest(".v16keep>h4"),
+    find(lv, par){ if (lv.top){ const h = [...par.querySelectorAll(".msec>h4")].find(x => lv.fold ? x.dataset.fold === lv.fold : x.dataset.ck === lv.ck); return h && h.parentElement; } return par.querySelector(`[data-foldbody="${CSS.escape(lv.k)}"]`); },
+    push(h, k, top){ const L = $("list"), t = top ? ((h.childNodes[0] && h.childNodes[0].textContent) || h.textContent).trim() : (h.querySelector("b") || h).textContent.trim();
+      if (!PF.st.length) PF.root = [$("v16title").textContent, $("v16barc").textContent]; PF.st.push({k, top, fold: h.dataset.fold || "", ck: h.dataset.ck || "", t, y: L.scrollTop, auto: PF.auto}); PF.auto = 0;
+      try { history.pushState({fd: 1, v16: 1}, ""); } catch {} PF.apply(); L.scrollTop = 0; PF.one(); },
+    one(){ setTimeout(() => { const L = $("list"), f = [...L.querySelectorAll("[data-fold],h4[data-ck]")].filter(e => e.getClientRects().length); if (f.length === 1 && L.innerText.trim() === f[0].innerText.trim()){ PF.auto = 1; f[0].click(); } }, 0); },   /* never a folder with ONE item: a level that is only one folder opens it; Back skips it */
+    back(){ if (!PF.st.length) return false; let lv = PF.st.pop(); while (lv.auto && PF.st.length) lv = PF.st.pop(); PF.apply(); if (lv.auto) return false; $("list").scrollTop = lv.y; return true; },
+    reset(){ if (!PF.st.length) return; PF.st = []; PF.apply(); },
+    apply(){ if (!POPM) return; const L = $("list"); L.querySelectorAll(".pfon,.pfpath").forEach(x => x.classList.remove("pfon", "pfpath")); let par = L;
+      for (let i = 0; i < PF.st.length; i++){ const el = PF.find(PF.st[i], par); if (!el){ PF.st.length = i; break; } par = el; }   /* a level that is gone (done, moved) = its parent shows */
+      const on = PF.st.length > 0; document.body.classList.toggle("pfdeep", on);
+      if (on){ par.classList.add("pfon"); for (let e = par.parentElement; e && e !== L; e = e.parentElement) e.classList.add("pfpath"); const lv = PF.st[PF.st.length - 1]; $("v16title").textContent = lv.t; $("v16barc").textContent = ""; }
+      else if (PF.root){ $("v16title").textContent = PF.root[0]; $("v16barc").textContent = PF.root[1]; PF.root = null; } } };
+  window.PF = PF;
+  if (POPM){ addEventListener("resize", pfFrame); new ResizeObserver(pfFrame).observe(dash);
+    const pc = document.createElement("style"); pc.textContent = `
+  body.v16pop.v16work #v16{display:flex}
+  body.v16pop.v16work .wrap{position:fixed!important;left:var(--pf-l,30px);top:var(--pf-t,95px);width:var(--pf-w,calc(100vw - 60px));height:var(--pf-h,calc(100dvh - 190px));max-width:none!important;margin:0!important;padding:0!important;z-index:33;display:flex!important;flex-direction:column;overflow:hidden;background:var(--v-bg)!important}
+  body.v16pop.v16work #v16bar{margin:0;padding:0 0 8px}
+  body.v16pop.v16work #list{flex:1 1 0;min-height:0;height:auto!important;max-height:none!important;overflow:auto!important;margin:0!important}
+  body.v16pop.v16work #list .sublist[data-foldbody]:not(.pfon):not(.pfpath):not(.v16one){display:none!important}
+  body.v16pop.v16work #list .v16keep>h4{display:none!important} body.v16pop.v16work #list :is(.v16hd,.qhead){top:0!important}   /* no folder title above it to stack under */   /* the bar already names the workspace */
+  body.v16pop.v16work #v16>:not(.vh){visibility:hidden}   /* nothing behind the frame */
+  body.v16pop.v16work #list .pc3.subon{box-shadow:none!important} body.v16pop.v16work #list .pc3.subon>.pc3t{background:var(--v-a)} body.v16pop.v16work #list .subon>.pc3t>b::after{content:none!important}   /* every folder row looks the same: there is no open-in-place state */ body.v16pop.v16work #list .pc3t>span{display:none!important}   /* (Nov 2, Chris: cut secondary labels) a folder row = its title only */
+  body.v16pop.v16sub #list .v16keep .pc3.v16one{display:none!important} body.v16pop.v16sub #list .v16keep .sublist.v16one{display:block!important}   /* a card that is one folder shows its contents at once (never a 1-item folder) */
+  body.v16pop.v16work #list .msec:not(.v16keep):not(.pfon):not(.pfpath):has(>h4[data-fold],>h4[data-ck])>:not(h4){display:none!important}
+  body.v16pop.pfdeep #list>:not(.pfpath):not(.pfon),body.v16pop.pfdeep #list .pfpath>:not(.pfpath):not(.pfon):not(.v16hd):not(.qhead){display:none!important}
+  body.v16pop :is(#lyrchk,#shortchk .shbg,#mcpop){background:transparent!important;backdrop-filter:none!important}   /* check pop-ups: the same outer frame, their own inside layout, nothing dimmed */
+  body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox){position:fixed!important;left:var(--pf-l)!important;top:var(--pf-t)!important;width:var(--pf-w)!important;height:var(--pf-h)!important;max-width:none!important;max-height:none!important;margin:0!important;transform:none!important;box-sizing:border-box;box-shadow:0 0 0 1px var(--v-line);overflow:auto!important}
+  body.v16pop :is(#lyrchk .lyrbox,#songchk .secard,#shortchk .shcard,#mcpop .mcbox)>:not(.shbody){flex-shrink:0}   /* words and buttons are never squeezed; the clip takes the room left */
+  body.v16pop #shortchk .shcard>.shbody{flex:1 1 0;min-height:160px} body.v16pop #shortchk .shcard>.shbody :is(iframe,video,img){height:100%;max-height:100%;width:100%;object-fit:contain}
+  body.v16pop.pfdeep #list .pfon>h4{display:none!important} body.v16pop.pfdeep #list .sublist.pfon{display:block!important}`;
+    document.head.appendChild(pc); }
   const TITLES = {today: "Today", replies: "Replies", lessons: "Lessons", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
   function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
@@ -7659,7 +7701,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     e.preventDefault(); e.stopPropagation();
     if (x.dataset.v16tile){ const wt = (allTasks || []).find(t => t.wait === x.dataset.v16tile && !t.done && !t.removed); if (wt) return openRow(wt.id);   /* (Nov 2, Chris) Songs 17 = the list of those 17 songs (its Today row), not the whole board */
       const w = {drafts: "today", questions: "today"}[x.dataset.v16tile] || x.dataset.v16tile; return openWs(w, TITLES[w]); }   /* (Nov 2, Chris) a tile opens its whole list, never one item at a time */
-    if (x.dataset.v16home) return goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
+    if (x.dataset.v16home) return x.dataset.v16home === "back" && PF.back() || goHome(); if (x.dataset.v16ws) return openWs(x.dataset.v16ws, TITLES[x.dataset.v16ws]); openRow(x.dataset.v16row); }, true);
   document.addEventListener("keydown", e => { if (e.key !== "Enter" && e.key !== " ") return; const x = e.target.closest && !e.target.closest(".kline") && e.target.closest("div[data-v16row]"); if (x){ e.preventDefault(); openRow(x.dataset.v16row); } });
   /* the open dots menu stays open through a redraw, and opens upward when it would run off the bottom */
   /* a half-typed Fix note in a list survives every redraw, focus and cursor included */
@@ -7673,9 +7715,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   dash.addEventListener("scroll", () => { kmKey = ""; dash.querySelectorAll("details.kmore[open]").forEach(m => { m.open = false; }); }, {capture: true, passive: true});
   /* the song check closes only by a tap outside it: V16 gives it a real Close, same action */
   if ($("songchk")) new MutationObserver(() => { const c = $("songchk"); if (c.firstChild && !c.querySelector(":scope > .v16scx")) c.insertAdjacentHTML("beforeend", `<button type="button" class="v16scx" data-scx="close">\u2715 Close</button>`); }).observe($("songchk"), {childList: true});
-  let tm = 0; new MutationObserver(() => { keepFolder(); fmDeco(); kmBack(); fixBack();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); fmDraw(); kmBack(); }, 120); }).observe($("list"), {childList: true, subtree: true});
+  let tm = 0; new MutationObserver(() => { keepFolder(); PF.apply(); fmDeco(); kmBack(); fixBack();   /* before the paint: the open folder never blinks away after a redraw (that was a 120 ms dead spot for every button in it) */ clearTimeout(tm); tm = setTimeout(() => { headH(); draw(); fmDraw(); kmBack(); }, 120); }).observe($("list"), {childList: true, subtree: true});
   /* phone or browser Back from a workspace returns to the dashboard; a check or pop-up open inside it closes first, by the old code */
-  window.V16POP = () => { const shO = $("shortchk") && $("shortchk").innerHTML; if (document.getElementById("mcpop") || shO || (typeof ytOpen !== "undefined" && ytOpen)){ if (document.getElementById("mcpop")) mcClose(); else if (shO) shClose(); else ytClose(); try { history.pushState({fd: 1, v16: 1}, ""); } catch {} return true; } if (!ws && FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj){ fmShow(null); return true; } if (!ws && !FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj) return true;   /* an old Back step on the dashboard: nothing to close, stay */ if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; goHome(); return true; };
+  window.V16POP = () => { const shO = $("shortchk") && $("shortchk").innerHTML; if (document.getElementById("mcpop") || shO || (typeof ytOpen !== "undefined" && ytOpen)){ if (document.getElementById("mcpop")) mcClose(); else if (shO) shClose(); else ytClose(); try { history.pushState({fd: 1, v16: 1}, ""); } catch {} return true; } if (!ws && FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj){ fmShow(null); return true; } if (!ws && !FM.view && !document.getElementById("lyrchk") && !($("songchk") && $("songchk").innerHTML) && !($("pop") && $("pop").innerHTML) && !proj) return true;   /* an old Back step on the dashboard: nothing to close, stay */ if (!ws || document.getElementById("lyrchk") || ($("songchk") && $("songchk").innerHTML) || ($("pop") && $("pop").innerHTML) || proj) return false; if (PF.back()) return true; goHome(); return true; };
   $("list").addEventListener("scroll", headH, {passive: true}); document.addEventListener("click", () => setTimeout(headH, 0));
   dash.addEventListener("wheel", e => { const c = e.target.closest && e.target.closest(".vc"); if (c && Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); c.scrollLeft += e.deltaY; } }, {passive: false});
   if ($("pop")) new MutationObserver(fmDeco).observe($("pop"), {childList: true, subtree: true}); draw(); fmDeco(); fmDraw(true);
