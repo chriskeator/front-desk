@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v418</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v419</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5953,10 +5953,11 @@ function lcCel(L, s){ if (!labNotesIn) return; const t = Date.now();
 function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) return '<span class="tn">Lab status shows after the next hourly refresh.</span>';
   const head = sgHead(LCCOLS, LCAB), blank = {c: "", blank: 1}, nm = x => "Ch" + (x.i + 1) + " " + x.c.name;
   const rows = x => (x.c.lessons || []).map(L => { const s = lcState(L); lcCel(L, s); return sgRow({title: "L" + L.n + " " + L.t, full: L.id, cells: LCK.map(([k]) => s[k]).concat([{c: s.all ? "ok" : "", t: "Approved"}])}, LCCOLS); }).join("");
-  const live = X.filter(x => x.live), test = X.filter(x => !x.live), nT = test.reduce((a, x) => a + (x.c.lessons || []).length, 0);
+  const test = X.filter(x => !x.live);
   const tBody = test.length === 1 ? head + rows(test[0]) : test.map(x => deskFold("lc:ch" + (x.i + 1), esc(nm(x)) + ` (${(x.c.lessons || []).length})`, esc(lcCount(x.c)), head + rows(x))).join("");
   /* (Nov 2, Chris: "remove the live folder from my lessons to check. I'll never need to check live lessons") only the chapters on Test show */
-  return (test.length ? deskFold("lc:test", `Testing (${test.length === 1 ? nT : test.length})`, esc(test.length === 1 ? "Ch" + (test[0].i + 1) + " · " + lcCount(test[0].c) : test.map(x => "Ch" + (x.i + 1)).join(", ")), tBody, {def: 1}) : ""); }
+  /* (Nov 2, Chris: "one folder inside there that needs to open up just the way the songs do") Testing was the only folder left: the list shows at once */
+  return test.length ? tBody : '<span class="tn">Nothing on Test to check.</span>'; }
 /* a gold box = small pop-up (the song-check pop-up): Open | Approve | Fix. Open: Computer = the lesson on Test in a new tab, Dev mode = the same in a
    phone-size window (no developer tools needed), Phone = the lesson link (tap it on the phone). Fix = his note (type or the keyboard mic) as a Lab Fix note. */
 function lcGo(L, k){ const u = safeUrl(L.u); if (!u) return; const v = u + (u.includes("?") ? "&" : "?") + "from=fd-" + (k === "dev" ? "dev" : k === "phone" ? "phone" : "pc");
@@ -7642,7 +7643,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   /* one frozen stack: folder title or open row on top, the board's column header right under it */
   function headH(){ const o = [...document.querySelectorAll("#list .rowon, #list .subon, #list .v16keep>h4")].filter(x => x.getClientRects().length).pop(); if (o) document.body.style.setProperty("--fd-head-h", o.offsetHeight + "px"); }
   function openWs(k, title){ PF.reset(); if (taskOpen){ taskOpen = null; saveTaskOpen(); }   /* (Nov 2) an open to-do left from before hid the next card's board (fdhide) */ if (!ws){ const V = dash.querySelector(".vl"); homeTop = V ? V.scrollTop : 0; try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } ws = k; document.body.classList.add("v16work"); pfFrame(); document.body.classList.toggle("v16ws", !!FOLD[k]); document.body.classList.toggle("v16sub", !!ONEF[k]); document.body.classList.toggle("v16board", ["songs", "shorts", "youtube", "lessons"].includes(k)); document.getElementById("v16title").textContent = title;
-    if (ONEF[k]) foldSet(ONEF[k], 1); if (k === "shorts") foldSet("sg:shworks", 1); if (k === "lessons"){ foldSet("lc:test", 1); const x = lcChs().find(c => !c.live); if (x) foldSet("lc:ch" + (x.i + 1), 1); } const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects" || k === "shorts") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; if (POPM) PF.one(); }
+    if (ONEF[k]) foldSet(ONEF[k], 1); if (k === "shorts") foldSet("sg:shworks", 1); if (k === "lessons"){ const x = lcChs().find(c => !c.live); if (x) foldSet("lc:ch" + (x.i + 1), 1); } const T2 = FOLD[k] && !PTAB[k] ? "today" : "projects"; if (T2 === "projects") psub = "projects"; if (tab !== T2 || T2 === "projects" || k === "shorts") setTab(T2); keepFolder(); headH(); const L = $("list"); if (L) L.scrollTop = 0; if (POPM) PF.one(); }
   function goHome(){ PF.reset(); ws = null; document.body.classList.remove("v16work", "v16ws", "v16sub", "v16board"); document.querySelectorAll("#list .v16keep").forEach(x => x.classList.remove("v16keep")); taskOpen = null; saveTaskOpen(); moving = null; editOpen = null; closePop(); setTab("today"); draw(); const V = dash.querySelector(".vl"); if (V) V.scrollTop = homeTop; }
   /* (Nov 2, Chris + GPT approved; only with ?pop=1 until Chris says yes) FIXED FRAME + FOLDERS AS POP-UPS. The frame = the home's 3-section box
      (top of the 4 tiles to the bottom of Projects); the desk title and the Focus bar never move. A workspace fills the frame; a folder in it opens
@@ -7653,13 +7654,20 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     S.setProperty("--pf-l", A.left + "px"); S.setProperty("--pf-t", A.top + "px"); S.setProperty("--pf-w", A.width + "px"); S.setProperty("--pf-h", (B.bottom - A.top) + "px"); }
   const PF = {st: [], root: null,
     on: h => POPM && document.body.classList.contains("v16work") && !h.closest(".v16keep>h4"),
-    find(lv, par){ if (lv.top){ const h = [...par.querySelectorAll(".msec>h4")].find(x => lv.fold ? x.dataset.fold === lv.fold : x.dataset.ck === lv.ck); return h && h.parentElement; } return par.querySelector(`[data-foldbody="${CSS.escape(lv.k)}"]`); },
+    find(lv, par){ if (lv.row) return par.querySelector(`.tdetail[data-tdof="${CSS.escape(lv.row)}"]`); if (lv.top){ const h = [...par.querySelectorAll(".msec>h4")].find(x => lv.fold ? x.dataset.fold === lv.fold : x.dataset.ck === lv.ck); return h && h.parentElement; } return par.querySelector(`[data-foldbody="${CSS.escape(lv.k)}"]`); },
     push(h, k, top){ const L = $("list"), t = top ? ((h.childNodes[0] && h.childNodes[0].textContent) || h.textContent).trim() : (h.querySelector("b") || h).textContent.trim();
       if (!PF.st.length) PF.root = [$("v16title").textContent, $("v16barc").textContent]; PF.st.push({k, top, fold: h.dataset.fold || "", ck: h.dataset.ck || "", t, y: L.scrollTop, auto: PF.auto}); PF.auto = 0;
       try { history.pushState({fd: 1, v16: 1}, ""); } catch {} PF.apply(); L.scrollTop = 0; PF.one(); },
     one(){ setTimeout(() => { const L = $("list"), f = [...L.querySelectorAll("[data-fold],h4[data-ck]")].filter(e => e.getClientRects().length); if (f.length === 1 && L.innerText.trim() === f[0].innerText.trim()){ PF.auto = 1; f[0].click(); } }, 0); },   /* never a folder with ONE item: a level that is only one folder opens it; Back skips it */
-    back(){ if (!PF.st.length) return false; let lv = PF.st.pop(); while (lv.auto && PF.st.length) lv = PF.st.pop(); PF.apply(); if (lv.auto) return false; $("list").scrollTop = lv.y; return true; },
+    back(){ if (!PF.st.length) return false; let lv = PF.st.pop(); while (lv.auto && PF.st.length) lv = PF.st.pop(); PF.closeRow(); PF.apply(); if (lv.auto) return false; $("list").scrollTop = lv.y; return true; },
     reset(){ if (!PF.st.length) return; PF.st = []; PF.apply(); },
+    /* (Nov 2, Chris: "they're not pop ups ... it should be a pop-up") an opened Today row (Songs to check, Lessons to check, any to-do) is a pop-up level too */
+    closeRow(){ if (taskOpen && !PF.st.some(l => l.row === taskOpen)){ taskOpen = null; saveTaskOpen(); document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); document.querySelectorAll("#list .rowon").forEach(x => x.classList.remove("rowon")); } },
+    rowSync(L){ if (!document.body.classList.contains("v16work")) return; PF.st = PF.st.filter(l => !l.row || l.row === taskOpen);
+      const td = taskOpen && L.querySelector(`.tdetail[data-tdof="${CSS.escape(taskOpen)}"]`); if (!td || PF.st.some(l => l.row === taskOpen) || ![...td.children].some(c => c.getClientRects().length)) return;   /* a row with nothing inside (a to-do strip) never opens an empty pop-up */
+      const r = L.querySelector(`[data-tlinks="${CSS.escape(taskOpen)}"]`); if (!PF.st.length) PF.root = [$("v16title").textContent, $("v16barc").textContent];
+      PF.st.push({row: taskOpen, t: r ? (r.querySelector("b") || r).innerText.split("\n")[0].trim() : "", y: L.scrollTop, auto: PF.autoRow === taskOpen}); PF.autoRow = null;
+      try { history.pushState({fd: 1, v16: 1}, ""); } catch {} setTimeout(() => { L.scrollTop = 0; }, 0); },
     /* (Nov 2, Chris: "go back to exactly where I was") inside an open level the rows keep the order they had when it opened: an Approve that would
        re-sort the board never moves a row under him; the board sorts again when he leaves the level */
     rowKey: r => { const x = r.querySelector("[data-sgid],[data-ytchk],[data-lcchk]"); return x ? (x.dataset.sgid || x.dataset.ytchk || x.dataset.lcchk) : (r.innerText || "").split("\n")[0]; },
@@ -7669,7 +7677,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
         if (rows.some((r, i) => i && r.previousElementSibling !== rows[i - 1])) continue;   /* rows not side by side: leave them */
         const pos = id => { const i = lv.ord[k].indexOf(id); return i < 0 ? 1e6 : i; }, want = rows.slice().sort((a, b) => pos(PF.rowKey(a)) - pos(PF.rowKey(b)));
         if (want.every((r, i) => r === rows[i])) continue; const before = rows[rows.length - 1].nextSibling; want.forEach(r => g.insertBefore(r, before)); } },
-    apply(){ if (!POPM) return; const L = $("list"); L.querySelectorAll(".pfon,.pfpath").forEach(x => x.classList.remove("pfon", "pfpath")); let par = L;
+    apply(){ if (!POPM) return; const L = $("list"); PF.rowSync(L); L.querySelectorAll(".pfon,.pfpath").forEach(x => x.classList.remove("pfon", "pfpath")); let par = L;
       for (let i = 0; i < PF.st.length; i++){ const el = PF.find(PF.st[i], par); if (!el){ PF.st.length = i; break; } par = el; }   /* a level that is gone (done, moved) = its parent shows */
       const on = PF.st.length > 0; document.body.classList.toggle("pfdeep", on);
       if (on){ par.classList.add("pfon"); for (let e = par.parentElement; e && e !== L; e = e.parentElement) e.classList.add("pfpath"); const lv = PF.st[PF.st.length - 1]; $("v16title").textContent = lv.t; $("v16barc").textContent = ""; PF.hold(par, lv); }
@@ -7702,7 +7710,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     document.head.appendChild(pc); }
   const TITLES = {today: "Today", replies: "Replies", lessons: "Lessons", songs: "Songs", shorts: "Shorts", youtube: "YouTube", queue: "Queue", projects: "Projects", lab: "Worship Piano Lab", personal: "Personal"};
   window.V16WS = n => { const k = String(n).toLowerCase(); openWs(k, TITLES[k] || n); };
-  function openRow(id){ if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
+  function openRow(id){ PF.autoRow = id; if (WAITFOLD[id]) return openWs(WAITFOLD[id].toLowerCase(), WAITFOLD[id]); openWs("today", "Today");
     const b = todayRows().find(x => x.dataset.tlinks === id); if (b){ if (taskOpen !== id) b.click(); setTimeout(() => { const r = todayRows().find(x => x.dataset.tlinks === id); if (r) (r.closest(".trow") || r).scrollIntoView({block: "nearest"}); }, 50); } }
   window.V16ROW = openRow;
   document.addEventListener("keydown", e => { const ta = e.target.closest && e.target.closest("textarea.kfix"); if (!ta || e.key !== "Enter" || e.shiftKey || e.isComposing) return; e.preventDefault(); const b = ta.nextElementSibling; if (b && b.classList.contains("kfixsend") && ta.value.trim()) b.click(); });
