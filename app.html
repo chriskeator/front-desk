@@ -558,6 +558,13 @@ a.tb.rs-fixed{flex-direction:column}
 .popcard{position:fixed;z-index:41;left:50%;top:50%;transform:translate(-50%,-50%);width:min(680px,calc(100vw - 20px));max-height:calc(100vh - 24px);overflow:hidden;box-sizing:border-box;background:var(--card);color:var(--ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 14px 40px rgba(0,0,0,.25)}
 .poptop{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .poptop > b{font-size:17px;line-height:1.25;min-width:0}
+/* (Nov 3, Chris) Add task pop-up: title, what it's for, start (the day it shows on Today), due, link (the title opens it) */
+.popcard.addcard{width:min(460px,calc(100vw - 20px))!important;max-width:min(460px,calc(100vw - 20px))!important} .addcard label{font-size:12px;font-weight:700;color:var(--mut,#777);margin-top:2px}
+.addcard input,.addcard textarea{width:100%;box-sizing:border-box;border:1px solid var(--line,#ddd);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:14px;line-height:20px;padding:8px 10px}
+.addcard textarea{resize:vertical;min-height:60px} .addcard .adddates{display:grid;grid-template-columns:1fr 1fr;gap:8px} .addcard .adddates>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.addcard .row{justify-content:flex-end;gap:8px;margin-top:4px} .addcard .adderr{color:var(--red);font-size:13px;margin:0}
+#v16 .vsh .vadd{font:inherit;font-size:13px;font-weight:700;line-height:1;padding:6px 10px;border-radius:999px;border:1px solid var(--v-gold,#c9a24a);background:transparent;color:var(--ink);cursor:pointer;max-height:28px}
+#v16 .vsh .vadd:hover{background:var(--v-tgold,#f6ecd2)}
 .popnote{margin:0}
 .popnav{align-items:center}
 .popcard .revbody{flex:1 1 auto;min-height:60px;overflow:auto}
@@ -2751,7 +2758,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v426</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v427</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6837,6 +6844,29 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
     Object.assign(t, upd); }
   editOpen = null; edDraft = {}; edSwap(id); const L = $("list"); if (L) L._edST = null;
   document.querySelectorAll(`#list [data-tlinks="${CSS.escape(id)}"] > b`).forEach(x => { if (!x.children.length) x.textContent = t.short || t.title; }); });   /* the row title changes right away, nothing moves */
+/* (Nov 3, Chris: "add task ... title, description, due date, url so the go button can take there, and then a start date. So something can be due Fri, but I want to do it today")
+   start = t.date (the day it lands on Today, default today), due = t.due (the deadline), url = t.url (the row's title opens it) */
+function addTaskOpen(){ addTaskClose(); const w = document.createElement("div"); w.id = "addtask"; const f = (k, l, ty) => `<div><label for="at-${k}">${l}</label><input id="at-${k}" type="${ty}"${ty === "date" ? ` value="${k === "date" ? plus(0) : ""}"` : ""}></div>`;
+  w.innerHTML = `<div class="popbg" data-addclose="1"></div><div class="popcard addcard" role="dialog" aria-modal="true" aria-label="Add task"><div class="poptop"><b>Add task</b><button type="button" class="popx" data-addclose="1" aria-label="Close">✕</button></div>
+    <label for="at-title">Title</label><input id="at-title" type="text" autocomplete="off"><label for="at-note">Description</label><textarea id="at-note"></textarea>
+    <div class="adddates">${f("date", "Start", "date")}${f("due", "Due", "date")}</div><label for="at-url">Link</label><input id="at-url" type="url" placeholder="https://" autocomplete="off">
+    <p class="adderr" hidden></p><div class="row"><button type="button" class="tb" data-addclose="1">Cancel</button><button type="button" class="tb go" data-addsave="1">Add</button></div></div>`;
+  document.body.appendChild(w); [30, 250].forEach(ms => setTimeout(() => { const t = $("at-title"); if (t && document.activeElement !== t && !t.value) t.focus(); }, ms)); }
+function addTaskClose(){ const w = $("addtask"); if (w) w.remove(); }
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("addtask")) addTaskClose(); });
+document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-addtask], [data-addclose], [data-addsave]"); if (!b) return;
+  if (b.dataset.addtask){ e.stopPropagation(); return addTaskOpen(); }
+  if (b.dataset.addclose) return addTaskClose();
+  const v = k => ($("at-" + k) || {}).value.trim(), err = $("addtask").querySelector(".adderr"), say = m => { err.textContent = m; err.hidden = false; };
+  const title = v("title"), url = v("url"), date = v("date"), due = v("due");
+  if (!title) return say("Add a title.");
+  if (url && !safeUrl(url)) return say("The link needs to start with https://");
+  if (date && due && date > due) return say("Start is after the due date.");
+  if (!db) return say("The desk isn't connected. Try again in a moment.");
+  b.disabled = true;
+  try { await db.collection("tasks").doc("t-add-" + Date.now().toString(36)).set({title, note: v("note"), date, ...(due ? {due} : {}), ...(url ? {url} : {}), done: false, added: new Date().toISOString(), order: -1, by: "chris"}); }
+  catch { b.disabled = false; return say("Didn't save. Try again."); }
+  addTaskClose(); });
 // (Oct 21, Chris) 'Last night' card: lastnight.py writes t.night = [{h, n, c, items}]; pills + short one-line labels, no prose
 function nightHTML(t){ return `<div class="nightc">${(t.night || []).map(g => `<div class="nightg"><span class="nightp ${esc(g.c || "grey")}">${esc(g.h)}<i>${Number(g.n) || 0}</i></span>${(g.items || []).map(x => `<div class="nightl">${esc(x)}</div>`).join("")}</div>`).join("")}</div>`; }
 function taskDetail(t){
@@ -7643,7 +7673,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
       return vRow(t, id, tb && tb.textContent, [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · "), "data-v16row"); }).join("");   /* (Nov 2, Chris: "remove the open buttons ... when i can click the row to open it") the row itself opens */
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" style="--pc:var(--v-${CARDC[k] || "teal"});--pt:var(--v-t${CARDC[k] || "teal"})" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
     const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><a class="vold" href="app.html?v16=0">Old desk</a><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
-      <section class="vs t"><div class="vsh"><h2>Today</h2></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
+      <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vadd" data-addtask="1">+ Add task</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vc">${P}</div></section>`;
     if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
     dash.innerHTML = H16; fmBarDraw(); kmBack(); pbx();
