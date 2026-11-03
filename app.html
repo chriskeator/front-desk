@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v415</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v416</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5686,8 +5686,11 @@ document.addEventListener("click", e => { const b = e.target.closest && e.target
   if (b.dataset.aopen){ aOpen = !aOpen; if (aOpen) uOpen = false; } else if (b.dataset.uopen){ uOpen = !uOpen; if (uOpen) aOpen = false; } else if (b.dataset.uday) { uDay = uDay === b.dataset.uday ? "" : b.dataset.uday; uGrp = ""; } else if (b.dataset.ugrp) { uGrp = uGrp === b.dataset.ugrp ? "" : b.dataset.ugrp; uDay = ""; } else { uPer = b.dataset.uper; uDay = uGrp = ""; } liveRender(); }, true);
 /* (Nov 2, Chris: two Shorts said "Making" while nothing was making them) a Cadence box says what is REALLY happening, from the queue:
    a job working on it = Making; a job waiting for its turn = Waiting; no job at all = Stuck (red), never a quiet "Making" */
-function shJob(id){ if (!id) return ""; const q = (queueRows || []).filter(x => x && ["working", "queued", "paused", "waiting-cadence"].includes(x.status) && JSON.stringify(x).includes(id));
+/* (Nov 2, Chris: "these assembly lines all need to work exactly the same") ONE job-state reader for every board: m = the step's lineRef
+   (collection/row/step, set by the queue's one engine) or a row id; working = Making, queued / waiting = Waiting, none = Stuck */
+function lineJob(m){ if (!m) return ""; const q = (queueRows || []).filter(x => x && ["working", "queued", "paused", "waiting-cadence"].includes(x.status) && ((x.extra || {}).lineRef === m || JSON.stringify(x).includes(m)));
   return q.some(x => x.status === "working") ? "working" : q.length ? "waiting" : ""; }
+const shJob = lineJob;
 function homeShorts(){
   if (shBoard === null) fdShLoad();
   const sb = (stats.find(x => x.id === "shortsboard") || {}).rows || [];
@@ -5740,7 +5743,9 @@ function homeYouTube(){
   const md = d => { const p = String(d || "").slice(5, 10).split("-"); return p.length < 2 ? "" : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
   const L = ytRows.slice().sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))), st = r => r.steps || {};
   const up = L.filter(r => st(r).posted !== "ok"), P = L.filter(r => st(r).posted === "ok").reverse(), you = up.filter(r => YTK.some(k => st(r)[k] === "chk")).length;
-  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { const c = st(r)[k] || ""; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
+  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { let c = st(r)[k] || ""; const jb = c === "mk" ? lineJob("ytcheck/" + r.id + "/" + k) : null;
+    if (c === "mk" && !jb) return {c: "fx", ak: ["Stuck"], red: 1, id: "", yt: "", t: ""};
+    if (c === "mk") return {c, t: jb === "working" ? "Making" : "Waiting", id: "", yt: ""}; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
   const head = sgHead(YTCOLS, YTAB);
   return deskFold("", "YouTube", `${you ? you + " to check · " : ""}${up.length} to ship`, deskFold("yt:up", `Upcoming (${up.length})`, esc(up.length ? "next Sat " + md(up[0].date) : "nothing planned"), head + up.map(row).join(""), {def: 1})
     + (P.length ? deskFold("yt:posted", `Posted (${P.length})`, esc("last Sat " + md(P[0].date)), head + P.map(row).join("")) : ""), {top: 1, cc: "var(--kaB4362A)"}); }
@@ -5882,7 +5887,7 @@ function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = 
   return `<div class="srow" style="${RS}"><b class="sname"${x.full ? ` data-lcname="${esc(x.full)}" role="button" tabindex="0"` : ""} style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px;--n:${x.cells.length}">${x.cells.map((q, i) => { if (q.blank || (cols === SGCOLS && i === 1 && !q.nt)) return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="none" title="${esc(cols[i])}" style="background:transparent;border-color:transparent${q.blank ? ";border:1.5px solid transparent;width:22px;height:14px;box-sizing:border-box;flex:0 0 22px" : ""}"></i>`;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
     const stk = q.c === "fx" && q.ak && (q.ak[0] === "Stuck" || q.red), tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
-    const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">Making</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
+    const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">${q.t || "Making"}</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
     return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.yt ? ` data-ytchk="${esc(q.id)}" data-ytk="${q.yt}" role="button" tabindex="0"` : q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
 /* (Oct 28, Chris approved design A) LESSONS TO CHECK: the Lab chapters on the Songs board code (sgHead + sgRow: same rows, boxes, colours, fonts).
    Two folders (deskFold): Live (closed at first; every shipped chapter = one row, Status Live) and Testing (open at first; the chapter(s) on Test,
@@ -7278,6 +7283,13 @@ setInterval(() => { if (document.visibilityState === "visible") deskVerCheck(); 
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") deskVerCheck(); });
 (async () => {
   db = await window.claude?.use?.("db") ?? null;
+  /* (Nov 2, Chris: "have the approval button be a trigger or a ping ... for every assembly line I have. Plus the template for future ones")
+     APPROVE = PING, one hook for every board: any write to an assembly-line board's rows also writes stats/line-ping, which wakes the queue's one
+     engine at once (line-ping.py); the queue's every-minute pass stays the safety net. A new line = add its collection here AND in assembly-lines.json. */
+  if (db){ const LINE_COLLS = ["ytcheck", "shortcheck", "songcheck", "lessonchecks"], col0 = db.collection.bind(db); let pingT = 0;
+    const ping = () => { clearTimeout(pingT); pingT = setTimeout(() => { try { col0("stats").doc("line-ping").set({at: new Date().toISOString()}); } catch {} }, 400); };
+    db.collection = name => { const c = col0(name); if (!LINE_COLLS.includes(name) || c._lp) return c; c._lp = 1; const doc0 = c.doc.bind(c);
+      c.doc = id => { const d = doc0(id); if (d._lp) return d; d._lp = 1; ["set", "update"].forEach(m => { const f = d[m] && d[m].bind(d); if (f) d[m] = (...a) => { const r = f(...a); Promise.resolve(r).then(ping, () => {}); return r; }; }); return d; }; return c; }; }
   if (!db){ $("list").innerHTML = '<div class="empty"><b>Sign in to see your desk</b><span>Taking you to sign in.</span></div>'; return; }
   const fail = () => { $("list").innerHTML = '<div class="empty"><b>Couldn\'t load</b><span>Close and reopen this page.</span></div>'; };
   const first = name => { if (deskWait.delete(name) && !deskWait.size) deskGo(); };
