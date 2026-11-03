@@ -2751,7 +2751,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v417</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v418</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7494,7 +7494,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16bar .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16bar .vfc:empty{display:none}
   #v16fm .sbar{flex-wrap:wrap;justify-content:flex-end;height:auto} #v16fm .sblk{display:inline-flex!important;align-items:center;width:auto!important;height:auto!important;flex:none!important;padding:4px 8px;border:1px solid var(--v-line);border-radius:6px;font:700 12px/1.2 Figtree,system-ui,sans-serif;font-style:normal;white-space:nowrap;color:var(--v-ink)} #v16fm .sblk[role=button]{cursor:pointer} #v16fm .sblk::before{content:attr(title) " · "} #v16fm .sblk .sab,#v16fm .sblk .sdtp{display:none} #v16fm .sblk .sfw{display:inline!important;color:inherit!important;font-size:12px!important} #v16fm .sblk:is([data-sgst="none"],[data-sgst=""]){display:none!important}
   #v16fm .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important} #v16fm .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important} #v16fm .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
-  @media (max-width:560px){#v16fb .vfs .vlong,#v16fb .vsw .vlong{display:none} #v16fb{gap:5px;padding:0 6px} #v16fb button{padding:8px 9px!important}}`;
+  @media (max-width:560px){#v16fb .vfs .vlong,#v16fb .vsw .vlong{display:none} #v16fb{gap:5px;padding:0 6px} #v16fb button{padding:8px 9px!important}}
+  #v16fb .vrn{display:none} @media (max-width:560px){body.v16 #v16fb{padding:0 10px} body.v16 #v16fb .vfc{display:none} #v16fb .vrn{display:inline} #v16fb .vsw{margin-right:auto;flex:0 1 auto;overflow:hidden}}   /* (Nov 2, Chris: Start cut off on the phone) the phone bar fits: no count chip, the count rides on Review */`;
   document.head.appendChild(css);
   document.body.classList.add("v16");
   const dash = document.createElement("div"); dash.id = "v16"; document.body.appendChild(dash);
@@ -7574,7 +7575,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function fmShow(v){ if (v === "session") fmPickSet(false); if (v && !FM.view){ try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } FM.view = v; fmDraw(true); if (!v && !ws) draw(); }
   function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span class="vswl"><span${FM.pick ? ' aria-hidden="true"' : ""}>Add items</span><span${FM.pick ? "" : ' aria-hidden="true"'}>Remove items</span></span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Add items to add more." : "Turn on Add items to choose.";
     if (FM.active) return `<b>Focus Session</b>${cnt}<span class="vfh">${FM.pick ? hint : "In progress."}</span>${sw}<button type="button" class="vfs" data-fm="resume"><span class="vlong">Back to </span>session →</button>`;
-    return `<b>Focus Session</b>${cnt}<span class="vfh">${hint}</span>${sw}<button type="button" data-fm="review"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
+    return `<b>Focus Session</b>${cnt}<span class="vfh">${hint}</span>${sw}<button type="button" data-fm="review"${n ? "" : " disabled"}>Review${n ? `<span class="vrn"> ${n}</span>` : ""}</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
   const fmBarDraw = () => { const f = document.getElementById("v16fb"), h = fmBar(); if (f && f._h !== h){ f.innerHTML = h; f._h = h; } const c = document.getElementById("v16barc"); if (c) c.textContent = FM.pick ? "Pick on \u00b7 " + FM.sel.size + " selected" : FM.sel.size ? FM.sel.size + " selected" : ""; };
   /* pick mode is this device's own switch, saved with the page; never clears the selection */
   function fmPickSet(on){ FM.pick = !!on; document.body.classList.toggle("v16pick", FM.pick); try { localStorage.setItem("fd-focus-pick", FM.pick ? "1" : ""); } catch {} fmBarDraw(); }
@@ -7659,13 +7660,28 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     one(){ setTimeout(() => { const L = $("list"), f = [...L.querySelectorAll("[data-fold],h4[data-ck]")].filter(e => e.getClientRects().length); if (f.length === 1 && L.innerText.trim() === f[0].innerText.trim()){ PF.auto = 1; f[0].click(); } }, 0); },   /* never a folder with ONE item: a level that is only one folder opens it; Back skips it */
     back(){ if (!PF.st.length) return false; let lv = PF.st.pop(); while (lv.auto && PF.st.length) lv = PF.st.pop(); PF.apply(); if (lv.auto) return false; $("list").scrollTop = lv.y; return true; },
     reset(){ if (!PF.st.length) return; PF.st = []; PF.apply(); },
+    /* (Nov 2, Chris: "go back to exactly where I was") inside an open level the rows keep the order they had when it opened: an Approve that would
+       re-sort the board never moves a row under him; the board sorts again when he leaves the level */
+    rowKey: r => { const x = r.querySelector("[data-sgid],[data-ytchk],[data-lcchk]"); return x ? (x.dataset.sgid || x.dataset.ytchk || x.dataset.lcchk) : (r.innerText || "").split("\n")[0]; },
+    hold(par, lv){ const groups = new Map(); par.querySelectorAll(".srow").forEach(r => { const g = r.parentElement; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(r); });
+      if (!lv.ord) lv.ord = {}; let gi = 0;
+      for (const [g, rows] of groups){ const k = gi++, keys = rows.map(PF.rowKey); if (!lv.ord[k]){ lv.ord[k] = keys; continue; }
+        if (rows.some((r, i) => i && r.previousElementSibling !== rows[i - 1])) continue;   /* rows not side by side: leave them */
+        const pos = id => { const i = lv.ord[k].indexOf(id); return i < 0 ? 1e6 : i; }, want = rows.slice().sort((a, b) => pos(PF.rowKey(a)) - pos(PF.rowKey(b)));
+        if (want.every((r, i) => r === rows[i])) continue; const before = rows[rows.length - 1].nextSibling; want.forEach(r => g.insertBefore(r, before)); } },
     apply(){ if (!POPM) return; const L = $("list"); L.querySelectorAll(".pfon,.pfpath").forEach(x => x.classList.remove("pfon", "pfpath")); let par = L;
       for (let i = 0; i < PF.st.length; i++){ const el = PF.find(PF.st[i], par); if (!el){ PF.st.length = i; break; } par = el; }   /* a level that is gone (done, moved) = its parent shows */
       const on = PF.st.length > 0; document.body.classList.toggle("pfdeep", on);
-      if (on){ par.classList.add("pfon"); for (let e = par.parentElement; e && e !== L; e = e.parentElement) e.classList.add("pfpath"); const lv = PF.st[PF.st.length - 1]; $("v16title").textContent = lv.t; $("v16barc").textContent = ""; }
+      if (on){ par.classList.add("pfon"); for (let e = par.parentElement; e && e !== L; e = e.parentElement) e.classList.add("pfpath"); const lv = PF.st[PF.st.length - 1]; $("v16title").textContent = lv.t; $("v16barc").textContent = ""; PF.hold(par, lv); }
       else if (PF.root){ $("v16title").textContent = PF.root[0]; $("v16barc").textContent = PF.root[1]; PF.root = null; } } };
   window.PF = PF;
   if (POPM){ addEventListener("resize", pfFrame); new ResizeObserver(pfFrame).observe(dash);
+    /* (Nov 2, Chris: "when I hit approve or back or close ... I go back to exactly where I was") ONE spot for every check pop-up: the list's place is
+       kept while any check is open and put back when the last one closes, whatever redraw happened in between */
+    const chkOpen = () => !!(document.getElementById("lyrchk") || document.getElementById("mcpop") || ($("songchk") && $("songchk").innerHTML) || ($("shortchk") && $("shortchk").innerHTML));
+    let chkY = null; const chkWatch = () => { const L = $("list"); if (!L) return; if (chkOpen()){ if (chkY == null) chkY = {y: L.scrollTop, n: PF.st.length}; return; } if (chkY == null) return;
+      const k = chkY; chkY = null; if (PF.st.length !== k.n) return; const put = () => { if (!chkOpen() && PF.st.length === k.n) L.scrollTop = k.y; }; put(); requestAnimationFrame(put); setTimeout(put, 200); };
+    const mo = new MutationObserver(chkWatch); mo.observe(document.body, {childList: true}); ["songchk", "shortchk"].forEach(id => { if ($(id)) mo.observe($(id), {childList: true}); });
     const pc = document.createElement("style"); pc.textContent = `
   body.v16pop.v16work #v16{display:flex}
   body.v16pop.v16work .wrap{position:fixed!important;left:var(--pf-l,30px);top:var(--pf-t,95px);width:var(--pf-w,calc(100vw - 60px));height:var(--pf-h,calc(100dvh - 190px));max-width:none!important;margin:0!important;padding:0!important;z-index:33;display:flex!important;flex-direction:column;overflow:hidden;background:var(--v-bg)!important}
