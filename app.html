@@ -1898,7 +1898,7 @@ const nr=nt.getBoundingClientRect();drag={k:'nmove',bi,ni,q,was,x0:e.clientX,y0:
 if(t.closest('input'))return;
 if(t.classList.contains('e')&&t.dataset.j==='lead'){drag={k:'lead'};document.body.style.cursor='ew-resize';return}
 {const LD=t.closest('.b.lead');if(LD&&!t.classList.contains('t')&&!t.classList.contains('offl')){const rr=LD.getBoundingClientRect(),k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();if(k>=leadA){sel=[];noteSel=[];notePick=null;startAt=null;leadSpot={k};hint('Lead-in: double-click to type a number or word here, or paste a copied box');return}}}
-if(t.classList.contains('off')||t.classList.contains('offl')||t.classList.contains('eh')){drag={k:'size',j:+t.dataset.j,side:t.dataset.side,hatch:1};document.body.style.cursor='ew-resize';return}
+if(t.classList.contains('off')||t.classList.contains('offl')||t.classList.contains('eh')){const B0=R.querySelector('.b[data-i="'+t.dataset.j+'"]'),R0=B0&&B0.getBoundingClientRect();drag={k:'size',j:+t.dataset.j,side:t.dataset.side,hatch:1,r0:R0?{left:R0.left,width:R0.width}:null};   /* (Nov 3, Chris: the intro bar jumped left/right while shortening) the bar's place is measured ONCE, when the drag starts */document.body.style.cursor='ew-resize';return}
 if(t.classList.contains('e')){drag={k:'size',j:+t.dataset.j,side:t.dataset.side};document.body.style.cursor='ew-resize';return}
 notePick=null;if(t.classList.contains('t')){noteSel=[];chSel=[];cPick=null}const b=t.closest('.b[data-i]');if(b){const i=+b.dataset.i,rr=b.getBoundingClientRect(),bb=bars[i];let k=Math.floor(Math.max(0,Math.min(.999,(e.clientX-rr.left)/rr.width))*S()/Q())*Q();k=Math.max(bb.a||0,Math.min(bb.n-1,k));const was=sel.length===1&&sel[0]===i&&!e.shiftKey;if(t.classList.contains('t'))startAt={i,k:bb.a||0,whole:true};   /* top strip = the whole bar, no beat */if(PL){setTimeout(()=>{if(PL&&startAt)startPlay({i:startAt.i,k:startAt.k,deadline:performance.now()+40})},0)}if(e.shiftKey&&sel.length){const a=Math.min(lo(),i),z=Math.max(hi(),i);sel=[];for(let q=a;q<=z;q++)sel.push(q);draw();return}if((e.metaKey||e.ctrlKey)&&t.classList.contains('t')){const k=sel.indexOf(i);if(k<0)sel.push(i);else sel.splice(k,1);sel.sort((x,y)=>x-y);draw();hint(sel.length+' bar'+(sel.length===1?'':'s')+' picked');return}   /* (Oct 20, Chris) Windows/Ctrl+click a bar number = add or take off one bar */if(!t.classList.contains('t')){startAt={i,k};noteSel=[];chSel=[];cPick=null;notePick=null;drag={k:'band',x0:e.clientX,y0:e.clientY};   /* (Oct 21, Chris) a drag across empty space picks every box it touches: numbers, words, chords, any bar */light();return}   /* number / lyric lanes: only set where Play starts */
 pastePos=(e.clientX-rr.left)/rr.width<.5?i:i+1;if(!sel.includes(i))sel=[i];drag={k:'move',x0:e.clientX,y0:e.clientY,moved:false,was,ox:e.clientX-rr.left,oy:e.clientY-rr.top,w:rr.width,h:rr.height};light();return}
@@ -1972,7 +1972,7 @@ let d=dw,R2=tryD(d);while(!R2&&d!==(drag.d||0)){d+=d>(drag.d||0)?-1:1;R2=tryD(d)
 {const NB=drag.nbo;NB.forEach((v,o)=>{o.s=v.s;o.l=v.l});R2.adj.forEach(a=>{if(!NB.has(a[0]))NB.set(a[0],{s:a[0].s,l:a[0].l});a[0].s=a[1];a[0].l=a[2]})}
 drag.d=d;drag.orig.forEach(o=>{bars.forEach(b=>{if(b.notes){const k=b.notes.indexOf(o.q);if(k>=0)b.notes.splice(k,1)}})});tgt.forEach(t=>{t.q.s=t.s;const B=bars[t.bi];B.notes=B.notes||[];B.notes.push(t.q)});if(oc.length){oc.forEach(o=>{bars.forEach(b=>{const L=lvlOf(b),k=L.indexOf(o.c);if(k>=0)L.splice(k,1)})});tc.forEach(t=>{t.c.s=t.s;lvl(bars[t.bi]).push(t.c)})}bars.forEach(b=>(b.notes||[]).sort((x,y)=>x.s-y.s));draw();hint('Moving '+(tgt.length+tc.length)+' boxes')}
 else if(drag.k==='lead'){const el=R.querySelector('.b.lead');if(!el)return;const r=el.getBoundingClientRect(),N=S();let a=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N);a=Math.max(0,Math.min(N,a));drag.a=a;draw({leadA:a});hint(a>=N?'Let go: no lead-in':'Let go: lead-in = '+len(N-a))}
-else if(drag.k==='size'&&drag.hatch){const el=R.querySelector('.b[data-i="'+drag.j+'"]');if(!el)return;const r=el.getBoundingClientRect(),N=S(),q=Q(),C=bars.map(b=>({...b})),b=C[drag.j];let f=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N/q)*q;
+else if(drag.k==='size'&&drag.hatch){const el=R.querySelector('.b[data-i="'+drag.j+'"]');if(!el)return;const r=drag.r0||el.getBoundingClientRect(),N=S(),q=Q(),C=bars.map(b=>({...b})),b=C[drag.j];let f=Math.round(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*N/q)*q;
 if(drag.side==='R')b.n=Math.max((b.a||0)+q,Math.min(N,f));else b.a=Math.max(0,Math.min(b.n-q,f));drag.P={C,sel:[drag.j],msg:'Let go: '+lab(drag.j)+' = '+len(b.n-(b.a||0))};const keep=sel;sel=[drag.j];draw(C);sel=keep;hint(drag.P.msg)}
 else if(drag.k==='size'){const P=spot(e.clientX,e.clientY);if(!P)return;const Q=sizeTo(P,drag.j,drag.side);drag.P=Q;const keep=sel;sel=Q.sel;draw(Q.C);sel=keep;hint(Q.msg)}});
 function gStart(e,bw){save();drag={k:'ngroup',x0:e.clientX,bw,orig:noteSel.map(x=>({q:x,bi:bars.findIndex(b=>(b.notes||[]).includes(x)),s:x.s})),oc:chSel.map(c=>({c,bi:bars.findIndex(b=>((b.ch||{})[LF[LVK]]||[]).includes(c)),s:c.s}))}}
@@ -2760,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v431</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v432</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6184,8 +6184,12 @@ async function chAutoRun(S){ clearTimeout(S.autoT); S.autoT = null; if (S.busy){
 async function chFlush(S){ if (!S) return; clearTimeout(S.autoT); S.autoT = null; for (let n = 0; S.busy && n < 150; n++) await new Promise(f => setTimeout(f, 100)); if (S.dirty.size) await chAutoRun(S); }
 function ntAutoKick(S){ clearTimeout(S.autoT); S.autoT = setTimeout(() => ntAutoRun(S), S.err ? 5000 : 600); }
 async function ntAutoRun(S){ clearTimeout(S.autoT); S.autoT = null; if (!S.dirty || S.bad.size) return; if (S.busy){ S.again = true; return; }
+  /* (Nov 3, Chris: Notes went red after a Melody edit) never write an old melody over a newer one: if the board's melody changed since this sheet
+     opened (Melody editor, another tab), reload the newer notes and keep nothing stale */
+  const cur = (scBoard || []).find(x => x.id === S.r.id); if (cur && Array.isArray(cur.lines) && JSON.stringify(cur.lines) !== S.base && S.base !== JSON.stringify(S.lines)){
+    S.lines = JSON.parse(JSON.stringify(cur.lines)); S.base = JSON.stringify(cur.lines); S.r = cur; S.dirty = false; S.bad.clear(); if (ntS === S){ ntDraw(); const h = document.querySelector("#lyrchk .lyrhd span"); if (h) h.textContent = "The melody changed in the Melody editor: these are the newest notes. Make your change again."; } return; }
   S.busy = true; const snap = JSON.stringify(S.lines), now = new Date().toISOString(), up = {updated: now, lines: JSON.parse(snap), melodyEditedAt: now};
-  const ok = await scSave(S.r.id, up); S.busy = false; S.err = !ok; if (ok){ Object.assign(S.r, up); scLocal(S.r.id, up); if (JSON.stringify(S.lines) === snap) S.dirty = false; }
+  const ok = await scSave(S.r.id, up); S.busy = false; S.err = !ok; if (ok){ Object.assign(S.r, up); scLocal(S.r.id, up); S.base = snap; if (JSON.stringify(S.lines) === snap) S.dirty = false; }
   S.again = false; if (S.dirty && !S.bad.size) ntAutoKick(S); if (ntS === S) sheetSaveShow(S, S.dirty); }
 async function ntFlush(S){ if (!S) return; clearTimeout(S.autoT); S.autoT = null; for (let n = 0; S.busy && n < 150; n++) await new Promise(f => setTimeout(f, 100)); if (S.dirty && !S.bad.size) await ntAutoRun(S); }
 window.addEventListener("beforeunload", e => { const S = chS || ntS; if (S && (S.busy || (S === chS ? S.dirty.size : S.dirty))){ e.preventDefault(); e.returnValue = ""; } });
@@ -6340,14 +6344,19 @@ async function ntPlay(){ ntStop(); if (!ntS || window.DESK_TEST) return; const r
       const e = document.querySelector(`#lyrchk .ntz[data-ntk="${n.key}"]`); if (e){ e.classList.add("ntplay"); e.scrollIntoView({block: "nearest", behavior: "smooth"}); } }, w0 - performance.now() + (n.g - g0) * B * 1000)); });
   const last = N[N.length - 1]; P.tm.push(setTimeout(() => { if (ntP === P) ntStop(); }, w0 - performance.now() + ((last.g - g0) * B + 2) * 1000)); }
 function ntOpen(id){ const r = (scBoard || []).find(x => x.id === id); if (!r || !Array.isArray(r.lines)) return; lyrClose();
-  ntS = {id, r, lines: JSON.parse(JSON.stringify(r.lines)), lock: !!r.notesOK, dirty: false, saved: false, arm: false, bad: new Set()};
+  ntS = {id, r, lines: JSON.parse(JSON.stringify(r.lines)), lock: !!r.notesOK, dirty: false, saved: false, arm: false, bad: new Set(), base: JSON.stringify(r.lines)};   /* base = the melody this sheet opened with */
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.id = id; o.dataset.nt = "1";
   o.innerHTML = `<div class="lyrbox"><div class="lyrhd"><b>${esc(r.name)}: melody</b><span>Tap a number to change it (1-7, b3 #4, ' = high, , = low; a held word = 3 2).</span></div><div class="chsh"></div><div class="lyrbt"></div></div>`;
   document.body.appendChild(o); ntDraw(); }
 function ntSet(el){ if (!ntS || ntS.lock) return; const [li, j0] = el.dataset.ntk.split(":").map(Number), gp = ntGroups(ntS.lines[li], li).find(g => g.js[0] === j0); if (!gp) return;
   const toks = el.textContent.replace(/[’‘]/g, "'").trim().split(/\s+/).filter(Boolean);
-  const ms = toks.length === gp.js.length ? toks.map((t, k) => ntParse(t, ntS.lines[li][gp.js[k]].m)) : null;
+  const ms = toks.length ? toks.map((t, k) => ntParse(t, ntS.lines[li][gp.js[Math.min(k, gp.js.length - 1)]].m)) : null;
   if (!ms || ms.some(m => m == null)){ ntS.bad.add(el.dataset.ntk); el.classList.add("bad"); ntDraw(); return; }
+  /* (Nov 3, Chris: "It won't let me save any corrections") a word may get MORE or FEWER notes than it had: its time is shared evenly by the
+     numbers typed (e.g. "That" 1 beat -> "2 1" = two half beats); the word stays on the first note. Fine timing = the Melody editor. */
+  if (ms.length !== gp.js.length){ const row = ntS.lines[li], first = row[gp.js[0]], lastN = row[gp.js[gp.js.length - 1]], g0 = first.g, span = lastN.g + lastN.L - g0, k = ms.length, st = +(span / k).toFixed(6);
+    const nn = ms.map((m, i) => Object.assign({}, first, {g: +(g0 + i * st).toFixed(6), L: i < k - 1 ? st : +(span - st * (k - 1)).toFixed(6), m, w: i ? "" : first.w, c: i ? [] : (first.c || [])}));
+    row.splice(gp.js[0], gp.js.length, ...nn); ntS.bad.delete(el.dataset.ntk); ntS.dirty = true; ntS.arm = false; ntDraw(); return; }
   ntS.bad.delete(el.dataset.ntk); el.classList.remove("bad");
   gp.js.forEach((j, k) => { if (ntS.lines[li][j].m !== ms[k]){ ntS.lines[li][j].m = ms[k]; ntS.dirty = true; ntS.arm = false; } });
   el.dataset.raw = el.textContent = gp.js.map(j => ntTxt(ntS.lines[li][j].m)).join(" "); ntDraw(); }
