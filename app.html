@@ -2734,7 +2734,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v409</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v410</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7328,8 +7328,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #v16 .vn{padding:18px 4px;color:var(--v-mute);font-size:14px}
   /* (Nov 1, Chris) THE ONE V16 HOVER RULE, mouse and trackpad only: rows wash, cards and quiet buttons get the teal edge, row buttons go one shade darker */
   @media (hover:hover) and (pointer:fine){
-    #v16 .vr:hover,#v16 .vp:hover,body.v16 .kmorein .kb:hover,body.v16 .kmore>summary:hover,body.v16work #list .chc:hover,body.v16work #list .pc3t:hover,body.v16work #list .msec>h4:hover,body.v16work #list .sublist>.chc:hover,body.v16 #pop .chc:hover{background:var(--v-hover)!important}
-    #v16 .vt:hover,#v16 .vo:hover,#v16bar button:hover,body.v16 #list .tb:not(:disabled):hover,body.v16 #pop .tb:not(:disabled):hover,body.v16 #list .btn:not(:disabled):hover,body.v16 #pop .btn:not(:disabled):hover,body.v16 #list .sortbtn:hover{border-color:var(--v-teal)!important;box-shadow:0 5px 16px #00000014!important}
+    /* (Nov 2, Chris: "The hover feature needs to be the same on everything that's clickable ... the hover feature shows the color") ONE HOVER:
+       anything clickable fills with a light tint of ITS colour (a tile its own, a project card its own); a plain tan row or a button takes the colour
+       of the section it sits in (Today = gold, a folder = its colour). No green ring, no shadow, no darker tan. */
+    #v16 .vr:hover,#v16 .vp:hover,body.v16 .kmorein .kb:hover,body.v16 .kmore>summary:hover,body.v16work #list .chc:hover,body.v16work #list .pc3t:hover,body.v16work #list .msec>h4:hover,body.v16work #list .sublist>.chc:hover,body.v16 #pop .chc:hover,
+    #v16 .vt:hover,#v16 .vo:hover,#v16bar button:hover,body.v16 #list .tb:not(:disabled):hover,body.v16 #pop .tb:not(:disabled):hover,body.v16 #list .btn:not(:disabled):hover,body.v16 #pop .btn:not(:disabled):hover,body.v16 #list .sortbtn:hover{background:var(--hv,color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card)))!important}
+    #v16 .vp:hover{--hv:var(--pt)}
     body.v16 .kline .kp:hover{background:#5DCAA5} body.v16 .kline .kg:hover{background:#EF9F27} body.v16 .kline .kn:hover{background:#B4B2A9}
     body.v16 .kmore>summary:hover,#v16 .vold:hover,body.v16 .vlink:hover{color:var(--v-teal)}
     body.v16 #list .sblk[role=button]:hover,body.v16 #list a.sblk:hover{box-shadow:0 0 0 2px var(--v-teal)!important}
@@ -7439,7 +7443,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16work #list .msec .chgrid>.trow.vstrip{box-sizing:border-box;height:54px;min-height:54px} body.v16work #list .msec .chgrid>.trow.vstrip>.chc{height:100%;min-height:0!important;padding-top:0!important;padding-bottom:0!important;border:0!important;background:transparent!important}
   body.v16work #list .trow.vstrip.rowon{background:var(--v-sel)}
   body.v16work #list .justclosed,body.v16work #list .justclosed>.chc,body.v16work #list .justclosed>.pc3t,body.v16work #list .msec .chgrid>.chc.justclosed,body.v16work #list .msec>h4.justclosed{background:var(--v-card)!important}
-  @media (hover:hover) and (pointer:fine){body.v16work #list .trow.vstrip:hover{background:var(--v-hover)}}
+  @media (hover:hover) and (pointer:fine){body.v16work #list .trow.vstrip:hover{background:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card))}}
   @media (max-width:560px){body.v16 .kline .kb0{display:none}}
   body.v16pick .vhas>.vpick{position:absolute;left:0;top:0;bottom:0;z-index:1;display:flex;align-items:center;justify-content:center;width:36px;cursor:pointer}
   body.v16pick :is(#list,#pop) .vhas,body.v16pick #list .msec .chgrid>.trow.vstrip>.chc.vhas,body.v16pick #list .msec .chgrid>.chc.vhas{position:relative;padding-left:38px!important;cursor:pointer}
