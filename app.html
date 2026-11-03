@@ -2734,7 +2734,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v411</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v412</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7402,7 +7402,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px}}
   /* (Nov 1, V16 step 4) Focus Session: checkbox, bar, Review workspace, full-page session. V16.6 look, V16 colour tokens only. */
   #v16 .vpick{flex:none;display:flex;align-items:center;justify-content:center;width:30px;height:42px;margin:0 -5px 0 -8px;cursor:pointer} #v16 .vpick input,#v16fm .vpick input{width:18px;height:18px;margin:0;accent-color:var(--v-teal);cursor:pointer}
-  body.v16pick #v16 .vr.vsel,body.v16pick #v16 .vr.vsel:nth-child(even){background:var(--v-sel);box-shadow:inset 3px 0 var(--v-teal)}
+  body.v16pick #v16 .vr.vsel,body.v16pick #v16 .vr.vsel:nth-child(even){background:var(--v-sel)}
   #v16fm{display:none;position:fixed;inset:0;z-index:31;align-items:center;justify-content:center;padding:18px;background:#0006;color:var(--v-ink);font-family:Figtree,system-ui,-apple-system,sans-serif;font-size:14px}
   body.v16fm #v16fm{display:flex} body.v16work #v16fm{display:none!important} body.v16sess #v16{display:none}
   #v16fm *{box-sizing:border-box} #v16fm button:not(.kb){font:inherit;color:inherit;cursor:pointer}
@@ -7449,11 +7449,11 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   @media (max-width:560px){body.v16 .kline .kb0{display:none}}
   body.v16pick .vhas>.vpick{position:absolute;left:0;top:0;bottom:0;z-index:1;display:flex;align-items:center;justify-content:center;width:36px;cursor:pointer}
   body.v16pick :is(#list,#pop) .vhas,body.v16pick #list .msec .chgrid>.trow.vstrip>.chc.vhas,body.v16pick #list .msec .chgrid>.chc.vhas{position:relative;padding-left:38px!important;cursor:pointer}
-  body.v16pick #list .vhas.vsel,body.v16pick #pop .vhas.vsel{background:var(--v-sel)!important;box-shadow:inset 3px 0 var(--v-teal)}
+  body.v16pick #list .vhas.vsel,body.v16pick #pop .vhas.vsel{background:var(--v-sel)!important}
   body.v16pick #v16 .vr{cursor:pointer} body.v16pick .vhas *,body.v16pick .trow .kline,body.v16pick #v16 .vr *{pointer-events:none} body.v16pick .vpick{pointer-events:auto!important}
   body.v16pick :is(#v16 .vr,#list .trow) .kline,body.v16pick #v16 .vr .vo,body.v16pick .vhas .sbar{opacity:.45;filter:saturate(.5)}
-  body.v16pick #v16 .vs.t,body.v16pick #v16fb,body.v16pick #v16bar{outline:2px solid var(--v-teal);outline-offset:-2px} body.v16pick #v16fb{background:var(--v-sel)} body.v16pick #v16fb .vfh{color:var(--v-ink)}
-  #v16fb .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v16fb .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v16fb .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v16fb .vsw[aria-checked="true"] i{background:var(--v-teal)} #v16fb .vsw[aria-checked="true"] i::after{left:15px} #v16fb .vsw[aria-checked="true"]{border-color:var(--v-teal)}
+  /* (Nov 2, Chris: no green lines in pick mode) the Today / Focus bar / nav bar outlines are gone */ body.v16pick #v16fb{background:var(--v-sel)} body.v16pick #v16fb .vfh{color:var(--v-ink)}
+  #v16fb .vsw{display:inline-flex;align-items:center;gap:7px;padding:7px 11px} #v16fb .vsw i{position:relative;display:block;width:30px;height:17px;border-radius:99px;background:var(--v-mute)} #v16fb .vsw i::after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--v-card)} #v16fb .vsw[aria-checked="true"] i{background:var(--v-teal)} #v16fb .vsw[aria-checked="true"] i::after{left:15px} 
   #v16bar .vfc{padding:3px 9px;border-radius:99px;background:var(--v-b);font-size:12px;font-weight:700;white-space:nowrap} #v16bar .vfc:empty{display:none}
   #v16fm .sbar{flex-wrap:wrap;justify-content:flex-end;height:auto} #v16fm .sblk{display:inline-flex!important;align-items:center;width:auto!important;height:auto!important;flex:none!important;padding:4px 8px;border:1px solid var(--v-line);border-radius:6px;font:700 12px/1.2 Figtree,system-ui,sans-serif;font-style:normal;white-space:nowrap;color:var(--v-ink)} #v16fm .sblk[role=button]{cursor:pointer} #v16fm .sblk::before{content:attr(title) " · "} #v16fm .sblk .sab,#v16fm .sblk .sdtp{display:none} #v16fm .sblk .sfw{display:inline!important;color:inherit!important;font-size:12px!important} #v16fm .sblk:is([data-sgst="none"],[data-sgst=""]){display:none!important}
   #v16fm .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important} #v16fm .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important} #v16fm .sblk[style*="background:var(--kaFBEFD0)"]{background:var(--v-tgold)!important;border-color:var(--v-gold)!important;color:var(--v-ink)!important}
