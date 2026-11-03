@@ -2734,7 +2734,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v410</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v411</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7355,7 +7355,9 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   body.v16work #bar{display:none!important} html:has(body.v16work),body.v16work,body.v16work .wrap,body.v16work #list{background:var(--v-bg)!important}
   /* (Nov 2, Chris) one Focus bar on every page, lined up with the desk; the switch keeps one width; every board is the desk's width; more air between the desk's 3 sections */
   body.v16 #v16fb{z-index:45;padding-left:max(18px,calc((100vw - 1252px)/2));padding-right:max(18px,calc((100vw - 1252px)/2))}
-  body.v16 #v16fb .vsw{min-width:152px;justify-content:flex-start}
+  body.v16 #v16fb .vsw{justify-content:flex-start}
+/* (Nov 2, Chris: "just make it be the width of the longest text and stay that way") both labels sit in the same spot: the button is always as wide as the longer one, no pixel number */
+#v16fb .vswl{display:inline-grid} #v16fb .vswl>span{grid-area:1/1} #v16fb .vswl>span[aria-hidden="true"]{visibility:hidden}
   /* (Nov 2, Chris: "There's no way to submit this") the Fix box has its own Send button; Return sends too (Shift+Return = new line) */
   .kfixsend{display:none} body.v16 .kfixsend{margin:6px 0 4px auto;padding:8px 16px;border:0;border-radius:9px;background:var(--v-teal);color:var(--v-onteal,#fff);font-weight:700;font-size:14px;cursor:pointer}
   body.v16 a.v16open{display:inline-block;align-self:flex-start;width:auto;max-width:max-content;margin:2px 0 6px;padding:7px 14px;border-radius:9px;background:var(--v-teal);color:var(--v-onteal,#fff);font-weight:700;font-size:14px;text-decoration:none}
@@ -7533,7 +7535,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     const B = el.querySelector(".vfb"), top = B ? B.scrollTop : 0, a = document.activeElement, was = a && a.dataset && a.dataset.kfix, vals = {}; el.querySelectorAll("[data-kfix]").forEach(x => { vals[x.dataset.kfix] = x.value; });
     el.innerHTML = fmHtml(); el.querySelectorAll("[data-kfix]").forEach(x => { if (vals[x.dataset.kfix]) x.value = vals[x.dataset.kfix]; if (was === x.dataset.kfix) x.focus(); }); const B2 = el.querySelector(".vfb"); if (B2) B2.scrollTop = top; fmTime(); }
   function fmShow(v){ if (v === "session") fmPickSet(false); if (v && !FM.view){ try { history.pushState({fd: 1, v16: 1}, ""); } catch {} } FM.view = v; fmDraw(true); if (!v && !ws) draw(); }
-  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span>${FM.pick ? "Remove items" : "Add items"}</span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Add items to add more." : "Turn on Add items to choose.";
+  function fmBar(){ const n = FM.sel.size, cnt = `<span class="vfc">${n} selected</span>`, sw = `<button type="button" class="vsw" role="switch" aria-checked="${FM.pick}" data-fm="pick"><i></i><span class="vswl"><span${FM.pick ? ' aria-hidden="true"' : ""}>Add items</span><span${FM.pick ? "" : ' aria-hidden="true"'}>Remove items</span></span></button>`, hint = FM.pick ? "Tap any item to tick it. Folders still open." : n ? n + (n === 1 ? " item" : " items") + " chosen. Turn on Add items to add more." : "Turn on Add items to choose.";
     if (FM.active) return `<b>Focus Session</b>${cnt}<span class="vfh">${FM.pick ? hint : "In progress."}</span>${sw}<button type="button" class="vfs" data-fm="resume"><span class="vlong">Back to </span>session →</button>`;
     return `<b>Focus Session</b>${cnt}<span class="vfh">${hint}</span>${sw}<button type="button" data-fm="review"${n ? "" : " disabled"}>Review</button><button type="button" class="vfs" data-fm="start"${n ? "" : " disabled"}>Start<span class="vlong"> session</span> →</button>`; }
   const fmBarDraw = () => { const f = document.getElementById("v16fb"), h = fmBar(); if (f && f._h !== h){ f.innerHTML = h; f._h = h; } const c = document.getElementById("v16barc"); if (c) c.textContent = FM.pick ? "Pick on \u00b7 " + FM.sel.size + " selected" : FM.sel.size ? FM.sel.size + " selected" : ""; };
