@@ -1205,7 +1205,6 @@ function scMelOn(){ try { return localStorage.getItem("scMel") !== "0"; } catch 
 let scId = null, scDoc = null, scLines = null, scWords = null, scChords = null, scRg = null, scSpan = 4, scPick = null, scCtx = null, scTimer = null, scPlayEnd = null, scPH = null, scView = null;
 const SCDEG = {0:"1",1:"#1",2:"2",3:"b3",4:"3",5:"4",6:"#4",7:"5",8:"#5",9:"6",10:"b7",11:"7"};
 const SCNUMS = ["1","2","b3","3","4","#4","5","6","b7","7"], SCCHS = ["1","4","5","6m","2m","3m"];
-const SCBASS = {"1":36,"2m":38,"3m":40,"4":41,"5":43,"6m":45};
 const scClone = x => JSON.parse(JSON.stringify(x));
 /* (Oct 16, Chris) snap grid per song: 4/4 = 16ths, 3/4 and 6/8 = 8ths, swing = 8th triplets; doc.grid (steps per beat) wins, the Grid button cycles it */
 const SCGRID = {4: "16ths", 2: "8ths", 3: "Swing"};
@@ -1276,7 +1275,7 @@ function scSaveSoon(undo){ if (!undo){ const now = scSnap(); if (scLast && scLas
 function scDraw(){
   const st = scStep(), M = scDoc.meter, rows = scRows(), old = scQ(".scrows"), top = old ? old.scrollTop : 0;   /* (Oct 16, Chris) Stop never jumps back to the top */
   const okd = scView && (scView < (scDoc.step || 1) || scDoc.status === "approved");
-  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords: " + SCLV[scLv][0]}</span>${st === 2 ? `<span class="sclvs">${Object.keys(SCLV).map(k => `<button type="button" class="tb${k === scLv ? " on" : ""}" data-sclv="${k}">${SCLV[k][0]}</button>`).join("")}</span>` : ""}<span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${scStep() === 1 ? `<button type="button" class="tb scclk${scMuteMode ? " on" : ""}" data-scx="mutemode">${scMuteMode ? "Done muting" : "Mute bars"}</button>` : ""}${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button><button type="button" class="tb scclk${scChdOn() ? " on" : ""}" data-scx="chd">${scChdOn() ? "Chords on" : "Chords off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
+  document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords: " + SCLV[scLv][0]}</span>${st === 2 ? `<span class="sclvs">${Object.keys(SCLV).map(k => `<button type="button" class="tb${k === scLv ? " on" : ""}" data-sclv="${k}">${SCLV[k][0]}</button>`).join("")}</span>` : ""}<span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${scStep() === 1 ? `<button type="button" class="tb scclk${scMuteMode ? " on" : ""}" data-scx="mutemode">${scMuteMode ? "Done muting" : "Mute bars"}</button>` : ""}${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button><button type="button" class="tb scclk${scChdOn() ? " on" : ""}" data-scx="chd">${scChdOn() ? "Chords on" : "Chords off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb v16btn" data-scx="close">\u2715 Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button>${st === 1 ? `<button type="button" class="scck scadd" data-scadd="${i}" aria-label="Add a row underneath">+</button>` : ""}</div>`).join("") + `</div>`
     + `<div class="scpkr" id="scpkr"></div>`
     + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve " + SCLV[scLv][0] + " chords"}</button>`}</div></div>`;
@@ -1455,16 +1454,41 @@ function scBeep(m){ if (window.DESK_TEST) return; scPLoad([m]).then(() => { try 
 function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; clearTimeout(scPlayEnd); } scPH = null; const h = document.getElementById("scph"); if (h) h.remove(); }
 /* (Oct 15) Chris: Play starts at the top row that isn't checked; checked rows are skipped */
 /* (Oct 16, Chris) no synth: chords play on the same piano as the melody (left-hand bass note + a soft chord in the middle) */
-const SCTRI = {"1":[48,52,55],"2m":[50,53,57],"3m":[52,55,59],"4":[53,57,60],"5":[55,59,62],"6m":[57,60,64]};
-/* (Oct 16, Chris types any chord): number-system chord -> bass + chord notes, e.g. 1, 6m, b7, 4/5, 1/3, 5sus, 2m7, 4maj7, 7dim */
-const SCDG = {"1":0,"2":2,"3":4,"4":5,"5":7,"6":9,"7":11};
-function scParse(k){ if (SCBASS[k]) return [SCBASS[k], SCTRI[k]];
-  const m = /^\s*([b#♭♯]?)([1-7])\s*(.*?)(?:\s*\/\s*([b#♭♯]?)([1-7]))?\s*$/.exec(String(k || "")); if (!m) return null;
-  const acc = a => a === "b" || a === "♭" ? -1 : a === "#" || a === "♯" ? 1 : 0, r = (SCDG[m[2]] + acc(m[1]) + 12) % 12, q = m[3].toLowerCase();
-  let iv = /dim|°/.test(q) ? [0, 3, 6] : /sus2/.test(q) ? [0, 2, 7] : /sus/.test(q) ? [0, 5, 7] : /aug|\+/.test(q) ? [0, 4, 8] : /^m(?!aj)|min/.test(q) ? [0, 3, 7] : [0, 4, 7];
-  if (/maj7|ma7|Δ/.test(q)) iv = iv.concat(11); else if (/7/.test(q)) iv = iv.concat(10); else if (/6/.test(q)) iv = iv.concat(9);
-  const root = 48 + r, tri = iv.map(x => root + x), bp = m[5] ? (SCDG[m[5]] + acc(m[4]) + 12) % 12 : r;
-  return [36 + bp, tri]; }
+/*CHORD-MASTER-BEGIN*/
+  // THE ONE MASTER CHORD TABLE (Chris, Nov 4: "i only want 1 master copy of chords. no duplicates, no variations, no exceptions").
+  // Every chord anywhere (the Lab's band and the student's hands, the song-preview number reader, the Front Desk chord sheet sound,
+  // qa/chordread.py) reads THIS block. Never write a second interval list, quality list or number-to-letter list anywhere:
+  // qa/onechordtable.py refuses the push. Python reads the JSON below (claude-tasks/chord_master.py); the desk build inlines this block.
+  const CHORD_MASTER = {
+    "degree": {"1": 0, "2": 2, "3": 4, "4": 5, "5": 7, "6": 9, "7": 11},
+    "degreeLetter": {"1": "C", "2": "D", "3": "E", "4": "F", "5": "G", "6": "A", "7": "B"},
+    "quality": {"": [0, 4, 7], "m": [0, 3, 7], "dim": [0, 3, 6], "aug": [0, 4, 8], "sus4": [0, 5, 7], "sus2": [0, 2, 7],
+      "7": [0, 4, 7, 10], "maj7": [0, 4, 7, 11], "m7": [0, 3, 7, 10], "dim7": [0, 3, 6, 9], "m7b5": [0, 3, 6, 10], "6": [0, 4, 7, 9], "m6": [0, 3, 7, 9]},
+    "alias": {"maj": "", "min": "m", "-": "m", "o": "dim", "\u00b0": "dim", "+": "aug", "sus": "sus4", "min7": "m7", "ma7": "maj7", "\u0394": "maj7",
+      "4": "sus4", "2": "sus2", "m4": "sus4", "m2": "sus2"},
+    "letterPc": {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11},
+    "voicing": {"rhRoot": 60, "lhRoot": 48}
+  };
+  const chordQual = q => { q = String(q == null ? "" : q).trim(); const a = Object.prototype.hasOwnProperty.call(CHORD_MASTER.alias, q) ? CHORD_MASTER.alias[q] : q; return Object.prototype.hasOwnProperty.call(CHORD_MASTER.quality, a) ? a : null; };
+  const chordPc = (l, a) => (CHORD_MASTER.letterPc[l] + (/[#\u266f]/.test(a) ? 1 : /[b\u266d]/.test(a) ? -1 : 0) + 12) % 12;
+  // letter chord ("Am", "C/E", "G7") -> { rh: [keys], lh: key } or null: the chord the right hand and the left hand play
+  function chordRead(name) {
+    const s = String(name || "").trim(), cut = s.indexOf("/"), top = cut < 0 ? s : s.slice(0, cut), bs = cut < 0 ? "" : s.slice(cut + 1);
+    const m = /^([A-G])([#b\u266f\u266d]?)(.*)$/.exec(top), bm = bs ? /^([A-G])([#b\u266f\u266d]?)$/.exec(bs) : null, q = m && chordQual(m[3]);
+    if (!m || q === null || (bs && !bm)) return null;
+    const pc = chordPc(m[1], m[2]);
+    return { rh: CHORD_MASTER.quality[q].map(i => CHORD_MASTER.voicing.rhRoot + pc + i), lh: CHORD_MASTER.voicing.lhRoot + (bm ? chordPc(bm[1], bm[2]) : pc) };
+  }
+  // number chord as the desk types it ("1", "6m", "b7", "4/5", "2m7") -> letter chord in C ("C", "Am", "Bb", "F/G", "Dm7") or null
+  function chordFromNumber(k) {
+    const m = /^\s*([b#\u266d\u266f]?)([1-7])\s*(.*?)(?:\s*\/\s*([b#\u266d\u266f]?)([1-7]))?\s*$/.exec(String(k || "")); if (!m) return null;
+    const acc = a => a === "b" || a === "\u266d" ? "b" : a === "#" || a === "\u266f" ? "#" : "", q = chordQual(m[3]); if (q === null) return null;
+    return CHORD_MASTER.degreeLetter[m[2]] + acc(m[1]) + q + (m[5] ? "/" + CHORD_MASTER.degreeLetter[m[5]] + acc(m[4]) : "");
+  }
+  /*CHORD-MASTER-END*/
+/* (Nov 4, Chris: "i only want 1 master copy of chords") the chord table above is the Lab's ONE master (chord-data.js, inlined by build-desk-app.py); the desk holds none.
+   Desk chords play one octave lower than the Lab's voicing (a soft chord in the middle, the bass note low). */
+function scParse(k){ const V = chordRead(chordFromNumber(k)); return V ? [V.lh - 12, V.rh.map(x => x - 12)] : null; }
 const scChordNotes = k => { const P = scParse(k); return P ? [P[0]].concat(P[1]) : []; };
 function scChordAt(c, s, cut, k, dst){ const P = scParse(k); if (!P) return; scPiano(c, s, 0, P[0], .55, cut, dst); P[1].forEach(m => scPiano(c, s, 0, m, .32, cut, dst)); }
 function scChordBeep(k){ if (window.DESK_TEST) return; scPLoad(scChordNotes(k)).then(() => { try { const c = new AudioContext(); scChordAt(c, c.currentTime + .02, c.currentTime + 1, k); setTimeout(() => c.close(), 1500); } catch {} }); }
@@ -1988,7 +2012,7 @@ else if((D.k==='pick'||D.k==='move')&&D.was&&!D.moved){sel=[];startAt=null;paste
 else if(D.k==='ngroup'){if(D.oc&&D.oc.length)renorm();draw()}
 else if(D.k==='lead'&&D.a!=null){save();leadA=D.a;draw()}
 else if(D.k==='size'&&D.P){save();bars=D.P.C;sel=D.P.sel;draw()}else if((D.k==='move'&&!D.moved)||D.k==='band')light();else draw()});
-const DEG={'1':0,'2':2,'3':4,'4':5,'5':7,'6':9,'7':11};
+const DEG=CHORD_MASTER.degree;   /* the ONE degree table: the chord master (Nov 4) */
 /* (Oct 21, Chris: 'the note jumps an octave higher') a note given a new number keeps the octave NEAREST the pitch it had (smallest jump); a hold or empty box uses the note before it. Octave range -1..1 like the arrows. */
 function tokMid(d){const m=/^([b#♭♯]?)([1-7])/.exec(String(d).trim());return m?DEG[m[2]]+(/[b♭]/.test(m[1])?-1:/[#♯]/.test(m[1])?1:0):null}
 function nearO(oldMid,oldO,newD){const nb=tokMid(newD);if(nb==null)return oldO;if(oldMid==null)return oldO;let best=oldO,bd=Infinity;[0,-1,1].forEach(o=>{const dd=Math.abs(nb+12*o+60-oldMid);if(dd<bd-1e-9||(o===oldO&&dd<=bd+1e-9)){bd=dd;best=o}});if(Math.abs(nb+12*oldO+60-oldMid)<=bd+1e-9)best=oldO;return best}
@@ -2348,7 +2372,7 @@ function approve(){ const C=cur();if(!C||LV!==C)return;const rows=save();if(!row
 function open(id,view,d){ stop();ID=id;D=d;scId=id;scView=view?+view:null;scLoad(d);TOK=tokens();ORIG={};LAST={};LV=cur()||'easy';
   document.getElementById('songchk').innerHTML='<div class="scbg" data-ct="close"></div><div class="ctcard" role="dialog" aria-modal="true">'
   +'<div class="cth"><span class="t">'+esc(d.name)+'</span><span class="ctlvp" id="ct-lvp"></span><span class="ctlvs">'+LVS.map(k=>'<button type="button" class="tb" data-ct="lv" data-lv="'+k+'"></button>').join('')+'</span>'
-  +'<span class="ctts">Time signature <b>'+(d.meter||4)+'/4</b></span><span class="ctsp"></span><button type="button" class="tb ctplay" id="ct-play" data-ct="play">&#9654; Play</button><button type="button" class="tb" data-ct="close">Close</button></div>'
+  +'<span class="ctts">Time signature <b>'+(d.meter||4)+'/4</b></span><span class="ctsp"></span><button type="button" class="tb ctplay" id="ct-play" data-ct="play">&#9654; Play</button><button type="button" class="tb v16btn" data-ct="close">\u2715 Close</button></div>'
   +'<textarea id="ct-ta" spellcheck="false" autocomplete="off" autocapitalize="off"></textarea><div class="ctft"><span id="ct-msg"></span><span class="ctsp"></span><button type="button" class="tb" data-ct="reset">Reset</button><button type="button" class="tb go" id="ct-ok" data-ct="ok"></button></div></div>';
   const ta=document.getElementById('ct-ta');ta.addEventListener('input',()=>{ LAST[LV]=ta.value;clearTimeout(saveT);saveT=setTimeout(save,700) });
   ta.addEventListener('keydown',e=>e.stopPropagation());show() }
@@ -2480,7 +2504,7 @@ function shFixLog(r, step, now){ const CKS = step === "hands" ? SH_CHKS_H : step
   r.fixList = L; db.collection("shortcheck").doc(r.id).update({fixList: L}).catch(() => {}); }
 const shWide = () => matchMedia("(min-width:1000px)").matches;
 function shDraw(){
-  const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh">${shOne ? "<span></span>" : `<span class="scpill">${c}</span>`}<button type="button" class="tb" data-shx="close">Close</button></div>`;
+  const N = shRows.length, r = shRows[shI], head = (c) => `<div class="shh">${shOne ? "<span></span>" : `<span class="scpill">${c}</span>`}<button type="button" class="tb v16btn" data-shx="close">\u2715 Close</button></div>`;
   let h;
   if (!r){ const a = shRows.filter(x => x.status === "approved").length, d = shRows.filter(x => x.status === "dropped" || x.status === "fix" || x.hands === "fix").length;
     h = head(N + " of " + N) + `<div class="shdone">${N ? `All checked: ${a} approved, ${d} sent back` : "Nothing to check yet"}${shWait ? `<br><span class="shsrc">${shWait} Hands version${shWait > 1 ? "s" : ""} still being made</span>` : ""}</div><div class="shbtns"><button type="button" class="tb" data-shx="back"${N ? "" : " disabled"}>Back</button><span></span><button type="button" class="tb go" data-shx="close">Done</button></div>`; }
@@ -2721,7 +2745,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
       return `<button type="button" class="vr" data-k="${esc(k)}" data-kind="folder"><span class="vsy" aria-hidden="true">${n.ic}</span><span class="vi"><b>${esc(n.t)}</b><small>${c == null ? "Loading..." : c + (c === 1 ? " song" : " songs")}</small></span>${c ? `<span class="vfc">${c}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; }
     const f = !!n.kids, one = f && n.kids.length === 1, sub = f ? (one ? N[n.kids[0]].t : leaves(k) + (leaves(k) === 1 ? " item" : " items")) : n.kind === "song" ? (n.cells.find(c => c[1] === "chk") || ["All approved"])[0] + (n.cells.some(c => c[1] === "chk") ? ": check" : "") : [n.proj, n.mins ? n.mins + " min" : ""].filter(Boolean).join(" · ");
     return `<button type="button" class="vr${FOC.sel.has(k) ? " vsel" : ""}" data-k="${esc(k)}" data-kind="${f ? "folder" : n.kind}"><span class="vsy" aria-hidden="true">${f ? n.ic : n.kind === "song" ? "♫" : "○"}</span><span class="vi"><b>${esc(n.t)}</b><small>${esc(sub)}</small></span>${f && !one ? `<span class="vfc">${leaves(k)}</span>` : ""}<span class="vgo" aria-hidden="true">›</span></button>`; };
-  const nav = (title, n) => `<div class="vnav"><button type="button" data-v2="back">← Back</button><b>${esc(title)}</b>${n != null ? `<span class="vfc">${n}</span>` : ""}<button type="button" class="vclose" data-v2="close">✕ Close</button></div>`;
+  const nav = (title, n) => `<div class="vnav"><button type="button" data-v2="back">← Back</button><b>${esc(title)}</b>${n != null ? `<span class="vfc">${n}</span>` : ""}<button type="button" class="vclose v16btn" data-v2="close">\u2715 Close</button></div>`;
   function view(k){
     if (k === "home") return `<section class="vs"><div class="vsh"><h2>Front Desk</h2></div>${HOME.folders.map(row).join("")}<p class="vk" style="white-space:normal">More boards move into this shell one at a time, after you approve Songs.</p></section>`;
     const n = N[k];
@@ -2760,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v441</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v442</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2984,7 +3008,7 @@ function labStatusOf(url){ const lab = stats.find(x => x.id === "lab"), m = Stri
   const id = decodeURIComponent(m[1]); for (const c of lab.chapters || []) for (const L of c.lessons) if (L.id === id) return L.s; return null; }
 const revCounts = items => { const c = {good: 0, fix: 0, fixed: 0, none: 0}; items.forEach(r => c[RS[r.s ?? r.status] || "none"]++); return c; };
 const countLine = c => [c.good && c.good + " approved \u2713", c.fix && c.fix + " fix pending", c.fixed && c.fixed + " fixed, check again", c.none && c.none + " not checked"].filter(Boolean).join(", ");
-const popTop = (title, extra) => `<div class="poptop"><b>${title}</b><span class="row" style="gap:6px;flex:none">${extra || ""}<button type="button" class="tb" data-popclose="1">Close</button></span></div>`;
+const popTop = (title, extra) => `<div class="poptop"><b>${title}</b><span class="row" style="gap:6px;flex:none">${extra || ""}<button type="button" class="tb v16btn" data-popclose="1">\u2715 Close</button></span></div>`;
 // a list of buttons, paged to fit the pop-up
 function popPaged(items){
   // (Oct 7) Chris: Gmail style, a set size (about 8 rows) and anything more scrolls inside the pop-up; no Back / More
@@ -3658,7 +3682,7 @@ function txPanel(x){
   const btn = c => `<button class="btn${c===x.emp?" go":""}" type="button" data-pick="${esc(key)}" data-cat="${esc(c.category)}" data-kind="${esc(c.kind)}">${esc(c.category)}</button>`;
   return `<div class="tpanel">${info}${x._got?`<span class="note">Now: <b style="color:var(--ink)">${esc(x._got.category)}</b>. Tap another to change it.</span>`:""}
     <div class="sgrid c3">${ch.slice(0,4).map(btn).join("")}${btn({category:"Transfer",kind:"transfer"})}<button class="btn" type="button" data-sortother="${esc(key)}">Other</button></div>
-    <div class="row"><button class="btn" type="button" data-txclose="1">Close</button></div></div>`;
+    <div class="row"><button class="btn v16btn" type="button" data-txclose="1">\u2715 Close</button></div></div>`;
 }
 // Chris (Oct 3): "I don't have any way of responding": answer right here. Cadence reads the saved answer and acts on it.
 // Talk instead of type (Chris, Oct 4): the browser's speech recognition fills the box live; Stop ends it.
@@ -4080,7 +4104,7 @@ function salesCard(emb){
     SROWS = phone() ? (sRowsCap ?? Math.max(2, Math.floor((innerHeight - 330) / (sDet === "prod" ? 52 : 24)))) : Math.max(4, Math.floor((Math.min(380, Math.max(186, innerHeight - 580)) - (sDet === "prod" ? 70 : 50)) / 22));
     const pages = Math.max(1, Math.ceil(P.rows.length / SROWS)); sPg = Math.min(sPg, pages - 1);
     const pg = pages > 1 ? `<button type="button" class="small" data-spg="-1" ${sPg ? "" : "disabled"}>Back</button><span class="mu" style="font-size:12px">${sPg + 1} of ${pages}</span><button type="button" class="small" data-spg="1" ${sPg < pages - 1 ? "" : "disabled"}>More</button>` : "";
-    body = `<div class="sptop"><span class="pr" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${P.title}${sProd && !["day", "sale", "prod"].includes(sDet) ? " · " + esc(sProd) : ""}${sDet === "prod" ? " · " + esc(sRange(sd).lbl) : ""}</span><span class="sbtns">${!["day", "sale", "prod"].includes(sDet) ? '<button type="button" class="small" data-sbyprod="1">By product</button>' : ""}${P.btns || ""}${pg}<button type="button" class="small" data-sclose="1">Close</button></span></div>
+    body = `<div class="sptop"><span class="pr" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${P.title}${sProd && !["day", "sale", "prod"].includes(sDet) ? " · " + esc(sProd) : ""}${sDet === "prod" ? " · " + esc(sRange(sd).lbl) : ""}</span><span class="sbtns">${!["day", "sale", "prod"].includes(sDet) ? '<button type="button" class="small" data-sbyprod="1">By product</button>' : ""}${P.btns || ""}${pg}<button type="button" class="small v16btn" data-sclose="1">\u2715 Close</button></span></div>
       <div class="slist">${P.head || ""}${P.rows.slice(sPg * SROWS, sPg * SROWS + SROWS).join("")}</div>`;
   } else {
     body = `${prodRow}<div class="sg" id="sg" aria-label="Daily graph"></div>
@@ -4504,7 +4528,7 @@ async function exShowDetail(body){
   }
   if (!body) return;
   const per = Math.max(4, Math.floor((innerHeight - 190) / 24)), pages = Math.max(1, Math.ceil(rows.length / per)); exPg = Math.min(exPg, pages - 1);
-  body.innerHTML = `<div class="popbg" data-popbg="1"></div><div class="popcard" role="dialog" aria-modal="true"><div class="poptop"><b>${esc(m.label)} · ${esc(when)}${rows.length ? "" : " · nothing that day"}</b><button type="button" class="tb" data-exclose="1">Close</button></div><div class="slist">${head}${rows.slice(exPg * per, exPg * per + per).join("")}</div>${pages > 1 ? `<div class="row popnav"><button type="button" class="tb" data-expg="-1" ${exPg ? "" : "disabled"}>Back</button><span class="tn">${exPg + 1} of ${pages}</span><button type="button" class="tb" data-expg="1" ${exPg < pages - 1 ? "" : "disabled"}>More</button></div>` : ""}</div>`;
+  body.innerHTML = `<div class="popbg" data-popbg="1"></div><div class="popcard" role="dialog" aria-modal="true"><div class="poptop"><b>${esc(m.label)} · ${esc(when)}${rows.length ? "" : " · nothing that day"}</b><button type="button" class="tb v16btn" data-exclose="1">\u2715 Close</button></div><div class="slist">${head}${rows.slice(exPg * per, exPg * per + per).join("")}</div>${pages > 1 ? `<div class="row popnav"><button type="button" class="tb" data-expg="-1" ${exPg ? "" : "disabled"}>Back</button><span class="tn">${exPg + 1} of ${pages}</span><button type="button" class="tb" data-expg="1" ${exPg < pages - 1 ? "" : "disabled"}>More</button></div>` : ""}</div>`;
 }
 const pinName = p => { const m = exMet(p.metric); return (m ? m.label : p.metric) + (p.split ? " by " + p.split.toLowerCase() : p.compare && exMet(p.compare) ? " vs " + exMet(p.compare).label : ""); };
 function exCSV(){
@@ -5657,7 +5681,7 @@ function socPop(){
     body = `<div class="soclist">${F.join("")}</div>`;
   }
   const back = st.length > 1 ? `<button type="button" class="tb" data-socback="1">Back</button>` : "";
-  return `<div class="poptop"><b class="soct1">${title}</b><span class="row" style="gap:6px;flex:none">${back}<button type="button" class="tb" data-popclose="1">Close</button></span></div><div class="socpop">${per}${body}</div>`;
+  return `<div class="poptop"><b class="soct1">${title}</b><span class="row" style="gap:6px;flex:none">${back}<button type="button" class="tb v16btn" data-popclose="1">\u2715 Close</button></span></div><div class="socpop">${per}${body}</div>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-soccolgo],[data-socapp],[data-socgo],[data-socback]"); if (!b) return;
   const d = b.dataset;
@@ -6052,7 +6076,7 @@ async function mcOpen(id){
   const body = rows.length ? rows.map(({i, a, b}) => `<div class="mcr"><p class="tn">Row ${i + 1}</p><p class="mcl">Yours</p>${mcRowHTML(a, KR, mcDoc.words, false)}<p class="mcl">Hymnal</p>${mcRowHTML(b, KA, mcDoc.rebuildWords, true)}</div>`).join("") : `<p class="note">The hymnal draft has the same notes as yours.</p>`;
   const src = String(mcDoc.rebuildNote || "").match(/from (\d+|two|2) (hymnals|sources)[^.]*/i);
   const o = document.createElement("div"); o.id = "mcpop"; o.className = "mcov";
-  o.innerHTML = `<div class="mcbox" role="dialog" aria-label="Pick a melody"><div class="mchd"><b>${esc(mcDoc.name || id)}: pick a melody</b><button type="button" class="mcx" data-mcclose aria-label="Close">&#10005;</button></div>
+  o.innerHTML = `<div class="mcbox" role="dialog" aria-label="Pick a melody"><div class="mchd"><b>${esc(mcDoc.name || id)}: pick a melody</b><button type="button" class="mcx v16btn" data-mcclose aria-label="Close">\u2715 Close</button></div>
     <p class="tn">${notes ? notes + (notes === 1 ? " note differs" : " notes differ") + " (gold)" : "No notes differ"}</p>
     <div class="mccard"><div class="mcch"><div><b>Your melody</b><p class="tn">What is on the song board now</p></div><button type="button" class="tb" data-mcplay="m">&#9654; Play</button></div></div>
     <div class="mccard"><div class="mcch"><div><b>Hymnal draft</b><p class="tn">${esc(src ? "F" + src[0].split(/[:(]/)[0].trim().slice(1) : "From hymnal sheet music")}</p></div><button type="button" class="tb" data-mcplay="d">&#9654; Play</button></div></div>
@@ -6904,7 +6928,7 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
 /* (Nov 3, Chris: "add task ... title, description, due date, url so the go button can take there, and then a start date. So something can be due Fri, but I want to do it today")
    start = t.date (the day it lands on Today, default today), due = t.due (the deadline), url = t.url (the row's title opens it) */
 function addTaskOpen(){ addTaskClose(); const w = document.createElement("div"); w.id = "addtask"; const f = (k, l, ty) => `<div><label for="at-${k}">${l}</label><input id="at-${k}" type="${ty}"${ty === "date" ? ` value="${k === "date" ? plus(0) : ""}"` : ""}></div>`;
-  w.innerHTML = `<div class="popbg" data-addclose="1"></div><div class="popcard addcard" role="dialog" aria-modal="true" aria-label="Add task"><div class="poptop"><b>Add task</b><button type="button" class="popx" data-addclose="1" aria-label="Close">✕</button></div>
+  w.innerHTML = `<div class="popbg" data-addclose="1"></div><div class="popcard addcard" role="dialog" aria-modal="true" aria-label="Add task"><div class="poptop"><b>Add task</b><button type="button" class="popx v16btn" data-addclose="1" aria-label="Close">\u2715 Close</button></div>
     <label for="at-title">Title</label><input id="at-title" type="text" autocomplete="off"><label for="at-note">Description</label><textarea id="at-note"></textarea>
     <div class="adddates">${f("date", "Start", "date")}${f("due", "Due", "date")}</div><label for="at-url">Link</label><input id="at-url" type="url" placeholder="https://" autocomplete="off">
     <p class="adderr" hidden></p><div class="row"><button type="button" class="tb" data-addclose="1">Cancel</button><button type="button" class="tb go" data-addsave="1">Add</button></div></div>`;
