@@ -1502,8 +1502,8 @@ async function scApprove(){
      a save that works closes it at once, back on the SAME open board he came from (Oct 21), with the Submitted pill (Oct 16) */
   const one = st === 2 && lv !== "easy", back = !one && scView && (scView < (D.step || 1) || D.status === "approved");
   const up = one ? {[SCLV[lv][1]]: C, [lv + "OK"]: now, updated: now}   /* Medium / Hard: own approval, the Easy flow and the task stay as they are */
-    : back ? {lines: L, words: W, [st === 1 ? "chords" : SCLV[lv][1]]: C, [st === 1 ? "melodyOK" : lv === "easy" ? "chordsOK" : lv + "OK"]: now, updated: now}
-    : st === 1 ? {step: 2, status: "chords", lines: L, words: W, chords: C, melodyOK: now, updated: now}
+    : back ? Object.assign({lines: L, words: W, [st === 1 ? "melodyOK" : lv === "easy" ? "chordsOK" : lv + "OK"]: now, updated: now}, st === 1 ? {} : {[SCLV[lv][1]]: C})
+    : st === 1 ? {step: 2, status: "chords", lines: L, words: W, melodyOK: now, updated: now}   /* (Nov 3, Chris: "it's not letting me save O Holy Night") a Melody Approve saves the melody ONLY: the chords belong to his Level approvals, so the Level 1 lock never refuses a Melody save */
     : {status: "approved", lines: L, chords: C, chordsOK: now, updated: now};
   if (!(await scSave(id, up))){ scId = null; return; }
   scLocal(id, up);
@@ -2760,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v435</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v436</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
