@@ -2760,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v439</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v440</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7843,6 +7843,12 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
      The row list above is the one source; desk-uniform/run.py opens every folder and measures it. */
   :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) :is(.v16hd~.srow,.chgrid>.pc3,.chgrid>.chc[data-tlinks],.chgrid>.trow,.sublist.pfon>.srow,.sublist.pfon>.chc,.pboard>.msec:not(.pfpath)){height:50px!important;min-height:0!important;max-height:50px!important;padding-top:0!important;padding-bottom:0!important;overflow:hidden;align-items:center}
   body.v16pop.v16work #list .chgrid>.pc3>.pc3t{min-height:48px!important;height:48px;padding-top:0!important;padding-bottom:0!important;align-items:center!important}
+  /* (Nov 4, Chris approved Nov 3: PIECE 3) the odd rows join the one row: Queue table rows, Lab Songs sort + Lab links boxes, empty-folder lines (all 50px, same box as every row) */
+  :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) :is(.chgrid>.qrow,.qlist>.qrow,:is(.chgrid,.sublist.pfon,.pfpath)>.tn,.pfpath .songsort,.pfpath .llsum,.pfpath .llhead,.pfpath .llrow){box-sizing:border-box;display:flex!important;flex-direction:row!important;align-items:center;gap:10px;height:50px!important;min-height:0!important;max-height:50px!important;margin:6px 10px 0!important;padding:0 12px!important;border:1px solid var(--v-line)!important;border-radius:8px!important;background:var(--v-a)!important;overflow:hidden;font:700 14px/1.2 Figtree,system-ui,sans-serif;color:var(--v-ink)}
+  :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) :is(.chgrid,.sublist.pfon,.pfpath)>.tn{font-weight:500;color:var(--muted)}
+  :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) .llsum>span{flex:1 1 0;min-width:0;display:flex;flex-direction:row;align-items:baseline;justify-content:center;gap:4px;font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) .llsum>span>b{font-size:15px}
+  :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) .qrow>b{display:flex;align-items:center;min-width:0;font-size:14px;line-height:1.2} :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) .qrow .qt{-webkit-line-clamp:1!important} :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) .qrow>b>span:not(.qt):not(.qt2){display:none!important}
+  :is(body.v16pop.v16work #list,body.v16pop #shortchk .ctab) .qhead{box-sizing:border-box;height:50px;align-items:center;padding-top:0!important;padding-bottom:0!important}
   body.v16pop.v16work #list .pboard>.msec:not(.pfpath)>*{min-height:0!important}
   body.v16pop.v16work #list .pboard>.msec:not(.pfpath)>h4{font:700 14px/1.2 Figtree,system-ui,sans-serif!important;letter-spacing:0!important;height:48px!important;margin:0!important;width:100%!important;max-width:none!important;box-sizing:border-box!important;background:transparent!important;justify-content:space-between!important;text-align:left!important}   /* (Nov 3, Chris: the Projects rows) open or closed, a Projects row = the same row title as every list */
   body.v16pop.v16work #list .sublist.pfon>.chc{width:calc(100% - 20px)!important;max-width:none!important}   /* rows are full width like every list (Ideas, Viewer requests) */   /* (Nov 2, Chris: "everything needs to have a uniform look, matching the today rows") every list row = the home Today card: cream, thin line, rounded, 6px apart; the tan header sits above */   /* (Nov 2, Chris) the frozen header stands out while rows scroll under it */ body.v16pop.pfdeep #list .sublist.pfon{display:block!important}`;
