@@ -1279,7 +1279,7 @@ function scDraw(){
   document.getElementById("songchk").innerHTML = `<div class="scbg" data-scx="close"></div><div class="sccard${okd ? " ok" : ""}" role="dialog" aria-modal="true">${okd ? `<div class="okbar">&#10003; ${st === 1 ? "Melody" : "Chords"} approved</div>` : ""}<div class="sch"><span class="t">${esc(scDoc.name)}</span><span class="scpill">${st === 1 ? "Melody" : "Chords: " + SCLV[scLv][0]}</span>${st === 2 ? `<span class="sclvs">${Object.keys(SCLV).map(k => `<button type="button" class="tb${k === scLv ? " on" : ""}" data-sclv="${k}">${SCLV[k][0]}</button>`).join("")}</span>` : ""}<span class="sctsig">Time signature <b>${M}/4</b></span><button type="button" class="tb scclk${scClickOn() ? " on" : ""}" data-scx="click">${scClickOn() ? "Click on" : "Click off"}</button>${scStep() === 1 ? `<button type="button" class="tb scclk${scMuteMode ? " on" : ""}" data-scx="mutemode">${scMuteMode ? "Done muting" : "Mute bars"}</button>` : ""}${st === 2 ? `<button type="button" class="tb scclk${scMelOn() ? " on" : ""}" data-scx="mel">${scMelOn() ? "Melody on" : "Melody off"}</button><button type="button" class="tb scclk${scChdOn() ? " on" : ""}" data-scx="chd">${scChdOn() ? "Chords on" : "Chords off"}</button>` : ""}<span class="tn" id="sccnt" style="margin-left:auto"></span><button type="button" class="tb" data-scx="close">Close</button></div>`
     + `<div class="scrows${st === 2 ? " two" : ""}">` + scLines.map((l, i) => `<div class="scrow${st === 2 ? " two" : ""}${rows.includes(i) ? " done" : ""}"><div class="sctrk" data-sct="${i}"></div><button type="button" class="scck" data-scck="${i}" aria-label="Row done">&#10003;</button>${st === 1 ? `<button type="button" class="scck scadd" data-scadd="${i}" aria-label="Add a row underneath">+</button>` : ""}</div>`).join("") + `</div>`
     + `<div class="scpkr" id="scpkr"></div>`
-    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button><button type="button" class="tb" data-scx="reset">Reset</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve " + SCLV[scLv][0] + " chords"}</button>`}</div></div>`;
+    + `<div class="scbtns"><button type="button" class="tb" data-scx="play">${scCtx ? "Stop" : "Play"}</button><div class="scsel"></div><button type="button" class="tb" data-scx="undo"${scUndo.length ? "" : " disabled"}>Back</button>${okd ? `<button type="button" class="tb okd" data-scx="close">&#10003; Approved</button>` : `<button type="button" class="tb go" data-scx="ok">${st === 1 ? "Approve melody" : "Approve " + SCLV[scLv][0] + " chords"}</button>`}</div></div>`;
   scCount(); scLines.forEach((l, i) => scTrack(i)); scPicker(); const nw = scQ(".scrows"); if (nw) nw.scrollTop = top; }
 /* (Oct 15) Chris: a line glides left to right across each bar while it plays */
 function scHead(){ if (!scCtx || !scPH) return; const el0 = (scCtx.currentTime - scPH.T) / scPH.B, S = scPH.segs;
@@ -1561,7 +1561,7 @@ document.addEventListener("click", e => {
   else if (a === "newrow") scNewRow();
   else if (a === "grid"){ const nx = {4: 2, 2: 3, 3: 4}[scG()]; scDoc.grid = nx; x.textContent = "Grid " + SCGRID[nx]; if (scId) scSave(scId, {grid: nx}); }
   else if (a === "undo"){ if (!scUndo.length) return; const o = JSON.parse(scUndo.pop()); scLines = o.L; scWords = o.W; scChords = o.C; scDoc.muted = o.M || []; scLast = scSnap(); scPick = null; scMulti = []; scPt = null; const n = scRg.length; scRanges(); if (scLines.length !== n) scDraw(); else scAll(); scSaveSoon(true); }
-  else if (a === "reset"){ if (scStep() === 1){ scLines = scClone(scDoc.orig).map((l, i) => l.map(n => Object.assign(n, {c: (((scLines[i] || []).find(m => Math.abs(m.g - n.g) < 1e-9) || {}).c) || n.c || []}))); scWords = scWordsFrom(scDoc.orig); scFixWords(); }
+  else if (a === "reset" && false){   /* (Nov 3, Chris: "disable any Reset function that can restore an outdated melody") Reset put songcheck.orig (an old melody) back: off */ if (scStep() === 1){ scLines = scClone(scDoc.orig).map((l, i) => l.map(n => Object.assign(n, {c: (((scLines[i] || []).find(m => Math.abs(m.g - n.g) < 1e-9) || {}).c) || n.c || []}))); scWords = scWordsFrom(scDoc.orig); scFixWords(); }
     else scChords = scChordsFrom(scDoc.orig, scRg);
     scPick = null; scAll(); scSaveSoon(); }
   else if (a === "ok") scApprove(); }, true);
@@ -2760,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v432</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v433</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6535,7 +6535,7 @@ function sgSoon(x){ if (!x || !x.cells || !sgChk(x).length) return false; if (SG
   const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
 function sgIsLive(x){ const SL = stats.find(q => q.id === "songlive") || {}; return (SL.ids || []).includes(x.sc && x.sc.labId) || (SL.titles || []).map(sgKey).includes(x.k); }   /* (Oct 31, Chris: a song moves to Live when it's live, never in 2 folders) db stats/songlive, read from Live's own files by song-live-list.py */
 /* (Nov 1, Chris: "christmas song list needs to be put in my today folder") Today's Songs to check = every Christmas song (x.xm, the board's one Christmas test) not yet on Live with a gold box waiting. No typed list. (Oct 31, Chris: "i like to see it there until it's finished") one he already started stays while it rebuilds (Fixing, or Making on Level 1, Intro or Final), and leaves on its Final Approve. A song with nothing built to check stays in the Christmas folder. */
-function sgNow(x){ if (!x || !x.xm || !x.cells || sgIsLive(x)) return false; const C = x.cells; if (x.sc && x.sc.finalOK && x.sc.finalOK.L1 && C[7].c !== "chk") return false;
+function sgNow(x){ if (!x || !x.xm || !x.cells || sgIsLive(x)) return false; if (x.sg && x.sg.release && x.sg.release > new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10)) return false;   /* (Nov 3, Chris: "remove the rest from my songboard and add them to the Christmas songs folder") a release more than 7 days out = Christmas folder only */ const C = x.cells; if (x.sc && x.sc.finalOK && x.sc.finalOK.L1 && C[7].c !== "chk") return false;
   return sgChk(x).length > 0 || C.some(q => q.c === "fx") || [3, 4, 7].some(i => C[i].c === "mk"); }
 function sgNext(x){ return sgSoon(x) && !sgNow(x); }
 function homeSongs(only){
