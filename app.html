@@ -2760,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v440</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v441</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6170,8 +6170,23 @@ function chDraw(){ const o = document.getElementById("lyrchk"); if (!o || !chS) 
   if (lb.innerHTML !== lh) lb.innerHTML = lh;
   const act = ed ? `<button type="button" class="tb go" data-chx="ok">Approve ${nm}</button>` : chPrevOk(L) ? `<button type="button" class="tb" data-chx="edit">Edit (locked)</button>` : `<button type="button" class="tb" disabled>Approve ${CHLV[CHL[CHL.indexOf(L) - 1]][2]} first</button>`;
   const sv = ed ? `<button type="button" class="tb svst" disabled>${sheetSaveTxt(chS, chS.dirty.size)}</button>` : "";   /* (Oct 23, Chris) save half-done chords without approving */
-  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">Back</button>` + sv + act;
-  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ed ? "1fr 1fr 1fr" : "1fr 1fr"; }   /* never swap the buttons under a tap (a blur re-draw would eat the Approve click) */
+  const bt = o.querySelector(".lyrbt"), bh = `<button type="button" class="tb" data-chx="back">Back</button><button type="button" class="tb" data-chx="play">${chP ? "&#9632; Stop" : "&#9654; Play"}</button>` + sv + act;
+  if (bt.innerHTML !== bh) bt.innerHTML = bh; bt.style.gridTemplateColumns = ed ? "1fr 1fr 1fr 1fr" : "1fr 1fr 1fr"; }   /* never swap the buttons under a tap (a blur re-draw would eat the Approve click) */
+/* (Nov 3, Chris yes: "Play on the chord sheet plays melody + chords together, unapproved edits included") PLAY on the chord sheet: the song's melody (r.lines)
+   with the OPEN level's chords exactly as on screen (unsaved edits too; Level 1's intro chords, as the player only plays that intro), on the desk piano
+   (scPLoad / scPiano / scChordAt), at the song's bpm. Stop / Back / closing / switching song stops it; switching level while playing restarts on that level. */
+let chP = null;
+function chStop(){ if (!chP) return; try { chP.c.close(); } catch (e) {} const s = chS; chP = null; if (s && document.getElementById("lyrchk")) chDraw(); }
+async function chPlay(){ if (chP) chStop(); if (!chS || window.DESK_TEST) return; const r = chS.r, B = 60 / (+r.bpm || 90), lv = chS.lv;
+  const f1 = (chVerseWords(r, 1)[0] || {g: 0}).g, N = (r.lines || []).flat().filter(n => n && typeof n.m === "number" && n.m > 0 && isFinite(+n.g)).sort((p, q) => p.g - q.g);
+  const C = chClone(chView("L1").S).filter(c => c.g < f1 - 1e-9).concat(chClone(chView(lv).S).filter(c => c.g >= f1 - 1e-9));
+  if (!N.length && !C.length) return;
+  const c = new AudioContext(), P = chP = {c}; chDraw(); await scPLoad(N.map(n => n.m).concat(C.flatMap(x => scChordNotes(x.k)))); if (chP !== P) return;
+  const g0 = Math.min(...N.map(n => n.g), ...C.map(x => x.g)), T = c.currentTime + .3, at = g => T + (g - g0) * B;
+  N.forEach((n, k) => scPiano(c, at(n.g), 0, n.m, 1, at(n.L > 0 ? n.g + n.L : k + 1 < N.length ? N[k + 1].g : n.g + 1)));
+  C.forEach(x => scChordAt(c, at(x.g), at(x.g + (x.L > 0 ? x.L : 4)), x.k));
+  const end = Math.max(...N.map(n => n.g + (n.L > 0 ? n.L : 1)), ...C.map(x => x.g + (x.L > 0 ? x.L : 4)));
+  setTimeout(() => { if (chP === P) chStop(); }, (at(end) - c.currentTime + 1.5) * 1000); }
 function chLoad(r, L, prev){ const f = CHLV[L][0], V = r[f + "V"] && typeof r[f + "V"] === "object" ? r[f + "V"] : {}, S = chFlat(r[f]), T = chFlat(r.tag && r.tag[f]);
   if (prev && !chOk(L) && L !== "L1") return chCloneSet(prev);   /* not yet approved: shows a copy of the level before (Chris: start from scratch) */
   return {S: S.length || !prev ? S : chClone(prev.S), V: L === "L1" ? {} : Object.fromEntries(Object.entries(V).map(([v, rows]) => [v, chFlat(rows)]).filter(([, A]) => A.length)), T: T.length || !prev ? T : chClone(prev.T)}; }
@@ -6278,9 +6293,10 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
     if (slab) chSecFlip(+slab.dataset.chsec); else if (scp) chSecTick(scp.dataset.chcp); else chSecApply(+sap.dataset.chap); return; }
   const lvx = e.target.closest("[data-chlvx]"), sc = e.target.closest("[data-chsc]"), dr = e.target.closest("[data-chdrop]");
   if (lvx || sc || dr){ e.preventDefault(); e.stopPropagation(); const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
-    if (lvx){ chS.lv = lvx.dataset.chlvx; chS.cpNote = {}; } if (sc) chS.scope = sc.dataset.chsc; if (dr){ delete chS.charts[chS.lv].V[dr.dataset.chdrop]; chS.dirty.add(chS.lv); } chS.arm = false; chDraw(); return; }
+    if (lvx){ chS.lv = lvx.dataset.chlvx; chS.cpNote = {}; if (chP) chPlay(); } if (sc) chS.scope = sc.dataset.chsc; if (dr){ delete chS.charts[chS.lv].V[dr.dataset.chdrop]; chS.dirty.add(chS.lv); } chS.arm = false; chDraw(); return; }
   const x = e.target.closest("[data-chx]"); if (!x) return; e.preventDefault(); e.stopPropagation();
-  const act = x.dataset.chx; if (act === "back"){ const S = chS; await chFlush(S); if (S.err){ if (chS === S) chDraw(); return; } if (chS === S){ chS = null; lyrClose(); } return; }
+  const act = x.dataset.chx; if (act === "play"){ const foc0 = document.querySelector("#lyrchk .chz:focus"); if (foc0 && !chSetSlot(foc0)) return; if (chP) chStop(); else chPlay(); return; }
+  if (act === "back"){ chStop(); const S = chS; await chFlush(S); if (S.err){ if (chS === S) chDraw(); return; } if (chS === S){ chS = null; lyrClose(); } return; }
   if (act === "edit"){ scUnlock(chS.id, [CHLV[chS.lv][1]]); chS.unl.add(chS.lv); chS.arm = false; chDraw(); return; }
   const foc = document.querySelector("#lyrchk .chz:focus"); if (foc && !chSetSlot(foc)) return;
   const r = chS.r, lv = chS.lv, j = CHL.indexOf(lv), now = new Date().toISOString(), M = r.meter || 4, TM = r.tag && r.tag.meter || M, tag = r.tag ? JSON.parse(JSON.stringify(r.tag)) : null;
@@ -6388,7 +6404,7 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
   if (!(await scSave(r.id, up))) return;
   Object.assign(r, up); scLocal(r.id, up); render();
   sgCelebrate(r.id, 1); ntS = null; lyrClose(); }, true);
-function lyrClose(){ if (typeof ntStop === "function") ntStop(); const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); scVisitEnd("lyr", o.dataset.id, null, !!o.dataset.f); } }   /* (Oct 29) closing without Approve relocks what this check unlocked; Intro/Player pop-up: carried to the next check */
+function lyrClose(){ if (typeof ntStop === "function") ntStop(); if (typeof chP !== "undefined" && chP){ try { chP.c.close(); } catch (e) {} chP = null; } const o = document.getElementById("lyrchk"); if (o){ o.remove(); sgBack(); scVisitEnd("lyr", o.dataset.id, null, !!o.dataset.f); } }   /* (Oct 29) closing without Approve relocks what this check unlocked; Intro/Player pop-up: carried to the next check */
 /* (Oct 24, Chris) SONG CHECK RETURN: every Approve closes the check at once, back on the SAME song at the SAME spot (the box sits where it was on screen,
    even if the board re-sorted); the approved box waits a beat gold, flashes the Lab's gold glow, turns teal, then the desk confetti falls. Phone Back closes only the check. */
 let sgMk = null, sgCel = null, sgNavSkip = false;
