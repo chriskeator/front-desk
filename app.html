@@ -2760,7 +2760,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v437</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v438</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3487,8 +3487,8 @@ function morningScreen(seg){
   const wkEnd0 = (() => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); })();
   const wk = tasks.filter(t => t !== flagged0 && inToday(t)).sort((a, b) => sortBy === "az" ? byAZ(a, b) : sortBy === "time" ? byTime(a, b) : (b.chore ? 1 : 0) - (a.chore ? 1 : 0) || byImp(a, b));
   const dn = wk.filter(t => t.done).length, left = minsOf(wk.filter(t => !t.done));
-  const chc0 = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"><b>${V16 && !t.done && !t.wait ? v16Title(t, esc(t.short || t.title)) : esc(t.short || t.title)}${labTag(t)}</b><span>${V16 && t.note ? esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0]) : t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
-  const chc = t => V16 && !t.done && !t.wait ? `<div class="trow vstrip">${chc0(t)}${rowBtns(t, "strip")}</div>` : chc0(t);
+  const chc0 = t => `<button type="button" class="chc${t.done ? " done" : ""}" data-tlinks="${esc(t.id)}"${PCOL[t.project] ? ` style="--cc:${PCOL[t.project]}"` : ""}><b>${V16 && !t.done && !t.wait ? v16Title(t, esc(t.short || t.title)) : esc(t.short || t.title)}${labTag(t)}</b><span>${V16 && t.note ? esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0]) : t.done ? "done" : [t.chore ? "chore" : "", t.date < plus(0) ? "late, from " + dayLabel(t.date) : ""].filter(Boolean).join(" · ") || "today"}</span>${tmR(t.mins)}</button>`;
+  const chc = t => V16 && !t.done && !t.wait ? `<div class="trow vstrip"${PCOL[t.project] ? ` style="--cc:${PCOL[t.project]}"` : ""}>${chc0(t)}${rowBtns(t, "strip")}</div>` : chc0(t);
   const fp = focusProj(), ft = tasks.filter(t => !t.done && t.project === fp).sort((a, b) => String(a.date || "9").localeCompare(String(b.date || "9")) || byOrder(a, b));
   const flagged = tasks.find(t => t.one && !t.done && !t.chore);
   // (Oct 7) Chris: ONE thing per day, only the flagged one due today. Done or moved = gone; nothing refills it.
@@ -7708,11 +7708,14 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     if (!FM.active){ let cut = false; for (const id of [...FM.sel.keys()]){ const t = allTasks.find(x => x.id === id); if (t && (t.done || t.removed)){ FM.sel.delete(id); FM.fin.delete(id); cut = true; } } if (cut) fmSave(); }
     const rows = todayRows(), ver = document.querySelector("h1 .deskver"), L = dash.querySelector(".vl"), keep = L ? L.scrollTop : 0, C = dash.querySelector(".vc"), keepC = C ? C.scrollLeft : 0;
     const tops = topKinds(), COL = [["var(--v-gold)", "var(--v-tgold)"], ["var(--v-coral)", "var(--v-tcoral)"], ["var(--v-teal)", "var(--v-tteal)"], ["var(--v-blue)", "var(--v-tblue)"]];
-    const T = tops.map((o, i) => `<button type="button" class="vt" style="--vc:${CARDC[o.x.k] ? `var(--v-${CARDC[o.x.k]})` : COL[i][0]};--vt:${CARDC[o.x.k] ? `var(--v-t${CARDC[o.x.k]})` : COL[i][1]}" data-v16tile="${o.x.k}"><span>${o.x.l}</span><strong>${o.n}</strong><small>${o.x.s}</small></button>`).join("");
+    const qs = cardSub("queue") || "", qn = (qs.match(/(\d+) waiting/) || [])[1] || "0";   /* (Nov 4, Chris: "put the queue folder on top and keep it there so I can always check it") the Queue tile is ALWAYS the first top tile, even at 0; three others follow */
+    const QT = `<button type="button" class="vt" style="--vc:var(--v-coral);--vt:var(--v-tcoral)" data-v16ws="queue"><span>Queue</span><strong>${esc2(qn)}</strong><small>waiting · ${esc2((qs.match(/(\d+) working/) || [])[1] || "0")} working</small></button>`;
+    tops.splice(3);
+    const T = QT + tops.map((o, i) => `<button type="button" class="vt" style="--vc:${CARDC[o.x.k] ? `var(--v-${CARDC[o.x.k]})` : COL[i][0]};--vt:${CARDC[o.x.k] ? `var(--v-t${CARDC[o.x.k]})` : COL[i][1]}" data-v16tile="${o.x.k}"><span>${o.x.l}</span><strong>${o.n}</strong><small>${o.x.s}</small></button>`).join("");
     const R = rows.map(b => { const id = b.dataset.tlinks, t = (typeof allTasks !== "undefined" && allTasks.find(x => x.id === id)) || {}, tb = b.querySelector("b"), sp = b.querySelector(":scope > span");
       return vRow(t, id, tb && tb.textContent, [t.project, sp && sp.textContent.trim()].filter(Boolean).join(" · "), "data-v16row"); }).join("");   /* (Nov 2, Chris: "remove the open buttons ... when i can click the row to open it") the row itself opens */
     const P = CARDS.map(([k, l]) => { if (!cardShows(k)) return ""; const n = cardSub(k); return `<button type="button" class="vp" style="--pc:var(--v-${CARDC[k] || "teal"});--pt:var(--v-t${CARDC[k] || "teal"})" data-v16ws="${k}"><span class="vsy" aria-hidden="true">${{songs: "♫", youtube: "▶", shorts: "▣", lessons: "♪", lab: "♬", queue: "≡", personal: "⌂", projects: "▦"}[k] || ""}</span><b>${l}</b><small>${esc2(n)}</small></button>`; }).join("");
-    const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length},minmax(0,1fr))">${T}</div>` : ""}
+    const H16 = `<div class="vh"><div><span class="vb">Desk</span><span class="vv">${ver ? "V" + Math.max(1, +ver.textContent.replace(/\D/g, "") - 390) : ""}</span></div><div class="vht"><button type="button" class="vo vtheme" aria-label="Switch light and dark">☾ / ☀</button></div></div>${T ? `<div class="vm" style="grid-template-columns:repeat(${tops.length + 1},minmax(0,1fr))">${T}</div>` : ""}
       <section class="vs t"><div class="vsh"><h2>Today</h2><button type="button" class="vadd" data-addtask="1">+ Add task</button></div><div class="vl">${R || '<div class="vn">Nothing left today.</div>'}</div></section>
       <section class="vs p"><div class="vsh"><h2>Projects</h2></div><div class="vc">${P}</div></section>`;
     if (H16 === lastH16) return kmBack(); lastH16 = H16;   /* (Nov 1 sweep) nothing changed = the page is left alone: a press, an open menu or an armed Approve is never wiped by a redraw */
