@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v444</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v446</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7635,9 +7635,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   const ytNext = () => (ytRows || []).filter(r => (r.steps || {}).posted !== "ok").sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))).map(r => [r.id, YTPOP.find(k => (r.steps || {})[k] === "chk")]).filter(x => x[1]);
   const shNext = () => shBoard === null ? (db && fdShLoad(), null) : shBoard.filter(shReady).sort((a, b) => (a.order || 0) - (b.order || 0));
   const qNext = () => tasks.filter(t => !t.done && !t.removed && !t.wait && !withCad(t) && !(t.date && t.date > today()) && (t.kind || t.handoff === "review" || okAsk(t))).sort(byOrder);
-  const sgNext2 = () => { const w = waitLive({wait: "songs"}); return w ? (w.first ? w : {n: 0}) : null; };
   const KINDS = [
-    {k: "songs", l: "Songs", s: "to check", n: () => { const w = sgNext2(); return w && w.n; }, go: () => { const w = sgNext2(); if (w && w.first){ const h = document.createElement("div"); h.hidden = true; h.innerHTML = sgRow({title: "", cells: [w.first]}, ["x"]); document.body.appendChild(h); const c = h.querySelector("[role=button]"); if (c) c.click(); setTimeout(() => h.remove(), 0); } }},
+    /* (Nov 5, Chris: "songs to check needs to be removed permanently") no Songs "to check" card at the top (the Today row went the same day) */
     {k: "shorts", l: "Shorts", s: "to check", n: () => { const L = shNext(); return L && L.length; }, go: () => { const r = (shNext() || [])[0]; if (r) shOpen(null, r.id, shStep(r) ? undefined : "final"); }},
     {k: "youtube", l: "YouTube", s: "to check", n: () => ytNext().length, go: () => { const x = ytNext()[0]; if (x){ ytOpen = {id: x[0], k: x[1]}; ytDraw(); } }},
     {k: "lessons", l: "Lessons", s: "to check", n: () => lcNext().length, go: () => { const x = lcNext()[0]; if (x) lcOpen(x[0], x[1]); }},
