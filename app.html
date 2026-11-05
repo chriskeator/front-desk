@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v443</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v444</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2920,7 +2920,7 @@ function waitLive(t){
   if (t.wait === "reviews"){ if (!reviews.length) return null; const n = reviews.filter(r => r.status === "unchecked").length, x = reviews.filter(r => r.status === "fix").length; return {n: n + x, title: "Review board: " + (n ? n + " drafts" : "") + (n && x ? ", " : "") + (x ? x + " being fixed" : "")}; }
   /* (Oct 25, Chris: 'Chapter 7 is not in my Today folder') desk-wait-rows.py groups ready lessons into t-wait-lab-chN (wait 'lab-chN', lessons = its kids); count the open kids live */
   /* (Oct 28, Chris) the chapter row IS the Lessons to check board now: ONE row (the first chapter row; another chapter's row hides), count = gold boxes */
-  if (/^lab-ch\d+$/.test(t.wait) || t.wait === "lessons"){ const f = tasks.find(x => x.wait && (/^lab-ch\d+$/.test(x.wait) || x.wait === "lessons") && !x.done && !x.removed); const n = f && f.id !== t.id ? 0 : lcToCheck(); return {n, title: "Lessons to check" + (n ? ": " + n : "")}; }   /* (Nov 2, Chris) every folder says how many are inside */
+  if (/^lab-ch\d+$/.test(t.wait) || t.wait === "lessons"){ const f = tasks.find(x => x.wait && (/^lab-ch\d+$/.test(x.wait) || x.wait === "lessons") && !x.done && !x.removed); const n = f && f.id !== t.id ? 0 : lcToCheck(); return {n, title: lcName() + (n ? ": " + n + " Lessons" : "")}; }   /* (Nov 2, Chris) every folder says how many are inside */
   if (t.wait === "lab"){ const n = (t.links || []).length; return {n, title: "Lab: " + n + " lesson" + (n === 1 ? "" : "s") + " ready"}; }
   return null; }
 /* (Oct 22, Chris) ZERO = HIDDEN EVERYWHERE: a wait row with nothing waiting is never shown in any list (Today, week, next, later) */
@@ -3203,7 +3203,7 @@ function toggle(label){return `<button type="button" class="small" id="toggleDon
 // (Oct 7) Chris: on the phone Goals, Ideas, Lab testing and Training are folders under the project folders (no switch)
 const psegHTML = () => phone() ? (psub === "projects" ? "" : `<button type="button" class="small" data-psub="projects">‹ Projects</button>`) : `<span class="seg" role="group" aria-label="Projects, goals or ideas"><button type="button" data-psub="projects" aria-pressed="${psub==="projects"}">Projects</button><button type="button" data-psub="goals" aria-pressed="${psub==="goals"}">Goals</button><button type="button" data-psub="ideas" aria-pressed="${psub==="ideas"}">Ideas ${ideas.length||""}</button><button type="button" data-psub="lab" aria-pressed="${psub==="lab"}">Lab testing</button><button type="button" data-psub="train" aria-pressed="${psub==="train"}">Training</button></span>`;
 // Lab testing board (Chris, Oct 4): every chapter, its lessons as status-coloured buttons that open the lesson on Test
-function labBoard(){ return deskFold("", "Lessons to check", lcToCheck() + " to check", lessonsInner(), {top: 1, cc: "var(--ka1FA598)", grid: "songgrid lcgrid"}); }
+function labBoard(){ return deskFold("", lcName(), lcToCheck() + " to check", lessonsInner(), {top: 1, cc: "var(--ka1FA598)", grid: "songgrid lcgrid"}); }
 // (Oct 4) every project he isn't working on: one tap puts it on the board (Work on now), Quick / Longer set its size
 function restPop(){
   const wOf = p => p.when || ({chore:"weekly", active:"now", later:"next", idea:"someday"})[p.status] || "now";
@@ -5243,7 +5243,7 @@ function renderMain(){
       const CC = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)"};
       const nReq = requests.filter(r => !r.done).length;
       const extra = {"YouTube and Shorts": pFold("@@req", "Viewer requests", nReq + (nReq === 1 ? " request" : " requests") + " · most asked first"),
-        "Worship Piano Lab": pFold("@@lab", "Lessons to check", lcToCheck() + " to check") + pFold("@@songs", "Songs", songsLine()) + pFold("@@lablinks", "Lab links", llLine()),
+        "Worship Piano Lab": pFold("@@lab", lcName(), lcToCheck() + " to check") + pFold("@@songs", "Songs", songsLine()) + pFold("@@lablinks", "Lab links", llLine()),
         "Systems": pFold("@@train", "Training", tasks.filter(t => !t.done && !t.removed).length + " to-dos by how automatic")};
       const others = [...new Set(openP.map(p => p.category || "More"))].filter(c => !CATS.includes(c) && c !== "Ideas");
       const looseRows = loose.map(tc).join("");
@@ -5984,6 +5984,8 @@ function lcState(L){ const id = L.id, hit = lcMemo.get(id); if (hit) return hit;
     out[k] = Object.assign({id, lc: k, v: V}, p.ok ? {c: "ok", t: "Approved"} : p.open ? {c: "fx", t: "Fixing V" + (V + 1)} : turn ? {c: "chk", t: V > 1 ? "Check V" + V : "Check"} : {c: ""});
     if (!p.ok) all = false; });
   out.all = all; out.signed = !!signed && signed > lastFix && !(L.chg && Date.parse(signed) <= Date.parse(L.chg)); lcMemo.set(id, out); return out; }
+/* (Nov 5, Chris: "On the desk, it needs to say chapter 8") ONE name for the Lessons to check board ("Chapter 8: 10 Lessons", Chris Nov 5): it names the chapter on Test (lcChs non-live = board chapter; number = its place + 1) */
+function lcName(){ const c = lcChs().filter(x => !x.live).map(x => x.i + 1); return c.length ? "Chapter " + c.join(" + ") : "Lessons"; }
 function lcToCheck(){ let n = 0; for (const x of lcChs()) if (!x.live) for (const L of x.c.lessons || []){ const s = lcState(L); for (const [k] of LCK) if (s[k].c === "chk" || s[k].c === "fx") n++; } return n; }   /* (Oct 31, Chris) Fixing boxes keep the row */
 function lcCount(c){ const S = (c.lessons || []).map(lcState); return S.length && S.every(s => s.all) ? "Approved" : LCK.map(([k, l]) => l + " " + S.filter(s => s[k].c === "ok").length + "/" + S.length).join(" · "); }
 /* (Oct 29, q-e8c06eb839: "Approve does not fire confetti") an approval made INSIDE the Lab (his end-of-lesson Approve, Oct 28: fcread, fcjesus) reached the
