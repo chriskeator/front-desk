@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v446</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v447</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2846,7 +2846,8 @@ const V16 = !window.V2;   /* (Nov 1) the one Front Desk V16 switch. (Nov 3, Chri
 if (V16) ["click", "dblclick", "auxclick", "pointerdown", "mousedown", "touchstart", "dragstart", "keydown"].forEach(ty => window.addEventListener(ty, e => { if (window.V16PICK) window.V16PICK(e); }, {capture: true, passive: false}));
 let tab = "today", proj = null, showDone = false, page = 0, editing = null;
 function esc(s){return String(s ?? "").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-function safeUrl(u){return /^https:\/\//.test(u||"") ? u : ""}
+/* (Nov 4, Chris side note) ONE link reader for every desk link box: a plain address (worshippianoacademy.com, www.x.com/page) gets https:// added; a full https link stays as is; anything else = no link */
+function safeUrl(u){u=String(u||"").trim(); if(!/^[a-z][a-z0-9+.-]*:/i.test(u) && /^[\w-]+(\.[\w-]+)+([\/?#].*)?$/.test(u)) u="https://"+u; return /^https:\/\//.test(u) ? u : ""}
 function when(iso){const d=new Date(iso);return isNaN(d)?"":d.toLocaleDateString(undefined,{month:"short",day:"numeric"})}
 function posted(iso){const d=new Date(iso);if(isNaN(d))return "";
   const day=d.toLocaleDateString(undefined,{month:"short",day:"numeric"}), t=d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"});
@@ -6941,9 +6942,9 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
   if (b.dataset.addtask){ e.stopPropagation(); return addTaskOpen(); }
   if (b.dataset.addclose) return addTaskClose();
   const v = k => ($("at-" + k) || {}).value.trim(), err = $("addtask").querySelector(".adderr"), say = m => { err.textContent = m; err.hidden = false; };
-  const title = v("title"), url = v("url"), date = v("date"), due = v("due");
+  const title = v("title"), raw = v("url"), url = safeUrl(raw), date = v("date"), due = v("due");
   if (!title) return say("Add a title.");
-  if (url && !safeUrl(url)) return say("The link needs to start with https://");
+  if (raw && !url) return say("That link doesn't look like a web address.");
   if (date && due && date > due) return say("Start is after the due date.");
   if (!db) return say("The desk isn't connected. Try again in a moment.");
   b.disabled = true;
