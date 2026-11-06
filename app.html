@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v450</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v451</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5995,7 +5995,7 @@ function lcCount(c){ const S = (c.lessons || []).map(lcState); return S.length &
 const lcSeen = new Map();
 function lcCel(L, s){ if (!labNotesIn) return; const t = Date.now();
   LCK.forEach(([k], i) => { const key = L.id + "|" + k, was = lcSeen.get(key), c = s[k].c; lcSeen.set(key, [c, t]);
-    if (was && was[0] !== "ok" && c === "ok" && t - was[1] < 120000 && !(sgCel && sgCel.id === L.id && sgCel.col === String(i))) sgCelebrate(L.id, i); }); }
+    if (was && was[0] !== "ok" && c === "ok" && !(sgCel && sgCel.id === L.id && sgCel.col === String(i))) sgCelebrate(L.id, i); }); }   /* (Nov 6, Chris: dev mode approvals gave no confetti) no 2-minute limit: a box the desk saw gold this visit celebrates whenever it turns teal (never on load: nothing seen yet) */
 function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) return '<span class="tn">Lab status shows after the next hourly refresh.</span>';
   const head = sgHead(LCCOLS, LCAB), blank = {c: "", blank: 1}, nm = x => "Ch" + (x.i + 1) + " " + x.c.name;
   const rows = x => (x.c.lessons || []).map(L => { const s = lcState(L); lcCel(L, s); return sgRow({title: "L" + L.n + " " + L.t, full: L.id, cells: LCK.map(([k]) => s[k]).concat([{c: s.all ? "ok" : "", t: "Approved"}])}, LCCOLS); }).join("");
