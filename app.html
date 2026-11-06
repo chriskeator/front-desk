@@ -1261,9 +1261,9 @@ async function scOpen(id, view){
   if (window.CT){ window.CT.open(id, view, d); return; }   /* (Oct 17, Chris) chords step = one text box, chord numbers above the words */   /* (Oct 16 night, Chris hated the editor chords card: chords step back on the old page) */   /* (Oct 16 night, Chris) melody AND chords = the new song editor (chords: one level at a time) */   /* (Oct 16, chat 12, Chris) melody = the new song editor */
   scView = view ? +view : null; scId = id; scLoad(d); scDraw(); scPLoad(scLines.flat().map(n => n.m)); }
 function scClose(){ const scHad = !!(document.getElementById("songchk") || {}).innerHTML; if (window.SE) SE.close(); scStop(); scId = null; scDoc = null; scPick = null; scMulti = []; scPt = null; document.getElementById("songchk").innerHTML = "";  if (scHad) sgBack(); }
-/* the song file still reads each note's word (n.w) and chords (n.c): rebuilt from the word and chord blocks before every save */
+/* (Nov 5, Chris: one copy of the words) the words are saved ONLY in doc.words; each note keeps its chords (n.c) for the song file. n.w is no longer written */
 function scSync(){ scLines.forEach((l, i) => { l.sort((p, q) => p.g - q.g);
-  l.forEach(n => { const w = (scWords[i] || []).find(x => Math.abs(x.g - n.g) < 1e-9); n.w = w ? w.w : ""; n.c = []; });
+  l.forEach(n => { n.c = []; });
   (scChords[i] || []).forEach(c => { let n = l.find(n => n.g <= c.g + 1e-9 && c.g < n.g + n.L - 1e-9) || l.filter(n => n.g <= c.g + 1e-9).pop() || l[0]; n.c.push([c.k, +(c.g - n.g).toFixed(6)]); }); }); }
 /* (Oct 16, Chris) Back = undo the last change; every save keeps the state before it */
 let scUndo = [], scLast = null;
@@ -2115,7 +2115,7 @@ function toDoc(){if(!bars.length)return{lines:[],words:[],bars:[],spb:SB,zero:0,
 const G=(i,s)=>r6((st[i]-(bars[i].a||0)+s-Z)/U);
 const notes=VER>1&&VM[1]&&!TAGM?JSON.parse(JSON.stringify(VM[1])):mNow();   /* (Oct 22, Chris) verse 1's notes stay doc.lines; verse 2+ keep their own in doc.linesV */
 const wcur=[];bars.forEach((b,i)=>(b.notes||[]).filter(q=>q.w&&String(q.d).trim()).forEach(q=>wcur.push({g:G(i,q.s),L:r6(q.l/U),w:String(q.d)})));const words=VER>1&&VW[1]&&!TAGM?JSON.parse(JSON.stringify(VW[1])):wcur;
-notes.forEach(n=>{const w=words.find(x=>Math.abs(x.g-n.g)<1e-6);n.w=w?w.w:''});
+/* (Nov 5) n.w no longer written: words live in doc.words only */
 const key=g=>I?(g<0?0:1+Math.floor(g/B+1e-9)):Math.floor(g/B+1e-9),keys=[...new Set(notes.map(n=>key(n.g)))].sort((p,q)=>p-q);
 const at=g=>{const k=key(g);let x=keys.indexOf(k);if(x<0){x=keys.filter(q=>q<k).length-1;if(x<0)x=0}return x};
 const grp=L=>{const out=keys.map(()=>[]);if(!keys.length)return out;L.forEach(b=>out[at(b.g)].push(b));out.forEach(l=>l.sort((p,q)=>p.g-q.g));return out};
@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v447</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v448</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5844,10 +5844,10 @@ function scVerses(sc){ const out = []; let cur = null; String(sc && sc.lyricsTex
    and Delete verse (versesGone) removes one: gone verses show no tab and count as done. Numbers never shift (wordsV keys stay) */
 /* (Nov 3, Chris: "what happened to all my Christmas songs?") the ONE melody = songcheck.lines; the old hidden copy (orig) was deleted Nov 3, so nothing may wait on it */
 function scMel(sc){ return !!(sc && Array.isArray(sc.lines) && sc.lines.length); }
-function scHasWords(sc){ return !!(sc && (sc.lines || []).some(l => (l || []).some(n => n && String(n.w || "").trim()))); }
+function scHasWords(sc){ return !!(sc && (sc.words || []).some(l => (l || []).some(w => w && String(w.w || "").trim()))); }   /* (Nov 5, Chris: one copy of the words) sc.words only */
 function scGone(sc){ const g = new Set(Array.isArray(sc && sc.versesGone) ? sc.versesGone : []), V = scVerses(sc);
   const nw = x => String(x || "").toLowerCase().replace(/-\s+/g, "").replace(/[^a-z' ]/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
-  const placed = new Set(nw(["words", "lines", "orig"].flatMap(f => Array.isArray(sc && sc[f]) ? sc[f].flat() : []).map(w => w && w.w || "").join(" ")));
+  const placed = new Set(nw(["words"].flatMap(f => Array.isArray(sc && sc[f]) ? sc[f].flat() : []).map(w => w && w.w || "").join(" ")));
   const f0 = ["words", "lines", "orig"].find(f => Array.isArray(sc && sc[f]) && sc[f].length), n1 = f0 ? nw(sc[f0].flat().map(w => w && w.w || "").join(" ")).length : 0, v1n = V[0] ? nw(V[0].join(" ")).length : 0;
   const whole = v1n && n1 >= 3 * v1n;   /* verse 1's notes already sing 3x verse 1's words = the whole song is laid out in verse 1 (Silent Night, Row Row Row, Hark, O Come, We Wish You): no other verse tabs */
   if (placed.size) V.forEach((v, i) => { if (i && (whole || nw(v.join(" ")).filter(w => placed.has(w)).length >= 0.9 * nw(v.join(" ")).length)) g.add(i + 1); });
@@ -6061,7 +6061,7 @@ function mcPlay(which, btn){
   /* (Oct 27, Chris) THE MELODY CHECK PLAYS IN THE STUDENT PLAYER: this pop-up has no piano of its own. Play opens the same doorway desk Play uses
      (SGPREVIEW -> Test player in check mode) with this melody as one temporary song (#mc=...); press Play there. Nothing is saved. */
   const L = (which === "d" ? mcDoc.rebuildLines : mcDoc.lines) || [], N = L.flat().filter(n => n && n.m > 0).sort((p, q) => p.g - q.g); if (!N.length) return;
-  const W = ((which === "d" ? mcDoc.rebuildWords : mcDoc.words) || []).flat().filter(w => w && (w.w || "").trim()), wAt = n => (W.find(w => Math.abs(w.g - n.g) < 1e-3) || {}).w || n.w || "";
+  const W = ((which === "d" ? mcDoc.rebuildWords : mcDoc.words) || []).flat().filter(w => w && (w.w || "").trim()), wAt = n => (W.find(w => Math.abs(w.g - n.g) < 1e-3) || {}).w || "";
   const pay = {name: (mcDoc.name || "Song") + (which === "d" ? " (hymnal draft)" : " (your melody)"), bpm: mcDoc.bpm || 90, meter: mcDoc.meter || 4, notes: N.map(n => [n.m, +(+n.g).toFixed(4), +(+n.L).toFixed(4), wAt(n)])};
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(pay)))).replace(/\+/g, "-").replace(/\//g, "_");
   window.open(SGPREVIEW + "?go=" + encodeURIComponent("songs:song_mc") + "#mc=" + b64, "_blank", "noopener"); }
@@ -6366,7 +6366,7 @@ function ntParse(t, old){ const m = /^([b#]?)([1-7])('*)(,*)$/.exec(t); if (!m) 
   if (m[3] || m[4]) return 60 + pc + 12 * m[3].length - 12 * m[4].length;
   let best = null; for (let o = 36; o <= 96; o += 12){ const c = o + pc; if (best == null || Math.abs(c - old) < Math.abs(best - old)) best = c; } return best; }
 /* one box per sung syllable: a note with words starts one, the wordless notes after it are held on it; wordless notes before the first word = the intro */
-function ntGroups(row, li){ const out = []; (row || []).forEach((n, j) => { if (!n || typeof n.m !== "number") return; const w = String(n.w || "").trim();
+function ntGroups(row, li){ const out = [], WR = ntS && ntS.r && Array.isArray(ntS.r.words) ? (ntS.r.words[li] || []) : null; (row || []).forEach((n, j) => { if (!n || typeof n.m !== "number") return; const w = String((WR ? (WR.find(x => x && Math.abs(x.g - n.g) < 1e-6) || {}).w : n.w) || "").trim();   /* (Nov 5) the word row, not the old per-note copy */
   if (w || !out.length) out.push({w, li, js: [j], g: n.g}); else out[out.length - 1].js.push(j); }); return out; }
 function ntSheetHTML(){ const r = ntS.r, L = ntS.lines, ed = !ntS.lock, S = chSecs(r) ? chSecNum(chSecs(r)) : null, out = []; let sec = -1, blk = [];
   const box = gp => { const t = gp.js.map(j => ntTxt(L[gp.li][j].m)).join(" "), key = gp.li + ":" + gp.js[0];
