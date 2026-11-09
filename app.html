@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v451</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v452</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6615,9 +6615,9 @@ function homeSongs(only){
   const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
     return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
-  const nx = L => V16 ? L.filter(x => !x.xm) : L, fXv = V16 ? U.filter(x => x.xm).sort(ord) : [], fNow = V16 ? nx(U.filter(x => sgNow(x) && !isLive(x)).sort(ord)) : [];   /* (Nov 1, Chris: "test Christmas songs on my new desk") V16: every Christmas song in one open folder, live or not, and the songs going out now; same boxes, same check flows, one folder per song */
+  const nx = L => V16 ? L.filter(x => !x.xm) : L, fXv = V16 ? U.filter(x => x.xm && !isLive(x)).sort(ord) : [], fNow = V16 ? nx(U.filter(x => sgNow(x) && !isLive(x)).sort(ord)) : [];   /* (Nov 1, Chris: "test Christmas songs on my new desk") V16: Christmas songs not live yet in one open folder, and the songs going out now; same boxes, same check flows, one folder per song. (Nov 8, Chris: "every song can only be in 1 folder, but once a song is live, it needs to move to the live folder") a live song, Christmas too, sits only in Live. Built in: !isLive here + live (not nx(live)) in the Live folder. */
   const v16open = (key, t, L) => L.length ? deskFold(key, `${t} (${L.length})`, L.reduce((n, x) => n + sgChk(x).length, 0) + " to check", head + L.map(x => sgRow(x)).join(""), {def: 1}) : "";
-  const secN = v16open("sg:v16xmas", "Christmas", fXv) + v16open("sg:now", "Going out now", fNow) + fold("next", "Next week", "after this ship", nx(fNext)) + (V16 ? "" : fold("xmas", "Christmas", "Nov 8 release", fX)) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO) + fold("live", "Live", "students have these", nx(live.slice()).sort((a, b) => a.title.localeCompare(b.title)));
+  const secN = v16open("sg:v16xmas", "Christmas", fXv) + v16open("sg:now", "Going out now", fNow) + fold("next", "Next week", "after this ship", nx(fNext)) + (V16 ? "" : fold("xmas", "Christmas", "Nov 8 release", fX)) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO) + fold("live", "Live", "students have these", live.slice().sort((a, b) => a.title.localeCompare(b.title)));
   const mine = UF.reduce((t, x) => t + sgChk(x).length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
