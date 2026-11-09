@@ -902,8 +902,6 @@ a,button,[role=button]{-webkit-tap-highlight-color:transparent}   /* (Oct 18, Ch
  .llsum{display:flex;gap:6px;padding:8px 12px 8px 50px;border-top:1px solid var(--line)}.llsum span{flex:1 1 0;display:flex;flex-direction:column;align-items:center;font-size:11px;color:var(--mute,#5B6470);white-space:nowrap}.llsum b{font-size:17px;color:var(--ink,#2a2f34)}
  .llhead{padding:8px 12px 4px 50px;font-size:12px;font-weight:700;color:var(--kt0F766E);border-top:1px solid var(--line)}
  .llrow{cursor:default}.llprow > .chc{padding-right:84px}
- .ssteps{display:flex;gap:3px}.ssteps span{flex:1 1 0;min-width:0;text-align:center;font-size:11px;font-weight:700;padding:6px 1px;white-space:nowrap;overflow:hidden;border-radius:7px;background:var(--line);color:var(--muted)}
- .ssteps span.on{background:var(--kb4A7F37);color:var(--ktFFF)}.ssteps span.next{background:var(--kbD19A12);color:var(--ktFFF)}
  .replist{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px;background:var(--card);border-top:1px solid var(--line)}
  .replist .item,.repf .item{margin:0}
  .picon{display:inline-block;vertical-align:-4px;margin:0 2px}
@@ -1537,8 +1535,6 @@ async function scApprove(){
   const done = () => { scBoard = null; waitBusy.add("songs"); render(); fdScLoad(); };
   if (one || back) return done();
   /* (Oct 16, Chris) one step per check, like Shorts: Approve closes the page and ticks that box on the Songs board */
-  const nm = x => String(x || "").toLowerCase().replace(/^the /, "").replace(/[^a-z]/g, ""), sg = (songs || []).find(x => nm(x.title) === nm(D.name));
-  if (sg && (sg.step || 0) <= st) db.collection("songs").doc(sg.id).update({step: st + 1}).catch(() => {});
   try {
     if (st !== 1 && t){ const others = t.songcheck.map(p => p[0]).filter(x => x !== id), left = [];
       for (const o of others){ const d = await db.collection("songcheck").doc(o).get(); if (!d.exists || d.data().status !== "approved") left.push(o); }
@@ -2784,7 +2780,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v453</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v454</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2979,7 +2975,7 @@ function ideaPop(){
     : `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-ideaadd="${esc(i.id)}">${had ? "Added (change day)" : "Add"}</button><button type="button" class="tb" data-ideadel="${esc(i.id)}">Remove</button></div>`;
   return popTop(esc(i.title)) + `<p class="tn">${esc([i.category || "Other", fmtMins(i.mins), i.source || ""].filter(Boolean).join(" · "))}</p>` + (i.note ? `<div class="revbody">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">Open link</a>` : esc(i.note).replace(/\n/g, "<br>")}</div>` : "") + acts;
 }
-let songs = [], songSteps = [], requests = [], queueRows = [];   /* queueRows (Oct 20, Chris): db 'queue' = every submit, worked by launchd com.wpa.desk-queue */
+let requests = [], queueRows = [];   /* queueRows (Oct 20, Chris): db 'queue' = every submit, worked by launchd com.wpa.desk-queue */
    // requests (Oct 9): viewer song/tutorial requests {title, asks, who, platform, last, note}   // (Oct 8) Chris: Projects > Worship Piano Lab > Songs, each song moves through steps
 let skills = [], restOpen = false, restPick = null, perPick = null, icatPick = false;   // (Oct 4) Projects: the 'Not working on now' pop-up
 const tLinks = t => (Array.isArray(t.links) ? t.links : []).filter(l => l && safeUrl(l.url));
@@ -4775,7 +4771,7 @@ function fitBack(L, outer){
   glideBy(L, -s, () => { kbSet(L, 0); L.dataset.jct = L.scrollTop; setTimeout(() => { L._fitting = false; }, 50); }); }
 /* (Oct 18) what is open ABOVE the tapped row before a tap: each open to-do / list body and each open folder, with the row it hangs under
    (found again after a redraw by its data- key) and how far that row reaches down (to the next row) */
-const FDKEYS = ["data-tlinks", "data-fold", "data-allsongs", "data-mrow", "data-repopen", "data-songopen", "data-ideaopen"];
+const FDKEYS = ["data-tlinks", "data-fold", "data-allsongs", "data-mrow", "data-repopen", "data-ideaopen"];
 function fdKeyOf(a){ const t = a.matches(FDKEYS.map(k => "[" + k + "]").join(",")) ? a : a.querySelector(FDKEYS.map(k => "[" + k + "]").join(",")); if (!t) return null;
   const k = FDKEYS.find(x => t.hasAttribute(x)); return `[${k}="${CSS.escape(t.getAttribute(k))}"]`; }
 function fdReach(a){ const n = a.nextElementSibling; return n && n.getClientRects().length ? n.getBoundingClientRect().top : a.parentElement.getBoundingClientRect().bottom; }
@@ -5244,7 +5240,7 @@ function renderMain(){
       const CC = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)"};
       const nReq = requests.filter(r => !r.done).length;
       const extra = {"YouTube and Shorts": pFold("@@req", "Viewer requests", nReq + (nReq === 1 ? " request" : " requests") + " · most asked first"),
-        "Worship Piano Lab": pFold("@@lab", lcName(), lcToCheck() + " to check") + pFold("@@songs", "Songs", songsLine()) + pFold("@@lablinks", "Lab links", llLine()),
+        "Worship Piano Lab": pFold("@@lab", lcName(), lcToCheck() + " to check") + pFold("@@lablinks", "Lab links", llLine()),
         "Systems": pFold("@@train", "Training", tasks.filter(t => !t.done && !t.removed).length + " to-dos by how automatic")};
       const others = [...new Set(openP.map(p => p.category || "More"))].filter(c => !CATS.includes(c) && c !== "Ideas");
       const looseRows = loose.map(tc).join("");
@@ -5337,22 +5333,7 @@ document.addEventListener("click", e => {
 // it: Open, Today, Pick a day, Later list, Remove (same words everywhere). Other rows (goals, categories, chapters) just open.
 // (Oct 7) Chris: a project (subfolder) opens IN PLACE: its to-dos list right under it (no pop-up); tap again to close
 // (Oct 7) Chris: Training, Lab testing and idea categories also open IN PLACE under their row (no Back button screens)
-// (Oct 8) Chris: SONGS. Every song shows which step it's on ("2 of 4"); the steps live in db 'songsteps' so adding a 5th
-// step changes every song to "of 5". Sort: Almost done (most steps first) / Release date / A to Z. Tap a song = what's needed to move on.
-const SSTEPS = () => songSteps.length ? songSteps.map(x => x.name) : ["Lyrics", "Melody", "Chords", "Band"];
-let songSort = (() => { try { return localStorage.getItem("fd-songsort") || "almost"; } catch { return "almost"; } })(), songOpen = null;
-const songsLive = () => { const K = new Set(sgUniverse().map(u => u.k)); return songs.filter(x => !x.released && !x.removed && K.has(sgKey(x.title))); };   /* (Nov 1, Chris) the same songs as the board (sgKeep) */
-function songsLine(){ const L = songsLive(), n = SSTEPS().length, near = L.filter(x => (x.step || 0) >= n - 1).length; return L.length + (L.length === 1 ? " song" : " songs") + (near ? " · " + near + " almost done" : ""); }
-function songsHTML(){ const ST = SSTEPS(), n = ST.length;
-  const L = songsLive().slice().sort(songSort === "az" ? (a, b) => a.title.localeCompare(b.title) : songSort === "rel" ? (a, b) => String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title)
-    : (a, b) => (b.step || 0) - (a.step || 0) || String(a.release || "~").localeCompare(String(b.release || "~")) || a.title.localeCompare(b.title));
-  const sb = (k, l) => `<button type="button" class="tb${songSort === k ? " go" : ""}" data-songsort="${k}">${l}</button>`;
-  const det = x => { const k = Math.min(x.step || 0, n);
-    return `<div class="tdetail songdet">${x.note ? `<p class="tn">${esc(x.note)}</p>` : ""}<div class="ssteps">${ST.map((st, i) => `<span class="${i < k ? "on" : i === k ? "next" : ""}">${esc(st)}</span>`).join("")}</div>
-      ${(x.versions || []).length ? `<b>${x.versions.length === 1 ? "One version" : x.versions.length + " versions"}${x.chords ? " · real chords: " + esc(x.chords) : ""}</b>${x.versions.map(v => `<p class="tn">${esc(v)}</p>`).join("")}` : ""}
-      ${k < n ? `<b>To move to ${esc(ST[k])}</b><p>${esc(x.need || "Tell Cadence what this needs.")}</p>` : `<b>All ${n} steps done</b><p>Ready to release.</p>`}${x.release ? `<p class="tn">Releases ${esc(dayLabel(x.release))}</p>` : ""}</div>`; };
-  return `<div class="songsort">${sb("almost", "Almost done")}${sb("rel", "Release date")}${sb("az", "A to Z")}</div>` + (L.map(x => { const k = Math.min(x.step || 0, n);
-    return `<button type="button" class="chc songrow${songOpen === x.id ? " rowon" : ""}" data-songopen="${esc(x.id)}"><b>${esc(x.title)}</b><span>${k < n ? "next: " + esc(ST[k]) : "ready"}${x.release ? " · " + esc(dayLabel(x.release).replace(/^[A-Z][a-z]{2}, /, "")) : ""}${(x.versions || []).length > 1 ? " · " + x.versions.length + " versions" : ""}</span><em class="sstep">${k} of ${n}</em></button>` + (songOpen === x.id ? det(x) : ""); }).join("") || '<span class="tn">No songs yet.</span>'); }
+/* (Nov 8, Chris yes: one song list) the old db songs + songsteps list and its Projects > Worship Piano Lab > Songs fold are gone: the song board (songcheck) is the one song list. */
 /* (Oct 13) Chris asked: the song checklist on Home, so he can see at a glance which songs have which steps done.
    One row per song: name on the left, one small box per step (filled = done, gold = next). Tap = the song's details in Projects. */
 /* (Oct 14, Chris picked D) Songs column labels = 3 letters */
@@ -5379,7 +5360,7 @@ function labTag(t){ const scs = t && !t.done && (scFixingTitle(t) ? "fixing" : S
    light gold = Cadence is making it). In-progress rows live from db 'shortcheck'; scheduled/posted from stats/shortsboard (shorts-board.py, hourly). */
 let shBoard = null, scBoard = null;
 /* (Oct 18) a board refresh keeps showing the old board until the new one is here (setting it to [] first drew an empty board, then the full one = flicker) */
-let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null;
+let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null, scGoneK = new Set();   /* scGoneK = keys of songs he removed (songcheck dropped / removed) */
 function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); waitBusy.delete("shorts"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; waitBusy.delete("shorts"); }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
 /* (Oct 21, Chris: approved, still said Check) every song save/approve patches the board row on screen AT ONCE; the db write follows. Global: the song editor calls it too */
 /* (Oct 23, Chris: "once I approve something... automatically mark the next column") every song approval asks the queue (queue.py preview_now) to rebuild the player within a minute */
@@ -5413,7 +5394,7 @@ function scNoSave(m){ const k = (String(m).match(/\((\w+) would change/) || [])[
   if (!box){ document.body.appendChild(d); setTimeout(() => d.remove(), 6000); return; }
   const at = box.querySelector("#se-hint") || box.querySelector(".lyrhd"); if (at && at.id === "se-hint") at.before(d); else if (at) at.after(d); else box.prepend(d); }
 function scLocal(id, o){ try { const sr = (scBoard || []).find(x => x.id === id); if (o && (["melodyOK", "versesOk", "tagOk", "chordsOK", "mediumOK", "hardOK"].some(k => o[k]) || (sr && sr.melodyOK && ["lines", "words", "tag", "melodyEditedAt", "bpm", "chords", "chordsMedium", "chordsHard", "chordsV", "chordsMediumV", "chordsHardV"].some(k => k in o)))) db.collection("stats").doc("preview-want").set({at: new Date().toISOString(), id}).catch(() => {}); } catch (e) {} try { [scBoard, fdScOld].forEach(B => { const r = (B || []).find(x => x.id === id); if (r) Object.assign(r, o); }); } catch (e) {} }   /* (Oct 24, Chris: 'can the approval button be a ping to start the player build') any save that changes an approved song's player pings too (his tag + 'Approve again' on Mary never pinged); the queue builds 20 s after the last ping */
-function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { scBoard = fdScOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.removed); waitBusy.delete("songs"); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; waitBusy.delete("songs"); }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
+function fdScLoad(){ if (fdScP) return fdScP; fdScP = db.collection("songcheck").get().then(s => { const A = s.docs.map(d => Object.assign({id: d.id}, d.data())); scGoneK = new Set(A.filter(r => r.removed || r.dropped).map(r => sgKey(r.name))); scBoard = fdScOld = A.filter(r => !r.removed); waitBusy.delete("songs"); if (deskReady && tab === "today") liveRender(); }).catch(() => { scBoard = fdScOld; waitBusy.delete("songs"); }).finally(() => { fdScP = null; }); if (scBoard === null) scBoard = fdScOld; return fdScP; }
 const SHS = ["Hands", "Start + end", "Words", "Thumbnail", "Final", "Scheduled", "Posted"], SHAB = ["Hnd", "S+E", "Wrd", "Thm", "Fin", "Sch", "Pst"];
 const SHCOLS = 10;   /* (Nov 3, Chris: one Shorts list) 5 checklist steps + YouTube, Facebook, Instagram, X, TikTok */
 /* (Oct 20, Chris: "if there's a bunch of things in queue, I don't have to ask you what you're working on ... drag things to the top")
@@ -5829,7 +5810,7 @@ document.addEventListener("click", e => { /* (Oct 21, Chris) the gold Final Chec
 /* (Oct 20, Chris: "I don't ever want to see another version of a song that's not on the template") ONE SONG CHECKLIST, 9 columns, for every song
    (Songs board AND inside every song-check task). Teal Approved = ONLY Chris's real Approve (songcheck lyricsOK / melodyOK / chordsOK / mediumOK / hardOK;
    Band..Final only for songs he approved live = PP_SONG_OK). Gold Check = his turn (opens the check page), light gold Making = Cadence, empty = not started.
-   NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songs + db songcheck, matched by name. */
+   NEVER songs.step (it showed songs as Approved that he never approved). Universe = stats songlist (110) + db songcheck, matched by name (Nov 8: the old db songs list moved onto songcheck: release, dropped). */
 const SGCOLS = ["Lyrics", "Notes", "Melody", "Level 1", "Intro", "Level 2", "Level 3", "Final check"], SGAB = ["Ly", "No", "Me", "L1", "In", "L2", "L3", "Fn"];
 setTimeout(() => { try { document.documentElement.style.setProperty("--sgmax", Math.max(SGCOLS.length, LCCOLS.length, YTCOLS.length, SHCOLS)); } catch {} }, 0);   /* (Nov 2) the board with the most columns sets every box width (Nov 3: 10 = the one Shorts list: 5 steps + 5 apps) */   /* (Oct 27, Chris) Intro between Level 1 and Level 2 */   /* (Oct 22, Chris) Player = hear the approved melody in the real Lab song player (preview copy) before chords */
 const SGPREVIEW = "https://lab.worshippianoacademy.com/a14d315000dc/";   /* = ~/Library/Scripts/claude-tasks/song-preview-path.txt (song-preview-push.sh publishes only that folder) */   /* (Oct 22, Chris) Beats = step 2: the | text box per verse, before the melody */   /* (Oct 21, Chris) Band, Cards, Lesson are Cadence's build steps, not columns */
@@ -5881,7 +5862,7 @@ function btCell(sc, plan){ if (!sc) return {c: ""}; const T = btTexts(sc), O = b
   if (sc.beatsMaking) return {c: "mk"};
   return {c: ""}; }
 function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow their songcheck row like every other song; nothing is hardcoded Approved */
-  const C = SGCOLS.map(() => ({c: ""})), plan = !!(sc || x.sg);
+  const C = SGCOLS.map(() => ({c: ""})), plan = !!sc;
   if (sc && sc.lyricsOK) C[0] = {c: "ok", id: sc.id, lyr: 1}; else if (sc && sc.lyricsText && !sc.lyricsFix) C[0] = {c: "chk", id: sc.id, lyr: 1}; else if (sc && sc.lyricsFix) C[0] = {c: "fx", ak: fmAck("songcheck", sc.id)}; else if (plan) C[0] = {c: "mk"};   /* (Oct 20, Chris: Lyrics = step one) his words list -> his Approve on the Lyrics check */
   C[1] = btCell(sc, plan);
   if (sc && NT8.includes(sc.id) && Array.isArray(sc.lines) && sc.lines.length) C[1] = sc.notesOK ? {c: "ok", id: sc.id, nt: 1} : {c: "chk", id: sc.id, nt: 1};   /* (Oct 26, Chris) Notes check: these 8 songs only */
@@ -5917,14 +5898,13 @@ function sgUniverse(all){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
   if (all) ((stats.find(x => x.id === "songcats") || {}).cats || []).forEach(c => (c.titles || []).forEach(t => add(t, {})));   /* (Nov 8) every song on Chris's locked category list is in the pool, even with no board row yet */
   ((stats.find(x => x.id === "songlist") || {}).songs || []).forEach(x => add(x.t, {xm: !!x.x}));
-  (songs || []).filter(x => !x.removed).forEach(x => add(x.title, {sg: x, title: x.title}));
-  (scBoard || []).forEach(r => add(r.name, {sc: r}));
-  const gone = new Set((songs || []).filter(x => x.removed).map(x => sgKey(x.title))); gone.forEach(k => { const u = U.get(k); if (u && !u.sg) U.delete(k); });   /* (Oct 22, Chris: Ode to Joy came back) a song he removed stays off the board, whatever old list or row still names it */
-  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})).filter(all ? () => true : sgKeep); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas. (Nov 8) sgUniverse(true) = every song, for the All other songs folder */
+  (scBoard || []).forEach(r => add(r.name, {sc: r, title: r.name}));   /* (Nov 8) the board row's name is the song's title */
+  scGoneK.forEach(k => { const u = U.get(k); if (u && !(u.sc && !u.sc.dropped)) U.delete(k); });   /* (Oct 22, Chris: Ode to Joy came back) a song he removed (songcheck dropped / removed) stays off the board, whatever old list or row still names it */
+  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sc && u.sc.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})).filter(all ? () => true : sgKeep); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas. (Nov 8) sgUniverse(true) = every song, for the All other songs folder */
 /* (Nov 1, Chris: "remove all songs from my desk that aren't these 21 and the christmas list") ONE filter, read from data, hides only (no row changes): db stats/nextsongs cats (his picks), Christmas, Live (stats/songlive), or a release date on its db songs row. Chapters 7-13 use only these. Undo without a push: stats/nextsongs boardAll:true shows every song; no nextsongs doc = every song too. */
 function sgKeep(x){ const N = stats.find(q => q.id === "nextsongs"); if (!N || (!N.cats && !N.on) || N.boardAll) return true;
   if (Array.isArray(N.on)) return N.on.includes(x.k) || !!x.xm || sgIsLive(x);   /* (Nov 8, Chris: "i need to be able to change my mind without asking you") the board = his own list N.on (song keys), moved in/out on the desk */
-  return Object.values(N.cats).flat().some(t => sgKey(t) === x.k) || !!x.xm || sgIsLive(x) || !!(x.sg && x.sg.release); }
+  return Object.values(N.cats).flat().some(t => sgKey(t) === x.k) || !!x.xm || sgIsLive(x) || !!(x.sc && x.sc.release); }
 /* (Nov 8, Chris) SONG CATEGORIES on the board = his locked list (db stats/songcats, written by song-cats-sync.py from
    "Song categories - FINAL (Oct 26).md" + the Lab's own icons). One icon on every song row; folders by category. */
 function sgCats(){ return (stats.find(q => q.id === "songcats") || {}).cats || []; }
@@ -5943,7 +5923,7 @@ const SGRS = "display:flex!important;flex-direction:row!important;align-items:ce
 const sgHead = (cols, ab) => `<div class="tn${V16 ? " v16hd" : ""}" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px;--n:${cols.length}">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
 /* ONE checklist row for Songs (SGCOLS) and Lessons (LCCOLS): name + one box per column (q.c ok teal / chk gold / mk + fx light gold / blank) */
 function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = SGRS;
-  const rel = x.sub ? x.sub : x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
+  const rel = x.sub ? x.sub : x.sc && x.sc.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sc.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
   /* (Nov 8, Chris: "the category icons ... need to be on each song") one fixed 18px slot before the title: the category icon, or in Select mode a tick circle (titles never lose room) */
   const cat = x.full ? null : sgCatOf(x), sel = SGSEL.on && !x.full, picked = sel && SGSEL.keys.has(x.k);
   const lead = sel ? `<i class="sgtick${picked ? " on" : ""}" aria-hidden="true"></i>` : cat ? `<i class="sgcat" title="${esc(cat.name)}">${cat.icon}</i>` : "";
@@ -6603,10 +6583,10 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
 /* (Oct 30, Chris: Level 2 is months away, "when the final check is okay, I want them removed from the list") a gold Level 2 / Level 3 box does not count as to check. Back on with the slash chords chapter: empty this set. */
 const SGLVWAIT = new Set([5, 6]), sgChk = x => x.cells.filter((q, i) => q.c === "chk" && !SGLVWAIT.has(i));
 function sgSoon(x){ if (!x || !x.cells || !sgChk(x).length) return false; if (SGLIVE.includes(x.k)) return true;
-  const r = String((x.sg && x.sg.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
+  const r = String((x.sc && x.sc.release) || (x.xm ? "2026-11-08" : "")).slice(0, 10); return !!r && r <= plus(14); }
 function sgIsLive(x){ const SL = stats.find(q => q.id === "songlive") || {}; return (SL.ids || []).includes(x.sc && x.sc.labId) || (SL.titles || []).map(sgKey).includes(x.k); }   /* (Oct 31, Chris: a song moves to Live when it's live, never in 2 folders) db stats/songlive, read from Live's own files by song-live-list.py */
 /* (Nov 1, Chris: "christmas song list needs to be put in my today folder") Today's Songs to check = every Christmas song (x.xm, the board's one Christmas test) not yet on Live with a gold box waiting. No typed list. (Oct 31, Chris: "i like to see it there until it's finished") one he already started stays while it rebuilds (Fixing, or Making on Level 1, Intro or Final), and leaves on its Final Approve. A song with nothing built to check stays in the Christmas folder. */
-function sgNow(x){ if (!x || !x.xm || !x.cells || sgIsLive(x)) return false; if (x.sg && x.sg.release && x.sg.release > new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10)) return false;   /* (Nov 3, Chris: "remove the rest from my songboard and add them to the Christmas songs folder") a release more than 7 days out = Christmas folder only */ const C = x.cells; if (x.sc && x.sc.finalOK && x.sc.finalOK.L1 && C[7].c !== "chk") return false;
+function sgNow(x){ if (!x || !x.xm || !x.cells || sgIsLive(x)) return false; if (x.sc && x.sc.release && x.sc.release > new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10)) return false;   /* (Nov 3, Chris: "remove the rest from my songboard and add them to the Christmas songs folder") a release more than 7 days out = Christmas folder only */ const C = x.cells; if (x.sc && x.sc.finalOK && x.sc.finalOK.L1 && C[7].c !== "chk") return false;
   return sgChk(x).length > 0 || C.some(q => q.c === "fx") || [3, 4, 7].some(i => C[i].c === "mk"); }
 function sgNext(x){ return sgSoon(x) && !sgNow(x); }
 function homeSongs(only){
@@ -6624,10 +6604,10 @@ function homeSongs(only){
   const live = U.filter(isLive);
   /* (Oct 21, Chris) SONGS BOARD = 5 FOLDERS: Christmas (Nov 1 list), Church songs, Kids, Non-church songs (every db songs row; live songs stay in theirs), Other Songs (not in db songs). All closed except the one he last opened (per device, fd-songfolder). */
   const SGCH = new Set(["amazinggrace", "comethoufount", "doxology", "fatherabraham", "hesgotthewholeworldinhishands", "iamachristian", "ivegotthejoyjoyjoyjoy", "jesuslovesthelittlechildren", "jesuslovesme", "jesuspaiditall", "joyfuljoyful", "kumbayah", "iminthelordsarmy", "nothingbuttheblood", "onlyaboynameddavid", "onwardchristiansoldiers", "oldruggedcross", "thislittlelightofmine", "whatafriendwehaveinjesus", "zacchaeus"]);
-  const isCh = x => SGCH.has(x.k) || (!x.sg && x.sc && /hymns|sunday/i.test(x.sc.group || ""));
+  const isCh = x => SGCH.has(x.k) || !!(x.sc && /hymns|sunday/i.test(x.sc.group || ""));
   /* (Oct 21, Chris) KIDS folder: nursery and children's songs that are not church songs (fixed id set, like SGCH) */
   const SGKID = new Set(["alphabetsong", "baabaablacksheep", "bingo", "doyouknowthemuffinman", "farmerinthedell", "frrejacques", "frerejacques", "gotellauntrhody", "herewegoroundthemulberrybush", "hickorydickorydock", "hotcrossbuns", "humptydumpty", "itsybitsyspider", "lightlyrow", "londonbridgeisfallingdown", "maryhadalittlelamb", "ohwhereohwherehasmylittledoggone", "oldgraymare", "oldmacdonaldhadafarm", "pollywollydoodle", "popgoestheweasel", "ringaroundtherosie", "rockabyebaby", "rowrowrowyourboat", "shellbecomingroundthemountain", "skiptomylou", "thisoldman", "threeblindmice", "twinkletwinklelittlestar"]);
-  const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
+  const inXm = x => x.xm, hasSg = x => !!x.sc, isKid = x => SGKID.has(x.k);
   const UF = U.filter(x => !sgSoon(x) && !sgNow(x) && !isLive(x)), fNext = U.filter(x => sgNext(x) && !isLive(x)).sort(ord);   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check; the rest coming up only in Next week */
   const fX = UF.filter(inXm).sort(ord), fK = UF.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = UF.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = UF.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = UF.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
   const fold = (key, t, sub, L, pre = "") => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
@@ -6704,8 +6684,6 @@ document.addEventListener("click", e => {
   .sgbtn{border:1.5px solid var(--line,#E7E1D6);background:transparent;border-radius:10px;padding:6px 12px;font:700 13px/1.2 inherit;color:inherit;cursor:pointer}
   .sgbtn.pri{background:var(--ka1FA598,#1FA598);border-color:var(--ka1FA598,#1FA598);color:var(--ktFFF,#fff)}
   .sgbtn:disabled{opacity:.45;cursor:default}`; document.head.appendChild(st); })();
-document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
-  songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
 /* (Oct 11) Chris: LAB LINKS. Every ThriveCart video (db 'lablinks', one doc each) is linked, ready (a strong Lab match) or
    needs a Lab practice (db 'labpractices'). Projects > Worship Piano Lab > Lab links opens in place: counts, then Ready to link
    (by course), Linked (clicks + money from stats/lablinks, period buttons) and Needs a Lab practice (by practice, most videos
@@ -6757,7 +6735,6 @@ function subSpecial(name){
   if (name === "@@train") return TLV.map(([k, h]) => { const n = tasks.filter(t => !t.done && !t.removed && lvOf(t) === k).length;
     return row(`data-trainlv="${k}" style="border-left:4px solid ${TLV.find(x => x[0] === k)[2]}"`, TLVP[k] + "% · " + h.replace("100% automatic", "Automatic"), n + (n === 1 ? " to-do" : " to-dos")); }).join("");
   if (name === "@@lab") return `<div class="chgrid songgrid lcgrid">${lessonsInner()}</div>`;   /* (Oct 28) Projects > Worship Piano Lab > Lessons to check = the same board */
-  if (name === "@@songs") return songsHTML();
   if (name === "@@lablinks") return llHTML();
   // (Oct 9) Chris: viewer requests get their own folder (not ideas), most-asked first
   if (name === "@@req") return requests.filter(r => !r.done).sort((a, b) => (b.asks || 1) - (a.asks || 1) || String(b.last || "").localeCompare(String(a.last || "")))
@@ -7065,8 +7042,6 @@ document.addEventListener("click", e => {
   const b = e.target.closest("#list .msec .chgrid .chc, #list .msec .chgrid .pc3t, #pop .plist .chc"); if (!b){ if (!e.target.closest(".sortmenu")) document.querySelectorAll(".rowmenu").forEach(m => m.remove()); return; }   /* (Oct 11) taps inside an open body no longer strip the header colour */
   if (b.dataset.repopen){ e.preventDefault(); e.stopPropagation(); const opening = !repOpen;
     return keepPos(b, () => { repOpen = opening; document.querySelectorAll("#list .replist").forEach(x => x.remove()); b.classList.toggle("rowon", repOpen); if (repOpen) b.insertAdjacentHTML("afterend", repList()); applyFocus(); }, opening); }
-  if (b.dataset.songopen){ e.preventDefault(); e.stopPropagation(); const id = b.dataset.songopen, opening = songOpen !== id;
-    return keepPos(b, () => { songOpen = opening ? id : null; songsRefresh(); }, opening); }
   if (b.dataset.mrow){ e.preventDefault(); e.stopPropagation(); const k = b.dataset.mrow, opening = mRow !== k;
     return keepPos(b, () => { mRow = opening ? k : ""; saveMRow(); document.querySelectorAll("#list .mbody").forEach(x => x.remove()); document.querySelectorAll("#list .mrow.rowon").forEach(x => x.classList.remove("rowon"));
       if (mRow){ b.classList.add("rowon"); b.insertAdjacentHTML("afterend", `<div class="mbody">${mBody(mRow)}</div>`); mDraw(); } applyFocus(); }, opening); }
@@ -7507,10 +7482,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   live("summaries", ["date","desc"], v => summaries = v);
   live("ideas", ["added","desc"], v => ideas = v.filter(x => !x.removed));   // (Oct 7) Remove hides, kept for the archive
   live("skills", ["order","asc"], v => skills = v);
-  live("songs", ["order","asc"], v => songs = v);
   live("queue", ["order","asc"], v => queueRows = v);
   live("requests", ["asks","desc"], v => requests = v.flatMap(r => Array.isArray(r.list) ? r.list.map((x, i) => ({id: r.id + "-" + i, ...x})) : [r]));   // (Oct 9) a doc with list[] = a whole scan
-  live("songsteps", ["order","asc"], v => songSteps = v);
   /* (Oct 11) Lab links: 313 videos, so this one reads up to 400 rows (live() stops at 300) */
   deskWait.add("lablinks"); db.collection("lablinks").orderBy("order","asc").limit(400).onSnapshot(q => { first("lablinks"); lablinks = q.docs.map(d=>({id:d.id,...d.data()})).filter(x => !x.removed); if (!editing && !sorting && !answering && !revFix && !bulkPick && !(editOpen && document.querySelector("#list .tdedit"))) liveRender(); }, fail);
   live("labpractices", ["order","asc"], v => labPractices = v);
