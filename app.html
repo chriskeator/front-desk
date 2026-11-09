@@ -2784,7 +2784,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v452</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v453</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5913,23 +5913,41 @@ function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow the
   FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "L1" ? 3 : k === "intro" ? 4 : k === "L2" ? 5 : k === "L3" ? 6 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
   /* (Oct 28, Chris: "whatever I approved needs to be saved") no red Differs cell on his board: beltDiff is Cadence's list (desk alert song-belt), his approved cell stays as he left it */
   return C; }
-function sgUniverse(){ if (scBoard === null) fdScLoad();
+function sgUniverse(all){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
+  if (all) ((stats.find(x => x.id === "songcats") || {}).cats || []).forEach(c => (c.titles || []).forEach(t => add(t, {})));   /* (Nov 8) every song on Chris's locked category list is in the pool, even with no board row yet */
   ((stats.find(x => x.id === "songlist") || {}).songs || []).forEach(x => add(x.t, {xm: !!x.x}));
   (songs || []).filter(x => !x.removed).forEach(x => add(x.title, {sg: x, title: x.title}));
   (scBoard || []).forEach(r => add(r.name, {sc: r}));
   const gone = new Set((songs || []).filter(x => x.removed).map(x => sgKey(x.title))); gone.forEach(k => { const u = U.get(k); if (u && !u.sg) U.delete(k); });   /* (Oct 22, Chris: Ode to Joy came back) a song he removed stays off the board, whatever old list or row still names it */
-  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})).filter(sgKeep); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas */
+  return [...U.values()].map(u => Object.assign(u, {xm: u.xm || SGXM.test(u.title) || (u.sg && u.sg.release === "2026-11-01") || (u.sc && u.sc.group === "Christmas"), cells: sgCells(u)})).filter(all ? () => true : sgKeep); }   /* (Oct 20, Chris) on the Nov 1 list or in the Christmas group = Christmas. (Nov 8) sgUniverse(true) = every song, for the All other songs folder */
 /* (Nov 1, Chris: "remove all songs from my desk that aren't these 21 and the christmas list") ONE filter, read from data, hides only (no row changes): db stats/nextsongs cats (his picks), Christmas, Live (stats/songlive), or a release date on its db songs row. Chapters 7-13 use only these. Undo without a push: stats/nextsongs boardAll:true shows every song; no nextsongs doc = every song too. */
-function sgKeep(x){ const N = stats.find(q => q.id === "nextsongs"); if (!N || !N.cats || N.boardAll) return true;
+function sgKeep(x){ const N = stats.find(q => q.id === "nextsongs"); if (!N || (!N.cats && !N.on) || N.boardAll) return true;
+  if (Array.isArray(N.on)) return N.on.includes(x.k) || !!x.xm || sgIsLive(x);   /* (Nov 8, Chris: "i need to be able to change my mind without asking you") the board = his own list N.on (song keys), moved in/out on the desk */
   return Object.values(N.cats).flat().some(t => sgKey(t) === x.k) || !!x.xm || sgIsLive(x) || !!(x.sg && x.sg.release); }
+/* (Nov 8, Chris) SONG CATEGORIES on the board = his locked list (db stats/songcats, written by song-cats-sync.py from
+   "Song categories - FINAL (Oct 26).md" + the Lab's own icons). One icon on every song row; folders by category. */
+function sgCats(){ return (stats.find(q => q.id === "songcats") || {}).cats || []; }
+let sgCatMemo = null, sgCatSrc = null;
+function sgCatOf(x){ const C = sgCats(); if (sgCatSrc !== C){ sgCatSrc = C; sgCatMemo = new Map(); C.forEach(c => (c.titles || []).forEach(t => sgCatMemo.set(sgKey(t), c))); }
+  return sgCatMemo.get(x.k) || (x.xm ? C.find(c => c.id === "xmas") : null) || null; }
+/* (Nov 8, Chris) SELECT TO MOVE: tap Select, tap songs (a tick replaces the category icon, so titles keep their room), then
+   Add to folders / Move out. Saved at once to db stats/nextsongs.on; the board redraws from the change, no waiting. */
+const SGSEL = {on: false, keys: new Set(), cat: "", az: false};
+function sgOnList(){ const N = stats.find(q => q.id === "nextsongs") || {}; return Array.isArray(N.on) ? N.on.slice() : null; }
+function sgOnSave(L){ const N = stats.find(q => q.id === "nextsongs"); const v = [...new Set(L)];
+  if (N) N.on = v; else stats.push({id: "nextsongs", on: v});
+  if (db){ const d = db.collection("stats").doc("nextsongs"), o = {on: v, updated: new Date().toISOString(), by: "desk"}; Promise.resolve(d.update(o)).catch(() => d.set(o)).catch(() => {}); } }
 const SGRS = "display:flex!important;flex-direction:row!important;align-items:center;justify-content:space-between;gap:8px;padding:9px 14px;border-top:1px solid var(--line,#E7E1D6);text-align:left";
 /* the checklist header row (column names; phone = the whole word at 45 degrees): Songs board and Lessons board */
 const sgHead = (cols, ab) => `<div class="tn${V16 ? " v16hd" : ""}" style="${SGRS};border-top:0"><b class="sname" style="flex:1;min-width:0"></b><span class="sbar" style="display:flex;gap:4px;--n:${cols.length}">${cols.map((t, i) => `<i class="sblk" title="${esc(t)}" style="width:22px;flex:0 0 22px;text-align:center;font-style:normal;font-size:10px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;color:var(--muted,#8A9099)"><span class="sab">${ab[i]}</span><span class="sfw">${t}</span></i>`).join("")}</span></div>`;
 /* ONE checklist row for Songs (SGCOLS) and Lessons (LCCOLS): name + one box per column (q.c ok teal / chk gold / mk + fx light gold / blank) */
 function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = SGRS;
   const rel = x.sub ? x.sub : x.sg && x.sg.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sg.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
-  return `<div class="srow" style="${RS}"><b class="sname"${x.full ? ` data-lcname="${esc(x.full)}" role="button" tabindex="0"` : ""} style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px;--n:${x.cells.length}">${x.cells.map((q, i) => { if (q.blank || (cols === SGCOLS && i === 1 && !q.nt)) return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="none" title="${esc(cols[i])}" style="background:transparent;border:1.5px solid transparent;width:22px;height:14px;box-sizing:border-box;flex:0 0 22px"></i>`   /* (Nov 2, Chris: headers centred everywhere) an empty box keeps its column width, or the columns slide on the phone */;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
+  /* (Nov 8, Chris: "the category icons ... need to be on each song") one fixed 18px slot before the title: the category icon, or in Select mode a tick circle (titles never lose room) */
+  const cat = x.full ? null : sgCatOf(x), sel = SGSEL.on && !x.full, picked = sel && SGSEL.keys.has(x.k);
+  const lead = sel ? `<i class="sgtick${picked ? " on" : ""}" aria-hidden="true"></i>` : cat ? `<i class="sgcat" title="${esc(cat.name)}">${cat.icon}</i>` : "";
+  return `<div class="srow${sel ? " sgsel" : ""}${picked ? " sgpicked" : ""}" data-sgk="${esc(x.k || "")}" style="${RS}">${lead}<b class="sname"${x.full ? ` data-lcname="${esc(x.full)}" role="button" tabindex="0"` : ""} style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px;--n:${x.cells.length}">${x.cells.map((q, i) => { if (q.blank || (cols === SGCOLS && i === 1 && !q.nt)) return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="none" title="${esc(cols[i])}" style="background:transparent;border:1.5px solid transparent;width:22px;height:14px;box-sizing:border-box;flex:0 0 22px"></i>`   /* (Nov 2, Chris: headers centred everywhere) an empty box keeps its column width, or the columns slide on the phone */;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
     const stk = q.c === "fx" && q.ak && (q.ak[0] === "Stuck" || q.red), tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">${q.t || "Making"}</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
@@ -6612,12 +6630,27 @@ function homeSongs(only){
   const inXm = x => x.xm, hasSg = x => !!x.sg, isKid = x => SGKID.has(x.k);
   const UF = U.filter(x => !sgSoon(x) && !sgNow(x) && !isLive(x)), fNext = U.filter(x => sgNext(x) && !isLive(x)).sort(ord);   /* (Oct 28, Chris: "one song in each folder that goes back and forth") a song going out now sits only in Today's Songs to check; the rest coming up only in Next week */
   const fX = UF.filter(inXm).sort(ord), fK = UF.filter(x => !inXm(x) && isKid(x)).sort(ord), fC = UF.filter(x => !inXm(x) && !isKid(x) && (hasSg(x) || SGCH.has(x.k)) && isCh(x)).sort(ord), fN = UF.filter(x => !inXm(x) && !isKid(x) && hasSg(x) && !isCh(x)).sort(ord), fO = UF.filter(x => !inXm(x) && !isKid(x) && !hasSg(x) && !SGCH.has(x.k)).sort(ord);   /* (Oct 26, Chris: why is Joyful, Joyful in Other Songs) a named church song counts as Church even before it has a songs row */
-  const fold = (key, t, sub, L) => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
-    return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
+  const fold = (key, t, sub, L, pre = "") => { if (!L.length) return ""; const g = L.reduce((n, x) => n + sgChk(x).length, 0);
+    return deskFold("sg:" + key, `${t} (${L.length})`, g ? g + " to check" : sub, pre + head + L.map(x => sgRow(x)).join("")); };   /* the ONE folder template (deskFold) */
   const label = (t, c) => `<div class="tn" style="${RS};border-top:0;padding-top:14px;padding-bottom:2px"><b style="flex:1;font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#8A9099)">${t} <span style="font-weight:700">(${c})</span></b></div>`;
   const nx = L => V16 ? L.filter(x => !x.xm) : L, fXv = V16 ? U.filter(x => x.xm && !isLive(x)).sort(ord) : [], fNow = V16 ? nx(U.filter(x => sgNow(x) && !isLive(x)).sort(ord)) : [];   /* (Nov 1, Chris: "test Christmas songs on my new desk") V16: Christmas songs not live yet in one open folder, and the songs going out now; same boxes, same check flows, one folder per song. (Nov 8, Chris: "every song can only be in 1 folder, but once a song is live, it needs to move to the live folder") a live song, Christmas too, sits only in Live. Built in: !isLive here + live (not nx(live)) in the Live folder. */
   const v16open = (key, t, L) => L.length ? deskFold(key, `${t} (${L.length})`, L.reduce((n, x) => n + sgChk(x).length, 0) + " to check", head + L.map(x => sgRow(x)).join(""), {def: 1}) : "";
-  const secN = v16open("sg:v16xmas", "Christmas", fXv) + v16open("sg:now", "Going out now", fNow) + fold("next", "Next week", "after this ship", nx(fNext)) + (V16 ? "" : fold("xmas", "Christmas", "Nov 8 release", fX)) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO) + fold("live", "Live", "students have these", live.slice().sort((a, b) => a.title.localeCompare(b.title)));
+  /* (Nov 8, Chris: "release songs in groups ... move them in and out" + "they all need to be the same song board") V16 folders =
+     his locked categories (Hymns, Kids, Folk; Christmas above) holding the songs on his list; ALL OTHER SONGS = every other song
+     (sort A to Z or most done, filter by category); Select + Add to folders / Move out. Same deskFold + sgRow everywhere. */
+  if (V16 && !sgOnList()) sgOnSave(U.filter(x => !x.xm && !isLive(x)).map(x => x.k));   /* first open: the songs on the board now stay where they are */
+  const catF = id => UF.filter(x => !x.xm && (sgCatOf(x) || {}).id === id).sort(ord), noCat = UF.filter(x => !x.xm && !sgCatOf(x)).sort(ord);
+  const onK = new Set(U.map(x => x.k)), pool = V16 ? sgUniverse(true).filter(x => !onK.has(x.k) && !isLive(x) && !x.xm) : [];
+  const poolF = pool.filter(x => !SGSEL.cat || (sgCatOf(x) || {}).id === SGSEL.cat).sort(SGSEL.az ? (a, b) => a.title.localeCompare(b.title) : ord);
+  const selBtn = SGSEL.on ? "" : `<button type="button" class="sgchip sgselbtn" data-sgact="select">Select</button>`;   /* (Nov 8) Select sits inside the folders; the active bar is pinned on the screen (sgSelBarSync) */
+  const chip = (id, t, n) => `<button type="button" class="sgchip${SGSEL.cat === id ? " on" : ""}" data-sgcatf="${id}">${t} <span>${n}</span></button>`;
+  const poolBar = `<div class="sgbar">${chip("", "All", pool.length)}${sgCats().filter(c => c.id !== "xmas").map(c => chip(c.id, c.name, pool.filter(x => (sgCatOf(x) || {}).id === c.id).length)).join("")}<button type="button" class="sgchip sgaz${SGSEL.az ? " on" : ""}" data-sgaz="1">${SGSEL.az ? "A to Z" : "Most done"}</button>${selBtn}</div>`;
+  const poolFold = V16 ? deskFold("sg:pool", `All other songs (${pool.length})`, "pick songs to add to a folder", poolBar + head + poolF.map(x => sgRow(x)).join("")) : "";
+  setTimeout(sgSelBarSync, 0);
+  const secN = v16open("sg:v16xmas", "Christmas", fXv) + v16open("sg:now", "Going out now", fNow) + fold("next", "Next week", "after this ship", nx(fNext)) + (V16
+      ? sgCats().filter(c => c.id !== "xmas").map(c => fold("cat-" + c.id, c.name, "on your list", catF(c.id), `<div class="sgbar">${selBtn}</div>`)).join("") + fold("cat-none", "No category yet", "add it to the locked list", noCat) + poolFold
+      : fold("xmas", "Christmas", "Nov 8 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO))
+    + fold("live", "Live", "students have these", live.slice().sort((a, b) => a.title.localeCompare(b.title)));
   const mine = UF.reduce((t, x) => t + sgChk(x).length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
@@ -6626,6 +6659,51 @@ function homeSongs(only){
     return `<div class="crrow" data-lyrchk="${esc(r.id)}" role="button" tabindex="0" style="${RS};cursor:pointer"><b class="sname" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(r.name)}</b><span class="crpill" style="flex:0 0 auto;border-radius:10px;padding:2px 9px;font-size:12px;font-weight:700;white-space:nowrap;${np ? "background:var(--kbFDE8E4);border:1.5px solid var(--klB4362A);color:var(--ktB23B17)" : "background:var(--kbFBEFD0);border:1.5px solid var(--klE8B53A);color:var(--kt8A6508)"}">${np ? "Not PD" : "Unsure"}</span></div>`; }).join("") : "";
   return deskFold("", "Songs", V16 ? [mine ? mine + " later" : "", live.length ? live.length + " live" : ""].filter(Boolean).join(" · ") : `${mine} to check · ${live.length} live`, secCR + secN, {top: 1, cc: "var(--ka7F77DD)", grid: "songgrid"}); }
 function songsRefresh(){ foldRefresh(); }
+/* (Nov 8) the Select bar while selecting: ONE element pinned on the screen (outside the board, so no folder layout can hide it) */
+function sgSelBarSync(){ let el = document.getElementById("sgselbar");
+  if (!SGSEL.on){ if (el) el.remove(); return; }
+  if (!el){ el = document.createElement("div"); el.id = "sgselbar"; el.className = "sgselbar on"; document.body.appendChild(el); }
+  const n = SGSEL.keys.size, d = n ? "" : " disabled";
+  el.innerHTML = `<b>${n} selected</b><button type="button" class="sgbtn pri" data-sgact="add"${d}>Add to folders</button><button type="button" class="sgbtn" data-sgact="out"${d}>Move out</button><button type="button" class="sgbtn" data-sgact="done">Done</button>`; }
+/* (Nov 8, Chris: "it needs to work smoothly and immediately") Select mode taps: picking a song only flips its tick + the count (no redraw);
+   Add / Move out / chips / sort save or change at once and redraw the board. Capture phase: in Select mode a tap never opens a check. */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-sgact],[data-sgcatf],[data-sgaz]");
+  if (b){ e.preventDefault(); e.stopPropagation();
+    if (b.dataset.sgcatf != null) SGSEL.cat = b.dataset.sgcatf;
+    else if (b.dataset.sgaz) SGSEL.az = !SGSEL.az;
+    else { const a = b.dataset.sgact;
+      if (a === "select"){ SGSEL.on = true; SGSEL.keys.clear(); }
+      else if (a === "done"){ SGSEL.on = false; SGSEL.keys.clear(); }
+      else if (a === "add" || a === "out"){ const L = sgOnList() || [], K = [...SGSEL.keys];
+        sgOnSave(a === "add" ? L.concat(K) : L.filter(k => !SGSEL.keys.has(k))); SGSEL.on = false; SGSEL.keys.clear(); } }
+    render(); sgSelBarSync(); return; }
+  if (!SGSEL.on) return;
+  const r = e.target.closest(".srow.sgsel"); if (!r || !r.dataset.sgk) return;
+  e.preventDefault(); e.stopPropagation();
+  const k = r.dataset.sgk, on = !SGSEL.keys.has(k); on ? SGSEL.keys.add(k) : SGSEL.keys.delete(k);
+  document.querySelectorAll(`.srow.sgsel[data-sgk="${CSS.escape(k)}"]`).forEach(x => { x.classList.toggle("sgpicked", on); const t = x.querySelector(".sgtick"); if (t) t.classList.toggle("on", on); });
+  sgSelBarSync();
+}, true);
+(() => { const st = document.createElement("style"); st.textContent = `
+  .sgcat,.sgtick{flex:0 0 18px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted,#8A9099)}
+  .sgcat svg{width:16px;height:16px}
+  .sgtick{border:2px solid var(--line,#C9C2B3);border-radius:50%;box-sizing:border-box}
+  .sgtick.on{background:var(--ka1FA598,#1FA598);border-color:var(--ka1FA598,#1FA598)}
+  .sgtick.on::after{content:"";width:5px;height:9px;border-style:solid;border-width:0 2px 2px 0;border-color:var(--ktFFF,#fff);transform:translateY(-1px) rotate(45deg)}
+  .srow.sgsel{cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .srow.sgpicked{background:color-mix(in srgb,var(--ka1FA598,#1FA598) 10%,transparent)}
+  .sgbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 4px}
+  .sgchip{border:1.5px solid var(--line,#E7E1D6);background:transparent;border-radius:16px;padding:4px 11px;font:600 13px/1.3 inherit;color:inherit;cursor:pointer}
+  .sgchip span{color:var(--muted,#8A9099);font-weight:700}
+  .sgchip.on{border-color:var(--ka1FA598,#1FA598);background:color-mix(in srgb,var(--ka1FA598,#1FA598) 12%,transparent)}
+  .sgchip.sgaz{margin-left:auto}
+  .sgselbar{display:flex;align-items:center;gap:8px;padding:8px 14px;flex-wrap:wrap}
+  .sgselbar.on{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:60;width:min(640px,calc(100vw - 24px));box-sizing:border-box;background:var(--card,#FFFDF8);border:1.5px solid var(--ka1FA598,#1FA598);border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+  .sgselbar b{margin-right:auto;font-size:14px}
+  .sgbtn{border:1.5px solid var(--line,#E7E1D6);background:transparent;border-radius:10px;padding:6px 12px;font:700 13px/1.2 inherit;color:inherit;cursor:pointer}
+  .sgbtn.pri{background:var(--ka1FA598,#1FA598);border-color:var(--ka1FA598,#1FA598);color:var(--ktFFF,#fff)}
+  .sgbtn:disabled{opacity:.45;cursor:default}`; document.head.appendChild(st); })();
 document.addEventListener("click", e => { const b = e.target.closest("[data-songsort]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   songSort = b.dataset.songsort; try { localStorage.setItem("fd-songsort", songSort); } catch {} songsRefresh(); }, true);
 /* (Oct 11) Chris: LAB LINKS. Every ThriveCart video (db 'lablinks', one doc each) is linked, ready (a strong Lab match) or
