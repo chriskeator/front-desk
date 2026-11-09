@@ -2780,7 +2780,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v454</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v455</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5825,7 +5825,6 @@ function scVerses(sc){ const out = []; let cur = null; String(sc && sc.lyricsTex
    and Delete verse (versesGone) removes one: gone verses show no tab and count as done. Numbers never shift (wordsV keys stay) */
 /* (Nov 3, Chris: "what happened to all my Christmas songs?") the ONE melody = songcheck.lines; the old hidden copy (orig) was deleted Nov 3, so nothing may wait on it */
 function scMel(sc){ return !!(sc && Array.isArray(sc.lines) && sc.lines.length); }
-function scHasWords(sc){ return !!(sc && (sc.words || []).some(l => (l || []).some(w => w && String(w.w || "").trim()))); }   /* (Nov 5, Chris: one copy of the words) sc.words only */
 function scGone(sc){ const g = new Set(Array.isArray(sc && sc.versesGone) ? sc.versesGone : []), V = scVerses(sc);
   const nw = x => String(x || "").toLowerCase().replace(/-\s+/g, "").replace(/[^a-z' ]/g, " ").replace(/'/g, "").split(/\s+/).filter(Boolean);
   const placed = new Set(nw(["words"].flatMap(f => Array.isArray(sc && sc[f]) ? sc[f].flat() : []).map(w => w && w.w || "").join(" ")));
@@ -5841,9 +5840,7 @@ function scFixingTitle(t){ return !!(t && Array.isArray(t.songcheck) && (scBoard
 /* (Oct 22, Chris) BEATS cell helpers: songcheck.beatsText {verse: text}, beatsOK {verse: iso} (his real Approve tap only), beatsFix, beatsMaking */
 function btVerses(sc){ const n = sc && sc.oneVerse ? 1 : Math.max(1, scVerses(sc).length), g = new Set(scGone(sc)); const o = []; for (let v = 1; v <= n; v++) if (!g.has(v)) o.push(v); return o; }
 function btTexts(sc){ const t = sc && sc.beatsText; return t && typeof t === "object" ? t : {}; }
-function btHas(sc){ return Object.values(btTexts(sc)).some(x => String(x || "").trim()); }
 function btOks(sc){ const o = sc && sc.beatsOK; return o && typeof o === "object" ? o : {}; }
-function btAnyOk(sc){ return Object.values(btOks(sc)).some(Boolean); }
 /* (Oct 22 v261, Chris: Hark + Jingle broke) APPROVED = LOCKED for Beats. A verse is approved when its melody is (verse 1 + melodyOK), it is in versesOk, or EVERY row of its notes is ticked (rowsOk, rowsOk_vN). A ticked row of any other verse is locked too. Beats never writes text for, builds, or unticks any of it. */
 function btFlat0(a){ return (a || []).reduce((o, x) => o.concat(Array.isArray(x) ? x : [x]), []); }
 function btRowsSet(r, v){ const a = r && r[v === 1 ? "rowsOk" : "rowsOk_v" + v]; return new Set(Array.isArray(a) ? a : []); }
@@ -5855,44 +5852,16 @@ function btRowsAll(r, v){ const n = btVNotes(r, v); return n.length > 0 && n.eve
 function btApproved(r, v){ v = +v; return !!r && ((v === 1 && !!r.melodyOK) || (Array.isArray(r.versesOk) && r.versesOk.includes(v)) || btRowsAll(r, v)); }
 function btWordsText(r, v){ const M = r.meter || 4, W = v === 1 ? btFlat0(r.words) : (r.wordsV && Array.isArray(r.wordsV[v]) && r.wordsV[v].length ? r.wordsV[v] : btFlat0(r.words)), N = btVNotes(r, v), g = btGroup(r, N, W);
   return g.words.map(l => l.map(w => (Math.abs(w.g / M - Math.round(w.g / M)) < 1e-6 ? "| " : "") + w.w).join(" ")).filter(Boolean).join("\n"); }
-function btCell(sc, plan){ if (!sc) return {c: ""}; const T = btTexts(sc), O = btOks(sc), vs = btVerses(sc), done = v => !!O[v] || btApproved(sc, v);   /* display only: never writes an OK field */
-  if (sc.beatsFix) return {c: "fx", ak: fmAck("songcheck", sc.id)};
-  if (vs.length && vs.every(done)) return {c: "ok", id: sc.id, bt: 1};
-  if (vs.some(v => !done(v) && String(T[v] || "").trim())) return {c: "chk", id: sc.id, bt: 1};
-  if (sc.beatsMaking) return {c: "mk"};
-  return {c: ""}; }
-function sgCells(x){ const sc = x.sc;   /* (Oct 21, Chris) live songs follow their songcheck row like every other song; nothing is hardcoded Approved */
-  const C = SGCOLS.map(() => ({c: ""})), plan = !!sc;
-  if (sc && sc.lyricsOK) C[0] = {c: "ok", id: sc.id, lyr: 1}; else if (sc && sc.lyricsText && !sc.lyricsFix) C[0] = {c: "chk", id: sc.id, lyr: 1}; else if (sc && sc.lyricsFix) C[0] = {c: "fx", ak: fmAck("songcheck", sc.id)}; else if (plan) C[0] = {c: "mk"};   /* (Oct 20, Chris: Lyrics = step one) his words list -> his Approve on the Lyrics check */
-  C[1] = btCell(sc, plan);
-  if (sc && NT8.includes(sc.id) && Array.isArray(sc.lines) && sc.lines.length) C[1] = sc.notesOK ? {c: "ok", id: sc.id, nt: 1} : {c: "chk", id: sc.id, nt: 1};   /* (Oct 26, Chris) Notes check: these 8 songs only */
-  const btHold = false;   /* (Oct 22, Chris) Beats column removed: the Melody check never waits on Beats. Was: !!(sc && btHas(sc) && !btAnyOk(sc) && !sc.melodyOK) */   /* (Oct 22, Chris) Beats come first: the Melody check opens only after a verse's beats are approved */
-  if (btHold) C[2] = {c: ""};
-  else if (sc && sc.rebuild && !sc.melodyOK) C[2] = Array.isArray(sc.rebuildLines) && sc.rebuildLines.length ? {c: "chk", id: sc.id, cmp: 1} : {c: "mk"};   /* (Oct 24, Chris) songcheck.rebuild = the melody is being rebuilt from hymnal sheet music: Making until the draft exists; (Oct 25, Chris) draft ready = gold Check that opens the compare pop-up (mcOpen) */
-  else if (sc && sc.melodyOK && scMel(sc) && (scVersesLeft(sc) || scRowsLeft(sc))) C[2] = {c: "chk", id: sc.id, v: 1}; else if (sc && sc.melodyOK) C[2] = {c: "ok", id: scMel(sc) ? sc.id : "", v: 1};   /* verses still to check = gold again */
-  else if (sc && scMel(sc) && scHasWords(sc)) C[2] = {c: "chk", id: sc.id, v: 1};   /* (Oct 21, Chris) NO Check on Melody until words sit on the notes (songcheck-words.py nowords_check keeps the alert) */
-  else if (sc && scMel(sc)) C[2] = {c: "mk"};   /* (Nov 3, Chris: "why do these say making?") no melody and no job building one = empty (not started), never Making */   /* a lyrics-only doc (no melody yet) never opens an empty melody check */
-  const LV = ["chordsOK", "mediumOK", "hardOK"], LVC = [3, 5, 6], lvOld = !!(sc && (sc.chordsOK || sc.mediumOK || sc.hardOK));   /* a song with a level already approved keeps showing what it showed before the Player column */
-  LV.forEach((f, j) => { const prev = j ? sc && sc[LV[j - 1]] : sc && (lvOld ? sc.melodyOK : (sc.melodyOK && sc.previewAt && !scVersesLeft(sc))); if (sc && sc[f]) C[LVC[j]] = {c: "ok", id: sc.id, chl: "L" + (j + 1)}; else if (prev) C[LVC[j]] = {c: "chk", id: sc.id, chl: "L" + (j + 1)}; else if (!j && sc && sc.melodyOK && !lvOld && !scVersesLeft(sc)) C[3] = {c: "mk"}; });   /* (Oct 30, Chris: Row Row Row's Level 1 sat empty while its player built) Melody approved, player on its way = Making, never an empty box */
-  /* (Oct 27, Chris: "set every song's intro to gold check intro") INTRO: gold Check on every song with an intro row until his own Approve tap (songcheck.introOK); his row ticks are untouched */
-  /* (Oct 29, Chris chat 75: "if there's no level one chords, then the intro cannot be checked") the Intro plays Level 1's chords: white, no tap,
-     until Level 1 is Approved; the database clears an Intro approval without Level 1 too (song-lock-map.json "needs", song_changed) */
-  /* (Oct 30, Chris: "if the intro isn't ready to check, that needs to say making") the same test as Final: gold only once the player has this Level 1 approval */
-  /* (Oct 30, Chris: "I don't want to waste time checking things if it's not ready to check") the player has THIS row: Melody approved and the site serves the build (song-preview-auto.py stamps previewAt only once it does). Same test as wants_build */
-  const plFresh = !!(sc && sc.melodyOK && !scVersesLeft(sc) && sc.previewAt && String(sc.previewAt) >= String(sc.updated || ""));
-  if (sc && sc.intro) C[4] = !sc.chordsOK ? {c: ""} : sc.introOK ? {c: "ok", id: sc.id, pl: 1, f: "introOK"} : !sc.melodyOK ? {c: ""} : !plFresh || !(sc.pvChords && sc.pvChords.L1 && String(sc.pvChords.L1) >= String(sc.chordsOK)) ? {c: "mk"} : {c: "chk", id: sc.id, pl: 1, f: "introOK"};   /* (Oct 22, Chris) a level = its CHORD SHEET (chOpen), not the chord editor */   /* (Oct 24, Chris) Level 1 opens once the song HAS a player (melodyOK + previewAt), not only after playerOK: he fixes intro chords before approving the Player */
-  /* (Oct 21, Chris) FINAL CHECK per level: empty until a level is approved AND its band, card and lesson are built (songcheck.built {L1,L2,L3: {band,cards,lesson}} from the Lab build results); then gold 'Check L#' (opens the Test song player at that level); his Approve stores finalOK {L#: iso} = teal 'L# OK'. NEVER teal without finalOK. */
-  { const fo = sc && sc.finalOK && typeof sc.finalOK === "object" ? sc.finalOK : {}, bt = sc && sc.built && typeof sc.built === "object" ? sc.built : {};
-    /* (Oct 22, Chris) FINAL = the song preview player with the approved chords: gold 'Check L#' once song-preview-auto.py has put that level's
-       approval on the player (pvChords[L#] >= its OK); an approval newer than his Final OK (he edited + re-approved the level) = gold again */
-    const pv = sc && sc.pvChords && typeof sc.pvChords === "object" ? sc.pvChords : {}, lvOk = {L1: sc && sc.chordsOK, L2: sc && sc.mediumOK, L3: sc && sc.hardOK};
-    const ready = L => !!(plFresh && lvOk[L] && pv[L] && String(pv[L]) >= String(lvOk[L])), heard = L => !!(fo[L] && String(fo[L]) >= String(lvOk[L]));
-    const todo = ["L1", "L2", "L3"].find(L => ready(L) && !heard(L)), done = ["L3", "L2", "L1"].find(L => lvOk[L] && heard(L));
-    const making = sc && sc.melodyOK && ["L1", "L2", "L3"].find(L => lvOk[L] && !ready(L) && !heard(L));   /* (Nov 3, Chris: "why have those been making for over an hour?") Melody not approved = his turn on Melody, nothing is building: Intro and Final stay empty, never Making */   /* (Oct 23, Chris: an empty Final looked like a mistake) level approved, player not updated yet (chores.sh, hourly) = light gold Making */
-    if (todo) C[7] = {c: "chk", id: sc.id, fin: todo, t: "Check " + todo}; else if (making) C[7] = {c: "mk"}; else if (done) C[7] = {c: "ok", id: sc.id, fin: done, t: done + " OK"}; }
-  const FXK = scFixKeys(sc);   /* (Oct 21, Chris) songcheck.fixing {cell: iso}: any key = that cell says Fixing, not tappable, until song-fixing.py off */
-  FXK.forEach(k => { const ix = k === "lyrics" ? 0 : k === "beats" ? 1 : k === "L1" ? 3 : k === "intro" ? 4 : k === "L2" ? 5 : k === "L3" ? 6 : /^(melody|v\d+|verse\d*|tag)$/.test(k) ? 2 : -1; if (ix >= 0) C[ix] = {c: "fx", ak: fmAck("songcheck", sc.id)}; });
-  /* (Oct 28, Chris: "whatever I approved needs to be saved") no red Differs cell on his board: beltDiff is Cadence's list (desk alert song-belt), his approved cell stays as he left it */
+function sgCells(x){ const sc = x.sc, C = SGCOLS.map(() => ({c: ""}));
+  /* (Nov 8, Chris yes Nov 5: "That sounds right") THE song box rule lives ONCE in the database (song-box.sql, trigger song_status on every songcheck save):
+     sc.box.c = the 8 boxes ("" | mk | chk | ok | fx, extras ok:nt / chk:cmp / chk:L1 / ok:L2). The desk only reads it and adds what each tap opens. */
+  const B = sc && sc.box && Array.isArray(sc.box.c) ? sc.box.c : null; if (!B) return C;
+  const id = sc.id, LVC = {3: "L1", 5: "L2", 6: "L3"};
+  B.forEach((v, i) => { const [c, e] = String(v || "").split(":"); if (!c) return;
+    if (c === "fx"){ C[i] = {c, ak: fmAck("songcheck", id)}; return; }
+    if (c === "mk"){ C[i] = {c}; return; }
+    C[i] = i === 0 ? {c, id, lyr: 1} : i === 1 ? (e === "nt" ? {c, id, nt: 1} : {c, id, bt: 1}) : i === 2 ? (e === "cmp" ? {c, id, cmp: 1} : {c, id: c === "ok" && !scMel(sc) ? "" : id, v: 1})
+      : i === 4 ? {c, id, pl: 1, f: "introOK"} : i === 7 ? {c, id, fin: e, t: c === "chk" ? "Check " + e : e + " OK"} : {c, id, chl: LVC[i]}; });
   return C; }
 function sgUniverse(all){ if (scBoard === null) fdScLoad();
   const U = new Map(), add = (t, o) => { const k = sgKey(t); if (!k) return; const u = U.get(k) || {k, title: t}; Object.assign(u, o); U.set(k, u); };
@@ -6355,7 +6324,6 @@ document.addEventListener("click", async e => { const b = e.target.closest("[dat
    NOTES CHECK: the melody as numbers over every syllable, like the chord sheet. Only these 8 songs get the Notes column (the old hidden 2nd slot);
    every other song's slot stays empty. Tap a box, type the numbers (1-7, b/# in front, ' = high octave, , = low; a held syllable = 3 2; no mark =
    the octave nearest the old note). Only the pitch (m) of songcheck.lines changes. Save keeps edits; Approve = songcheck.notesOK (his tap only). */
-const NT8 = ["gotell", "firstnoel", "ly-itcameuponthemidnightclear", "ly-godrestyemerrygentlemen", "ly-wethreekings", "ly-ochristmastree", "ly-ocomeocomeemmanuel", "ly-upontheousetop"];
 const NTDEG = ["1", "#1", "2", "b3", "3", "4", "#4", "5", "#5", "6", "b7", "7"], NTPC = [0, 2, 4, 5, 7, 9, 11];
 let ntS = null;
 const ntTxt = m => NTDEG[((m % 12) + 12) % 12] + (m >= 72 ? "'".repeat(Math.floor((m - 60) / 12)) : m < 60 ? ",".repeat(Math.ceil((60 - m) / 12)) : "");
