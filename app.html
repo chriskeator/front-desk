@@ -2780,7 +2780,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v455</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v456</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5876,7 +5876,24 @@ function sgKeep(x){ const N = stats.find(q => q.id === "nextsongs"); if (!N || (
   return Object.values(N.cats).flat().some(t => sgKey(t) === x.k) || !!x.xm || sgIsLive(x) || !!(x.sc && x.sc.release); }
 /* (Nov 8, Chris) SONG CATEGORIES on the board = his locked list (db stats/songcats, written by song-cats-sync.py from
    "Song categories - FINAL (Oct 26).md" + the Lab's own icons). One icon on every song row; folders by category. */
+/* (Nov 9, Chris: "make all a drop down to select the categories. make sort a drop down too") THE ONE DESK DROP-DOWN: a button that shows the
+   current choice + a list in the pick-list look (one card, plain bold rows, thin lines, a check on the current one). deskDrop(name, [{v, html}], current);
+   a pick fires the "deskdrop" event {name, v} on document. Built in: every drop-down on the desk is this function. */
+function deskDrop(name, opts, cur){ const c = opts.find(o => o.v === cur) || opts[0];
+  return `<span class="ddw" data-ddw="${name}"><button type="button" class="sgchip ddbtn" data-dd="${name}" aria-haspopup="listbox" aria-expanded="false">${c ? c.html : ""}<i class="ddcaret" aria-hidden="true">▾</i></button>`
+    + `<span class="ddlist" role="listbox" hidden>${opts.map(o => `<button type="button" role="option" class="ddopt${o.v === cur ? " on" : ""}" data-ddpick="${name}" data-ddv="${esc(o.v)}">${o.html}<i class="ddtick" aria-hidden="true">${o.v === cur ? "✓" : ""}</i></button>`).join("")}</span></span>`; }
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-dd]"), p = e.target.closest("[data-ddpick]");
+  document.querySelectorAll(".ddw .ddlist:not([hidden])").forEach(l => { if (!b || l.parentNode !== b.parentNode){ l.hidden = true; l.parentNode.querySelector("[data-dd]").setAttribute("aria-expanded", "false"); } });
+  if (b){ e.preventDefault(); e.stopPropagation(); const l = b.parentNode.querySelector(".ddlist"); l.hidden = !l.hidden; b.setAttribute("aria-expanded", String(!l.hidden)); return; }
+  if (p){ e.preventDefault(); e.stopPropagation(); document.dispatchEvent(new CustomEvent("deskdrop", {detail: {name: p.dataset.ddpick, v: p.dataset.ddv}})); } }, true);
+document.addEventListener("click", () => { if (SGSEL.on) setTimeout(sgSelBarSync, 60); });   /* any tap that leaves the board ends Select */
+document.addEventListener("deskdrop", e => { const {name, v} = e.detail;
+  if (name === "sgview"){ SGSEL.cat = v; try { localStorage.setItem("fd-sgview", v); } catch (er) {} render(); sgSelBarSync(); }
+  if (name === "sgsort"){ SGSEL.az = v === "1"; render(); sgSelBarSync(); } });
 function sgCats(){ return (stats.find(q => q.id === "songcats") || {}).cats || []; }
+/* (Nov 9, Chris: icons never showed) db songcats keeps the Lab's icon PATHS (PP_SONG_CATS); drawn in the Lab's own svg frame (ppSongIcon) */
+const sgIco = c => c && c.icon ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${c.icon}</svg>` : "";
 let sgCatMemo = null, sgCatSrc = null;
 function sgCatOf(x){ const C = sgCats(); if (sgCatSrc !== C){ sgCatSrc = C; sgCatMemo = new Map(); C.forEach(c => (c.titles || []).forEach(t => sgCatMemo.set(sgKey(t), c))); }
   return sgCatMemo.get(x.k) || (x.xm ? C.find(c => c.id === "xmas") : null) || null; }
@@ -5895,7 +5912,7 @@ function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = 
   const rel = x.sub ? x.sub : x.sc && x.sc.release && !SGLIVE.includes(x.k) ? (() => { const p = String(x.sc.release).slice(5, 10).split("-"); return "out " + ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); })() : "";
   /* (Nov 8, Chris: "the category icons ... need to be on each song") one fixed 18px slot before the title: the category icon, or in Select mode a tick circle (titles never lose room) */
   const cat = x.full ? null : sgCatOf(x), sel = SGSEL.on && !x.full, picked = sel && SGSEL.keys.has(x.k);
-  const lead = sel ? `<i class="sgtick${picked ? " on" : ""}" aria-hidden="true"></i>` : cat ? `<i class="sgcat" title="${esc(cat.name)}">${cat.icon}</i>` : "";
+  const lead = sel ? `<i class="sgtick${picked ? " on" : ""}" aria-hidden="true"></i>` : cat ? `<i class="sgcat" data-cat="${esc(cat.id)}" title="${esc(cat.name)}">${sgIco(cat)}</i>` : "";
   return `<div class="srow${sel ? " sgsel" : ""}${picked ? " sgpicked" : ""}" data-sgk="${esc(x.k || "")}" style="${RS}">${lead}<b class="sname"${x.full ? ` data-lcname="${esc(x.full)}" role="button" tabindex="0"` : ""} style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px">${esc(x.title)}${rel ? `<span style="display:block;font-size:11.5px;font-weight:600;color:var(--muted,#8A9099);overflow:hidden;text-overflow:ellipsis">${esc(rel)}</span>` : ""}</b><span class="sbar" style="display:flex;gap:4px;--n:${x.cells.length}">${x.cells.map((q, i) => { if (q.blank || (cols === SGCOLS && i === 1 && !q.nt)) return `<i class="sblk sgc" data-sgcol="${i}" data-sgst="none" title="${esc(cols[i])}" style="background:transparent;border:1.5px solid transparent;width:22px;height:14px;box-sizing:border-box;flex:0 0 22px"></i>`   /* (Nov 2, Chris: headers centred everywhere) an empty box keeps its column width, or the columns slide on the phone */;   /* (Oct 26, Chris) the 2nd slot = Notes (8 songs); every other song keeps an empty box so the columns line up */   /* (Oct 22, Chris: "I don't want the beats column on these anymore") Beats column hidden */
     const stk = q.c === "fx" && q.ak && (q.ak[0] === "Stuck" || q.red), tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
@@ -6586,19 +6603,22 @@ function homeSongs(only){
   /* (Nov 8, Chris: "release songs in groups ... move them in and out" + "they all need to be the same song board") V16 folders =
      his locked categories (Hymns, Kids, Folk; Christmas above) holding the songs on his list; ALL OTHER SONGS = every other song
      (sort A to Z or most done, filter by category); Select + Add to folders / Move out. Same deskFold + sgRow everywhere. */
-  if (V16 && !sgOnList()) sgOnSave(U.filter(x => !x.xm && !isLive(x)).map(x => x.k));   /* first open: the songs on the board now stay where they are */
-  const catF = id => UF.filter(x => !x.xm && (sgCatOf(x) || {}).id === id).sort(ord), noCat = UF.filter(x => !x.xm && !sgCatOf(x)).sort(ord);
-  const onK = new Set(U.map(x => x.k)), pool = V16 ? sgUniverse(true).filter(x => !onK.has(x.k) && !isLive(x) && !x.xm) : [];
-  const poolF = pool.filter(x => !SGSEL.cat || (sgCatOf(x) || {}).id === SGSEL.cat).sort(SGSEL.az ? (a, b) => a.title.localeCompare(b.title) : ord);
-  const selBtn = SGSEL.on ? "" : `<button type="button" class="sgchip sgselbtn" data-sgact="select">Select</button>`;   /* (Nov 8) Select sits inside the folders; the active bar is pinned on the screen (sgSelBarSync) */
-  const chip = (id, t, n) => `<button type="button" class="sgchip${SGSEL.cat === id ? " on" : ""}" data-sgcatf="${id}">${t} <span>${n}</span></button>`;
-  const poolBar = `<div class="sgbar">${chip("", "All", pool.length)}${sgCats().filter(c => c.id !== "xmas").map(c => chip(c.id, c.name, pool.filter(x => (sgCatOf(x) || {}).id === c.id).length)).join("")}<button type="button" class="sgchip sgaz${SGSEL.az ? " on" : ""}" data-sgaz="1">${SGSEL.az ? "A to Z" : "Most done"}</button>${selBtn}</div>`;
-  const poolFold = V16 ? deskFold("sg:pool", `All other songs (${pool.length})`, "pick songs to add to a folder", poolBar + head + poolF.map(x => sgRow(x)).join("")) : "";
+  /* (Nov 9, Chris: "i never want to see folders like this for songs. As soon as I click on the songs folder ... it has to appear like the songboard.
+     And then I can select what I want to view inside the songboard.") ONE BOARD, no folder pages: a switch picks the view (All, Christmas, his 3 locked
+     categories, Live, and My list once he has picked songs); a song sits in ONE view (live songs only in Live). Built in: this block is the board's only layout. */
+  const B = sgUniverse(true), onL = new Set(sgOnList() || []);
+  const vOf = x => isLive(x) ? "live" : x.xm ? "xmas" : ((sgCatOf(x) || {}).id || "");
+  const VIEWS = [["all", "All", null]].concat(sgCats().filter(c => c.id === "xmas"), sgCats().filter(c => c.id !== "xmas")).map(c => Array.isArray(c) ? c : [c.id, c.name, c])
+    .concat([["live", "Live", null]], onL.size ? [["mine", "My list", null]] : []);
+  const inV = (v, x) => v === "all" || (v === "mine" ? onL.has(x.k) && !isLive(x) : vOf(x) === v);
+  let sgV = SGSEL.cat || (() => { try { return localStorage.getItem("fd-sgview") || "all"; } catch (e) { return "all"; } })();
+  if (!VIEWS.some(v => v[0] === sgV)) sgV = "all";
+  const rows = B.filter(x => inV(sgV, x)).sort(SGSEL.az ? (a, b) => a.title.localeCompare(b.title) : ord);
+  const vOpt = ([id, t, c]) => ({v: id, html: `${c ? `<i class="sgcat" data-cat="${esc(c.id)}">${sgIco(c)}</i>` : ""}${esc(t)} <span>${B.filter(x => inV(id, x)).length}</span>`});
+  const viewDd = deskDrop("sgview", VIEWS.map(vOpt), sgV), sortDd = deskDrop("sgsort", [{v: "0", html: "Most done"}, {v: "1", html: "A to Z"}], SGSEL.az ? "1" : "0");
+  const selBtn = SGSEL.on ? `<button type="button" class="sgchip on" data-sgact="done">Done</button>` : `<button type="button" class="sgchip sgselbtn" data-sgact="select">Select</button>`;
   setTimeout(sgSelBarSync, 0);
-  const secN = v16open("sg:v16xmas", "Christmas", fXv) + v16open("sg:now", "Going out now", fNow) + fold("next", "Next week", "after this ship", nx(fNext)) + (V16
-      ? sgCats().filter(c => c.id !== "xmas").map(c => fold("cat-" + c.id, c.name, "on your list", catF(c.id), `<div class="sgbar">${selBtn}</div>`)).join("") + fold("cat-none", "No category yet", "add it to the locked list", noCat) + poolFold
-      : fold("xmas", "Christmas", "Nov 8 release", fX) + fold("church", "Church songs", "hymns, worship, Sunday school", fC) + fold("kids", "Kids", "nursery and children's songs", fK) + fold("nonch", "Non-church songs", "folk and favorites", fN) + fold("other", "Other Songs", "the rest of the song list", fO))
-    + fold("live", "Live", "students have these", live.slice().sort((a, b) => a.title.localeCompare(b.title)));
+  const secN = `<div class="sgbar sgone">${viewDd}${sortDd}<span class="sgsort">${selBtn}</span></div>` + head + (rows.length ? rows.map(x => sgRow(x)).join("") : `<p class="note">No songs here yet.</p>`);
   const mine = UF.reduce((t, x) => t + sgChk(x).length, 0);
   /* (Oct 21, Chris) COPYRIGHT CHECK: songcheck rows whose lyricsCheck starts UNSURE / NOT PD; a song leaves once he approves (lyricsOK) or drops its lyrics */
   /* (Oct 26, Chris: 'I already checked copyright on all the songs ... every song I have is good to go') no Copyright check section any more */
@@ -6609,18 +6629,20 @@ function homeSongs(only){
 function songsRefresh(){ foldRefresh(); }
 /* (Nov 8) the Select bar while selecting: ONE element pinned on the screen (outside the board, so no folder layout can hide it) */
 function sgSelBarSync(){ let el = document.getElementById("sgselbar");
+  /* (Nov 9) Built in: Select ends the moment the Songs board is not on screen (Back, Close, another page), so the bar never floats over other pages */
+  const board = [...document.querySelectorAll('[data-dd="sgview"]')].some(x => { const r = x.getBoundingClientRect(); if (!r.width) return false;
+    const t = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return !!t && (x.contains(t) || !!t.closest(".ddw")); });   /* on top, not only drawn: an older page layer can sit underneath */
+  if (SGSEL.on && !board){ SGSEL.on = false; SGSEL.keys.clear(); }
   if (!SGSEL.on){ if (el) el.remove(); return; }
   if (!el){ el = document.createElement("div"); el.id = "sgselbar"; el.className = "sgselbar on"; document.body.appendChild(el); }
   const n = SGSEL.keys.size, d = n ? "" : " disabled";
-  el.innerHTML = `<b>${n} selected</b><button type="button" class="sgbtn pri" data-sgact="add"${d}>Add to folders</button><button type="button" class="sgbtn" data-sgact="out"${d}>Move out</button><button type="button" class="sgbtn" data-sgact="done">Done</button>`; }
+  el.innerHTML = `<b>${n} selected</b><button type="button" class="sgbtn pri" data-sgact="add"${d}>Add to My list</button><button type="button" class="sgbtn" data-sgact="out"${d}>Take off My list</button><button type="button" class="sgbtn" data-sgact="done">Done</button>`; }
 /* (Nov 8, Chris: "it needs to work smoothly and immediately") Select mode taps: picking a song only flips its tick + the count (no redraw);
    Add / Move out / chips / sort save or change at once and redraw the board. Capture phase: in Select mode a tap never opens a check. */
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-sgact],[data-sgcatf],[data-sgaz]");
+  const b = e.target.closest("[data-sgact]");
   if (b){ e.preventDefault(); e.stopPropagation();
-    if (b.dataset.sgcatf != null) SGSEL.cat = b.dataset.sgcatf;
-    else if (b.dataset.sgaz) SGSEL.az = !SGSEL.az;
-    else { const a = b.dataset.sgact;
+    { const a = b.dataset.sgact;
       if (a === "select"){ SGSEL.on = true; SGSEL.keys.clear(); }
       else if (a === "done"){ SGSEL.on = false; SGSEL.keys.clear(); }
       else if (a === "add" || a === "out"){ const L = sgOnList() || [], K = [...SGSEL.keys];
@@ -6635,6 +6657,29 @@ document.addEventListener("click", e => {
 }, true);
 (() => { const st = document.createElement("style"); st.textContent = `
   .sgcat,.sgtick{flex:0 0 18px;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;color:var(--muted,#8A9099)}
+  .sgcat svg{width:16px;height:16px;display:block}
+  /* (Nov 9, Chris: "icons need to be colored") the Lab's category colours (styles.css .pp-sl-art.cat-*), light + dark from the desk's own tokens */
+  .sgcat[data-cat="xmas"]{color:var(--ktB4582F,#B4582F)} .sgcat[data-cat="hymn"]{color:var(--kt0F766E,#0F766E)}
+  .sgcat[data-cat="kids"]{color:var(--kt97710F,#97710F)} .sgcat[data-cat="folk"]{color:var(--kt4A7F37,#4A7F37)}
+  .sgchip .sgcat{flex:0 0 16px;width:16px;height:16px;margin-right:5px;display:inline-flex;vertical-align:-3px}
+  .sgsort{display:inline-flex;gap:4px;margin-left:auto}
+  .sgbar.sgone{flex-wrap:nowrap;gap:6px;align-items:center}
+  .sgbar.sgone::-webkit-scrollbar{display:none}
+  .sgbar.sgone>*{flex:0 0 auto;white-space:nowrap}
+  .sgbar.sgone .sgchip{padding:4px 9px}
+  /* (Nov 9, Chris: "phone is unreadable. needs to be 2 lines for title and check boxes") phone: line 1 = icon + whole title, line 2 = the boxes, right under the column names */
+  @media (max-width:600px){ .songgrid .srow{flex-wrap:wrap!important;row-gap:6px!important} .songgrid .srow>.sname{flex:1 1 calc(100% - 30px)!important;white-space:normal!important;overflow:visible!important}
+    .songgrid .srow>.sbar{margin-left:auto} .tn.v16hd{overflow:visible!important} }
+  @media (max-width:430px){ .sgbar.sgone{padding:8px 10px 4px;gap:4px} .sgbar.sgone .sgchip{padding:4px 7px;font-size:12.5px} .sgbar.sgone .ddcaret{margin-left:3px} .sgbar.sgone .sgcat{margin-right:3px} }
+  .ddw{position:relative;display:inline-flex}
+  .ddbtn{display:inline-flex;align-items:center;gap:2px}
+  .ddcaret{font-style:normal;margin-left:6px;font-size:11px;color:var(--muted,#8A9099)}
+  .ddlist{position:absolute;top:calc(100% + 4px);left:0;z-index:70;min-width:200px;max-height:60vh;overflow-y:auto;display:flex;flex-direction:column;background:var(--card,#FFFDF8);border:1.5px solid var(--line,#E7E1D6);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14)}
+  .ddlist[hidden]{display:none}
+  .ddopt{display:flex;align-items:center;gap:2px;width:100%;text-align:left;background:transparent;border:0;border-top:1px solid var(--line,#E7E1D6);padding:11px 14px;font:700 14px/1.3 inherit;color:inherit;cursor:pointer;white-space:nowrap}
+  .ddopt:first-child{border-top:0}
+  .ddopt span{color:var(--muted,#8A9099);font-weight:700;margin-left:4px}
+  .ddopt .ddtick{font-style:normal;margin-left:auto;padding-left:12px;color:var(--ka1FA598,#1FA598)}
   .sgcat svg{width:16px;height:16px}
   .sgtick{border:2px solid var(--line,#C9C2B3);border-radius:50%;box-sizing:border-box}
   .sgtick.on{background:var(--ka1FA598,#1FA598);border-color:var(--ka1FA598,#1FA598)}
