@@ -2780,7 +2780,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v456</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v457</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2858,7 +2858,7 @@ function dayLabel(s){const [y,m,dd]=s.split("-").map(Number);const d=new Date(y,
 // (Oct 10) Chris: a to-do handed to Cadence leaves his Today / This week / This month; it lives in the Cadence tasks folder until it comes back to check
 /* (Oct 13) ONE rule for "in Today" so the Home badge and the Today folder always match: due today or earlier, or shipping this week and needs his test */
 const wkEndNow = () => { const d = new Date(plus(0) + "T12:00:00").getDay(); return plus(d === 0 ? 0 : 7 - d); };
-const inToday = t => !t.done && !t.removed && !withCad(t) && waitShow(t) && ((t.date && t.date <= plus(0)) || (!t.date && t.due && String(t.due).slice(0, 10) <= plus(0)) || (t.test && t.ships && t.ships <= wkEndNow()))   /* (Oct 13) anything dated or due today (or earlier) lands in Today; Chris decides each day */;
+const inToday = t => !t.done && t.state !== "done" && t.state !== "waiting-cadence" && !t.removed && !withCad(t) && waitShow(t) && (t.state === "ready-approve" || t.state === "ready-check" ||(t.date && t.date <= plus(0)) || (!t.date && t.due && String(t.due).slice(0, 10) <= plus(0)) || (t.test && t.ships && t.ships <= wkEndNow()))   /* (Oct 13) anything dated or due today (or earlier) lands in Today; Chris decides each day */;
 const withCad = t => t.handoff === "cadence" || t.handoff === "teach" || t.cando === true;   /* (Oct 13) Chris: 100%-Cadence to-dos live ONLY in Cadence tasks */
 const byOrder = (a,b)=>(a.order??99)-(b.order??99) || String(a.added).localeCompare(String(b.added));
 // (Oct 7) Chris: sort any list by MOST IMPORTANT (soonest timeline first: day, then Cadence's imp 1-5) or QUICKEST (mins)
@@ -5235,7 +5235,10 @@ function renderMain(){
       const working = p => ["weekly", "now"].includes(whenOf(p));
       const pRow = p => { const n = tasks.filter(t => !t.done && t.project === p.name).length; return pFold(p.name, p.name, [working(p) ? "working on now" : "", n ? n + (n === 1 ? " task" : " tasks") : ""].filter(Boolean).join(" · ")); };
       const openP = projects.filter(p => p.status !== "done");
-      const pIn = c => srtBy(openP.filter(p => (p.category || "More") === c), p => p.imp, p => minsOf(tasks.filter(t => !t.done && t.project === p.name)));
+      // (Nov 9, Chris: "most of the folders open up to nowhere"; desk map: 14 folders opened to "No to-dos yet") a project shows as a folder only
+      // when it has something inside (an open to-do) or is being worked on now; an empty one appears again the moment a to-do is added to it
+      const pHas = p => working(p) || projTasks(p.name).length > 0;
+      const pIn = c => srtBy(openP.filter(p => (p.category || "More") === c && pHas(p)), p => p.imp, p => minsOf(tasks.filter(t => !t.done && t.project === p.name)));
       const CATS = ["YouTube and Shorts", "Worship Piano Lab", "Courses", "Sales and Email", "Systems", "Family and Money"];
       const CC = {"YouTube and Shorts": "var(--kaB42318)", "Worship Piano Lab": "var(--ka1FA598)", "Courses": "var(--ka6AA84F)", "Sales and Email": "var(--kaD19A12)", "Systems": "var(--ka5B6470)", "Family and Money": "var(--kaB4582F)"};
       const nReq = requests.filter(r => !r.done).length;
