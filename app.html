@@ -2819,7 +2819,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v463</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v464</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5804,7 +5804,10 @@ function homeYouTube(){
   const md = d => { const p = String(d || "").slice(5, 10).split("-"); return p.length < 2 ? "" : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[0] - 1] + " " + (+p[1]); };
   const L = ytRows.slice().sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))), st = r => r.steps || {};
   const up = L.filter(r => st(r).posted !== "ok"), P = L.filter(r => st(r).posted === "ok").reverse(), you = up.filter(r => YTK.some(k => st(r)[k] === "chk")).length;
-  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { let c = st(r)[k] || ""; const jb = c === "mk" ? lineJob("ytcheck/" + r.id + "/" + k) : null;
+  const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k => { let c = st(r)[k] || "";
+    /* (Nov 10, Chris: "Why does this say check when it posted 3 days ago?") a step still waiting after the video posted is moot: Skipped, not tappable */
+    if (st(r).posted === "ok" && k !== "posted" && c && c !== "ok") return {c: "ok", t: "Skipped", id: "", yt: ""};
+    const jb = c === "mk" ? lineJob("ytcheck/" + r.id + "/" + k) : null;
     if (c === "mk" && !jb) return {c: "fx", ak: ["Stuck"], red: 1, id: "", yt: "", t: ""};
     if (c === "mk") return {c, t: jb === "working" ? "Making" : "Waiting", id: "", yt: ""}; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
   const head = sgHead(YTCOLS, YTAB);
