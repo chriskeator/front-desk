@@ -2489,7 +2489,9 @@ const SH_CHKS_F = ["Tall + wide play right", "Thumbnail is the approved one", "P
 const shAns = (r, st) => st === "hands" ? r.hands : st === "words" ? r.words : st === "thumb" ? r.thumb : st === "final" ? r.final : r.status;
 const shQ = s => document.querySelector("#shortchk " + s);
 const shLen = s => { s = Math.round(+s || 0); return s >= 60 ? Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0") : s + " s"; };
-const shStep = r => !r.handsFileId ? null : !r.hands ? "hands" : r.hands === "approved" && !r.status ? "start" : r.status === "approved" && r.wordsUrl && !r.words ? "words" : r.words === "approved" && r.thumbUrl && !r.thumb ? "thumb" : null;
+/* (Nov 10, Chris: "these are immediately saying stuck ... i've asked you to fix many times") only the Hands check needs the Hands file:
+   a Short made before the Hands file id existed (Oct crops) with Hands approved and its Words video made is his turn, never Stuck */
+const shStep = r => !r.hands ? (r.handsFileId ? "hands" : null) : r.hands === "approved" && !r.status ? "start" : r.status === "approved" && r.wordsUrl && !r.words ? "words" : r.words === "approved" && r.thumbUrl && !r.thumb ? "thumb" : null;
 /* (Oct 21, Chris) ONE SOURCE for Shorts "his turn": shStep = a desk check page; shFinal = the final package is made and waits in Drive (6 Final Review/b Chris checks). The column cell, the title pill and the Today count all use shReady. Check: desk-checks.py shorts-state. */
 const shFinal = r => !!(r.handsFileId && !r.moved && r.hands === "approved" && r.status === "approved" && r.words === "approved" && r.thumb === "approved" && r.final !== "approved" && r.final !== "fix" && r.auto && r.auto.step === "Final" && r.auto.state === "Ready");
 const shReady = r => shStep(r) || (shFinal(r) ? "final" : null);
@@ -2801,7 +2803,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v460</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v461</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5763,7 +5765,7 @@ function homeShorts(){
   const acell = (o, k, ab) => { const a = (o.apps || {})[k] || {c: "grey"}, why = [a.s === false ? "not scheduled/posted" : "", a.t === false ? "no custom thumbnail" : "", a.m === false ? "not at 5am" : "", a.note || ""].filter(Boolean).join(", "), tip = esc(ab + ": " + ({green: "live", sched: "scheduled", red: "missing", grey: "not due yet"}[a.c] || a.c) + (why ? " (" + why + ")" : ""));
     const h = a.c === "green" ? blk("var(--ka1FA598)", "var(--ka1FA598)", dtx(o.date, "var(--kaFFF)")) : a.c === "sched" ? blk("transparent", "var(--ka1FA598)", dtx(o.date, "var(--ka14786F)")) : a.c === "red" ? blk("var(--kaFBE2DC)", "var(--kaB4362A)", `<span style="color:var(--ktB23B17);font-weight:600">Missing</span>`) : blk("transparent", "var(--line,#D8D2C4)");
     return a.c === "green" && a.url ? h.replace("<i ", `<a href="${esc(a.url)}" target="_blank" rel="noopener" title="${tip}" `).replace(/<\/i>$/, "</a>") : h.replace("<i ", `<i title="${tip}" `); };
-  const DUE = PK.filter(o => o.date > PDAY).sort((a, b) => b.date.localeCompare(a.date)), DONE = PK.filter(o => o.date <= PDAY).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  const DUE = PK.filter(o => o.date > PDAY).sort((a, b) => b.date.localeCompare(a.date)), DONE = PK.filter(o => o.date <= PDAY).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);   /* (Nov 10, Chris) only the last 5 posted stay on the board */
   const drow = o => row(o.title, (o.date > PDAY ? "posts " : "posted ") + md(o.date), 5, null, "", false, "", null, null, PA.map(([k, ab]) => acell(o, k, ab)).join(""));
   const nRed = DUE.concat(DONE).reduce((t, o) => t + Object.values(o.apps || {}).filter(a => a.c === "red").length, 0);
   const list = head + (W.length ? W.map(x => row(x.r.title, x.r.source, x.k, x.you, x.fin ? "final" : x.you ? x.r.id : "", x.fixing, x.r.id, [x.r.handsAt, x.r.answeredAt, x.r.wordsAt, x.r.thumbAt, x.r.finalOK].map((d, i) => i < x.k ? shDay(d) : ""), x.fixing || (x.r.auto && x.r.auto.state === "Ready" && x.r.auto.step !== SHS[x.k]) ? null : x.r.auto)).join("") : "") + DUE.concat(DONE).map(drow).join("");
@@ -5787,7 +5789,8 @@ function homeYouTube(){
   /* (Nov 10, Chris: "youtube needs to not have subfolders ... same as shorts where posted, scheduled and working on are all showing at the
      same time, sorted by date") ONE board, every video in date order (posted, scheduled and being made together), no Upcoming/Posted folders */
   /* (Nov 10, Chris: "newest date on top. oldest date on bottom. then sort by furthest along the assembly line") */
-  const far = r => YTK.filter(k => st(r)[k] === "ok").length, D = L.slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || far(b) - far(a));
+  /* (Nov 10, Chris: "i only want to see the last 5 videos that posted, then anything after that needs to drop off the board") */
+  const far = r => YTK.filter(k => st(r)[k] === "ok").length, last5 = new Set(P.slice(0, 5)), D = L.filter(r => st(r).posted !== "ok" || last5.has(r)).sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || far(b) - far(a));
   return deskFold("", "YouTube", `${you ? you + " to check · " : ""}${up.length} to ship`, head + D.map(row).join(""), {top: 1, cc: "var(--kaB4362A)"}); }
 /* (Oct 30, Chris: gold Check in Check clip did nothing) YouTube boxes (Cut plan, Check clip, Final, Thumbnail) open a pop-up IN PLACE in the ONE Short pop-up frame (#shortchk, shcard/shv/shnote/shbtns, like shOpen).
    The file = ytcheck urls.<step> (helpers write it: a Drive file link, a direct video link or an image link); no link = the box says so. Approve writes steps.<k>='ok' ONLY on his tap;
