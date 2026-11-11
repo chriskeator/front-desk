@@ -2442,6 +2442,17 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 #shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shv{grid-column:1;grid-row:1 / 5;height:100%;width:auto;align-self:stretch}
 #shortchk .shcard.wide:not(:has(.shfsw)) .shside{grid-column:2;grid-row:4;min-height:0}
 #shortchk .shcard.wide:not(:has(.shfsw)) .sht{text-align:center}
+/* (Nov 10, Chris: "scroll container still to small. needs to be 2x taller") Close sits in the card's top-right corner (no row of its own),
+   the note is one line, and the fix list gets everything else: at least about half the screen */
+#shortchk .shcard.wide:not(:has(.shfsw))>.shh{position:absolute;top:14px;right:16px;z-index:2}
+#shortchk .shcard.wide:not(:has(.shfsw)) div:has(> .sht){padding:0 110px}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);grid-template-rows:minmax(0,1fr) auto auto auto auto;gap:8px 10px}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside>*{grid-column:1 / -1}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside .shfl{grid-row:1}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside .shwhat{font-size:14px}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside .shchks{grid-row:4}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside .shnote{grid-row:5;grid-column:1;height:50px;margin:0}
+#shortchk .shcard.wide:not(:has(.shfsw)) .shbody .shside .shbtns{grid-row:5;grid-column:2}
 #shortchk .shcard.wide .shside>:not(.shfl){flex-shrink:0}   /* only the fix list gives up height; the step line, checks and buttons never get clipped */
 #shortchk .shcard.wide:not(:has(.shfsw)) div:has(> .sht) .shh{justify-content:center}
 #shortchk .shcard.wide:not(:has(.shfsw)) div:has(> .sht) .shh .tb{margin-left:12px!important}
@@ -2803,7 +2814,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v461</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v462</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3098,12 +3109,18 @@ function taskPop(t){
 // a review item: the pop-up's next page (Approve / Fix / Open in Kit / Back)
 function revPage(){
   const r = reviews.find(x => x.id === openRev); if (!r) return "";
-  return popTop(esc(r.title || r.label || "Review"), `<span class="rs-tag rs-${RS[r.status] || "none"}">${esc({fix: "fix pending", good: "approved \u2713", fixed: "fixed, check again"}[r.status] || "not checked")}</span>`)
-    + (r.preview ? `<div class="revgrid${r.marks ? " one" : ""}">` + (r.marks ? "" : Array.isArray(r.notes) && r.notes.length ? `<ul class="revnotes">${r.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul>` : "<div></div>") + `<iframe class="emailprev" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" scrolling="no" title="What subscribers see" srcdoc="${esc(emailDoc(r))}"></iframe></div>`
-      : `<div class="revbody">${esc(r.body || "").replace(/\n/g, "<br>")}</div>` + `${r.note && r.status !== "good" ? `<p class="tn">Your last note: ${esc(r.note)}</p>` : ""}`)
-    + (revFix ? `<label for="revnote" class="tn">What should change?</label><textarea id="revnote" placeholder="What should change?"></textarea>${talkBtn("revnote")}
+  /* (Nov 10, Chris: "I don't know what I'm looking at ... there's no action for me to take") ONE review page for every item: Approve / Fix
+     sit at the TOP, under the title, then what to look at. A Lab change (group lab-gate) shows its own page (what changed + before | after),
+     never inside the email frame (it said "Subject:"). */
+  const acts = revFix ? `<label for="revnote" class="tn">What should change?</label><textarea id="revnote" placeholder="What should change?"></textarea>${talkBtn("revnote")}
       <div class="row"><button type="button" class="btn go" data-revsend="${esc(r.id)}">Send to Cadence</button><button type="button" class="btn" data-revfixcancel="1">Cancel</button></div>`
-    : `<div class="row" style="flex-wrap:wrap"><button type="button" class="btn go" data-revok="${esc(r.id)}">Approve</button><button type="button" class="btn" data-revfix="1">Fix</button>${safeUrl(r.url) ? `<a class="btn" href="${esc(r.url)}" target="_blank" rel="noopener">${/drive\.google/.test(r.url) ? "Watch it" : /lab\.worshippianoacademy/.test(r.url) ? "Open in Lab" : /kit\.com|convertkit/.test(r.url) ? "Open in Kit" : /thrivecart/.test(r.url) ? "Open in ThriveCart" : /worshippianoacademy\.com/.test(r.url) ? "Open the page" : "Open"}</a>` : ""}<button type="button" class="btn" data-revback="1">Back</button></div>`);
+    : `<div class="row" style="flex-wrap:wrap"><button type="button" class="btn go" data-revok="${esc(r.id)}">Approve</button><button type="button" class="btn" data-revfix="1">Fix</button>${safeUrl(r.url) ? `<a class="btn" href="${esc(r.url)}" target="_blank" rel="noopener">${/drive\.google/.test(r.url) ? "Watch it" : /lab\.worshippianoacademy/.test(r.url) ? "Open in Lab" : /kit\.com|convertkit/.test(r.url) ? "Open in Kit" : /thrivecart/.test(r.url) ? "Open in ThriveCart" : /worshippianoacademy\.com/.test(r.url) ? "Open the page" : "Open"}</a>` : ""}<button type="button" class="btn" data-revback="1">Back</button></div>`;
+  const labDoc = h => `<!doctype html><meta charset="utf-8"><base target="_blank"><style>body{margin:0;font:15px/1.45 system-ui,-apple-system,sans-serif;color:#222}img{max-width:100%;height:auto;display:block;margin:8px 0}h3{margin:0 0 6px;font-size:16px}ul{margin:6px 0;padding-left:20px}</style>${h}`;
+  return popTop(esc(r.title || r.label || "Review"), `<span class="rs-tag rs-${RS[r.status] || "none"}">${esc({fix: "fix pending", good: "approved \u2713", fixed: "fixed, check again"}[r.status] || "not checked")}</span>`)
+    + acts
+    + (r.preview && r.group === "lab-gate" ? `<iframe class="labprev" sandbox="allow-popups allow-popups-to-escape-sandbox" title="Before and after" srcdoc="${esc(labDoc(r.preview))}" style="width:100%;height:70vh;border:1px solid var(--line);border-radius:10px;background:#fff"></iframe>`
+      : r.preview ? `<div class="revgrid${r.marks ? " one" : ""}">` + (r.marks ? "" : Array.isArray(r.notes) && r.notes.length ? `<ul class="revnotes">${r.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul>` : "<div></div>") + `<iframe class="emailprev" sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" scrolling="no" title="What subscribers see" srcdoc="${esc(emailDoc(r))}"></iframe></div>`
+      : `<div class="revbody">${esc(r.body || "").replace(/\n/g, "<br>")}</div>` + `${r.note && r.status !== "good" ? `<p class="tn">Your last note: ${esc(r.note)}</p>` : ""}`);
 }
 // the email as a subscriber sees it: Kit's "Text only" template (white card, plain text, blue underlined links, Kit footer)
 // (Oct 4) Chris: notes sit beside the exact part of the email they explain, with an arrow, spaced out
