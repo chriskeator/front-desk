@@ -2403,9 +2403,18 @@ window.CT={open,close,toText:(rows)=>toText(rows,true),parse,setLv:k=>{LV=k;show
 #shortchk .shbody{display:flex;gap:12px;min-height:0;align-items:stretch}
 #shortchk .shbody .shv{flex:0 0 auto;width:min(52%, calc((100vh - 290px) * 0.5625));aspect-ratio:9/16;max-height:none;margin:0}
 #shortchk .shside{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
-#shortchk .shbody .shchks{grid-template-columns:1fr}
+#shortchk .shbody .shchks{grid-template-columns:1fr 1fr}
 #shortchk .shbody .shcuts{max-height:none}#shortchk .shbody .shstep{white-space:normal}
-@media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchk{height:44px;font-size:15px}#shortchk .shbody .shwhat{font-size:16px}}
+@media (min-width:1000px){#shortchk .shbody .shv{width:calc((100vh - 270px) * 0.5625)}#shortchk .shside{font-size:15px}#shortchk .shbody .shchks{grid-template-columns:repeat(4,1fr)}#shortchk .shbody .shchk{height:40px;font-size:13.5px}#shortchk .shbody .shwhat{font-size:16px}}
+/* (Nov 10, Chris: "This tiny window to scroll through doesn't work ... these four lines can be reduced to four buttons on the very bottom")
+   ONE check-card template for every step: the fix list takes all the free height of the right column; the checks are one row of 4
+   buttons sitting right above Drop / Approve; the note is a small fixed box. */
+#shortchk .shfl>.shfi{flex:0 0 auto}   /* a fix never gets squashed (its pictures were cut off); the list scrolls instead */
+#shortchk .shcard.wide .shbody .shside .shfl{flex:1 1 auto;max-height:none;border:1px solid var(--line);border-radius:10px;padding:8px;background:var(--card)}
+#shortchk .shcard.wide .shbody .shside .shnote{flex:0 0 56px;min-height:0;order:2;margin-top:auto}
+#shortchk .shcard.wide .shbody .shside .shchks{order:3}
+#shortchk .shbody .shchk{height:auto;min-height:40px;white-space:normal;line-height:1.2;padding:4px 8px}   /* a check name never gets cut: it wraps */
+#shortchk .shcard.wide .shbody .shside .shbtns{order:4}
 #shortchk .shv video{position:absolute;inset:0;width:100%;height:100%;background:var(--kb000)}
 #shortchk .shv img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--kb000)}
 /* (Oct 17, Chris) a row's V1 · Ready / Checks pill sits at the row's bottom right, the same spot on every row */
@@ -2780,7 +2789,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v457</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v458</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -3004,6 +3013,7 @@ function labLessonS(id){ const lab = stats.find(x => x.id === "lab"); for (const
 function labStatusOf(url){ const lab = stats.find(x => x.id === "lab"), m = String(url || "").match(/[?&]go=([^&]+)/); if (!lab || !m) return null;
   const id = decodeURIComponent(m[1]); for (const c of lab.chapters || []) for (const L of c.lessons) if (L.id === id) return L.s; return null; }
 const revCounts = items => { const c = {good: 0, fix: 0, fixed: 0, none: 0}; items.forEach(r => c[RS[r.s ?? r.status] || "none"]++); return c; };
+const revName = r => r.title || r.label || "Item";   /* (Nov 10, Chris: Approve for Live showed 26 rows reading only "Lab") ONE name for a review item in every list: its title, the label only when there is no title */
 const countLine = c => [c.good && c.good + " approved \u2713", c.fix && c.fix + " fix pending", c.fixed && c.fixed + " fixed, check again", c.none && c.none + " not checked"].filter(Boolean).join(", ");
 const popTop = (title, extra) => `<div class="poptop"><b>${title}</b><span class="row" style="gap:6px;flex:none">${extra || ""}<button type="button" class="tb v16btn" data-popclose="1">\u2715 Close</button></span></div>`;
 // a list of buttons, paged to fit the pop-up
@@ -3059,7 +3069,7 @@ function taskPop(t){
   else if (V16) acts = (okAsk(t) ? `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea><button type="button" class="kfixsend" data-kans="fix|${esc(t.id)}">Send fix</button>` : "") + eightBtns(t, true);
   else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(V16 ? fdLink(t.url) : t.url)}" target="_blank" rel="noopener">${V16 ? "Go" : "Open link"}</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}${t.done ? "" : `<button type="button" class="tb" data-delyes="${esc(t.id)}">Remove</button>`}${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
   let list = "";
-  if (t.review){ const items = revItems(t); list = `<p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>` + popPaged(revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`))); }
+  if (t.review){ const items = revItems(t); list = `<p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>` + popPaged(revShown(items, r => rsBtn(r.status, revName(r), `data-rev="${esc(r.id)}"`))); }
   else if (tLinks(t).length) list = popPaged(tLinks(t).map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labRef(l.url, l.label || "Link"), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }));
   // (Oct 7) Chris: Open shows what the to-do is FOR (why, project, when it was added), so he remembers what we talked about
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", fmtMins(t.mins)].filter(Boolean).join(" · ");
@@ -3139,7 +3149,7 @@ function readyGroups(){
   const out = [];   /* (Oct 13) Chris: Lab lessons are checked inside Lab Test; only the one 'Lab: N to test' pill shows */
   const by = {}; for (const r of reviews) if (r.status === "fixed") (by[r.group] ||= []).push(r);
   for (const [g, rs] of Object.entries(by)){ const nm = g.replace(/[-_]+/g, " ").replace(/^./, x => x.toUpperCase());
-    out.push({name: nm, items: rs.sort((a, b) => (a.order ?? 99) - (b.order ?? 99)).map(r => rsBtn("fixed", r.label || r.title || "Item", `data-rev="${esc(r.id)}"`))}); }
+    out.push({name: nm, items: rs.sort((a, b) => (a.order ?? 99) - (b.order ?? 99)).map(r => rsBtn("fixed", revName(r), `data-rev="${esc(r.id)}"`))}); }
   return out;
 }
 const readyCount = () => readyGroups().reduce((a, g) => a + g.items.length, 0);
@@ -6927,13 +6937,13 @@ document.addEventListener("click", async e => { const b = e.target.closest && e.
 function goBtn(t){
   if (/^lab-ch\d+$/.test(t.wait || "") || t.wait === "lessons") return `<div class="chgrid songtaskgrid songgrid lcgrid">${lessonsInner()}</div>`;   /* (Oct 28) Lessons to check opens its board, like Songs to check */
   if (t.wait === "asks") return asksHTML();
-  if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked" || r.status === "fix"), xn = items.filter(r => r.status === "fix"); return `<div class="revlist"><p class="tn">${items.length - xn.length} drafts to check${xn.length ? ", being fixed: " + esc(xn.map(r => r.title).join(", ")) : ""}</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
+  if (t.wait === "reviews"){ const items = reviews.filter(r => r.status === "unchecked" || r.status === "fix"), xn = items.filter(r => r.status === "fix"); return `<div class="revlist"><p class="tn">${items.length - xn.length} drafts to check${xn.length ? ", being fixed: " + esc(xn.map(r => r.title).join(", ")) : ""}</p>${revShown(items, r => rsBtn(r.status, revName(r), `data-rev="${esc(r.id)}"`)).join("")}</div>`; }   /* (Oct 20 night) the Review board row opens right here at the first draft */
   if (t.wait === "songs") return homeSongs("now");   /* (Oct 28, Chris) Songs to check opens right here: only the songs going out now (sgNow) */
   if (t.wait === "shorts") return `<div class="revlist"><button type="button" class="tb go gobtn" data-waitgo="${t.wait}">Open first</button></div>`;
   if (t.shortcheck) return `<div class="revlist"><button type="button" class="tb go gobtn" data-shortchk="${esc(t.id)}">Start checking</button></div>`;   /* (Oct 15) Chris: one Shorts check session */
   if (Array.isArray(t.songcheck) && t.songcheck.length) return homeSongs(t.songcheck);   /* (Oct 20, Chris) the ONE song template, only this task's songs (no plain song buttons ever) */
   // (Oct 7) Chris: things to check (review items / lesson links) sit right inside the open to-do, all the same size
-  if (t.review){ const items = revItems(t); return `<div class="revlist"><p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>${revShown(items, r => rsBtn(r.status, r.label || r.title || "Item", `data-rev="${esc(r.id)}"`)).join("")}</div>`; }
+  if (t.review){ const items = revItems(t); return `<div class="revlist"><p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>${revShown(items, r => rsBtn(r.status, revName(r), `data-rev="${esc(r.id)}"`)).join("")}</div>`; }
   // (Oct 8) Chris: one flat list in Lab order (top to bottom = the flow of the chapter); things marked Good drop off
   if (tLinks(t).length){ const LL = tLinks(t).slice().sort(labCmp).filter(l => labStatusOf(l.url) !== "good"); if (!LL.length) return `<p class="note">Everything here is marked Good.</p>`;
     return `<div class="revlist">${LL.map(l => { const st = labStatusOf(l.url); return st ? rsBtn(st, labShort(labRef(l.url, l.label || "Link")), `href="${esc(fdLink(l.url))}" target="_blank" rel="noopener"`, "a") : `<a class="tb" href="${esc(fdLink(l.url))}" target="_blank" rel="noopener">${esc(labRef(l.url, l.label || "Link"))}</a>`; }).join("")}</div>`; }
