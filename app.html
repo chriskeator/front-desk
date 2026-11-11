@@ -2514,8 +2514,13 @@ async function shOpen(tid, rid, view){
   shView = view || null; shOne = !!rid;
   const s = await db.collection("shortcheck").get(), all = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved);
   shWait = all.filter(r => !r.handsFileId && !r.handsFail && !r.status).length;
-  shRows = all.filter(r => r.handsFileId).sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
-  shTask = tid || null; const j = rid ? shRows.findIndex(r => r.id === rid) : -1, k = shRows.findIndex(shReady); shFm = "tall"; shI = j >= 0 ? j : k < 0 ? shRows.length : k; shDraw(); }
+  /* (Nov 10, Chris: "wrong thing is opening up") an Oct-crop Short (Hands approved, no Hands file id) was left out here, so tapping its box
+     opened the first other Short that was ready. Built in: such a Short is loaded (same rule as shStep), and a tap opens exactly the Short
+     tapped or nothing, never a different one. */
+  shRows = all.filter(r => r.handsFileId || r.hands === "approved").sort((a, b) => (a.order || 0) - (b.order || 0) || String(a.id).localeCompare(String(b.id)));
+  shTask = tid || null; const j = rid ? shRows.findIndex(r => r.id === rid) : -1, k = shRows.findIndex(shReady);
+  if (rid && j < 0){ toast("That Short is not ready to check yet"); shRows = null; return; }
+  shFm = "tall"; shI = j >= 0 ? j : k < 0 ? shRows.length : k; shDraw(); }
 function shClose(){ shView = null; shOne = false; shRows = null; document.getElementById("shortchk").innerHTML = ""; shBoard = null; waitBusy.add("shorts"); if (tab === "today") render(); fdShLoad(); }
 /* (Oct 21, Chris) FIX LIST: every fix he sent on this step, in order, above the checks: 'Fix N: his words' -> 'Done: what changed' + frames (tap = jump the video) + OK / Still wrong. Field fixList (shorts-fixlist.py). The note box opens EMPTY. */
 const shFl = (r, st) => (r.fixList || []).filter(f => f.step === st);
@@ -2814,7 +2819,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v462</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v463</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
