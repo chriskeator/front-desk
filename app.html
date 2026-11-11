@@ -2801,7 +2801,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v459</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v460</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5386,7 +5386,10 @@ function labTag(t){ const scs = t && !t.done && (scFixingTitle(t) ? "fixing" : S
 let shBoard = null, scBoard = null;
 /* (Oct 18) a board refresh keeps showing the old board until the new one is here (setting it to [] first drew an empty board, then the full one = flicker) */
 let fdShOld = [], fdScOld = [], fdShP = null, fdScP = null, scGoneK = new Set();   /* scGoneK = keys of songs he removed (songcheck dropped / removed) */
-function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); waitBusy.delete("shorts"); if (deskReady && tab === "today") liveRender(); }).catch(() => { shBoard = fdShOld; waitBusy.delete("shorts"); }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
+function fdShLoad(){ if (fdShP) return fdShP; fdShP = db.collection("shortcheck").get().then(s => { shBoard = fdShOld = s.docs.map(d => Object.assign({id: d.id}, d.data())).filter(r => !r.moved && !r.handsFail && r.status !== "dropped" && r.hands !== "dropped"); waitBusy.delete("shorts"); fdShTry = 0; if (deskReady && (tab === "today" || document.body.classList.contains("v16board"))) liveRender(); }).catch(() => { shBoard = fdShOld; waitBusy.delete("shorts"); if (fdShTry++ < 5) setTimeout(fdShLoad, 4000); }).finally(() => { fdShP = null; }); if (shBoard === null) shBoard = fdShOld; return fdShP; }
+/* (Nov 10, Chris: "the shorts board is empty") a failed Shorts load left the board empty until a reload (nothing asked again): it now retries
+   (up to 5 times, 4 s apart), and a load that lands while the Shorts board is open redraws it, not only on Today */
+let fdShTry = 0;
 /* (Oct 21, Chris: approved, still said Check) every song save/approve patches the board row on screen AT ONCE; the db write follows. Global: the song editor calls it too */
 /* (Oct 23, Chris: "once I approve something... automatically mark the next column") every song approval asks the queue (queue.py preview_now) to rebuild the player within a minute */
 /* (Oct 28, Chris yes) SONG LOCK IN THE DATABASE (song-lock.sql): an Edit tap on an approved part writes unlock.<approval> = now; the next Approve of it clears it (desk-db.js lockFix). Keys: lyricsOK, melodyOK, versesOk, tagOk, chordsOK, mediumOK, hardOK, introOK. */
@@ -5781,8 +5784,11 @@ function homeYouTube(){
     if (c === "mk" && !jb) return {c: "fx", ak: ["Stuck"], red: 1, id: "", yt: "", t: ""};
     if (c === "mk") return {c, t: jb === "working" ? "Making" : "Waiting", id: "", yt: ""}; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "sched" ? "Set" : "") : ""}; })}, YTCOLS);
   const head = sgHead(YTCOLS, YTAB);
-  return deskFold("", "YouTube", `${you ? you + " to check · " : ""}${up.length} to ship`, deskFold("yt:up", `Upcoming (${up.length})`, esc(up.length ? "next Sat " + md(up[0].date) : "nothing planned"), head + up.map(row).join(""), {def: 1})
-    + (P.length ? deskFold("yt:posted", `Posted (${P.length})`, esc("last Sat " + md(P[0].date)), head + P.map(row).join("")) : ""), {top: 1, cc: "var(--kaB4362A)"}); }
+  /* (Nov 10, Chris: "youtube needs to not have subfolders ... same as shorts where posted, scheduled and working on are all showing at the
+     same time, sorted by date") ONE board, every video in date order (posted, scheduled and being made together), no Upcoming/Posted folders */
+  /* (Nov 10, Chris: "newest date on top. oldest date on bottom. then sort by furthest along the assembly line") */
+  const far = r => YTK.filter(k => st(r)[k] === "ok").length, D = L.slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")) || far(b) - far(a));
+  return deskFold("", "YouTube", `${you ? you + " to check · " : ""}${up.length} to ship`, head + D.map(row).join(""), {top: 1, cc: "var(--kaB4362A)"}); }
 /* (Oct 30, Chris: gold Check in Check clip did nothing) YouTube boxes (Cut plan, Check clip, Final, Thumbnail) open a pop-up IN PLACE in the ONE Short pop-up frame (#shortchk, shcard/shv/shnote/shbtns, like shOpen).
    The file = ytcheck urls.<step> (helpers write it: a Drive file link, a direct video link or an image link); no link = the box says so. Approve writes steps.<k>='ok' ONLY on his tap;
    Fix writes notes.<k> + steps.<k>='fx' + a queue row (same shape as the A/B note). */
