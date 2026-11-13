@@ -2830,7 +2830,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v466</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v467</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6066,7 +6066,7 @@ function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) retur
 /* a gold box = small pop-up (the song-check pop-up): Open | Approve | Fix. Open: Computer = the lesson on Test in a new tab, Dev mode = the same in a
    phone-size window (no developer tools needed), Phone = the lesson link (tap it on the phone). Fix = his note (type or the keyboard mic) as a Lab Fix note. */
 function lcGo(L, k){ const u = safeUrl(L.u); if (!u) return; const v = u + (u.includes("?") ? "&" : "?") + "from=fd-" + (k === "dev" ? "dev" : k === "phone" ? "phone" : "pc");
-  if (k === "dev") window.open(v, "lcdev", "popup=yes,width=360,height=800"); else window.open(v, "_blank", "noopener"); }   // (Nov 6, Chris yes) dev = his skinny Samsung A32, the narrowest common phone
+  if (k === "dev") window.open(v, "lcdev", "popup=yes,width=384,height=721"); else window.open(v, "_blank", "noopener"); }   // (Nov 13, Chris yes) dev = his Galaxy A32 exactly: 384 x 721 (was 360 x 800, which wrapped words differently from his phone)
 function lcSend(row){ try { return fetch(LABSB, {method: "POST", headers: {apikey: LABK, Authorization: "Bearer " + LABK, "Content-Type": "application/json", Prefer: "return=minimal"}, body: JSON.stringify(row)}).then(r => r.ok).catch(() => false); } catch (e) { return Promise.resolve(false); } }
 function lcOpen(id, k){ const L = lcLesson(id); if (!L) return; lyrClose(); const s = lcState(L), q = k ? s[k] : null, kl = k ? LCK.find(x => x[0] === k)[1] : "";
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.lc = id; o.dataset.lck = k || "";
