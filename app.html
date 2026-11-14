@@ -2830,7 +2830,7 @@ window.V2 = /[?&]v2=1(&|$)/.test(location.search);
 })();
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v467</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v468</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6065,8 +6065,15 @@ function lessonsInner(){ labLiveFetch(); const X = lcChs(); if (!X.length) retur
   return test.length ? tBody : '<span class="tn">Nothing on Test to check.</span>'; }
 /* a gold box = small pop-up (the song-check pop-up): Open | Approve | Fix. Open: Computer = the lesson on Test in a new tab, Dev mode = the same in a
    phone-size window (no developer tools needed), Phone = the lesson link (tap it on the phone). Fix = his note (type or the keyboard mic) as a Lab Fix note. */
+// (Nov 13 night, Chris yes; queue q-444d7d2c5b) DEV MODE = HIS GALAXY A32 EXACTLY: the pop-up holds the lesson in a frame exactly 384 x 721 CSS px, so every line
+// breaks where his phone breaks (a 384 x 721 window lost ~20 px to its own frame). The window can be any size, the frame is the phone.
+function ldDevOpen(v) { if (new URL(v).hostname !== "lab.worshippianoacademy.com") return;   /* only Lab lesson links (lcGo) come here */
+  const w = window.open("", "lcdev", "popup=yes,width=440,height=800"); if (!w) return;
+  w.document.open(); w.document.write('<!doctype html><meta charset="utf-8"><title>Dev mode: phone 384 x 721</title><style>html,body{margin:0;height:100%;background:#f4f1ea}@media (prefers-color-scheme:dark){html,body{background:#1f1f1f}}body{display:grid;place-items:center;overflow:auto}iframe{width:384px;height:721px;border:0;display:block;background:#fff;outline:1px solid #d9d2c3}</style><iframe allow="autoplay; fullscreen"></iframe>');
+  w.document.close(); w.document.querySelector("iframe").src = v; w.focus(); }
+
 function lcGo(L, k){ const u = safeUrl(L.u); if (!u) return; const v = u + (u.includes("?") ? "&" : "?") + "from=fd-" + (k === "dev" ? "dev" : k === "phone" ? "phone" : "pc");
-  if (k === "dev") window.open(v, "lcdev", "popup=yes,width=384,height=721"); else window.open(v, "_blank", "noopener"); }   // (Nov 13, Chris yes) dev = his Galaxy A32 exactly: 384 x 721 (was 360 x 800, which wrapped words differently from his phone)
+  if (k === "dev") ldDevOpen(v); else window.open(v, "_blank", "noopener"); }   // (Nov 13, Chris yes) dev = his Galaxy A32 exactly: 384 x 721 (was 360 x 800, which wrapped words differently from his phone)
 function lcSend(row){ try { return fetch(LABSB, {method: "POST", headers: {apikey: LABK, Authorization: "Bearer " + LABK, "Content-Type": "application/json", Prefer: "return=minimal"}, body: JSON.stringify(row)}).then(r => r.ok).catch(() => false); } catch (e) { return Promise.resolve(false); } }
 function lcOpen(id, k){ const L = lcLesson(id); if (!L) return; lyrClose(); const s = lcState(L), q = k ? s[k] : null, kl = k ? LCK.find(x => x[0] === k)[1] : "";
   const o = document.createElement("div"); o.id = "lyrchk"; o.dataset.lc = id; o.dataset.lck = k || "";
