@@ -2694,7 +2694,7 @@ body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>s
 window.V2 = false;   /* (Nov 14, delete audit) the Nov 2 ?v2=1 desk rebuild preview (stopped Nov 3) is deleted; Chris Nov 9: "then I'd delete the rest" */
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v469</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v470</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5272,11 +5272,6 @@ function fmAck(coll, id){ const a = ((stats.find(x => x.id === "fixmonitor") || 
 const SCTAG = {submitted: ["Submitted", "var(--kaECEAE4)", "var(--ka5B5648)"], fixing: ["Fixing", "var(--kaFBEFD0)", "var(--ka8A6508)"], ready: ["Ready", "var(--kaDDF1EE)", "var(--ka0F766E)"]};
 function labTag(t){ const scs = t && !t.done && (scFixingTitle(t) ? "fixing" : SCTAG[t.scState] ? t.scState : Array.isArray(t.songcheck) && t.songcheck.length ? "ready" : "");   /* untouched song row = Ready (his turn) */
   if (scs){ const [w, bg, fg] = (scs !== "ready" && fmAck("tasks", t.id)) || SCTAG[scs]; return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${bg};color:${fg}">${w}</span>`; }
-  /* (Oct 17, Chris + ChatGPT) a Lab ship task shows the full ship checks for the EXACT Test version (stats/labchecks, lab-checks-status.py):
-     Passed (green), Passed* = only failures Chris approved (green), Running (grey), Failed / Not run (red). Missing = Not run. */
-  if (t && !t.done && t.shipChecks){ const L = stats.find(x => x.id === "labchecks") || {}, R = L.result || "NOT RUN", ok = /^PASSED/.test(R), run = R === "RUNNING";
-    const w = R === "PASSED WITH KNOWN" ? "Passed*" : R === "NOT RUN" ? "Not run" : R.charAt(0) + R.slice(1).toLowerCase();
-    return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ok ? "var(--kaDDF1EE)" : run ? "var(--kaECEAE4)" : "var(--kaFBE2DC)"};color:${ok ? "var(--ka0F766E)" : run ? "var(--ka555)" : "var(--kaB4362A)"}">Checks v${L.version || "?"} \u00b7 ${w}</span>`; }
   if (!t || !t.labKey || t.done) return ""; const r = t.labRound || 1, f = t.labStatus === "fixing" || labLessonS(t.labKey) === "fix", ak = f && fmAck("tasks", t.id);
   if (ak) return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${ak[1]};color:${ak[2]}">V${r} \u00b7 ${ak[0]}</span>`;   /* (Oct 16, Chris) Fixing the moment he sends a Lab note (labFresh reads review_notes directly) */
   return ` <span class="ltag" style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;vertical-align:1px;white-space:nowrap;background:${f ? "var(--kaFBEFD0)" : "var(--kaDDF1EE)"};color:${f ? "var(--ka8A6508)" : "var(--ka0F766E)"}">V${r} \u00b7 ${f ? "Fixing" : "Ready"}</span>`; }
