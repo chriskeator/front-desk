@@ -2694,7 +2694,7 @@ body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>s
 window.V2 = false;   /* (Nov 14, delete audit) the Nov 2 ?v2=1 desk rebuild preview (stopped Nov 3) is deleted; Chris Nov 9: "then I'd delete the rest" */
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v470</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v471</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5659,7 +5659,7 @@ function homeShorts(){
      scheduled, red = missing (reason in its tooltip), empty = not due yet. Same rows, same 50px header as every board. Read from stats/posting (shorts-posting-check.py). */
   const acell = (o, k, ab) => { const a = (o.apps || {})[k] || {c: "grey"}, why = [a.s === false ? "not scheduled/posted" : "", a.t === false ? "no custom thumbnail" : "", a.m === false ? "not at 5am" : "", a.note || ""].filter(Boolean).join(", "), tip = esc(ab + ": " + ({green: "live", sched: "scheduled", red: "missing", grey: "not due yet"}[a.c] || a.c) + (why ? " (" + why + ")" : ""));
     const h = a.c === "green" ? blk("var(--ka1FA598)", "var(--ka1FA598)", dtx(o.date, "var(--kaFFF)")) : a.c === "sched" ? blk(SCHLOOK.bg, SCHLOOK.bg, dtx(o.date, SCHLOOK.ink)) : a.c === "red" ? blk("var(--kaFBE2DC)", "var(--kaB4362A)", `<span style="color:var(--ktB23B17);font-weight:600">Missing</span>`) : blk("transparent", "var(--line,#D8D2C4)");
-    return a.c === "green" && a.url ? h.replace("<i ", `<a href="${esc(a.url)}" target="_blank" rel="noopener" title="${tip}" `).replace(/<\/i>$/, "</a>") : h.replace("<i ", `<i title="${tip}" `); };
+    return a.url ? h.replace(   /* (Nov 16, Chris) every button with a link opens it, scheduled too (shorts-posting-check.py gives every button one) */"<i ", `<a href="${esc(a.url)}" target="_blank" rel="noopener" title="${tip}" `).replace(/<\/i>$/, "</a>") : h.replace("<i ", `<i title="${tip}" `); };
   const DUE = PK.filter(o => o.date > PDAY).sort((a, b) => b.date.localeCompare(a.date)), DONE = PK.filter(o => o.date <= PDAY).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);   /* (Nov 10, Chris) only the last 5 posted stay on the board */
   const drow = o => row(o.title, (o.date > PDAY ? "posts " : "posted ") + md(o.date), 5, null, "", false, "", null, null, PA.map(([k, ab]) => acell(o, k, ab)).join(""));
   const nRed = DUE.concat(DONE).reduce((t, o) => t + Object.values(o.apps || {}).filter(a => a.c === "red").length, 0);
