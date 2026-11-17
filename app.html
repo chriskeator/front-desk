@@ -37,6 +37,16 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
   --fs-hero: 24px;    /* page title (phone), Today title, count-in small */
   --fs-big: 32px;     /* page title (computer), big counters */
   --fs-count: 40px;   /* count-in, big numbers */
+  /* (Nov 16) SPECIAL SIZES, named here so every size still comes from this one file (pixels unchanged): */
+  --fs-key-xs: 6px;      /* letters on the smallest Tools piano keys */
+  --fs-key-sm: 7px;      /* sharp/flat under a letter on the small Tools piano */
+  --fs-key-md: 8px;      /* letters on small piano keys, the narrow scale-row names */
+  --fs-keymark: 19px;    /* the mark on a lesson piano key (rule 46) */
+  --fs-display-s: 44px;  /* count-down "ready" word */
+  --fs-display-m: 52px;  /* the big number in the wheel */
+  --fs-display-l: 64px;  /* big timer (phone) */
+  --fs-display: 84px;    /* count-down number, big symbol */
+  --fs-display-xl: 88px; /* big timer (computer) */
 }
 
 /* Daily home, one screen: title, three tabs (Today / Replies / Projects), a paged list. No page scrolling. */
@@ -2694,7 +2704,7 @@ body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>s
 window.V2 = false;   /* (Nov 14, delete audit) the Nov 2 ?v2=1 desk rebuild preview (stopped Nov 3) is deleted; Chris Nov 9: "then I'd delete the rest" */
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v471</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v472</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -7815,7 +7825,10 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
     rowKey: r => { const x = r.querySelector("[data-sgid],[data-ytchk],[data-lcchk]"); return x ? (x.dataset.sgid || x.dataset.ytchk || x.dataset.lcchk) : (r.innerText || "").split("\n")[0]; },
     hold(par, lv){ const groups = new Map(); par.querySelectorAll(".srow").forEach(r => { const g = r.parentElement; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(r); });
       if (!lv.ord) lv.ord = {}; let gi = 0;
-      for (const [g, rows] of groups){ const k = gi++, keys = rows.map(PF.rowKey); if (!lv.ord[k]){ lv.ord[k] = keys; continue; }
+      /* (Nov 16, Chris: "your lesson numbers are not in order") the held order only covers the SAME rows: when rows come or go (new lessons
+         pushed while the board is open) the board takes its real order again, so a new row never lands at the bottom */
+      for (const [g, rows] of groups){ const k = gi++, keys = rows.map(PF.rowKey), was = lv.ord[k];
+        if (!was || was.length !== keys.length || keys.some(x => !was.includes(x))){ lv.ord[k] = keys; continue; }
         if (rows.some((r, i) => i && r.previousElementSibling !== rows[i - 1])) continue;   /* rows not side by side: leave them */
         const pos = id => { const i = lv.ord[k].indexOf(id); return i < 0 ? 1e6 : i; }, want = rows.slice().sort((a, b) => pos(PF.rowKey(a)) - pos(PF.rowKey(b)));
         if (want.every((r, i) => r === rows[i])) continue; const before = rows[rows.length - 1].nextSibling; want.forEach(r => g.insertBefore(r, before)); } },
