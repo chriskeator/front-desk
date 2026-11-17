@@ -2705,7 +2705,7 @@ body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>s
 window.V2 = false;   /* (Nov 14, delete audit) the Nov 2 ?v2=1 desk rebuild preview (stopped Nov 3) is deleted; Chris Nov 9: "then I'd delete the rest" */
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v473</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v474</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -6898,6 +6898,16 @@ const WAITFOLD = {"t-wait-shorts": "Shorts"};   /* (Oct 28, Chris) Songs to chec
 function waitFolderGo(k){ if (window.V16WS) return window.V16WS(k); foldSet(topKey(k), 1); taskOpen = null; saveTaskOpen(); applyCollapse(); applyFocus();
   const h = [...document.querySelectorAll("#list .msec > h4[data-ck]")].find(x => x.dataset.ck === k); if (h) h.scrollIntoView({block: "start"}); }
 document.addEventListener("click", e => { const b = e.target.closest("[data-tlinks]"); if (!b || !WAITFOLD[b.dataset.tlinks] || !b.closest("#list")) return; e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); waitFolderGo(WAITFOLD[b.dataset.tlinks]); }, true);
+/* (Nov 17, Chris: "It doesn't make any sense to open something if there's only one button to click. Just make the folder open to that button click")
+   Built in: a to-do whose only content is its link opens that link at once when tapped (no pop-up with one Open button). Rows with steps,
+   pictures, files or an Approve/Fix/Yes/No answer still open, as do Done and the dots. */
+const v16LinkOnly = t => { if (!t || t.done || t.wait || ["review", "yesno", "ab"].includes(t.kind) || okAsk(t)) return "";
+  if ((Array.isArray(t.steps) && t.steps.length) || (Array.isArray(t.pics) && t.pics.length) || (Array.isArray(t.files) && t.files.length)) return "";
+  return safeUrl(t.url) && t.url !== FDURL && !v16Self(t.url) ? fdLink(t.url) : ""; };
+document.addEventListener("click", e => { if (!V16 || !e.target.closest) return; const b = e.target.closest("#list [data-tlinks]"); if (!b || e.target.closest(".kline,.tdetail")) return;
+  const c = e.target.closest("button,a,summary,input,label"); if (c && c !== b && b.contains(c)) return;
+  const u = v16LinkOnly((allTasks || []).find(x => x.id === b.dataset.tlinks)); if (!u) return;
+  e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); window.open(u, "_blank", "noopener"); }, true);
 document.addEventListener("click", e => { const b = e.target.closest("[data-waitgo]"); if (!b) return; e.preventDefault(); e.stopPropagation();
   if (b.dataset.waitgo === "shorts") return shOpen(null);
   const w = waitLive({wait: "songs"}), q = w && w.first; if (!q) return; if (q.bt) btOpen(q.id); else if (q.lyr) lyrOpen(q.id); else scOpen(q.id, q.v); }, true);   /* (Oct 20 night) opens the board at the FIRST item waiting */
@@ -7574,6 +7584,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   #list .msec .chgrid>.trow.vstrip>.chc b{display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis}
   #list .msec .chgrid>.trow.vstrip>.chc span{display:block;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis} #list .trow.vstrip>.chc .tmr{display:none}
   .trow.vstrip+.tdetail>.kline{display:none}
+  body.v16pop.v16work .trow.vstrip+.tdetail>.kline{display:flex;margin-top:12px}   /* (Nov 17, Chris: "Why does this look like shit?") an open item fills the frame and its row strip is hidden: its Done/dots show inside it */
   @media (max-width:800px){#v16{padding-left:12px;padding-right:12px;gap:7px} #v16 .vm{gap:6px} #v16 .vt{padding:6px 8px} #v16 .vt span{font-size:12px} #v16 .vs{padding:8px 10px} #v16 .vs.p{flex-basis:118px;min-height:104px}}
   @media (max-height:740px){#v16 .vs.p{flex-basis:112px;min-height:98px}}
   /* (Nov 1, V16 step 4) Focus Session: checkbox, bar, Review workspace, full-page session. V16.6 look, V16 colour tokens only. */
