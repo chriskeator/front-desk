@@ -47,6 +47,7 @@ function deskLabTestUrl(){ try { const re = /https:\/\/lab\.worshippianoacademy\
   --fs-display-l: 64px;  /* big timer (phone) */
   --fs-display: 84px;    /* count-down number, big symbol */
   --fs-display-xl: 88px; /* big timer (computer) */
+  --fs-input: 16px;      /* boxes you type into: under 16px a phone zooms in when you tap them */
 }
 
 /* Daily home, one screen: title, three tabs (Today / Replies / Projects), a paged list. No page scrolling. */
@@ -2704,7 +2705,7 @@ body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>s
 window.V2 = false;   /* (Nov 14, delete audit) the Nov 2 ?v2=1 desk rebuild preview (stopped Nov 3) is deleted; Chris Nov 9: "then I'd delete the rest" */
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v472</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v473</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -5682,6 +5683,7 @@ function homeShorts(){
 /* (Nov 13, Chris: "I don't even want a scheduled column ... show the scheduled date under the posted column ... in yellow") no Scheduled column: Posted = the post date, yellow (the Check colour) while scheduled, green once posted. The data keeps its sched step (scheduler + queue read it): YTSTEPS. */
 const YTCOLS = ["Cut plan", "Check clip", "Final", "Thumbnail", "A/B test", "Posted"], YTAB = ["Cut", "Clp", "Fin", "Thm", "A/B", "Pst"], YTSTEPS = ["cut", "clip", "final", "thumb", "sched", "ab", "posted"], YTK = YTSTEPS.filter(k => k !== "sched");   /* (Nov 2, Chris: "don't forget it next time") A/B test = its own step, same order as assembly-lines.json */
 var ytRows = [];
+const ytWatch = r => r.videoId ? "https://youtu.be/" + encodeURIComponent(r.videoId) : "";   /* (Nov 17) the Posted box opens the video; videoId written by yt-long-schedule.py / yt-posted-check.py */
 const YTPOP = ["cut", "clip", "final", "thumb"], YTNM = {cut: "Cut plan", clip: "Check clip", final: "Final", thumb: "Thumbnail"};
 function homeYouTube(){
   if (!ytRows.length) return "";
@@ -5689,12 +5691,12 @@ function homeYouTube(){
   const L = ytRows.slice().sort((a, b) => String(a.date || "").localeCompare(String(b.date || ""))), st = r => r.steps || {};
   const up = L.filter(r => st(r).posted !== "ok"), P = L.filter(r => st(r).posted === "ok").reverse(), you = up.filter(r => YTSTEPS.some(k => st(r)[k] === "chk")).length;
   const row = r => sgRow({title: r.title, sub: "Sat " + md(r.date), cells: YTK.map(k0 => { const sc = st(r).sched, k = k0 === "posted" && st(r).posted !== "ok" && sc && sc !== "ok" ? "sched" : k0; let c = st(r)[k] || "";
-    if (k0 === "posted" && st(r).posted !== "ok" && sc === "ok") return {c: "sch", t: md(r.date), id: "", yt: ""};   /* scheduled, not posted yet: its date in THE SCHEDULED LOOK (SCHLOOK) */
+    if (k0 === "posted" && st(r).posted !== "ok" && sc === "ok") return {c: "sch", t: md(r.date), id: "", yt: "", url: ytWatch(r)};   /* scheduled, not posted yet: its date in THE SCHEDULED LOOK (SCHLOOK) */
     /* (Nov 10, Chris: "Why does this say check when it posted 3 days ago?") a step still waiting after the video posted is moot: Skipped, not tappable */
     if (st(r).posted === "ok" && k !== "posted" && c && c !== "ok") return {c: "ok", t: "Skipped", id: "", yt: ""};
     const jb = c === "mk" ? lineJob("ytcheck/" + r.id + "/" + k) : null;
     if (c === "mk" && !jb) return {c: "fx", ak: ["Stuck"], red: 1, id: "", yt: "", t: ""};
-    if (c === "mk") return {c, t: jb === "working" ? "Making" : "Waiting", id: "", yt: ""}; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "ab" ? "Set" : "") : ""}; })}, YTCOLS);   /* A/B = "Set" (Cadence's step, never Chris's "Approved") */
+    if (c === "mk") return {c, t: jb === "working" ? "Making" : "Waiting", id: "", yt: ""}; return {c, id: YTPOP.includes(k) ? r.id : "", yt: YTPOP.includes(k) ? k : "", t: c === "ok" ? (k === "posted" ? md(r.date) : k === "ab" ? "Set" : "") : "", url: k === "posted" && c === "ok" ? ytWatch(r) : ""}; })}, YTCOLS);   /* A/B = "Set" (Cadence's step, never Chris's "Approved") */
   const head = sgHead(YTCOLS, YTAB);
   /* (Nov 10, Chris: "youtube needs to not have subfolders ... same as shorts where posted, scheduled and working on are all showing at the
      same time, sorted by date") ONE board, every video in date order (posted, scheduled and being made together), no Upcoming/Posted folders */
@@ -5861,7 +5863,9 @@ function sgRow(x, cols){ cols = Array.isArray(cols) ? cols : SGCOLS; const RS = 
     const stk = q.c === "fx" && q.ak && (q.ak[0] === "Stuck" || q.red), tap = (q.c === "chk" || q.c === "ok") && q.id;
     const bg = q.c === "ok" ? "var(--ka1FA598)" : q.c === "sch" ? SCHLOOK.bg : q.c === "chk" ? "var(--kaE8B53A)" : q.c === "mk" ? "var(--kaFBEFD0)" : q.c === "fx" ? (stk ? "var(--kaFBE2DC)" : "var(--kaFBEFD0)") : "transparent", bd = q.c === "ok" ? "var(--ka1FA598)" : q.c === "sch" ? SCHLOOK.bg : q.c === "fx" ? (stk ? "var(--kaB4362A)" : "var(--kaE8B53A)") : q.c ? "var(--kaE8B53A)" : "var(--line,#D8D2C4)";
     const tx = q.c === "ok" ? `<span class="sfw" style="color:var(--ktFFF);font-weight:600">${q.t || "Approved"}</span>` : q.c === "sch" ? `<span class="sfw" style="color:${SCHLOOK.ink};font-weight:600">${q.t}</span>` : q.c === "chk" ? `<span class="sfw">${q.t || "Check"}</span>` : q.c === "mk" ? `<span class="sfw" style="color:var(--kt8A6508);font-weight:600">${q.t || "Making"}</span>` : q.c === "fx" ? `<span class="sfw" style="color:${stk ? "var(--kaB23B17)" : "var(--ka8A6508)"};font-weight:600">${q.ak ? q.ak[0] : q.t || "Fixing"}</span>` : "";
-    return `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.yt ? ` data-ytchk="${esc(q.id)}" data-ytk="${q.yt}" role="button" tabindex="0"` : q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`; }).join("")}</span></div>`; }
+    const h = `<i class="sblk sgc" data-sgcol="${i}" data-sgid="${esc((x.sc && x.sc.id) || q.id || "")}" data-sgst="${q.c || "none"}" title="${esc(cols[i])}"${tap ? (q.yt ? ` data-ytchk="${esc(q.id)}" data-ytk="${q.yt}" role="button" tabindex="0"` : q.lc ? ` data-lcchk="${esc(q.id)}" data-lck="${q.lc}" role="button" tabindex="0"` : q.cmp ? ` data-melcmp="${esc(q.id)}" role="button" tabindex="0"` : q.fin ? ` data-sgfinal="${esc(q.id)}" data-sglv="${q.fin}" role="button" tabindex="0"` : q.chl ? ` data-chsheet="${esc(q.id)}" data-chlv="${q.chl}" role="button" tabindex="0"` : q.pl ? ` data-plchk="${esc(q.id)}"${q.f ? ` data-plf="${q.f}"` : ""} role="button" tabindex="0"` : q.nt ? ` data-ntchk="${esc(q.id)}" role="button" tabindex="0"` : q.bt ? ` data-beatschk="${esc(q.id)}" role="button" tabindex="0"` : q.lyr ? ` data-lyrchk="${esc(q.id)}" role="button" tabindex="0"` : ` data-songchk="${esc(q.id)}" data-scview="${q.v}" role="button" tabindex="0"`) : ""} style="width:22px;height:14px;box-sizing:border-box;flex:0 0 22px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px;color:var(--kt3A2A00);${tap ? "cursor:pointer;" : ""}background:${bg};border:1.5px solid ${bd}">${tx}</i>`;
+    /* (Nov 17, Chris: "YT needs to have links in all videos like shorts") a box with a link opens it, same as the Shorts app boxes (acell) */
+    return q.url ? h.replace("<i ", `<a href="${esc(q.url)}" target="_blank" rel="noopener" `).replace(/<\/i>$/, "</a>") : h; }).join("")}</span></div>`; }
 /* (Oct 28, Chris approved design A) LESSONS TO CHECK: the Lab chapters on the Songs board code (sgHead + sgRow: same rows, boxes, colours, fonts).
    Two folders (deskFold): Live (closed at first; every shipped chapter = one row, Status Live) and Testing (open at first; the chapter(s) on Test,
    one row per lesson; 2+ chapters = one folder each). Columns Computer | Dev mode | Phone | Status. A chapter is live when the Live Lab's path.js
@@ -6814,8 +6818,10 @@ function rowBtns(t, mode){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) 
   const more = [u && !strip && !v16Self(t.url) ? `<a class="kb" href="${esc(u)}" target="_blank" rel="noopener">Open link</a>` : "", B("", "Move", pop ? `data-move="${id}"` : strip ? `data-stripact="tdcal|${id}"` : `data-tdcal="${id}"`), pop ? "" : B("", "Edit", strip ? `data-stripact="edopen|${id}"` : `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
   return `<div class="kline">${main}${t.done ? "" : `<details class="kmore"><summary aria-label="More">\u22EF</summary><div class="kmorein">${more}</div></details>`}</div>`; }
 /* a row with a link: the title opens it, underlined in the accent colour */
+/* (Nov 17, Chris: "4 questions don't have buttons to do anything on them") a row with a picture and no link: the title opens its picture */
+const v16Pic = t => { const p = (t.pics || [])[0], u = p && (typeof p === "string" ? p : p.url); try { return u ? new URL(u, location.href).href : ""; } catch { return ""; } };
 const v16Self = u => /\/\/desk\.worshippianoacademy\.com\/app\.html([?#]|$)/.test(String(u || ""));   /* a row that links to the desk itself: stay in V16, on the Songs board */
-function v16Title(t, html){ const u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : ""; if (v16Self(t.url)) return `<span class="vlink" role="link" tabindex="0" data-v16ws="songs">${html}</span>`; return u ? `<span class="vlink" role="link" tabindex="0" data-v16link="${esc(u)}">${html}</span>` : html; }
+function v16Title(t, html){ const u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : v16Pic(t); if (v16Self(t.url)) return `<span class="vlink" role="link" tabindex="0" data-v16ws="songs">${html}</span>`; return u ? `<span class="vlink" role="link" tabindex="0" data-v16link="${esc(u)}">${html}</span>` : html; }
 window.addEventListener("click", e => { const v = V16 && e.target.closest && e.target.closest("[data-v16link]"); if (!v) return; e.preventDefault(); e.stopPropagation(); window.open(v.dataset.v16link, "_blank", "noopener"); }, true);
 window.addEventListener("keydown", e => { if (e.key !== "Enter" || !V16) return; const v = e.target.closest && e.target.closest("[data-v16link]"); if (!v) return; e.preventDefault(); e.stopPropagation(); window.open(v.dataset.v16link, "_blank", "noopener"); }, true);
 /* V16: the Fix box stays hidden until Fix is tapped; a closed row opens first. The one style rule survives redraws. */
@@ -7886,7 +7892,7 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   html body #lyrchk.plfull .plfr{border-radius:0!important;background:transparent!important}
   body.v16pop #shortchk .shcard>.shbody{flex:1 1 0;min-height:160px} body.v16pop #shortchk .shcard>.shbody :is(iframe,video,img){height:100%;max-height:100%;width:100%;object-fit:contain}
   body.v16pop.pfdeep #list .pfon>h4{display:none!important}
-  body.v16pop.v16work #list .pfhd{position:sticky;top:0;z-index:3;display:flex;align-items:center;padding:0 25px!important;border-radius:14px 14px 0 0} body.v16pop.v16work #list .pflist>.vr{margin:6px 10px 0}
+  body.v16pop.v16work #list .pfhd{position:sticky;top:0;z-index:3;display:flex;align-items:center;padding:0 25px!important;border-radius:14px 14px 0 0} body.v16pop.v16work #list .pflist>.vr{margin:6px 10px 0;width:auto;box-sizing:border-box}   /* (Nov 17, Chris: Questions rows stuck out past the frame, the dots cut off) width:100% + margins overflowed */
   body.v16pop.v16work #list .chgrid>.pc3>.pc3t{min-height:48px;display:flex;justify-content:center;align-items:flex-start;padding-top:0;padding-bottom:0}   /* a folder row = one line, centred, the board row's height */
   body.v16pop.v16work #list .pflist .revlist>p.tn{display:none} body.v16pop.v16work #list .pflist .revlist>:not(p){box-sizing:border-box;display:flex!important;flex-direction:row!important;align-items:center!important;width:auto;min-height:48px;height:auto!important;margin:6px 10px 0!important;padding:0 14px;border:1px solid var(--v-line)!important;border-radius:8px!important;background:var(--v-a)!important;box-shadow:none!important;font-weight:700;text-align:left;justify-content:flex-start!important} body.v16pop.v16work #list .pflist .revlist>:not(p)>*{text-align:left!important;margin:0!important;flex:1 1 auto}   /* Drafts rows = the same cream cards, no helper line */
   body.v16pop.v16work #list .pc3t>b[data-n]::after{content:" (" attr(data-n) ")"}
