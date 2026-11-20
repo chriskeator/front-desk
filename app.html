@@ -1481,12 +1481,16 @@ function scStop(){ if (scCtx){ try { scCtx.close(); } catch {} scCtx = null; cle
   const chordQual = q => { q = String(q == null ? "" : q).trim(); const a = Object.prototype.hasOwnProperty.call(CHORD_MASTER.alias, q) ? CHORD_MASTER.alias[q] : q; return Object.prototype.hasOwnProperty.call(CHORD_MASTER.quality, a) ? a : null; };
   const chordPc = (l, a) => (CHORD_MASTER.letterPc[l] + (/[#\u266f]/.test(a) ? 1 : /[b\u266d]/.test(a) ? -1 : 0) + 12) % 12;
   // letter chord ("Am", "C/E", "G7") -> { rh: [keys], lh: key } or null: the chord the right hand and the left hand play
+  // (Chris Nov 19) THE LEFT-HAND OCTAVE, the ONE source for every left hand from Chapter 9 on and for the band's bass: the octave's top key is the
+  // bass note as close under the right hand's lowest key as it can be, never on that key; the bottom key is one octave lower. lhOctave(rh keys, bass 0-11) = [bottom, top]
+  function lhOctave(rh, bpc) { const lo = Math.min(...rh), hi = lo - ((((lo - bpc) % 12) + 12) % 12 || 12); return [hi - 12, hi]; }
   function chordRead(name) {
     const s = String(name || "").trim(), cut = s.indexOf("/"), top = cut < 0 ? s : s.slice(0, cut), bs = cut < 0 ? "" : s.slice(cut + 1);
     const m = /^([A-G])([#b\u266f\u266d]?)(.*)$/.exec(top), bm = bs ? /^([A-G])([#b\u266f\u266d]?)$/.exec(bs) : null, q = m && chordQual(m[3]);
     if (!m || q === null || (bs && !bm)) return null;
     const pc = chordPc(m[1], m[2]);
-    return { rh: CHORD_MASTER.quality[q].map(i => CHORD_MASTER.voicing.rhRoot + pc + i), lh: CHORD_MASTER.voicing.lhRoot + (bm ? chordPc(bm[1], bm[2]) : pc) };
+    const rh = CHORD_MASTER.quality[q].map(i => CHORD_MASTER.voicing.rhRoot + pc + i), bpc = bm ? chordPc(bm[1], bm[2]) : pc;
+    return { rh, lh: CHORD_MASTER.voicing.lhRoot + bpc, lhOct: lhOctave(rh, bpc) };
   }
   // number chord as the desk types it ("1", "6m", "b7", "4/5", "2m7") -> letter chord in C ("C", "Am", "Bb", "F/G", "Dm7") or null
   function chordFromNumber(k) {
@@ -2694,7 +2698,9 @@ body.v16 :is(#list,.v2board) .srow:has(.sname[data-lcname]){cursor:pointer}
 body.v16 :is(#list,.v2board) .srow:has(.sname[data-lcname]):hover{background:color-mix(in srgb,var(--cc,var(--vc,var(--v-teal))) 16%,var(--v-card))!important}
 /* (Nov 2, Chris: "get rid of all the subtext on tasks ... Just put the title and how many items are in it") no grey line under a task or folder
    title (no time guess, no due date, no note), no What it is / Why / What you do block and no "Project · added" line inside an open task */
-body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>span,body.v16 :is(#v16,.pflist) .vr .vi small,body.v16 :is(#list,#pop) .tdetail>.v16note,body.v16 :is(#list,#pop) .tdetail>p.tn{display:none!important}
+body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>span,body.v16 :is(#v16,.pflist) .vr .vi small,body.v16 :is(#list,#pop) .tdetail>p.tn{display:none!important}
+/* (Nov 20, Chris: "I'm going to have to open it to find out what it is anyways") an OPEN row shows its words, lined up under its title; a closed row stays title only (Nov 2) */
+body.v16 :is(#list,#pop) .tdetail>.v16note{margin:0;padding:10px 25px 4px}
   :is(body.v16work #list,html.v2 .v2board) .srow{background:var(--v-card)} :is(body.v16work #list,html.v2 .v2board) .srow:nth-of-type(even){background:var(--v-b)} :is(body.v16work #list,html.v2 .v2board) .srow .sgc[data-sgst="none"]{background:var(--v-card)!important} :is(body.v16work #list,html.v2 .v2board) .srow .sgc[data-sgst="none"][style*="solid transparent"]{background:transparent!important}   /* (Nov 3, Chris: "check notes") a step this song does not have (Notes on most songs) is never drawn, on every row colour */
   :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--ka1FA598)"]{background:#9FE1CB!important;border-color:#9FE1CB!important;color:#04342C!important}
   :is(body.v16work #list,html.v2 .v2board) .sblk[style*="background:var(--kaE8B53A)"]{background:#FAC775!important;border-color:#FAC775!important;color:#412402!important}
@@ -2705,7 +2711,7 @@ body.v16 :is(#list,#pop) .chc[data-tlinks]>span,body.v16 :is(#list,#pop) .pc3t>s
 window.V2 = false;   /* (Nov 14, delete audit) the Nov 2 ?v2=1 desk rebuild preview (stopped Nov 3) is deleted; Chris Nov 9: "then I'd delete the rest" */
 </script>
 <div class="wrap">
-  <header><h1>Front Desk <span class="deskver">v474</span></h1><span class="today" id="today"></span></header>
+  <header><h1>Front Desk <span class="deskver">v475</span></h1><span class="today" id="today"></span></header>
   <div class="tabs" role="group" aria-label="Pick a view">
     <button id="tToday" type="button" aria-pressed="true">Home</button>
     <button id="tProjects" type="button" aria-pressed="false">Projects</button>
@@ -2830,7 +2836,7 @@ function askList(){ const L = tasks.filter(x => x.heldOffToday && !x.done && !x.
   return L.filter(x => !askSkip.includes(x.id)).concat(askSkip.map(id => L.find(x => x.id === id)).filter(Boolean)); }
 function asksHTML(){ const L = askList(), a = L[0]; if (!a) return `<p class="note">Nothing waiting.</p>`;
   const done = eightBtns(a);   /* (Oct 28, Chris: "there's no approve button") the ask uses the one 8-button block like every row (Approve = Looks good / Yes, Fix = Fix / No) */
-  return `<div class="askq" data-askof="${esc(a.id)}"><p class="tn">${esc([a.project, L.length + (L.length === 1 ? " question" : " questions") + " left"].filter(Boolean).join(" \u00b7 "))}</p><p class="askt"><b>${esc(a.short || a.title)}</b></p>${a.note ? `<p class="tn">${esc(String(a.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${kindHTML(a)}${done}${L.length > 1 ? `<div class="kyn"><button type="button" class="tb" data-asknext="1">Next</button></div>` : ""}</div>`; }
+  return `<div class="askq" data-askof="${esc(a.id)}"><p class="tn">${esc([a.project, L.length + (L.length === 1 ? " question" : " questions") + " left"].filter(Boolean).join(" \u00b7 "))}</p><p class="askt"><b>${esc(a.short || a.title)}</b></p>${a.note ? `<p class="tn">${esc(String(a.note).split(/\n|(?<=[.!?])\s/)[0])}</p>` : ""}${rowBody(a)}${fixBox(a)}${done}${L.length > 1 ? `<div class="kyn"><button type="button" class="tb" data-asknext="1">Next</button></div>` : ""}</div>`; }
 function waitLive(t){
   if (t.wait === "asks"){ const L = askList(); return {n: L.length, first: L[0], title: "Questions for you: " + L.length}; }
   if (waitBusy.has(t.wait)) return null;
@@ -2982,7 +2988,7 @@ function taskPop(t){
   else if (moving === t.id && moveCalOn) acts = moveCal(t);
   else if (moving === t.id) return popTop("Move to") + `<p class="tn">${esc(t.short || t.title)}</p>` + moveList(t);
   else if (pickingProj === t.id) return popTop(t.project ? "Move to which project?" : "Put in which project?") + `<p class="tn">${esc(t.short || t.title)}${t.project ? " · now in " + esc(t.project) : ""}</p>` + projList(t);   // (Oct 7) Chris didn't understand "Project"
-  else if (V16) acts = (okAsk(t) ? `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea><button type="button" class="kfixsend" data-kans="fix|${esc(t.id)}">Send fix</button>` : "") + eightBtns(t, true);
+  else if (V16) acts = eightBtns(t, true);
   else acts = `<div class="row" style="flex-wrap:wrap"><button type="button" class="tb go" data-task="${esc(t.id)}" data-done="${t.done?1:0}">${t.done?"Undo":"Done"}</button>${safeUrl(t.url) && !t.review && !tLinks(t).length ? `<a class="tb" href="${esc(V16 ? fdLink(t.url) : t.url)}" target="_blank" rel="noopener">${V16 ? "Go" : "Open link"}</a>` : ""}${t.done || t.date === plus(0) ? "" : `<button type="button" class="tb" data-today="${esc(t.id)}">Today</button>`}${t.done ? "" : `<button type="button" class="tb" data-move="${esc(t.id)}">Move</button>`}${t.done ? "" : `<button type="button" class="tb" data-delyes="${esc(t.id)}">Remove</button>`}${t.done || !(t.cost || t.teach) ? "" : t.handoff === "cadence" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">With Cadence</span>` : t.handoff === "teach" ? `<span class="tn" style="align-self:center;font-weight:700;color:var(--teal)">Cadence will ask you to show it</span>` : !t.cost ? `<button type="button" class="tb go" data-teachcad="${esc(t.id)}">Teach Cadence</button>` : `<button type="button" class="tb go" data-givecad="${esc(t.id)}">Give to Cadence${t.cost ? " (" + esc(t.cost) + ")" : ""}</button>`}</div>`;
   let list = "";
   if (t.review){ const items = revItems(t); list = `<p class="tn">${esc(countLine(revCounts(items)) || "Nothing to review yet")}</p>` + popPaged(revShown(items, r => rsBtn(r.status, revName(r), `data-rev="${esc(r.id)}"`))); }
@@ -2991,11 +2997,10 @@ function taskPop(t){
   const meta = [t.project, t.added ? "added " + dayLabel(String(t.added).slice(0, 10)) : "", fmtMins(t.mins)].filter(Boolean).join(" · ");
   const whyIn = `${t.night ? nightHTML(t) : ""}${t.note && !t.night ? noteP(t) : ""}${late ? `<p class="tn">Late, from ${esc(dayLabel(t.date))}</p>` : ""}${meta ? `<p class="tn">${esc(meta)}</p>` : ""}`;
   /* (Oct 12, Chris, phone) a to-do with a check list: the LIST comes first and gets the room; the notes fold into one 'What it's for' line, buttons last */
-  if (t.wait === "asks") return popTop(esc(t.title)) + asksHTML() + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
-  if (t.kind === "ab") return popTop(esc(t.title)) + kindHTML(t) + `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>`;
-  if (t.kind) return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + kindHTML(t) + (V16 ? eightBtns(t, true) : "");
-  if (!isDesktop() && list && list.trim()) return popTop(esc(t.title)) + list + `<details class="whyd"><summary>What it's for</summary><div class="why">${whyIn}</div></details>` + acts;
-  return popTop(esc(t.title)) + `<div class="why">${whyIn}</div>` + acts + list;
+  // THE ONE ROW (rowBody): title, words, its parts, its links, the Fix box, its buttons (questions waiting and an A/B test: Move only)
+  const btns = t.wait === "asks" || t.kind === "ab" ? `<div class="row tdbtns"><button type="button" class="tb" data-tdcal="${esc(t.id)}">Move</button></div>` : t.kind && !V16 ? "" : acts;
+  const why = `<div class="why">${whyIn}</div>`, fold = !isDesktop() && list && list.trim();   // (Oct 12, phone) a list comes first; the words fold into 'What it's for'
+  return popTop(esc(t.title)) + (fold ? list + `<details class="whyd"><summary>What it's for</summary>${why}</details>` : why) + rowBody(t) + (fold ? "" : list) + fixBox(t) + btns;
 }
 // a review item: the pop-up's next page (Approve / Fix / Open in Kit / Back)
 function revPage(){
@@ -6806,14 +6811,17 @@ function noteP(t){ if (V16){ const u = safeUrl(t.url) && t.url !== FDURL && !v16
   return `<p style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(String(t.note).split(/\n|(?<=[.!?])\s/)[0])}</p>`; }
 /* (Nov 1, V16 step 2) a plain row that says it needs his approval: handed back for review, 'approve' in the title, or its note says tap Approve or Fix. Uses the existing answer action (data-kans). */
 const okAsk = t => V16 && !t.kind && !t.wait && !t.done && !t.review && (t.handoff === "review" || (!t.handoff && (/\bapprove\b/i.test(t.title || "") || /\b(Approve|Looks good) or Fix\b/i.test(t.note || ""))));
-/* (Nov 1, Chris: "not every button belongs on every task") V16 ROW BUTTONS: only what this row needs. Plain = Done; link = Go, Done; approval = Approve, Fix; yes/no = Yes, No (an approval or question with a link keeps Go: it is how he sees the thing).
+/* (Nov 1, Chris: "not every button belongs on every task") V16 ROW BUTTONS (Nov 20: every open row = Fix + Approve, a closed row = its dots only).
    Move, Edit, To Cadence, Remove sit under one quiet More that opens in place. Nothing greyed: what does not apply is not there. Same actions as before. pop = inside the pop-up (Move by data-move, no Edit: both only work in an open row). */
 function rowBtns(t, mode){ const id = esc(t.id), k = t.kind, u = safeUrl(t.url) && t.url !== FDURL ? fdLink(t.url) : "", pop = mode === true, strip = mode === "strip";   /* (Nov 1, Chris picked Layout B) one thin line: small buttons, quiet dots. strip = on a closed row: Move and Edit first open the row (data-stripact) */
   const B = (c, l, a) => `<button type="button" class="kb ${c}" ${a}>${l}</button>`;
-  const ask = k === "review" || (k && k !== "go" && k !== "ab" && k !== "yesno") || okAsk(t), done = `data-task="${id}" data-done="0"`;
   /* (Nov 1, Chris's final design) [second or empty][main][dots]: two fixed columns that line up down the page. No Go button: on a strip the title opens the link (v16Title); where the title is not ours (open row in a project list, pop-up) the link sits under the dots. */
-  const pair = t.done || k === "ab" ? null : k === "yesno" ? [B("kn", "No", `data-kans="no|${id}"`), B("kp", "Yes", `data-kans="yes|${id}"`)] : ask ? [B("kg", "Fix", `data-kans="fix|${id}"`), B("kp", "Approve", `data-kans="good|${id}"`)] : ["", B("kp", "Done", done)];
-  const main = pair ? (pair[0] || `<span class="kb0"></span>`) + pair[1] : "";
+  // (Nov 20, Chris: "I want the fix or approve button to be on whatever I open") EVERY open row answers the same way: Fix + Approve (a yes/no row
+  // still saves its yes / no, so the scripts that read it are unchanged). Was: Yes / No, Fix / Approve or Done, by kind.
+  const pair = t.done || k === "ab" ? null : [B("kg", "Fix", `data-kans="${k === "yesno" ? "no" : "fix"}|${id}"`), B("kp", "Approve", `data-kans="${k === "yesno" ? "yes" : "good"}|${id}"`)];
+  // (Nov 20, Chris: "I'm going to have to open it to find out what it is anyways ... I want the fix or approve button to be on whatever I open")
+  // a CLOSED row on a list (strip) shows no answer buttons, only its dots; Fix / Approve / Done / Yes / No sit inside the row he opens
+  const main = pair && !strip ? (pair[0] || `<span class="kb0"></span>`) + pair[1] : "";
   const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
   const more = [u && !strip && !v16Self(t.url) ? `<a class="kb" href="${esc(u)}" target="_blank" rel="noopener">Open link</a>` : "", B("", "Move", pop ? `data-move="${id}"` : strip ? `data-stripact="tdcal|${id}"` : `data-tdcal="${id}"`), pop ? "" : B("", "Edit", strip ? `data-stripact="edopen|${id}"` : `data-edopen="${id}"`), cad ? B("", "To Cadence", cad) : "", B("", "Remove", `data-delyes="${id}"`)].join("");
   return `<div class="kline">${main}${t.done ? "" : `<details class="kmore"><summary aria-label="More">\u22EF</summary><div class="kmorein">${more}</div></details>`}</div>`; }
@@ -6836,15 +6844,18 @@ function eightBtns(t, pop){ if (V16) return rowBtns(t, pop); const id = esc(t.id
   const cad = t.done || t.cadence === false || t.test || t.handoff ? "" : (t.cost || V16) && t.cando === true ? `data-givecad="${id}"` : !t.cost && t.teach ? `data-teachcad="${id}"` : "";
   return `<div class="kbtns">${u ? `<a class="kb kgo" href="${esc(u)}" target="_blank" rel="noopener">Go</a>` : V16 ? "" : B("kgo", "Go", "")}${B("kdone", "Done", done)}${B("kmove", "Move", `data-tdcal="${id}"`)}${B("krem", "Remove", `data-delyes="${id}"`)}${B("kedit", "Edit", `data-edopen="${id}"`)}</div>`
     + `<div class="kbtns">${B("kappr", V16 && k === "yesno" ? "Yes" : "Approve", appr)}${B("kfixb", V16 && k === "yesno" ? "No" : "Fix", fix)}${B("kcad", "To Cadence", cad)}</div>`; }
-function kindHTML(t){
-  const k = t.kind, pics = Array.isArray(t.pics) ? t.pics : [], files = Array.isArray(t.files) ? t.files : [];
-  const pg = pics.length ? `<div class="kpics">${pics.map((p, i) => `<button type="button" class="kthumb" data-kbig="${esc(p.url || p)}" aria-label="Picture ${i + 1}, tap for big"><img src="${esc(p.url || p)}" alt="" loading="lazy"></button>`).join("")}</div>` : "";
-  const fl = files.map(f => safeUrl(f.url) ? `<a class="tb" href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label || "Open")}</a>` : "").join("");
-  if (k === "go"){
-    return (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : ""); }   /* (Oct 25, Chris: 'Stop putting things on my to-do list that I can't get rid of') every go row has its own Done */
-  if (k === "ab") return abHTML(t);
-  if (k === "yesno") return pg + fl;
-  return pg + fl + `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea><button type="button" class="kfixsend" data-kans="fix|${esc(t.id)}">Send fix</button>`; }
+// THE ONE ROW (Nov 20, Chris: "there needs to be only 1 type of row ... if I don't like it, we change it from the source and it changes
+// everywhere"): every to-do opens the same way: its words, then the parts it has, always in this order: questions waiting, the A/B
+// card, steps, pictures, files, its links, the Fix box, its buttons. A part it does not have is simply not drawn. (Before: four
+// kinds drew four different bodies, and a 'review' row with no picture opened EMPTY.)
+function rowBody(t){
+  const pics = Array.isArray(t.pics) ? t.pics : [], files = Array.isArray(t.files) ? t.files : [];
+  return (t.wait === "asks" ? asksHTML() : "") + (t.kind === "ab" ? abHTML(t) : "")
+    + (Array.isArray(t.steps) && t.steps.length ? `<ul class="ksteps">${t.steps.map(x => `<li><i>${esc(x.icon || "\u2022")}</i><span>${esc(x.text || x)}</span></li>`).join("")}</ul>` : "")
+    + (pics.length ? `<div class="kpics">${pics.map((p, i) => `<button type="button" class="kthumb" data-kbig="${esc(p.url || p)}" aria-label="Picture ${i + 1}, tap for big"><img src="${esc(p.url || p)}" alt="" loading="lazy"></button>`).join("")}</div>` : "")
+    + files.map(f => safeUrl(f.url) ? `<a class="tb" href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.label || "Open")}</a>` : "").join(""); }
+// the one Fix box: on every open row (they all have Fix + Approve), except a yes/no question and an A/B test
+const fixBox = t => !t.done && !["ab", "yesno"].includes(t.kind) ? `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea><button type="button" class="kfixsend" data-kans="fix|${esc(t.id)}">Send fix</button>` : "";
 document.addEventListener("click", async e => { const b = e.target.closest && e.target.closest("[data-kbig], [data-kans], [data-asknext]"); if (!b) return;
   if (b.dataset.asknext){ const a = askList()[0]; if (a){ const i = askSkip.indexOf(a.id); if (i >= 0) askSkip.splice(i, 1); askSkip.push(a.id); } render(); return; }
   if (b.dataset.kbig){ const o = document.createElement("div"); o.className = "kbig"; o.innerHTML = `<img src="${esc(b.dataset.kbig)}" alt="">`; o.addEventListener("click", () => o.remove()); document.body.appendChild(o); return; }
@@ -6997,7 +7008,7 @@ function taskDetail(t){
      line: Go | Done | Move | Remove | Edit. No link = Go greyed out, so a to-do with nowhere to go shows at once. */
   const plain = !t.wait, five = plain ? eightBtns(t) : "";
   return `<div class="tdetail" data-tdof="${esc(t.id)}">${ca ? `<span class="cbarw"><span class="cbar"><i style="width:${Math.round(cd / ca * 100)}%"></i></span><small>${cd} of ${ca} checked</small></span>` : ""}${t.night ? nightHTML(t) : ""}${t.note && !t.night ? noteP(t) : ""}${cnotesHTML(t)}<p class="tn">${esc(meta)}</p>
-    ${t.kind ? kindHTML(t) : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) : goBtn(plain ? {...t, url: ""} : t)}${okAsk(t) ? `<textarea class="kfix" data-kfix="${esc(t.id)}" placeholder="What should change?"></textarea><button type="button" class="kfixsend" data-kans="fix|${esc(t.id)}">Send fix</button>` : ""}${kidsHTML(t)}${t.wait ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${plain ? five : t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${!plain && cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : t.handoff === "cadence" || t.handoff === "teach" ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind || plain ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
+    ${rowBody(t)}${t.kind ? "" : t.handoff === "review" ? goBtn(t.review ? t : {...t, review: t.id}) : goBtn(plain ? {...t, url: ""} : t)}${fixBox(t)}${kidsHTML(t)}${t.wait ? `<div class="row tdbtns">${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}</div>` : ""}${plain ? five : t.wait || t.kind ? "" : `<div class="row tdbtns">${bt(`data-task="${esc(t.id)}" data-done="0"`, "Done", true)}${isToday ? "" : bt(`data-today="${esc(t.id)}"`, "Today")}${bt(`data-tdcal="${esc(t.id)}"`, "Move", moving === t.id)}${bt(`data-delyes="${esc(t.id)}"`, "Remove")}</div>`}${!plain && cadBtn(t) ? `<div class="cadrow">${cadBtn(t)}</div>` : t.handoff === "cadence" || t.handoff === "teach" ? `<div class="cadrow">${cadBtn(t)}</div>` : ""}${t.done || t.wait || t.kind || plain ? "" : `<div class="cadrow"><button type="button" class="tb" data-edopen="${esc(t.id)}">Edit</button></div>`}${t.handoff === "review" ? `<p class="tn cadok">Goes live only after you approve.</p>` : ""}${moving === t.id ? `<div class="tdpanel">${moveCal(t)}</div>` : pickingProj === t.id ? `<div class="tdpanel">${projList(t)}</div>` : ""}${t.kind ? "" : lvBar(t)}</div>`;   // (Oct 7) Chris: calendar / project folders open right here, no pop-up
 }
 function refreshDetail(){ document.querySelectorAll("#list .tdetail").forEach(x => x.remove()); applyTaskOpen(); addTodayBtns(); applyFocus(); }
 function applyTaskOpen(){ if (!taskOpen || !phone()) return; const t = allTasks.find(x => x.id === taskOpen); if (!allTasks.length) return; if (!t || t.done){ taskOpen = null; return; }   // (Oct 8) wait for the list to load before forgetting the open to-do
@@ -7956,7 +7967,8 @@ document.addEventListener("visibilitychange", () => { if (document.visibilitySta
   function fixBack(){ document.querySelectorAll("#list [data-kfix]").forEach(t => { const k = t.dataset.kfix; if (fixDraft[k] && !t.value){ t.value = fixDraft[k]; if (fixFocus === k && document.activeElement !== t && document.activeElement === document.body){ t.focus(); t.setSelectionRange(t.value.length, t.value.length); } } }); }
   let lastH16 = "", kmKey = ""; function kmOf(m){ const r = m.closest(".vr,.trow,.vfi,.tdetail"); if (!r) return ""; return r.dataset.v16row || r.dataset.tdof || (r.querySelector("[data-tlinks]") || {dataset: {}}).dataset.tlinks || (r.querySelector("[data-stripact],[data-delyes]") || {dataset: {}}).dataset.delyes || ""; }
   function kmFit(m){ const p = m.querySelector(".kmorein"), su = m.querySelector("summary"); if (!p || !su) return; p.style.transform = ""; p.style.top = ""; const fx = getComputedStyle(p).position === "fixed", q = su.getBoundingClientRect(), h = p.offsetHeight, f = document.getElementById("v16fb"), lim = innerHeight - (f && f.getClientRects().length ? f.offsetHeight : 0) - 4;
-    if (fx){ p.style.top = Math.max(4, q.bottom + h > lim ? q.top - h - 2 : q.bottom) + "px"; return; } const r = p.getBoundingClientRect(); if (r.bottom > lim) p.style.transform = `translateY(${Math.max(lim - r.bottom, 4 - r.top)}px)`; }
+    if (fx){ p.style.top = Math.max(4, q.bottom + h > lim ? q.top - h - 2 : q.bottom) + "px"; p.style.right = Math.max(4, innerWidth - q.right) + "px"; return; }
+    const r = p.getBoundingClientRect(); if (r.bottom > lim) p.style.transform = `translateY(${Math.max(lim - r.bottom, 4 - r.top)}px)`; }   // (Nov 20, Chris: "opens all the way to the right, which is stupid") the menu opens under its own dots, never at the screen's edge
   function kmBack(){ if (!kmKey) return; for (const m of document.querySelectorAll("details.kmore")){ if (m.getClientRects().length && kmOf(m) === kmKey){ m.open = true; kmFit(m); return; } } }
   dash.addEventListener("scroll", () => { kmKey = ""; dash.querySelectorAll("details.kmore[open]").forEach(m => { m.open = false; }); }, {capture: true, passive: true});
   /* the song check closes only by a tap outside it: V16 gives it a real Close, same action */
